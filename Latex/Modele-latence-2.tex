@@ -12,11 +12,10 @@
 \usepackage{longtable}
 \usepackage{complexity}
 
-\newcommand\rschedule{$\cal R$-schedule\xspace}
+\newcommand\rmatching{$\cal R$-matching\xspace}
 \newcommand\mdelay{$\cal M$-delay\xspace}
-
+\newcommand\matchedgraph{{\bf matched graph}}
 \begin{document}
-
 
 
 \graphicspath{{figures/}}
@@ -32,98 +31,183 @@
 \newcommand{\todo}[1]{}
 \renewcommand{\todo}[1]{{\color{red} TODO: {#1}}}
  
-\author{DB, CC, OM, YS}
+\author{DB, CC, OM, YS, MG}
 
   % ?
 
 \maketitle
 
  
-\section{Introduction} 
-We consider a symmetric graph $G=(V,A)$ with two non intersecting subsets of vertices: a subset $L$ of nodes which are called \emph{leaves} and a subset $S$ of nodes which are called \emph{sources}.  We denote by ${\cal L}$ the cardinal of $L$. The digraph $G$ models the network, $S$ the possible sources in the cloud and $L$ the set of base-stations.
+\section{Introduction}
+
+\subsection{Context}
+Mobile networks are controled by many radio stations, composed of 2 major parts : 
+\begin{enumerate}
+ \item Base Band Units (BBU) : are resonsible for computing the signals, and communicate with the core network.
+ \item Remote Radio Head (RRH) : are the antennas and have only to communicate with the mobile devices.
+\end{enumerate}
+The part of the network between BBU and the core network is called backhaul.
+
+The operators are searching for a way to dissociate BBU from RRH, and regroup many BBU in some data centers, that would allow easyer updates and 
+maintenance.
+Nevertheless such a splitting enforce hard throughput and latency constraints on the communication network between BBU and RRH. This part of the network is called fronthaul.
+
+In this article, we will work on latency constraints in fronthaul.
+
+\subsection{Definitions}
+We consider a directed graph $G=(V,A)$ with two non intersecting subsets of vertices: a subset $L$ of nodes which are called \emph{leaves} and a subset $S$ of nodes which are called \emph{sources}.  
+We denote by ${\cal L}$ the cardinal of $L$. The digraph $G$ models the network, $S$ the possible BUU and $L$ the set of RRH.
 Each arc  $(u,v)$ in $A$ is caracterised by an integer delay $Dl(u,v) \geq 1$ representing the time taken by the signal to go from $u$ to $v$
 by using this arc.  
 
+We'll consider $G=(V,A)$ and $G^r=(V,A^r)$ wherein the set of vertices is the same and $A^r$ represents the edges of $A$ directed in the other way. 
+The delay $Dl(u,v)$ represents the weight of the arcs between $u$ and $v$.\newline
 
-\todo{on devrait dire qu'un graphe dans le reste du texte est un digraphe symétrique donnée avec des sommets S,L et des poids sur les arêtes. Ça allégerait les phrases et les notations.} 
+\begin{tabular}{cc}
+\includegraphics[scale=0.8]{Fig2.pdf} & \includegraphics[scale=0.8]{Fig3.pdf}\\
+ $G=(V,A)$ & $G^r=(V,A^r)$\\
+\end{tabular}\newline
+Note that there is a special case in which the graph may have oriented cycles (optical ring topologie),
+otherwise, there is no oriented cycles and all the properties are availables.
 
-A route $r$ is a sequence of arcs $a_0, \ldots , a_{n-1}$, with $a_i=(u_i,u_{i+1}) \in A$ such that $u_0 \in S$ and $u_n \in L$. The {\em latency} of a vertex $u_i$ in $r$, with $i \geq 1$, is defined by $$\lambda(u_i,r)= \sum\limits_{0 \leq k <i} Dl(a_k)$$ We also define $\lambda(u_0,r)=0$. The latency of the route $r$ is defined by $\lambda (r)= \lambda (u_n,r)$. In graph theory, a route is a simple path in the graph, and its latency is its weight. 
+A route $r$ is a sequence of arcs $a_0, \ldots , a_{n-1}$, with $a_i=(u_i,u_{i+1}) \in A$ such that $u_0 \in S$ and $u_n \in L$.
+The {\em latency} of a vertex $u_i$ in $r$, with $i \geq 1$, is defined by $$\lambda(u_i,r)= \sum\limits_{0 \leq k <i} Dl(a_k)$$ We also define $\lambda(u_0,r)=0$.
+The latency of the route $r$ is defined by $\lambda (r)= \lambda (u_n,r)$. In graph theory, a route is a simple path in the graph, and its latency is its weight. 
+Consider that the term ``route $r$`` denote the route itself but also its source node $u_0$ in $S$ an its leave node $u_n$ in $L$.
 
-A {\bf routing function} ${\cal R}$ is an application associating a route ${\cal R}(s,l)$ to each couple $(s,l) \in S \times L$ in $G$. A {\bf ${\cal R}$-schedule} of $S$ in $L=\{l_0, \ldots , l_{{\cal L}-1}\}$ is a set of ${\cal L}$ routes $\rho =\{r_0, \ldots ,r_{{\cal L}-1}\}$, in which for each $0 \leq j \leq {\cal L}-1$, the last node of the route $r_j$ is $n_j$. This means that each node $l_j \in L$ belongs to exactly one route in $\rho$.
+A {\bf routing function} ${\cal R}$ is an application associating a route ${\cal R}(s,l)$ to each couple $(s,l) \in S \times L$ in $G$. 
+A {\bf ${\cal R}$-matching} of $S$ in $L=\{l_0, \ldots , l_{{\cal L}-1}\}$ is a set of ${\cal L}$ routes $\rho =\{r_0, \ldots ,r_{{\cal L}-1}\}$.
+It is a bijection of $S$ in $L$.
+We assume that we have as many source nodes node as we have leaves. This means that each source or leave node belongs to exactly one route in $\rho$.
 Moreover $\rho$ satisfies the \emph{coherent routing} property: the intersection of two routes must be a path.
-\todo{Je n'aime pas trop le nom R schedule qui est lourd et qui utilise le mot schedule alors qu'il n'y a pas encore de notion de temps mais juste de choix de station de départ.
-Il faudrait donner un nom à un graphe équippé d'une R schedule, ça serait pratique pour simplifier des choses dans la suite}
 
-The ${\cal R}$-schedule $\rho$ defines a subgraph of $G$ wich is the union of all paths in $\rho$ that we call the \emph{routing graph} and that we denote by $G_{\rho}$. 
-Note that the routing graph may have oriented cycles. 
+%The ${\cal R}$-matching $\rho$ defines a subgraph of $G$ wich is the union of all paths in $\rho$ that we call the \emph{routing graph} and that we denote by $G_{\rho}$. 
 
-\todo{Illustrer les r schedules par des dessins (un acyclique et un ring buffer). Est-ce que les cycles orientés arrivent vraiment en pratique et posent-ils des problèmes ?}
 
 
 For each arc $(u,v) \in A$, we denote by ${\rho}(u,v)$ the subset of routes of $\rho$  containing $(u,v)$.
-% We define the load of an arc $(u,v)$ as the number of routes that use this arc thus : $load(u,v) = |\rho(u,v)|$.
+We define the load of an arc $(u,v)$ as the number of routes that use this arc thus : $load(u,v) = |\rho(u,v)|$.
 
+The quintuplet $N=\{G,S,L,R,\rho\}$ defines a \matchedgraph. We call $N^r$ the quintuplet $\{G^r,S,L,R,\rho^r\}$, 
+where $\rho^r$ is the \rmatching obtained using the same routes, with inverted arcs.
 
-Let $P>0$ be an integer called {\em period}, and $\delta \geq 0$ be an integer called {\em reservation}. A $P$-periodic affectation of a $\cal R$-schedule $\rho$  consists in a set  ${\cal M}=\{m_0, \ldots ,m_{{\cal L}-1}\}$ of ${\cal L}$ integers that we call \emph{offset}. 
+Let $P>0$ be an integer called {\em period}. 
+A $P$-periodic affectation of N, a matched graph consists in a set  ${\cal M}=\{m_0, \ldots ,m_{{\cal L}-1}\}$ of ${\cal L}$ integers that we call \emph{offset}. 
 Each time window is divided in $P$ slots and the number $m_i$ represents the slot number used by the route $r_i$ at its source.
-We define the time slot used by a route $r_i$ at any vertex $v$ of the route by $t(v,r_i) = m_i+\lambda(u,r_i)) \mod P$.
- A $P$-periodic affectation must have no {\em collision} between two routes in $\rho$, that is for $r_i$ and $r_j$ in ${\rho}(u,v)$ assuming w.l.o.g. $t(u,r_i) < t(u,r_j)$,
- we have $$\max(t(u,r_j)-t(u,r_i),t(u,r_i)-t(u,r_j)-P-1) > \delta $$
+We define the time slot used by a route $r_i$ at any vertex $v$ of the route by $$t(v,r_i) = m_i+\lambda(u,r_i)) \mod P.$$
+A $P$-periodic affectation must have no {\em collision} between two routes in $\rho$, that is $\forall r_i, r_j \in \rho, i \ne j$, two routes intersecting in u,
+and containing the same arc $(u,v)$, we have $$t(u,r_i)\ne t(u,r_j) .$$
+
+We define by $\alpha(u,r_i,r_j) = | \lambda(u,r_i)-\lambda(u,r_j)|$. This item will be useful later, when we'll introduce Route Conflict Graphs.
  
- \todo{On devrait peut-être plutôt définire $\lambda(u,r_i) - \lambda(u,r_j)$ comme un objet qui sera ensuite les poids 
- du graphe des conflits }
- 
-\todo{put a figure here to illustrate what it means to avoid a collision.}
+
 %Giving a $P$-periodic affectation $\cal M$ of $\rho$, for any route $r^i \in \rho$, we call $\cal M$-delay of  $r^i$ the integer $d_{\cal M}(r^i)=\lambda(r^i)+m_i$. We also call {\bf $\cal M$-delay} of ${\cal R}$ the maximum $\cal M$-delay of a route in $\rho$.\\
 
 Notice that the notion of $P$-periodic affectation \textbf{is not monotone} with regard to $P$. 
-Indeed, we can build a {\bf ${\cal R}$-schedule} of a graph, with $l$ routes $r_1, \dots, r_l$ which all intersect two by two and
+Indeed, we can build a {\bf ${\cal R}$-matching} of a graph, with $l$ routes $r_1, \dots, r_l$ which all intersect two by two and
 such that if $r_i$ and $r_j$ have $v$ as first common vertex we have $\lambda(v,r_i) - \lambda(v,r_j)=1$.
 Therefore there is a $2$-periodic affectation by setting all $m_i$ to $0$.
+
+\begin{tabular}{cc}
+\includegraphics[scale=0.5]{Fig5.pdf} & \includegraphics[scale=1]{Fig7.pdf}\\
+ $\lambda(v,r_i) - \lambda(v,r_j)=1$ & Conflict graph\\
+\end{tabular}\newline
+
 On the other hand if we set all $\lambda(v,r_i) - \lambda(v,r_j)=P$, there is no $P$-peridodic affectation if $P<l$.
+
+\begin{tabular}{cc}
+\includegraphics[scale=0.5]{Fig6.pdf} & \includegraphics[scale=1]{Fig8.pdf}\\
+ $\lambda(v,r_i) - \lambda(v,r_j)=2$ & Conflict graph\\
+\end{tabular}\newline
+\begin{center}
+ Here for P=2, there is no P-Periodic affectation.
+\end{center}
+
 Therefore if we choose $P$ odd and $l=P+1$, there is no $P$-peridodic affectation but modulo $2$ all $\lambda(v,r_i) - \lambda(v,r_j)$
 are equal to one thus we have a $2$-periodic affectation. 
  
- \todo{Put here the figure corresponding to the remark + use this example in the definition as a running example
- for the conflict graphs and the conflict sytem}
+
+
+\subsection{Real Network Topologies}
+
+To illustrate we consider an basic network topologie, composed of some base stations, represented by source nodes $S$, all connected to the same switch,
+which will be a vertex, connected himself to another vertex, corresponding to a switch, connected to some leave nodes $L$ representing the Antennas.
+
+\begin{center}
  
-We consider two main problems:\\
+\includegraphics[scale=1]{Fig4.pdf}\\
+Example of topologie 1.
+\end{center}
+
+\todo{ajouter les autres topologies}
+
+\subsection{Fronthaul networks}
+
+The application we address here by studying the problems defined above is the following. Consider fronthaul network in which source nodes in $S$ represent computing units in data centers,
+each one able to do a remote process for base stations modeled by leaves node in $L$. Consider a ${\cal R}$-matching $\rho$ of $S$ in $L$. Consider a leave $l$, its dedicated source node $s$
+and $R(l,s)$ the route from $l$ to $s$ in $R$. We consider a $P$-periodic affectation of $\rho$, and also another $P$-periodic affectation of $\rho^{r}$, the $R$-matching
+obtained by considering $G^r$, using the same routes in opposite direction. The periodic process is then the following one:
+\begin{enumerate}
+ \item During each period of duration $P$, leave $l$ sends a message to $s$, using $R(l,s)$ from $l$ to $s$. Note that this sending is periodic but can use any time slot in the time window.
+ \item When $s$ receives this message, it makes a computation to answer $l$.
+ \item Then source $s$ sends a message to $l$ using $R(s,l)$.
+\end{enumerate}
+On source nodes, between the end of computation time and the emission time of the message (given by the $P$-periodic affectation), there is a waiting time. 
+We define by $\omega : r \rightarrow \mathbb{N}$ the waiting time of a route $r$ in the ${\cal R}$-matching considered, i.e. the time during while the
+message is ''sleeping``, waiting to be sent through the network.
+
+
+Source and leave nodes periods have to be the same. Indeed, leave nodes have to receive a message at every period, so source nodes have to send a message at every same period.
+So, we will find two P periodic affactations from the same P in both ways. 
+If the message have to be buffered, we want to do it in souces nodes.
+We define by $\theta$ the computation time required at the source node before sending an answer to it's leave node.
+
+Let's Call $T (r)$ the process time on a route $r$: $$ T (r) = 2\lambda (r) + \omega (r) + \theta(r)$$
+
+
+ 
+ We consider 3 main problems:\\
 
 \noindent {\bf Problem  Periodic Routes Assignment (PRA)} 
 
-\noindent {\bf Input:} $G=(V,A)$, $S$, $L$, a routing $\cal R$ and a ${\cal R}$-schedule $\rho$ of $S$ in $L$, integers $P$ and $\delta$.
+\noindent {\bf Input:} matched graph $N$, integer $P$.
 
-\noindent {\bf Question:} does there exist a $P$-periodic affectation of $\rho$ ?
+\noindent {\bf Question:} does there exist a $P$-periodic affectation of $N$ ?
 
 \noindent {\bf Optimisation goal:} minimizing $P$.\\
+
+This problem is our basic problem. We need to find the offset for each routes such that there is no collision between the signals emitted by sources at any nodes in the graph.\\
 
 \noindent {\bf Problem  Network Periodic Assignment (NPA)} 
 
-\noindent {\bf Input:} $G=(V,A)$, $S$, $L$,  a routing $\cal R$, integers $P$, $\delta$
+\noindent {\bf Input:} $G=(V,A)$, $S$, $L$,  a routing $\cal R$, integers $P$
 
-\noindent {\bf Question:} does there exist  a ${\cal R}$-schedule $\rho$ of $S$ in $L$ such that there exists a $P$-periodic affectation $\cal M$ of $\rho$ ?
+\noindent {\bf Question:} does there exist  a ${\cal R}$-matching $\rho$ of $S$ in $L$ such that there exists a $P$-periodic affectation $\cal M$ of $\rho$ ?
 
 \noindent {\bf Optimisation goal:} minimizing $P$.\\
 
-Later we might also consider a version of NPA with two additional constraints:
+This problem is the same problem than PRA in which is added the liberty to find the $R-matching$.
 
-\noindent {\bf Problem  Network Periodic Assignment with Constraints (NPAC)} 
+In our network application $\theta$ is set to 2,6ms, the period P is 1ms and T(r) must be less or equal than 3ms.
 
-\noindent {\bf Input:} $G=(V,A)$, $S$, $L$,  a routing $\cal R$, integers $P$, $\delta$, $K$ and $M$.
+So P and the $R-matching$ are given, we do not need to minimize P and P is great enough to carry the dataload.
+The real network problem is the following:\\
 
-\noindent {\bf Question:} does there exist  a ${\cal R}$- schedule $\rho$ of $S$ in $L$ such that
-\begin{itemize}
-\item there exists a $P$-periodic affectation $\cal M$ of $\rho$
-\item $\forall r_j \in \cal R$, $\lambda(r_j) \leq K$
-\item at most $M$ routes in $\rho$ can originate from the same source in $S$
-\end{itemize}
-\noindent {\bf Optimisation goal:} minimizing $P$\\
+\noindent {\bf Problem Periodic Assignment for Low Latency(PALL)} 
 
-\todo{Est-ce qu'un objectif raisonnable, plutôt que le problème précédent ne serait pas de minimiser la somme du plus long chemin
-plus P ? On peut imaginer des objectifs encore plus précis si on tiens compte du temps de traitement et de l'aller-retour.
-On pourrait aussi mettre des ressources sur chaque source et avoir un M différent pour chaque source.}
+\noindent {\bf Input:} matched graphs $N$,$N^r$, integer $P$, $ T_{max}$, $\theta$.
 
-\todo{Est-ce qu'on peut comparer ce problème au jeu spacechem ? peut-être queque'un a déjà fait une preuve sur ce jeu.}
+\noindent {\bf Question:} does there exist a $P$-periodic affectation $\cal M_1$ of $N$ and A $P$-periodic affectation $\cal M_2$ of $N^r$, considering $M_1$ and $\theta$,
+such that $\forall r \in \rho T(r) \le T_{max}$.
+
+\noindent {\bf Optimisation goal 1:} minimizing $\sum_{r \in \rho}  T(r)$.\\
+
+By minimizing the sum of all the routes, we allow a better global Quality of Service threw the network.
+
+\noindent {\bf Optimisation goal 2:} minimizing max(T(r)).\\
+
+We have to find a $P$-periodic affectation of $G^r$ (solving PRA), then to find the $P$-periodic affectation of $G$ considering the computation time. 
+The offsets of this second P-periodic affectation will correspond to waiting times.
 
 \section{Reservation and PRA}
 
@@ -164,9 +248,9 @@ in the time window but which are arbitrarily close. This could be a justificatio
 \section{Complexity results}
 
 
-The \emph{conflict depth} of a $\cal R$-schedule is the maximum number of arcs in a route which are 
+The \emph{conflict depth} of a $\cal R$-matching is the maximum number of arcs in a route which are 
 shared with other routes. In other words it is the maximal number of potential conflicts along one route. 
-The \emph{load} of a $\cal R$-schedule is the maximal number of routes which share the same edge.
+The \emph{load} of a $\cal R$-matching is the maximal number of routes which share the same edge.
 It is clear that a $P$-peridodic affectation must satisfy that $P$ is larger or equal to the load.
 
 We give two alternate proofs that PRA is $\NP$-complete.
@@ -176,10 +260,10 @@ In all this section the reservation \textbf{$\delta$ is assumed to be $0$}.
 
 \todo{ajouter des références à des problèmes de réseau similaires et de transport en commun qui sont également NP complets.}
 
-We define two characteristic graphs associated to a $\cal R$-schedule.
+We define two characteristic graphs associated to a $\cal R$-matching.
 
 \begin{definition}[Edge Conflict Graph]
-  The Edge Conflict Graph (ECG) of a \rschedule of a digraph $G=(V,A)$ is the graph $G'=(V',E')$ such that 
+  The Edge Conflict Graph (ECG) of a \rmatching of a digraph $G=(V,A)$ is the graph $G'=(V',E')$ such that 
   a vertex of $V'$ is an arc of $A$ with a load greater than one. There is an edge between two vertices of $V'$
   if and only if there is a route which contains the two arcs of $A$ corresponding to the two vertices.
   
@@ -189,8 +273,8 @@ We define two characteristic graphs associated to a $\cal R$-schedule.
 
 
 \begin{definition}[Route Conflict Graph]
-The Route Conflict Graph (RCG) of a \rschedule of a graph $G=(V,E)$ is the graph $G'=(V',E')$ where 
-the vertices of $V'$ are the routes of the  \rschedule and there is an edges between two vertices
+The Route Conflict Graph (RCG) of a \rmatching of a graph $G=(V,E)$ is the graph $G'=(V',E')$ where 
+the vertices of $V'$ are the routes of the  \rmatching and there is an edges between two vertices
 corresponding to two routes if and only if they share an edge.
 
 We fix an arbitrary ordering on the elements of $V'=\{v_1,\dots,v_n\}$.
@@ -288,7 +372,7 @@ Moreover, a solution of  load plus one can be built in polynomial time.
 % This problem has been shown to be NP-complete \cite{}. The main difference with problem PRA is the optimization problems , that is, $\delta$ is an input and $P$ has to be minimized in PRA whether in PMS $P$ is an input and maximizing $\delta$ is the objective.\\
 
 As a corollary of the previous proposition, NPA is $\NP$-hard since checking a potential feasible solution for NPA implies to solve PRA.
-
+Also, PALL is NP-Hard because solving it implies to slove PRA in both ways with a given P (1ms).
 
 \todo{ we may try to find where those problems are in the polynomial hierarchy, in the second level ?}
 
@@ -304,8 +388,8 @@ $P$-periodic affectation must satisfy.
  The conflict system is the set of inequations $ x_i \neq x_j + w(e)$ for $i < j$ and $e=(v_i,v_j)$ edge of $G$.
 \end{definition}
 
-It is simple to see that the conflict system of a \rschedule has a solution modulo $P$ if and only if 
-the \rschedule has a $P$-periodic affectation. This kind of system can be solved by SAT solver or CSP solver and those two methods will be investigated on practical instances.
+It is simple to see that the conflict system of a \rmatching has a solution modulo $P$ if and only if 
+the \rmatching has a $P$-periodic affectation. This kind of system can be solved by SAT solver or CSP solver and those two methods will be investigated on practical instances.
 \todo{Donner la formulation pour ces solvers et donner le résultat d'expérience dans une partie indépendante. 
 Les comparer avec un solveur de notre cru avec quelques heuristiques simples.}
 
@@ -391,7 +475,7 @@ After proving the complexity of problem PRA and NPA in the general case, we will
 As a consequence, for each node $u$ in $V$, the subgraph of $G$ induced by all the routes from $u$ to all the other nodes in $G$ is a tree. In the following, we only deal with coherent routing functions.
 
 \subsection{The disjoint paths PRA problem : DP-PRA}
-In this restriction of PRA, we are given a \rschedule with the following properties:
+In this restriction of PRA, we are given a \rmatching with the following properties:
 \begin{enumerate}
 \item There are no common arcs for routes originating from different sources
 \item The routing $\cal R$ is coherent 
@@ -419,18 +503,18 @@ In this subsection we study the NPA problem where in the graph induced by the th
 Problem DP-NPA can be solved in linear time according to the size of $A$.
 \end{proposition}
 
-The minimum size of $P$ is obtained by minimizing the highest load of an arc $a_0^j$ for any route $r^j \in \rho$. As all source vertices in $S$ are connected to all sources vertices in $L$ by a route in $\cal R$, a simple load balancing allows to obtain a maximum load equal to  $max_{load} = \lceil \frac{\cal L}{|S|} \rceil$. Once the \rschedule is computed, we face the DP-PNA problem and the minimum value of $P$ is thus equal to $max_{load} \times (\delta + 1)$.
+The minimum size of $P$ is obtained by minimizing the highest load of an arc $a_0^j$ for any route $r^j \in \rho$. As all source vertices in $S$ are connected to all sources vertices in $L$ by a route in $\cal R$, a simple load balancing allows to obtain a maximum load equal to  $max_{load} = \lceil \frac{\cal L}{|S|} \rceil$. Once the \rmatching is computed, we face the DP-PNA problem and the minimum value of $P$ is thus equal to $max_{load} \times (\delta + 1)$.
  
 \subsection{The disjoint paths NPAC-Problem : DP-NPAC}
 
-In this problem, there is a delay constraint that must be satisfied by a \rschedule. This means that we must remove the routes in $r' \in \cal R$ where $\lambda(r') > K$.
+In this problem, there is a delay constraint that must be satisfied by a \rmatching. This means that we must remove the routes in $r' \in \cal R$ where $\lambda(r') > K$.
 
 \begin{proposition}
 \label{DP-NPAC}
 Problem DP-NPAC can be solved in polynomial time according to the size of $V$.
 \end{proposition}
 
-In a similar way to problem DP-PRA, the arcs with the highest load can only be the arcs $a_0^j$ sharing a common origin $u_i \in S$. In order to minimize the size of the period $P$, we have to find a \rschedule such that the maximum number $k_i$ of routes originating from a same source $u_i \in S$ is minimal. Having found this minimal value $k$, we face a problem equivalent to the DP-PRA problem.
+In a similar way to problem DP-PRA, the arcs with the highest load can only be the arcs $a_0^j$ sharing a common origin $u_i \in S$. In order to minimize the size of the period $P$, we have to find a \rmatching such that the maximum number $k_i$ of routes originating from a same source $u_i \in S$ is minimal. Having found this minimal value $k$, we face a problem equivalent to the DP-PRA problem.
 
 In order to find a matching of vertices in $S$ with vertices in $L$ such that the maximum number of vertices in $L$ assigned to a vertex $s_i \in S$ is inferior or equal to $k$, we will transform our problem in a flow problem.
 
@@ -438,14 +522,14 @@ In order to find a matching of vertices in $S$ with vertices in $L$ such that th
 
 Let us consider an instance $I= (G=(V,A), S, L, \cal R, P, \delta, K$ and $M)$ of NPA where the routes in $\cal R$ are only those that respect the delay constraint $K$. We first construct a complete bipartite graph $G'=(V',A')$ where $V'$ is made of two sets of vertices : vertices $V'_1$ corresponding to $S$ and $V'_2$ corresponding to $ L$. $A'$ is made of all possible arcs from vertices $v'_1 \in V'_1$ to vertices $v'_2 \in V'_2$, with a capacity 1. We then add to $V'$ a source node $S'$ and a sink node $T'$. Finally we add to $A'$ all the arcs from $S'$ to each vertex $v'_1 \in V'_1$, with a capacity $k$  and all the arcs from each vertex $v'_2 \in V'_2$ to $T'$, with a capacity 1, where there is a route $\cal R$$(v'_1, v'_2)$. We have thus obtained a flow graph $G'$ whose size is polynomial in regards to the size of $G$. We will now compute the maximum flow in $G'$ in order to determine if its size is at least $\cal L$, in order to be able to connect all the leaves.
 
-We can compute the size of a maximum flow in $G'$ in a polynomial time using a generic flow algorithm as Ford-Fulkerson (it will terminate as arcs capacity are rational numbers). In order to minimize the objective $k$, we can begin with a value $k$ = 1 and use a dichotomic approach to find the minimal value of $k$ for which a maximal flow of size $\cal L$ exists in $G'$. The maximum value of $k$ is $M$. If $k = M$ and the maximum flow value in $G' < \cal L$, then there is no valid \rschedule of $S$ in $L$.
+We can compute the size of a maximum flow in $G'$ in a polynomial time using a generic flow algorithm as Ford-Fulkerson (it will terminate as arcs capacity are rational numbers). In order to minimize the objective $k$, we can begin with a value $k$ = 1 and use a dichotomic approach to find the minimal value of $k$ for which a maximal flow of size $\cal L$ exists in $G'$. The maximum value of $k$ is $M$. If $k = M$ and the maximum flow value in $G' < \cal L$, then there is no valid \rmatching of $S$ in $L$.
 
-The complexity of minimizing $k$ is thus $0(m^2n \times log_2 n)$ where $m = |A|$ and $n=|V|$. We obtain in the end a \rschedule minimizing the maximal number of routes originating from a single source $u_s \in S$ and we are faced with the DP-PRA problem for this instance.
+The complexity of minimizing $k$ is thus $0(m^2n \times log_2 n)$ where $m = |A|$ and $n=|V|$. We obtain in the end a \rmatching minimizing the maximal number of routes originating from a single source $u_s \in S$ and we are faced with the DP-PRA problem for this instance.
 
 
 \begin{figure}[!t]
 \centering
-\includegraphics[scale=0.3]{DP-NPA.pdf}
+includegraphics[scale=0.3]{DP-NPA.pdf}
 \caption{Reduction of DPA-NPA into a flow problem}
 \label{Modelling of DP-NPA Problem}
 \end{figure}
@@ -453,12 +537,12 @@ The complexity of minimizing $k$ is thus $0(m^2n \times log_2 n)$ where $m = |A|
 
 \subsection{Intersecting paths problems for PRA}
 
-Next we study more general cases of PRA where routes originating from different sources can intersect. Let us consider an instance $I= (G, S, L, \cal R, \rho, P, \delta)$ of PRA. We first define the collision induced graph of a \rschedule in $G=(V,A)$.
+Next we study more general cases of PRA where routes originating from different sources can intersect. Let us consider an instance $I= (G, S, L, \cal R, \rho, P, \delta)$ of PRA. We first define the collision induced graph of a \rmatching in $G=(V,A)$.
 
 
 \subsubsection{The 1-arc collision PRA problem}
 
-In this restriction of PRA, we are given a \rschedule with the following properties:
+In this restriction of PRA, we are given a \rmatching with the following properties:
 \begin{enumerate}
 \item There is a bottleneck : a single arc $a_b=(u_b, u_b')$ for which $load(a_b) \geq 1$ if the routes in $\rho(a_b)$ come from different sources in $S$
 \item The routing $\cal R$ is coherent 
