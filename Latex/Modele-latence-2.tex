@@ -43,43 +43,46 @@
 \subsection{Context}
 Mobile networks are controled by many radio stations, composed of 2 major parts : 
 \begin{enumerate}
- \item Base Band Units (BBU) : are resonsible for computing the signals, and communicate with the core network.
+ \item Base Band Units (BBU) : are responsible for computing the signals, and communicate with the core network.
  \item Remote Radio Head (RRH) : are the antennas and have only to communicate with the mobile devices.
 \end{enumerate}
 The part of the network between BBU and the core network is called backhaul.
 
-The operators are searching for a way to dissociate BBU from RRH, and regroup many BBU in some data centers, that would allow easyer updates and 
+The operators are searching for a way to dissociate BBU from RRH, and regroup many BBU in some data centers, that would allow easier updates and 
 maintenance.
-Nevertheless such a splitting enforce hard throughput and latency constraints on the communication network between BBU and RRH. This part of the network is called fronthaul.
+Nevertheless such a splitting enforces hard throughput and latency constraints on the communication network between BBU and RRH. This part of the network is called fronthaul.
 
 In this article, we will work on latency constraints in fronthaul.
 
 \subsection{Definitions}
 We consider a directed graph $G=(V,A)$ with two non intersecting subsets of vertices: a subset $L$ of nodes which are called \emph{leaves} and a subset $S$ of nodes which are called \emph{sources}.  
+The indegree of the node in $S$ is equal to 0, and the outdegree of the node in $L$ is also equal to 0. 
 We denote by ${\cal L}$ the cardinal of $L$. The digraph $G$ models the network, $S$ the possible BUU and $L$ the set of RRH.
-Each arc  $(u,v)$ in $A$ is caracterised by an integer delay $Dl(u,v) \geq 1$ representing the time taken by the signal to go from $u$ to $v$
+Each arc  $(u,v)$ in $A$ is has an integer weight $Dl(u,v) \geq 1$ representing the time taken by the signal to go from $u$ to $v$
 by using this arc.  
 
-We'll consider $G=(V,A)$ and $G^r=(V,A^r)$ wherein the set of vertices is the same and $A^r$ represents the edges of $A$ directed in the other way. 
-The delay $Dl(u,v)$ represents the weight of the arcs between $u$ and $v$.\newline
+We consider $G=(V,A)$ and $G^r=(V,A^r)$ wherein the set of vertices is the same and $A^r$ represents the edges of $A$ directed in the other way. 
+\newline
 
 \begin{tabular}{cc}
 \includegraphics[scale=0.8]{Fig2.pdf} & \includegraphics[scale=0.8]{Fig3.pdf}\\
  $G=(V,A)$ & $G^r=(V,A^r)$\\
 \end{tabular}\newline
 Note that there is a special case in which the graph may have oriented cycles (optical ring topologie),
-otherwise, there is no oriented cycles and all the properties are availables.
+otherwise, there is no oriented cycles.
 
 A route $r$ is a sequence of arcs $a_0, \ldots , a_{n-1}$, with $a_i=(u_i,u_{i+1}) \in A$ such that $u_0 \in S$ and $u_n \in L$.
 The {\em latency} of a vertex $u_i$ in $r$, with $i \geq 1$, is defined by $$\lambda(u_i,r)= \sum\limits_{0 \leq k <i} Dl(a_k)$$ We also define $\lambda(u_0,r)=0$.
 The latency of the route $r$ is defined by $\lambda (r)= \lambda (u_n,r)$. In graph theory, a route is a simple path in the graph, and its latency is its weight. 
-Consider that the term ``route $r$`` denote the route itself but also its source node $u_0$ in $S$ an its leave node $u_n$ in $L$.
 
-A {\bf routing function} ${\cal R}$ is an application associating a route ${\cal R}(s,l)$ to each couple $(s,l) \in S \times L$ in $G$. 
-A {\bf ${\cal R}$-matching} of $S$ in $L=\{l_0, \ldots , l_{{\cal L}-1}\}$ is a set of ${\cal L}$ routes $\rho =\{r_0, \ldots ,r_{{\cal L}-1}\}$.
-It is a bijection of $S$ in $L$.
-We assume that we have as many source nodes node as we have leaves. This means that each source or leave node belongs to exactly one route in $\rho$.
-Moreover $\rho$ satisfies the \emph{coherent routing} property: the intersection of two routes must be a path.
+
+A {\bf routing function} ${\cal R}$ is an application associating a route ${\cal R}(s,l)$ to each couple $(s,l) \in S \times L$ in $G$.
+Moreover ${\cal R}$ satisfies the \emph{coherent routing} property: the intersection of two routes must be a path.
+
+For simplicity, we assume that we have as many source nodes as we have leaves (${\cal S} = {\cal L})$.
+A {\bf ${\cal R}$-matching} is a bijection $\rho :S\rightarrow L$ which associates to each $s_i \in \{s_0,...,s_{{\cal S}-1}\}$ a $l_i \in \{l_0,...,l_{{\cal L}-1}\}$
+using a route in $\{r_0, \ldots ,r_{{\cal L}-1}\}$.
+This means that each route in $\rho$ is defined by its source node and its leave node.
 
 %The ${\cal R}$-matching $\rho$ defines a subgraph of $G$ wich is the union of all paths in $\rho$ that we call the \emph{routing graph} and that we denote by $G_{\rho}$. 
 
@@ -88,17 +91,17 @@ Moreover $\rho$ satisfies the \emph{coherent routing} property: the intersection
 For each arc $(u,v) \in A$, we denote by ${\rho}(u,v)$ the subset of routes of $\rho$  containing $(u,v)$.
 We define the load of an arc $(u,v)$ as the number of routes that use this arc thus : $load(u,v) = |\rho(u,v)|$.
 
-The quintuplet $N=\{G,S,L,R,\rho\}$ defines a \matchedgraph. We call $N^r$ the quintuplet $\{G^r,S,L,R,\rho^r\}$, 
+The quintuplet $N=(G,S,L,R,\rho)$ defines a \matchedgraph. We call $N^r$ the quintuplet $(G^r,S,L,R,\rho^r)$, 
 where $\rho^r$ is the \rmatching obtained using the same routes, with inverted arcs.
 
 Let $P>0$ be an integer called {\em period}. 
-A $P$-periodic affectation of N, a matched graph consists in a set  ${\cal M}=\{m_0, \ldots ,m_{{\cal L}-1}\}$ of ${\cal L}$ integers that we call \emph{offset}. 
+A $P$-periodic affectation of N, a matched graph consists in a set  ${\cal M}=(m_0, \ldots ,m_{{\cal L}-1})$ of ${\cal L}$ integers that we call \emph{offset}. 
 Each time window is divided in $P$ slots and the number $m_i$ represents the slot number used by the route $r_i$ at its source.
 We define the time slot used by a route $r_i$ at any vertex $v$ of the route by $$t(v,r_i) = m_i+\lambda(u,r_i)) \mod P.$$
 A $P$-periodic affectation must have no {\em collision} between two routes in $\rho$, that is $\forall r_i, r_j \in \rho, i \ne j$, two routes intersecting in u,
 and containing the same arc $(u,v)$, we have $$t(u,r_i)\ne t(u,r_j) .$$
 
-We define by $\alpha(u,r_i,r_j) = | \lambda(u,r_i)-\lambda(u,r_j)|$. This item will be useful later, when we'll introduce Route Conflict Graphs.
+We define $\alpha(u,r_i,r_j) = | \lambda(u,r_i)-\lambda(u,r_j)|$. This will be useful later, when we'll introduce route conflict graphs.
  
 
 %Giving a $P$-periodic affectation $\cal M$ of $\rho$, for any route $r^i \in \rho$, we call $\cal M$-delay of  $r^i$ the integer $d_{\cal M}(r^i)=\lambda(r^i)+m_i$. We also call {\bf $\cal M$-delay} of ${\cal R}$ the maximum $\cal M$-delay of a route in $\rho$.\\
@@ -130,7 +133,7 @@ are equal to one thus we have a $2$-periodic affectation.
 
 \subsection{Real Network Topologies}
 
-To illustrate we consider an basic network topologie, composed of some base stations, represented by source nodes $S$, all connected to the same switch,
+To illustrate we consider a basic network topology, composed of some base stations, represented by source nodes $S$, all connected to the same switch,
 which will be a vertex, connected himself to another vertex, corresponding to a switch, connected to some leave nodes $L$ representing the Antennas.
 
 \begin{center}
@@ -143,14 +146,14 @@ Example of topologie 1.
 
 \subsection{Fronthaul networks}
 
-The application we address here by studying the problems defined above is the following. Consider fronthaul network in which source nodes in $S$ represent computing units in data centers,
+The application we address here by studying the problems defined above is the following. Consider a fronthaul network in which source nodes in $S$ represent computing units in data centers,
 each one able to do a remote process for base stations modeled by leaves node in $L$. Consider a ${\cal R}$-matching $\rho$ of $S$ in $L$. Consider a leave $l$, its dedicated source node $s$
-and $R(l,s)$ the route from $l$ to $s$ in $R$. We consider a $P$-periodic affectation of $\rho$, and also another $P$-periodic affectation of $\rho^{r}$, the $R$-matching
-obtained by considering $G^r$, using the same routes in opposite direction. The periodic process is then the following one:
+and $R(l,s)$ the route from $l$ to $s$ in $R$. We consider a $P$-periodic affectation of N, and also another $P$-periodic affectation of N$^{r}$.
+The periodic process is then the following one:
 \begin{enumerate}
- \item During each period of duration $P$, leave $l$ sends a message to $s$, using $R(l,s)$ from $l$ to $s$. Note that this sending is periodic but can use any time slot in the time window.
- \item When $s$ receives this message, it makes a computation to answer $l$.
- \item Then source $s$ sends a message to $l$ using $R(s,l)$.
+ \item During each period of duration $P$, leaves $l$ send a message to their dedicated sources $s$, using their dedicated routes and considering the $P$-periodic affectation of N. 
+ \item When $s$ receives this message, it makes a computation to answer $l$. this computation time is set.
+ \item Then sources $s$ sends a message to their leaves $l$ considering the $P$-periodic affectation of N$^{r}$.
 \end{enumerate}
 On source nodes, between the end of computation time and the emission time of the message (given by the $P$-periodic affectation), there is a waiting time. 
 We define by $\omega : r \rightarrow \mathbb{N}$ the waiting time of a route $r$ in the ${\cal R}$-matching considered, i.e. the time during while the
@@ -158,11 +161,11 @@ message is ''sleeping``, waiting to be sent through the network.
 
 
 Source and leave nodes periods have to be the same. Indeed, leave nodes have to receive a message at every period, so source nodes have to send a message at every same period.
-So, we will find two P periodic affactations from the same P in both ways. 
+So, we will find two P periodic affectations from the same P in both ways. 
 If the message have to be buffered, we want to do it in souces nodes.
 We define by $\theta$ the computation time required at the source node before sending an answer to it's leave node.
 
-Let's Call $T (r)$ the process time on a route $r$: $$ T (r) = 2\lambda (r) + \omega (r) + \theta(r)$$
+Let us call $T (r)$ the process time on a route $r$: $$ T (r) = 2\lambda (r) + \omega (r) + \theta(r)$$
 
 
  
@@ -190,24 +193,27 @@ This problem is the same problem than PRA in which is added the liberty to find 
 
 In our network application $\theta$ is set to 2,6ms, the period P is 1ms and T(r) must be less or equal than 3ms.
 
-So P and the $R-matching$ are given, we do not need to minimize P and P is great enough to carry the dataload.
+So P and the $R-matching$ are given, we do not need to minimize P and P is generally great enough to carry the dataload.
+Therefore we want to optimize the time taken by the message to do the two way trip.
+
+A {\bf 2-way-trip affectation} of N is a $P$-periodic affectation of N$^r$ (solving PRA), then a second $P$-periodic affectation of N considering the computation time $\theta$. 
+The offsets of this second P-periodic affectation will correspond to waiting times $\omega$.
+
 The real network problem is the following:\\
 
 \noindent {\bf Problem Periodic Assignment for Low Latency(PALL)} 
 
-\noindent {\bf Input:} matched graphs $N$,$N^r$, integer $P$, $ T_{max}$, $\theta$.
+\noindent {\bf Input:} matched graphs $N$, integer $P$, $ T_{max}$, $\theta$.
 
-\noindent {\bf Question:} does there exist a $P$-periodic affectation $\cal M_1$ of $N$ and A $P$-periodic affectation $\cal M_2$ of $N^r$, considering $M_1$ and $\theta$,
-such that $\forall r \in \rho T(r) \le T_{max}$.
+\noindent {\bf Question:} does there exist a 2-P-period affectation of $N$, such that $\forall r \in \rho$, $T(r) \le T_{max}$.
 
-\noindent {\bf Optimisation goal 1:} minimizing $\sum_{r \in \rho}  T(r)$.\\
+\noindent {\bf Optimization goal 1:} minimizing $\sum_{r \in \rho}  T(r)$.\\
 
-By minimizing the sum of all the routes, we allow a better global Quality of Service threw the network.
+By minimizing the sum of all the routes, we allow a better global Quality of Service trough the network.
 
-\noindent {\bf Optimisation goal 2:} minimizing max(T(r)).\\
+\noindent {\bf Optimization goal 2:} minimizing max(T(r)).\\
 
-We have to find a $P$-periodic affectation of $G^r$ (solving PRA), then to find the $P$-periodic affectation of $G$ considering the computation time. 
-The offsets of this second P-periodic affectation will correspond to waiting times.
+
 
 \section{Reservation and PRA}
 
