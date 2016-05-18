@@ -196,8 +196,10 @@ In our network application $\theta$ is set to 2,6ms, the period P is 1ms and T(r
 So P and the $R-matching$ are given, we do not need to minimize P and P is generally great enough to carry the dataload.
 Therefore we want to optimize the time taken by the message to do the two way trip.
 
-A {\bf 2-way-trip affectation} of N is a $P$-periodic affectation of N$^r$ (solving PRA), then a second $P$-periodic affectation of N considering the computation time $\theta$. 
-The offsets of this second P-periodic affectation will correspond to waiting times $\omega$.
+A {\bf 2-way-trip affectation} $X = (x_0,...,x_{{\cal L}-1})$ of N is a $P$-periodic affectation ${\cal M} = (m_0,...,m_{{\cal L}-1})$ of N$^r$, 
+then a second $P$-periodic affectation ${\Omega} = (\omega_0,...,\omega_{{\cal L}-1}) $ of N considering the computation time $\theta$, such that, $\forall i \in [0,...,{\cal L}-1]$ :
+$$ x_i = ( m_i + \lambda(r_i) + \theta + \omega_i ) mod P .$$
+Note that i designe the route and that the second $P$-periodic affectation ${\Omega}$ correspond to the waiting times of routes : $\omega_i = \omega(r_i)$.
 
 The real network problem is the following:\\
 
@@ -215,40 +217,60 @@ By minimizing the sum of all the routes, we allow a better global Quality of Ser
 
 
 
-\section{Reservation and PRA}
+\section{Waiting time usefulness}
 
+Here, we study the impact of the waiting time parameter. In à first time, we could consider our model like a more complex graph in wich the two way trip
+process is a single trip of this new graph.
 
-Here we study the impact of the parameter $\delta$ (the reservation) in the PRA problem. 
-Ideally we would like to get rid of it and find optimal solutions for any $\delta>O$
-from a solution with $\delta = 0$ for the same graph. 
-The most natural idea is to transform each slot in a time window into $(\delta+1)$ slots to each and we multiply all offsets by $(\delta+1)$ 
-to get a periodic affectation of period multiplied by $(\delta+1)$. Conversely, we could take any solution for $\delta>O$ and divide the offsets and the period by 
-$\delta +1$. Both ideas do not work because when we change the period the delays modulo the new period may change and not all in the same way.
+\begin{center}
+ 
+\includegraphics[scale=0.7]{Fig9.pdf}\\
 
-\todo{Exemple ou ça marche bien: la clique }
+\end{center}
 
-\todo{Donner des exemples de pourquoi ça ne marche pas}
+This model involve to set all the waiting times to 0, and to find only one $P$-periodic affectation, that choose the first offsets which represents the
+emission time of each routes. So, if all the waiting times are equal to 0, and we can find this $P$-periodic affectation, this means that only the delay
+$\Lambda(r)$ of each routes and the computation times $\theta$ will cost in our travel times. Since we can not minimize it (unless we use more powerful 
+equipment), our problem would be sovled, and equivalent to PRA.
 
-On the other hand, while modelling the problem, we arbitrarily chose what is of size one, thus we can always 
-chose it so that it takes into account the reservation (we should validate this remark with Olivier). The problem is the 
-fractional values we get for the delays (already for $\delta =0$). By rounding them we could get transmission which seem at distance $1$ 
-in the time window but which are arbitrarily close. This could be a justification to always have $\delta =1$.  
+Note that such a model does not respect the coehrent routing property. Therefore, we can not consider this model but the question is still : can we
+find a solution without waiting times.
 
+\begin{lemma}
+ Solving PRA in such a graph significatively increase the period P.
+\end{lemma}
 
+\begin{proof}
+ 
+The folowing example shows us that you can find a P-periodic affectation such that there is no waiting time, but it needs a greater time window P than a
+solution with waiting times.
 
-% 
-% \begin{lemma}
-%  Let $G=(V,A)$, $S$, $L$, a routing $\cal R$ and a ${\cal R}$-schedule $\rho$ of $S$ in $L$. If there is a $P$-periodic affectation 
-%  for $PRA$ on this input with $\delta =0$ then for any $\delta >0$ we have a $(\delta+1)P$-periodic affectation.
-% \end{lemma}
-% \begin{proof}
-%  Let  $\{m_0, \ldots ,m_{{\cal L}-1}\}$solution for $\delta =0$
-% \end{proof}
+Consider the graph : 
+\begin{center}
+ 
+\includegraphics[scale=0.7]{Fig10.pdf}
+\end{center}
 
+The middle link can be represented without weight, because it is common to all the routes, so it can be simplified in calculations. 
+Likewise, we do not consider $\theta$, the calculation time.
 
+We consider messages of 10 slots. If you search for a P-periodic affectation, wihtout using waiting times, u have 2 choices : 
+\begin{itemize}
+ \item l1 sends before l2 : the message from l2 will leave A after 11 slots. Let us call X the minimal time slot in wich l2 can emmit. 
+ To avoid colisions with the message from l1 in a , $X\ge1$.
+ In the other way, the message from l1 will use B from time slot 21 to 21+10. So, even if $X = 1$, message from l2 uses B in the sames time slots
+ than message from l1 (the message crosses B during time slots 12 to 12+10). So $X+12 \ge 21+10 \rightarrow x\ge 19$. Then if we take $X=19$, our time
+ windows is at least 19 slots.
+ \item l2 sends before l1: at the first node A, l2 will have to wait 10+10 time slots to send his message, so the windows will be at lest 20.
+\end{itemize}
 
+If we allow waiting times: there is an easy scheduling using only a 3 time slots windows : 
+Sending message 1 at time 0, message 2 at time 1, so the messages will not cross A in the same time. to be sent back,
+message 2 comes back immediatly and is using B from slots 13 to 23,then message 1 is using B from slots 23 to 33, waiting 2 time slots at s1.
 
-\todo{On devrait mettre ça après le conflict system, car c'est plus simple à comprendre avec ce formalisme je pense.}
+So time windows is $[0,1,2]$ widely smaller than best solution without waiting times.
+
+\end{proof}
 
 
 \section{Complexity results}

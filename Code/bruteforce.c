@@ -215,8 +215,8 @@ int worst_bipartite(int k, int l,int windows){//copie de l'algo précédent avec
 //todo vérifier correction de génération des poids + option pour poids binaire uniquement
 
 int main(){
-  //Graphe g = complete_bipartite(3,6);
-  //affiche_graphe(g);
+  Graphe g = complete_bipartite(3,6);
+  affiche_graphe(g);
   //worst_constraints(g,4);
-  worst_bipartite(4,6,4);
+  //worst_bipartite(4,6,4);
 }
