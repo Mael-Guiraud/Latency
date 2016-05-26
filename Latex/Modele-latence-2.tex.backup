@@ -130,20 +130,6 @@ Therefore if we choose $P$ odd and $l=P+1$, there is no $P$-peridodic affectatio
 are equal to one thus we have a $2$-periodic affectation. 
  
 
-
-\subsection{Real Network Topologies}
-
-To illustrate we consider a basic network topology, composed of some base stations, represented by source nodes $S$, all connected to the same switch,
-which will be a vertex, connected himself to another vertex, corresponding to a switch, connected to some leave nodes $L$ representing the Antennas.
-
-\begin{center}
- 
-\includegraphics[scale=1]{Fig4.pdf}\\
-Example of topologie 1.
-\end{center}
-
-\todo{ajouter les autres topologies}
-
 \subsection{Fronthaul networks}
 
 The application we address here by studying the problems defined above is the following. Consider a fronthaul network in which source nodes in $S$ represent computing units in data centers,
@@ -165,9 +151,10 @@ So, we will find two P periodic affectations from the same P in both ways.
 If the message have to be buffered, we want to do it in souces nodes.
 We define by $\theta$ the computation time required at the source node before sending an answer to it's leave node.
 
-Let us call $T (r)$ the process time on a route $r$: $$ T (r) = 2\lambda (r) + \omega (r) + \theta(r)$$
+Let us call $T (r)$ the process time on a route $r$: $$ T (r) = 2\lambda (r) + \omega (r) + \theta$$
 
-
+Since $\theta$ is the same on every routes, we can simplify the model by removing this $theta$.Whether we want to consider it, we only have to lengthen all 
+links before source nodes from an integer corresponding to $\theta$. 
  
  We consider 3 main problems:\\
 
@@ -205,11 +192,11 @@ The real network problem is the following:\\
 
 \noindent {\bf Problem Periodic Assignment for Low Latency(PALL)} 
 
-\noindent {\bf Input:} matched graphs $N$, integer $P$, $ T_{max}$, $\theta$.
+\noindent {\bf Input:} matched graphs $N$, integer $P$, $ T_{max}$.
 
 \noindent {\bf Question:} does there exist a 2-way-trip affectation of $N$, such that $\forall r \in \rho$, $T(r) \le T_{max}$.
 
-\noindent {\bf Optimization goal 1:} minimizing $\sum_{r \in \rho}  T(r)$.\\
+\noindent {\bf Optimization goal 1:} minimizing $\sum_{r \in \rho}  T(r)$ (equivalent to minimizing $\sum_{r \in \rho}  \omega(r)$.\\
 
 By minimizing the sum of all the routes, we allow a better global Quality of Service trough the network.
 
@@ -231,18 +218,18 @@ process is a single trip of this new graph.
 This model involve to set all the waiting times to 0, and to find only one $P$-periodic affectation, that choose the first offsets which represents the
 emission time of each routes. So, if all the waiting times are equal to 0, and we can find this $P$-periodic affectation, this means that only the delay
 $\Lambda(r)$ of each routes and the computation times $\theta$ will cost in our travel times. Since we can not minimize it (unless we use more powerful 
-equipment), our problem would be sovled, and equivalent to PRA.
+equipment), our problem would be solved, and equivalent to PRA.
 
-Note that such a model does not respect the coehrent routing property. Therefore, we can not consider this model but the question is still : can we
+Note that such a model does not respect the coherent routing property. Therefore, we can not consider this model but the question is still : can we
 find a solution without waiting times.
 
 \begin{lemma}
- Solving PRA in such a graph significatively increase the period P.
+ There always is a solution to find a scheduling without waiting times, but it significantly increases the time window P. 
 \end{lemma}
 
 \begin{proof}
  
-The folowing example shows us that you can find a P-periodic affectation such that there is no waiting time, but it needs a greater time window P than a
+The following example shows us that you can find a P-periodic affectation such that there is no waiting time, but it needs a greater time window P than a
 solution with waiting times.
 
 Consider the graph : 
@@ -254,20 +241,55 @@ Consider the graph :
 The middle link can be represented without weight, because it is common to all the routes, so it can be simplified in calculations. 
 Likewise, we do not consider $\theta$, the calculation time.
 
-We consider messages of 10 slots. If you search for a P-periodic affectation, wihtout using waiting times, u have 2 choices : 
+We consider messages of 10 slots. If you search for a P-periodic affectation, without using waiting times, u have 2 choices : 
 \begin{itemize}
- \item l1 sends before l2 : the message from l2 will leave A after 11 slots. Let us call X the minimal time slot in wich l2 can emmit. 
- To avoid colisions with the message from l1 in a , $X\ge1$.
+ \item l1 sends before l2 : the message from l2 will leave A after 11 slots. Let us call X the minimal time slot in which l2 can emit. 
+ To avoid collisions with the message from l1 in a , $X\ge1$.
  In the other way, the message from l1 will use B from time slot 21 to 21+10. So, even if $X = 1$, message from l2 uses B in the sames time slots
  than message from l1 (the message crosses B during time slots 12 to 12+10). So $X+12 \ge 21+10 \rightarrow x\ge 19$. Then if we take $X=19$, our time
  windows is at least 19 slots.
  \item l2 sends before l1: at the first node A, l2 will have to wait 10+10 time slots to send his message, so the windows will be at lest 20.
 \end{itemize}
 
+If we allow waiting times: there is an easy scheduling using only a 3 time slots windows : 
+Sending message 1 at time 0, message 2 at time 1, so the messages will not cross A in the same time. to be sent back,
+message 2 comes back immediately and is using B from slots 13 to 23,then message 1 is using B from slots 23 to 33, waiting 2 time slots at s1.
 
+So time windows is $[0,1,2]$ widely smaller than best solution without waiting times.
 
 \end{proof}
+\section{Real Network Topologies}
 
+We consider 3 kinds of topologies corresponding to the different kinds of fronthaul networks: 
+\begin{enumerate}
+ \item Topology 1 : a basic network topology, composed of some base stations, represented by source nodes $S$, all connected to the same switch,
+which will be a vertex, connected himself to another vertex, corresponding to a switch, connected to some leave nodes $L$ representing the Antennas.
+\item Topology 2 : A network containing an optical ring, such that some sources nodes may join it anywhere, not intersecting themselves before the ring,
+and some set of leave nodes are also leaving at any point of the ring.
+\item Topology 3 : A ''random`` network, generated with some realistic properties (number of vertices, degree ...)
+\end{enumerate}
+
+\subsection{Topology 1}
+\begin{center}
+ 
+\includegraphics[scale=1]{Fig4.pdf}\\
+Example of topologie 1.
+\end{center}
+
+In this topology, it seems easy to find a polynomial algorithm to solve PALL problem.In facts, we look at 3 cases :
+\begin{itemize}
+ \item 1: When the weight of the links from source nodes are all equal to 0. This is the closest case to the reality, but also the easier to solve.
+ \item 2: When the weight of the leave nodes links are all equal to 0.
+ \item 3: When all the links have different weights, not equal to 0.
+\end{itemize}
+
+The first case is the easyest to solve. Indeed, it is obvious that if we schedule all messages following eachothers from the one with the longer route,
+to the one with the shortest one, we will obtain an optimal $T_{max}$ : All the message will cross the first switch, not collisioning each others, then 
+they will not be another conflict point between all routes.
+
+This solution is optimal because any message will wait on source nodes, so $\omega(r) = 0$, ^
+
+\todo{ajouter les autres topologies}
 
 \section{Complexity results}
 
