@@ -276,6 +276,42 @@ and some set of leave nodes are also leaving at any point of the ring.
 Example of topologie 1.
 \end{center}
 
+
+In case $2$, one can try to solve a simpler problem, that is it possible to find a two way trip
+with all $w_i = 0$ ? It is alwas possible when the windows $P$ is large enough, therefore the question is to
+find the smallest windows such that it is possible or to determine whether it is possible for a given windows size.
+
+\todo{Ici on peut mettre un exemple qui montre qu'on peut trouver certaines solutions avec des waitings times
+qui donnent des plus petites fenêtres. On peut utiliser l'exemple décrit en rajoutant un très long chemin de manière à ce que les 
+waiting times ne changent pas la taille du plus long two way trip.}
+
+One can prove that if $P$ is small enough with regard to $l$ and $T$, then there is always a two way trip
+with waiting time $0$.
+
+\todo{Éventuellement donner un nom au problème et au two way trip avec temps d'attente 0. DOnner des notations simples pour 
+les paramètres: o_i offsets, a_i temps de trajet aller retour après le lien central ...}
+\todo{Dire que les cas 2 et 3 sont équivalents pour ce problème}
+\todo{Insérer le premier algo avec ordre du plus court au plus long. Mieux expliquer le résultat qui me semble pas bon
+tel qu'il est écrit}
+
+We can also use a greedy algorithm, chosing the offset of each packet in turn so that there is no collision. We must chose an offset $o_i$ for each route $r_i$, so that no two routes have a collision on the central link the two times they use it.  We denote by $[o_i]_P$ the set of times $\{ t \mod P \med o_i \geq t < o_i + T\}$ which are the time used by the route $r_i$ on the central link on its first use. There are no collision if for all $i\neq j$
+ $[o_i]_P \cap [o_j]_P = \emptyset$. Moreover no two routes must have a collision on the way back, hence we must have for all $i\neq j$
+ $[o_i + a_i]_P \cap [o_j + a_j]_P = \emptyset$.
+ 
+ Assume $P \geq 4lT$, the algorithm works as follows. 
+We cut the time windows of size $P$ into $2l$ slots of size $2T$ and we will asign one to each route.
+A different slot is assigned to each route, where the offset is chosen inside the slot so that 
+no collision on the first go in the central link is possible. If the slot chosen for the route $r_i$ is $[cT,(c+2)T]$,
+then we set $o_i \in [cT,cT+1]$ so that $o_i+ a_i = dT$. Assume that the offset of the first $i-1$ routes have been 
+chosen in the previous way so that there is no collision. Since we have $P \geq 4lT$, we have at least $2l-i$ possible choices of offset without collision on the way forth. Each of these choices set a time slot
+of size $T$ on the way back. Since there are $i$ time slots used, and $i \leq l$, we have strictly more than $l$ possible choices and less than $l$ of them are forbidden, therefore there is a choice of offset with no collision. 
+Since the algorithm works for all $i \leq l$, it finds a two way trip with waiting times $0$. 
+
+\todo{On peutfaire mieux que $4lT$, avec une meilleure analyse ça doit juste gagner un tout petit peu, 
+avec un meilleur algo de placement peut-on faire $3lT$ ou même $2LT$ ? Il doit être possible
+de montrer qu'on ne peut pas faire mieux que $2lT$.} 
+
+
 In this topology, it seems easy to find a polynomial algorithm to solve PALL problem.In facts, we look at 3 cases :
 \begin{itemize}
  \item 1: When the weight of the links from source nodes are all equal to 0. This is the closest case to the reality, but also the easier to solve.
@@ -291,7 +327,27 @@ This solution is optimal because the messages will not wait on source nodes, so 
 equal to the physical delay of the longer route, that we can not minimize.\\
 
 The second case seems easy to solve too. By scheduling all messages following each others, but this time sending the shortest route message first.
-This solution involve no collision on sources switch because the first message to come back will be the first message sent.
+This solution involve no collision on sources switch because the first message to come back will be the first message sent, and the second
+message sent can not come back before the first one has completely passed the switch, because his route is longer, and it was sent after.
+Recursively, any message will not conflict each others.
+
+This solution gives us a scheduling without waiting times $\omega(r)$, but need a windows of  $[2d_0+l*T + 2d_{l-1}]$ time slots, where
+$d_0$ is the shortest route, and $d_{l-1}$ the longest one, l is the number of routes and T is the size of the messages.
+
+\todo{schéma, car c'est pas très clair comme ca}\\
+
+The third case is the less easy to solve. We suggest the following heuristic :
+\begin{itemize}
+ \item Send the messages from the longer to the shortest route, following each others.
+ \item Look at the message which can come back first to switch node, and give it the waiting time 0.
+ \item When this message $m_1$ has completely passed the node, look at the messages $m_2$ which can be emit such that $m_2$ gets in the
+ source switch just when $m_1$ is gone,and take the longer one of those eligibles messages.
+\end{itemize}
+
+This heuristic gives us good solutions. 
+
+\todo{optimal souvent car la route la plus longue est a l'offset 0}.
+
 
 \todo{ajouter les autres topologies}
 
