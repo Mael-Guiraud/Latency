@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #include <math.h>
+#include <string.h>
 
 typedef struct vertex{
   int index;
@@ -32,7 +33,7 @@ typedef struct listeroute{
 	struct listeroute * suiv;
 } ListeRoute;
 void affiche_graphe(Graphe g);
-void creationfichier(Graphe g,char * nom);
+void creationfichierGraph(Graphe g,char * nom);
 long int rand_entier(int n);
 Graphe topologie1(int sources, int leaves, int mode);
 int distance(Route r, int v);
@@ -49,5 +50,25 @@ int tMax(Graphe g,TwoWayTrip t);
 int lower(int * tab,int taille);
 int longerOfeEligible(int * Dl, int * lambda, int * arrivee,int offset, int taille);
 void simulation();
-void ecrire_fichier(Graphe g);
+void ecrire_fichierGraph(Graphe g);
 void resultats();
+void bruteforce(int * tab, int * dispo,int * offsets, int taille, int nb_dispo, int budget, int offset, int P);
+int factorielle(int a);
+void trouver_mieux_par_bruteforce(Graphe g, int tmax);
+int decaler_a(int a);
+TwoWayTrip algo_yann(Graphe g, int P);
+int taille_fenetre(int * tab, int taille);
+int indiceTMax(Graphe g,TwoWayTrip t);
+void tests();
+void creationfichierResultats(int i, int tmax,int window,char * nom);
+int max(int a, int b);
+TwoWayTrip shortest_to_longest(Graphe g, int P);
+void ecrire_bornes(int l, int t);
+TwoWayTrip algo_bruteforce(int P);
+int i_dispo(int * tab, int taille, int indice);
+int * cpy_tab(int * tab1, int* tab2, int taille);
+int test_collisions(int * tab, int taille);
+
+
+
+

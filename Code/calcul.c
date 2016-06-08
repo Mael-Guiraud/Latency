@@ -9,8 +9,9 @@ long int rand_entier(int n){
 //renvoie la distance du début de la route jusqu'au sommet numero v
 int distance(Route r, int v)
 {
-	if(v==-1)
-		return -1;
+	//petit correctif
+	if(v == r.route_lenght)
+		v--;
 	int i,j;
 	int sum=0;
 	for(i=v;i>0;i--)
@@ -72,7 +73,7 @@ int greater(int * tab,int taille)
 	}
 	return indice_max;
 }
-//Retourne le min d'un tableau d'int
+//Retourne l'indice du min d'un tableau d'int
 int lower(int * tab,int taille)
 {
 	int i;
@@ -101,15 +102,29 @@ int full(int * tab, int taille)
 	}
 	return ack;
 }
+//return factorielle a
+int factorielle(int a)
+{
+	if(a==1)
+		return a;
+	else
+		return (a*factorielle(a-1));
+}
 void affichetab(int* tab, int taille)
 {
-	printf("TABLEAU de taille %d\n",taille);
+	//printf("TABLEAU de taille %d\n",taille);
 	int i;
 	for(i=0;i<taille;i++)
 	{
 		printf("%d ",tab[i]);
 	}
 	printf("\n");
+}
+int max(int a, int b)
+{
+	if(a>b)
+		return a;
+	return b;
 }
 //additionne les valeurs de deux tableaux de meme taille
 void ajoutetab(int * t1, int * t2, int taille)
@@ -119,6 +134,26 @@ void ajoutetab(int * t1, int * t2, int taille)
 	{
 		t1[i]+=t2[i];
 	}
+}
+//renvoie la taille d'une fenetre a partir du tableau avec les arrivées de chacuns.
+int taille_fenetre(int * tab, int taille)
+{
+	int min = tab[0];
+	int max = tab[0];
+	int i;
+	for(i=1;i<taille;i++)
+	{
+		if(tab[i] > max)
+		{
+			max = tab[i];
+		}
+		
+		if(tab[i] < min)
+		{
+			min = tab[i];
+		}
+	}
+	return (max-min+2500);
 }
 int tMax(Graphe g,TwoWayTrip t)
 {
@@ -131,6 +166,22 @@ int tMax(Graphe g,TwoWayTrip t)
 	}
 	return max;
 }
+int indiceTMax(Graphe g,TwoWayTrip t)
+{
+	int i;
+	int max = 2*distance(g.routes[0],g.routes[0].route_lenght)+t.W[0];
+	int indicemax = 0 ;
+	for(i=1;i<t.taille;i++)
+	{
+		if(2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i] > max)
+		{
+			max = 2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i];
+			indicemax = i;
+		}
+	}
+	return indicemax;
+}
+
 
 //retourne la route la plus longue parmis celles qui peuvent partir a un offset donnée
 int longerOfeEligible(int * Dl, int * lambda, int * arrivee,int offset, int taille)
@@ -168,3 +219,5 @@ int longerOfeEligible(int * Dl, int * lambda, int * arrivee,int offset, int tail
 	}
 	return indice_max;
 }
+
+

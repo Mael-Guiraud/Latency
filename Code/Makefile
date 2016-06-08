@@ -1,11 +1,42 @@
-all: clean run
+all: clean lance
 
-run: neato 
-	evince g.pdf & evince gr.pdf
+affichegraphe:
+	neato -Tpdf -o g.pdf g.dot 
+	neato -Tpdf -o gr.pdf gr.dot
+	evince g.pdf 
+
+affichecourbes:
+	gnuplot window0.gplt
+	gnuplot window1.gplt
+	gnuplot window2.gplt
+	ps2pdf window0.ps
+	ps2pdf window1.ps
+	ps2pdf window2.ps
+	evince window0.pdf &
+	evince window1.pdf &
+	evince window2.pdf &
+	rm -f window0.ps
+	rm -f window1.ps
+	rm -f window2.ps
 	
-neato: g.dot gr.dot main
-	./main & neato -Tpdf -o g.pdf g.dot & neato -Tpdf -o gr.pdf gr.dot
-
+affichetmax:
+	gnuplot tmax0.gplt
+	gnuplot tmax1.gplt
+	gnuplot tmax2.gplt
+	ps2pdf tmax0.ps
+	ps2pdf tmax1.ps
+	ps2pdf tmax2.ps
+	evince tmax0.pdf &
+	evince tmax1.pdf &
+	evince tmax2.pdf &
+	rm -f tmax0.ps
+	rm -f tmax1.ps
+	rm -f tmax2.ps
+	
+lance: main
+	mkdir -p results/
+	./main
+	
 main: main.o graph.o topologies.o calcul.o test.o
 	gcc -g -Wall graph.o topologies.o calcul.o test.o main.o -o main -lm
 
@@ -26,5 +57,5 @@ test.o: graph.h test.c
 	
 clean:
 	rm -f main
-	rm -f commandes.gplt
+	rm -f results/*.txt
 	

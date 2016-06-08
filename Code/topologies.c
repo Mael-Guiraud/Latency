@@ -67,9 +67,11 @@ Graphe topologie1(int sources, int leaves,int mode)
 	g.routes = malloc(sizeof(Route)*sources);
 	for(i=0;i<sources;i++)
 	{
-		
+
 		g.routes[i].route_lenght = 4;
+
 		g.routes[i].vertices= malloc(sizeof(Vertex)*4);
+
 		for(j=0;j<4;j++)
 		{
 			if(j==0)
@@ -82,6 +84,8 @@ Graphe topologie1(int sources, int leaves,int mode)
 				g.routes[i].vertices[j] = g.vertices[sources+1+i+1];
 			
 		}
+	
 	}
+
 	return g;
 }
