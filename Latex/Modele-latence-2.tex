@@ -287,7 +287,6 @@ with waiting time $0$.
 
 Let us define a simplification of a matched graph. Ignore weights on arcs starting from leaves, and find a starting order without collisions 
 (then to find the real values,add the corresponding delay to each routes). 
-Given this simplification, case 2 and 3 are the same.
 We obtain a graph in which we have a central node, and different routes going to each sources.
 Such a graph is called a \emph{star}. A star is a non-oriented graph in which each edge between the central node $C$ and each source node $s_i$
 has a weight $a_i$ (corresponding to the weight of the arc in $N$), where i is the number of the route in $\rho$. The r-matching $\rho$ is now
@@ -300,6 +299,11 @@ example of a star for a matched graph with 3 routes
 \end{center}
 
 
+We can do this simplification of a matched graph N only if we search an affectation without waiting times : in this case, any solution
+will be optimal, because the $T_{max}$ will be twice the delay of the longer route. So, a solution for a star, is a solution for a matched
+graph, without waiting times. If waiting times are allowed, we are forced to consider the delay of the routes and this model is not
+available anymore.
+
 A \emph{star affectation} is a 2-way-trip affectation of the corresponding matched-graph $N$
 in which there is no waiting time,$\omega(r) = 0 \,\forall\, r \,\in\, \rho$. 
 
@@ -307,6 +311,7 @@ In this simplified model, we have two parameters left: the begin offsets $o_i$ a
 A route may have no collisions with the others : $\forall$ i,j $\in \rho$, 
 $$o_i \notin [b_i,...,b_i+T] \, and\, o_i+2a_i\notin [o_j+2a_j,...,o_j+2a_j+T].$$
 T is the size of the message.
+
 
 We define a new problem : 
 
@@ -425,7 +430,21 @@ From now, the period P is set and waiting times are allowed. The following heuri
 \end{algorithmic}
 \end{algorithm}
 
-\todo{prouver bornes expliquer algo}
+The running of this algorithm is the following one :
+\begin{itemize}
+ \item 1 On leaves node, the messages are scheduled so that they are following each others, from the longest route to the shortest route.
+ \item 2 On sources node, let the message able to come back first pass.
+ \item 3 Once this message has passed, look at all the eligibles message able to be back at the sources node during the transit of the previous one.
+ \item 4 Let the eligible message on the longest route transit in the node first after the previous one, possibly delayed by a little waiting time to avoid crossing.
+ \item 5 delay the others with a waiting time.
+ \item 6 while all the messages are not scheduled, get back to 3
+\end{itemize}
+
+This algorithm gives us solution with the minimum period possible : ${\cal L}$ x T. Indeed, all the messages are scheduled following each others on conflict node :
+there is no wasted time between the transit of two messages.
+
+
+\todo{Borne sup Tmax ?}
 
 \todo{ajouter les autres topologies}
 
