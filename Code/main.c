@@ -5,8 +5,9 @@ int main(){
 	gettimeofday(&trecv,NULL);
 	srandom(trecv.tv_usec);
 	//0 pour avoir des alea partout, 1 pour des 0 vers feuilles, 2 pour des0 vers sources
-	//simulation(2);
-	tests();
-	//algo_bruteforce(19500);
+	//simulation(1);
+	//simulations();
+	algo_bruteforce(7500);
+
 	return 0;
 }

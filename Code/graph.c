@@ -291,35 +291,64 @@ TwoWayTrip shortest_to_longest(Graphe g, int P)
 	}
 	return t;
 }
-//renvoie 1 si il y a des collisions, 0 sinon
-int test_collisions_brute(int * tab, int taille)
+void afficheRouteStar(RouteStar r)
 {
-	int i,j;
+	int i;
+	for(i=0;i<r.nb_routes;i++)
+		printf("x = %d y = %d \n",r.x[i],r.y[i]);
+}
+RouteStar cree_routestar(Graphe g)
+{
+	RouteStar r;
+	Graphe gr = renverse(g);
+	r.nb_routes = g.sources;
+	r.x = malloc(sizeof(int)*g.sources);
+	r.y = malloc(sizeof(int)*g.sources);
+	int i;
+	for(i=0;i<g.sources;i++)
+	{
+		r.x[i] = distance(g.routes[i],1);
+		r.y[i] = distance(gr.routes[i],1);
+	}
+	return r;
+}
+//renvoie 1 si il y a des collisions, 0 sinon
+int test_collisions_brute(RouteStar r,int * tab, int taille,int j)
+{
+	int i;
 	for(i=0;i<taille;i++)
 	{
-		for(j=i+1;j<taille;j++)
+		if(tab[i] != -1) 
 		{
-			if((tab[i] != -1) && (tab[j] != -1))
+			if(fabs((double)tab[i] - (double)j) < 2500)
 			{
-				if(fabs((double)tab[i] - (double)tab[j]) < 2500)
-				{
-					return 1;
-				}
-			} 
-		}
+				return 1;
+			}
+		} 
 	}
 	return 0;
 }
-void bruteforce(int * tab, int * dispo,int * offsets, int taille, int nb_dispo, int budget, int offset, int P)
+void bruteforce(RouteStar r,int * tab, int * dispo,int * offsets, int taille, int nb_dispo, int budget, int offset, int P)
 {
+	printf("\n\n");
+	printf("tab   ");affichetab(tab,taille);
+	printf("dispo ");affichetab(dispo,taille);
+	printf("offsets ");affichetab(offsets,taille);
+	printf("nb_dispo %d budget = %d \n",nb_dispo, budget);
+	printf("offset %d P = %d \n",offset,P);
+	
 	if(nb_dispo ==0)
 	{
 		FILE *f;
 		f=fopen("results/permutations.txt","a");
 		int i;
 		for(i=0;i<taille;i++)
-			fprintf(f,"%d ",tab[i]);
+		{
+			fprintf(f,"%d(%d) ",tab[i],offsets[i]);
+			printf("%d(%d) ",tab[i],offsets[i]);
+		}
 		fprintf(f,"\n");
+		printf("\n");
 		fclose(f);
 		
 	}
@@ -328,43 +357,38 @@ void bruteforce(int * tab, int * dispo,int * offsets, int taille, int nb_dispo, 
 		int i;
 		int indice;
 		int j;
+		int budget2;
 		for(i=0;i<nb_dispo;i++)
 		{
-			indice = i_dispo(dispo,taille,i);
-			tab[taille-nb_dispo] = dispo[indice];
-			int tab2[taille];
-			int dispo2[taille];
-			int offsets2[taille];
-			for(j=0;j<taille;j++)
-			{
-				offsets2[j] = -1;
-			}
-			cpy_tab(tab, tab2, taille);
-			cpy_tab(dispo, dispo2, taille);
-			cpy_tab(offsets, offsets2, taille);
-			dispo2[indice] = -1;
-			
+			indice = i_dispo(dispo,taille);
+			//printf("%d\n",indice);
 			//pour chaque offset
-			for(j=offset;j<P;j++)
+			for(j=offset;j<P-2500;j++)
 			{
-				offsets2[indice] = j;
+				
 				//si pas de collisions
-				if(!test_collisions_brute(offsets,taille))
+				if(!test_collisions_brute(r,offsets,taille,j))
 				{
-					budget -= j-offset;
-					offset = j+2500;
-					
-					if(budget > 0)
+					printf("avant %d\n",budget);
+					budget2 = budget-(j-offset);
+					printf("apres %d (j = %d) offset = %d i = %d\n", budget2,j, offset,i);
+					if(budget2 > 0)
 					{
-						/*printf("\n\n");
-						printf("tab   ");affichetab(tab,taille);
-						printf("dispo ");affichetab(dispo,taille);
-						printf("tab2   ");affichetab(tab,taille);
-						printf("dispo2 ");affichetab(dispo,taille);
-						printf("budget = %d \n",budget);
-						printf("offset %d j %d\n",offset,j);*/
-						bruteforce(tab,dispo2,offsets2,taille,nb_dispo-1,budget,offset,P);
+
+						tab[taille-nb_dispo] = dispo[indice];
+						int tab2[taille];
+						int dispo2[taille];
+						int offsets2[taille];
+						cpy_tab(tab, tab2, taille);
+						cpy_tab(dispo, dispo2, taille);
+						cpy_tab(offsets, offsets2, taille);
+						dispo2[indice] = -1;
+						offsets2[indice] = j;
+
+						bruteforce(r,tab,dispo2,offsets2,taille,nb_dispo-1,budget2,j+2500,P);
 					}
+					else
+						break;
 				}
 			}
 
@@ -375,8 +399,10 @@ void bruteforce(int * tab, int * dispo,int * offsets, int taille, int nb_dispo, 
 }
 TwoWayTrip algo_bruteforce(int P)
 {
-	int taille = 5;
+	int taille = 3;
 	Graphe g = topologie1(taille,taille,0);
+	RouteStar r = cree_routestar(g);
+
 	TwoWayTrip t;
 	t.taille=g.sources;
 	//offsets
@@ -395,8 +421,11 @@ TwoWayTrip algo_bruteforce(int P)
 		dispo[i] = i;
 		
 	}
-	int budget = P - taille * 2500;
-	bruteforce(tab, dispo,offsets, taille, taille,budget,0, P);
+	offsets[0] = 0;
+	tab[0] = 0;
+	dispo[0] = -1;
+	int budget = P - (taille-1) * 2500;
+	bruteforce(r,tab, dispo,offsets, taille, taille-1,budget,0, P);
 
 	int k;
 
