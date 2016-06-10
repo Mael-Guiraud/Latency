@@ -112,7 +112,7 @@ void simulation(int mode)
 	//printf("-------------------Gr-------------\n");
 	Graphe gr = renverse(g);
 	//affiche_graphe(gr);
-	TwoWayTrip t = shortest_to_longest(g,30000);
+	TwoWayTrip t = heuristique_top_1(g,30000);
 	//printf("----------2way------\n");
 	afficheTwoWayTrip(t);
 	int i;
@@ -139,29 +139,79 @@ void simulation(int mode)
 	printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
 	printf("taille de la fenetre = %d\n",taille_fenetre(collisions,g.sources));
 }
-void tests()
+void  simulations()
 {
-	int i,j,k;
-	for(i=1;i<7;i++)
+	int i,j,k,l,m;
+	Graphe g;
+	TwoWayTrip t;
+	int nb_simul = 1000;
+	int moyenne_window = 0;
+	int taillewindowmax;
+	int moyenne_Tmax=0;
+	char nom[64];
+	for(i=0;i<8;i++)//taille route
 	{
-	ecrire_bornes(i,2500);
-	for(k=0;k<3;k++)
-	{
-		if(k==2)
+		int collisions[i];
+		int collisionsr[i];
+		ecrire_bornes(i,2500);
+		for(j=0;j<3;j++)//algo
 		{
-			resultats(i,2,k);
-			}
-		else
-		{
-			for(j=0;j<3;j++)
-			{	
-				resultats(i,j,k);
+			for(k=0;k<3;k++)//mode
+			{
+				moyenne_Tmax= 0;
+				moyenne_window=0;
+				for(l=0;l<nb_simul;l++)//nb_simul tirates
+				{
+					g=topologie1(i,i,k);
+					if(j == 0)
+					{
+						t = heuristique_top_1(g,i*4*2500);
+						strcpy(nom,"results/heuristique_longest-shortest");
+					}
+					else if(j == 1)
+					{
+						t = algo_yann(g,i*4*2500);
+						strcpy(nom,"results/greedy_star_assignment");
+					}
+					else if(j == 2)
+					{
+						t = shortest_to_longest(g,i*4*2500);
+						strcpy(nom,"results/shortest-longest");
+					}
+					moyenne_Tmax+=tMax(g,t);
+					for(m=0;m<g.sources;m++)
+					{
+						collisions[m] = t.M[m]+distance(g.routes[m],1);
+						collisionsr[m] = t.M[m]+distance(g.routes[m],g.routes[m].route_lenght)+t.W[m]+(distance(g.routes[m],g.routes[m].route_lenght)-distance(g.routes[m],2));
+					}
+					taillewindowmax = max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
+					moyenne_window += taillewindowmax;
+				}
+				moyenne_Tmax /= nb_simul;
+				moyenne_window /= nb_simul;
+			
+						
+				if(k==0)
+				{
+					strcat(nom,"_mode0.txt");
+					creationfichierResultats(i,moyenne_Tmax,moyenne_window,nom);
+					printf("écriture dans %s\n",nom);
+				}
+				else if(k==1)
+				{
+					strcat(nom,"_mode1.txt");
+					creationfichierResultats(i,moyenne_Tmax,moyenne_window,nom);
+					printf("écriture dans %s\n",nom);
+				}
+				else if(k==2)
+				{
+					strcat(nom,"_mode2.txt");
+					creationfichierResultats(i,moyenne_Tmax,moyenne_window,nom);
+					printf("écriture dans %s\n",nom);
 				}
 			}
 		}
 	}
-
-
 }
 void ecrire_bornes(int l, int t)
 {
@@ -170,7 +220,7 @@ void ecrire_bornes(int l, int t)
 	fprintf(f,"%d %d %d \n",l,l*t,2*l*t);
 	fclose(f);
 }
-void resultats(int taille,int mode, int algo){
+void resultats(Graphe g, int taille,int mode, int algo){
 	int moyenne_w=0;
 	int moyenne_Tmax=0;
 	int TmaxMax = 0;
@@ -179,7 +229,6 @@ void resultats(int taille,int mode, int algo){
 	int collisions[taille];
 	int collisionsr[taille];
 	int taillewindowmax;
-	Graphe g;
 	char nom[64];
 	TwoWayTrip t;
 	int i,j,k;
@@ -201,7 +250,6 @@ void resultats(int taille,int mode, int algo){
 	for(j=0;j<1000;j++)
 	{
 		
-		g = topologie1(taille,taille,mode);
 		if(algo == 1)
 		{
 			t = algo_yann(g,taille*4*2500);
@@ -246,7 +294,7 @@ void resultats(int taille,int mode, int algo){
 		strcat(nom,"_mode0.txt");
 		creationfichierResultats(taille,moyenne_Tmax,moyenne_window,nom);
 		printf("écriture dans %s\n",nom);
-		//printf("- valeurs aléatoires partout :nbTmax = %d, Tmax = %d(max = %d), w = %d\n",nbTmax,moyenne_Tmax,TmaxMax,moyenne_w);
+		printf("- valeurs aléatoires partout :nbTmax = %d, Tmax = %d(max = %d), w = %d\n",nbTmax,moyenne_Tmax,TmaxMax,moyenne_w);
 	}
 	else if(mode==1)
 	{
@@ -254,29 +302,26 @@ void resultats(int taille,int mode, int algo){
 		creationfichierResultats(taille,moyenne_Tmax,moyenne_window,nom);
 		
 		printf("écriture dans %s\n",nom);
-		//printf("- 0 vers les feuilles :nbTmax = %d Tmax = %d(max = %d), w = %d\n",nbTmax,moyenne_Tmax,TmaxMax,moyenne_w);
+		printf("- 0 vers les feuilles :nbTmax = %d Tmax = %d(max = %d), w = %d\n",nbTmax,moyenne_Tmax,TmaxMax,moyenne_w);
 	}
 	else if(mode==2)
 	{
 		strcat(nom,"_mode2.txt");
 		creationfichierResultats(taille,moyenne_Tmax,moyenne_window,nom);
 		printf("écriture dans %s\n",nom);
-		//printf("- 0 vers les sources :nbTmax = %d Tmax = %d(max = %d), w = %d\n",nbTmax,moyenne_Tmax,TmaxMax,moyenne_w);
+		printf("- 0 vers les sources :nbTmax = %d Tmax = %d(max = %d), w = %d\n",nbTmax,moyenne_Tmax,TmaxMax,moyenne_w);
 	}
 	
 }
 //renvoie l'indice du ieme element pas a -1 d'un tableau
-int i_dispo(int * tab, int taille, int indice)
+int i_dispo(int * tab, int taille)
 {
 	int i;
-	int compteur = 0;
 	for(i=0;i<taille;i++)
 	{
 		if(tab[i] != -1)
 		{
-			compteur++;
-			if(compteur-1 == indice)
-				return i;
+			return i;
 		}
 	}
 	return -1;

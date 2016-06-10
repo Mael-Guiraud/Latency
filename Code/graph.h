@@ -28,6 +28,11 @@ typedef struct twoWayTrip{
 	int *M;
 	int *W;
 }TwoWayTrip;
+typedef struct routeStar{
+	int nb_routes;
+	int *x;
+	int *y;
+}RouteStar;
 typedef struct listeroute{
 	int index;
 	struct listeroute * suiv;
@@ -52,7 +57,7 @@ int longerOfeEligible(int * Dl, int * lambda, int * arrivee,int offset, int tail
 void simulation();
 void ecrire_fichierGraph(Graphe g);
 void resultats();
-void bruteforce(int * tab, int * dispo,int * offsets, int taille, int nb_dispo, int budget, int offset, int P);
+void bruteforce(RouteStar r,int * tab, int * dispo,int * offsets, int taille, int nb_dispo, int budget, int offset, int P);
 int factorielle(int a);
 void trouver_mieux_par_bruteforce(Graphe g, int tmax);
 int decaler_a(int a);
@@ -65,10 +70,10 @@ int max(int a, int b);
 TwoWayTrip shortest_to_longest(Graphe g, int P);
 void ecrire_bornes(int l, int t);
 TwoWayTrip algo_bruteforce(int P);
-int i_dispo(int * tab, int taille, int indice);
+int i_dispo(int * tab, int taille);
 int * cpy_tab(int * tab1, int* tab2, int taille);
 int test_collisions(int * tab, int taille);
-
+int test_collisions_brute(RouteStar r,int * tab, int taille,int j);
 
 
 
