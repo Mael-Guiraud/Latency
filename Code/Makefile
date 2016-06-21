@@ -1,59 +1,85 @@
+DIRbin = bin/
+DIRtxt = results/
+DIRgplt = gplt/
+
+
+OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)test.o $(DIRbin)main.o
+
 all: clean lance
 
-affichegraphe:
-	neato -Tpdf -o g.pdf g.dot 
-	neato -Tpdf -o gr.pdf gr.dot
-	evince g.pdf 
+Graphe:
+	neato -Tpdf -o $(DIRgplt)g.pdf $(DIRtxt)g.dot 
+	neato -Tpdf -o $(DIRgplt)gr.pdf $(DIRtxt)gr.dot
+	evince $(DIRgplt)g.pdf &
 
-affichecourbes:
-	gnuplot window0.gplt
-	gnuplot window1.gplt
-	gnuplot window2.gplt
-	ps2pdf window0.ps
-	ps2pdf window1.ps
-	ps2pdf window2.ps
-	evince window0.pdf &
-	evince window1.pdf &
-	evince window2.pdf &
-	rm -f window0.ps
-	rm -f window1.ps
-	rm -f window2.ps
+Windows:
+	gnuplot $(DIRgplt)window0.gplt
+	gnuplot $(DIRgplt)window1.gplt
+	gnuplot $(DIRgplt)window2.gplt
+	ps2pdf $(DIRgplt)window0.ps $(DIRgplt)window0.pdf
+	ps2pdf $(DIRgplt)window1.ps $(DIRgplt)window1.pdf
+	ps2pdf $(DIRgplt)window2.ps $(DIRgplt)window2.pdf
+	evince $(DIRgplt)window0.pdf &
+	evince $(DIRgplt)window1.pdf &
+	evince $(DIRgplt)window2.pdf &
+	rm -f $(DIRgplt)window0.ps
+	rm -f $(DIRgplt)window1.ps
+	rm -f $(DIRgplt)window2.ps
 	
-affichetmax:
-	gnuplot tmax0.gplt
-	gnuplot tmax1.gplt
-	gnuplot tmax2.gplt
-	ps2pdf tmax0.ps
-	ps2pdf tmax1.ps
-	ps2pdf tmax2.ps
-	evince tmax0.pdf &
-	evince tmax1.pdf &
-	evince tmax2.pdf &
-	rm -f tmax0.ps
-	rm -f tmax1.ps
-	rm -f tmax2.ps
+Tmax:
+	gnuplot $(DIRgplt)tmax0.gplt
+	gnuplot $(DIRgplt)tmax1.gplt
+	gnuplot $(DIRgplt)tmax2.gplt
+	ps2pdf $(DIRgplt)tmax0.ps $(DIRgplt)tmax0.pdf
+	ps2pdf $(DIRgplt)tmax1.ps $(DIRgplt)tmax1.pdf
+	ps2pdf $(DIRgplt)tmax2.ps $(DIRgplt)tmax2.pdf
+	evince $(DIRgplt)tmax0.pdf &
+	evince $(DIRgplt)tmax1.pdf &
+	evince $(DIRgplt)tmax2.pdf &
+	rm -f $(DIRgplt)tmax0.ps
+	rm -f $(DIRgplt)tmax1.ps
+	rm -f $(DIRgplt)tmax2.ps
+	
+Success:
+	gnuplot $(DIRgplt)success0.gplt
+	gnuplot $(DIRgplt)success1.gplt
+	gnuplot $(DIRgplt)success2.gplt
+	ps2pdf $(DIRgplt)success0.ps $(DIRgplt)success0.pdf
+	ps2pdf $(DIRgplt)success1.ps $(DIRgplt)success1.pdf
+	ps2pdf $(DIRgplt)success2.ps $(DIRgplt)success2.pdf
+	evince $(DIRgplt)success0.pdf &
+	evince $(DIRgplt)success1.pdf &
+	evince $(DIRgplt)success2.pdf &
+	rm -f $(DIRgplt)success0.ps
+	rm -f $(DIRgplt)success1.ps
+	rm -f $(DIRgplt)success2.ps	
 	
 lance: main
-	mkdir -p results/
+	mkdir -p $(DIRbin)
+	mkdir -p $(DIRtxt)
+	mkdir -p $(DIRgplt)
 	./main
 	
-main: main.o graph.o topologies.o calcul.o test.o
-	gcc -g -Wall graph.o topologies.o calcul.o test.o main.o -o main -lm
+main: $(OBJ)
+	gcc -g -Wall $(OBJ) -o main -lm
 
-main.o: graph.h main.c
-	gcc -g -Wall -c main.c -o main.o 
+$(DIRbin)main.o: graph.h main.c
+	gcc -g -Wall -c main.c -o $(DIRbin)main.o 
 	
-graph.o: graph.h graph.c
-	gcc -g -Wall -c graph.c -o graph.o
+$(DIRbin)fichiers.o: graph.h fichiers.c
+	gcc -g -Wall -c fichiers.c -o $(DIRbin)fichiers.o
 	
-topologies.o: graph.h topologies.c
-	gcc -g -Wall -c topologies.c -o topologies.o 
+$(DIRbin)heuristiques.o: graph.h heuristiques.c
+	gcc -g -Wall -c heuristiques.c -o $(DIRbin)heuristiques.o
 	
-calcul.o: graph.h calcul.c
-	gcc -g -Wall -c calcul.c -o calcul.o
+$(DIRbin)topologies.o: graph.h topologies.c
+	gcc -g -Wall -c topologies.c -o $(DIRbin)topologies.o 
 	
-test.o: graph.h test.c
-	gcc -g -Wall -c test.c -o test.o
+$(DIRbin)calcul.o: graph.h calcul.c
+	gcc -g -Wall -c calcul.c -o $(DIRbin)calcul.o
+	
+$(DIRbin)test.o: graph.h test.c
+	gcc -g -Wall -c test.c -o $(DIRbin)test.o
 	
 clean:
 	rm -f main
