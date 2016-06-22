@@ -7,8 +7,9 @@
 #define taille_paquet 2558
 #include <math.h>
 #include <string.h>
-
+#include <time.h>
 int solutions;
+int best_window;
 //Structures de données
 
 //Un sommet du graphe, pointe sur ses voisins qui ont une arrete vers lui.
@@ -60,7 +61,7 @@ TwoWayTrip greedy_star(Graphe g, int P);
 TwoWayTrip shortest_to_longest(Graphe g);
 TwoWayTrip longest_shortest(Graphe g);
 TwoWayTrip dichotomique(Graphe g,int P,int mode);
-void bruteforce(RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P);
+void bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P);
 
 
 //Fichiers.c Fonctions de gestions des fichiers

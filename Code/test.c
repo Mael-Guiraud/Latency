@@ -57,8 +57,8 @@ void afficheRouteStar(RouteStar r)
 
 void simulation(int mode)
 {
-	int tab[7] = {435, 450, 424, 0, 423, 450, 438};
-	Graphe g = topologie1_manuelle(3,3,tab);
+	
+	Graphe g = topologie1(3,3,mode);
 	ecrire_fichierGraph(g);
 	printf("-------------------G-------------\n");
 	affiche_graphe(g);
@@ -108,19 +108,19 @@ void simulation(int mode)
 
 void  simulationsTmax()
 {
-	int i,j,k,l,m;
+	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
 	int nb_simul = 1000;
 	int moyenne_Tmax=0;
 	int pire_Tmax=0;
 	char nom[64];
-	for(i=1;i<8;i++)//taille route
+	for(i=1;i<4;i++)//taille route
 	{
 		ecrire_bornesTMax(i);
-		for(j=0;j<2;j++)//algo
+		for(j=0;j<1;j++)//algo
 		{
-			for(k=0;k<3;k++)//mode
+			for(k=0;k<1;k++)//mode
 			{
 				moyenne_Tmax= 0;
 				pire_Tmax = 0;
@@ -152,14 +152,14 @@ void  simulationsTmax()
 						t = greedy_prime(g,4*i*taille_paquet);
 					}					
 					moyenne_Tmax+=tMax(g,t);
-					/*if((tMax(g,t)> pire_Tmax )&&(j==0))
+					if((tMax(g,t)> pire_Tmax )&&(j==0))
 					{
 						printf("%d routes----------------------------\n",i);
 						affiche_graphe(g);
 						afficheTwoWayTrip(t);
 						printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
 	
-					}*/
+					}
 					pire_Tmax = max(pire_Tmax,tMax(g,t));
 				}
 				moyenne_Tmax /= nb_simul;

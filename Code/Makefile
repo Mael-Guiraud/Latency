@@ -61,7 +61,7 @@ lance: main
 	./main
 	
 main: $(OBJ)
-	gcc -g -Wall $(OBJ) -o main -lm
+	gcc -g -O2 -Wall $(OBJ) -o main -lm
 
 $(DIRbin)main.o: graph.h main.c
 	gcc -g -Wall -c main.c -o $(DIRbin)main.o 

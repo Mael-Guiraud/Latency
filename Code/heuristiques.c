@@ -45,7 +45,7 @@ TwoWayTrip shortest_to_longest(Graphe g)
 }
 
 
-void bruteforce(RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P)
+void bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P)
 {
 	/*printf("\n\n");
 	printf("dispo ");affichetab(dispo,taille);
@@ -62,15 +62,19 @@ void bruteforce(RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille
 		for(i=0;i<taille;i++)
 		{
 			fprintf(f,"%d %d ",i,offsets[i]);
-			//printf("route %d offset %d ",i,offsets[i]);
+			//printf("route %d offset %d ",tab[i],offsets[i]);
 		}
 		fprintf(f,"\n");
 		//printf("\n");
 		fclose(f);
+		int taillewindowmax = max(taille_fenetre(offsets,taille),taille_fenetre(offsetsr,taille));
+		if(taillewindowmax < best_window)
+		{
+			best_window = taillewindowmax;
+		}
 		solutions++;
 		
 	}
-	else
 	{
 		int i;
 		int indice;
@@ -85,11 +89,13 @@ void bruteforce(RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille
 			//pour chaque offset
 			for(j=offset;j<offset+budget;j++)
 			{
+				int first = 0;
 				//printf("j = %d\n offsetr \n",j);
 				//affichetab(offsetsr,taille);
 				//si pas de collisions
 				//printf("test collisions = %d\n",test_collisions_offset(offsetsr,r,indice, j,P));
-				if(!test_collisions_offset(offsetsr,r,indice, j,P))
+				//si ca rentre  ET que c'est le plus petit offset pour lequel ca rentre ou que l'offset retour est >= T
+				if((!test_collisions_offset(offsetsr,r,indice, j,P))&&((first == 0) || ((j+(r.y[indice]*2)-(tab[taille-nb_dispo-1]+taille_paquet))%P >= taille_paquet )))
 				{
 					//printf("avant %d\n",budget);
 					budget2 = budget-(j-offset);
@@ -97,13 +103,17 @@ void bruteforce(RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille
 					int dispo2[taille];
 					int offsets2[taille];
 					int offsetsr2[taille];
+					int tab2[taille];
 					cpy_tab(dispo, dispo2, taille);
+					cpy_tab(tab, tab2, taille);
 					cpy_tab(offsets, offsets2, taille);
 					cpy_tab(offsetsr, offsetsr2, taille);
 					dispo2[indice] = -1;
 					offsets2[indice] = j;
+					tab2[taille-nb_dispo] = indice;
 					offsetsr2[indice] = (j+2*r.y[indice])%P;
-					bruteforce(r,dispo2,offsets2,offsetsr2,taille,nb_dispo-1,budget2,j+taille_paquet,P);
+					bruteforce(tab2,r,dispo2,offsets2,offsetsr2,taille,nb_dispo-1,budget2,j+taille_paquet,P);
+					first++;
 				}
 			}
 
@@ -116,7 +126,7 @@ void bruteforce(RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille
 
 TwoWayTrip algo_bruteforce(int P)
 {
-	int taille = 2;
+	int taille = 6;
 	Graphe g = topologie1(taille,taille,0);
 	RouteStar r = cree_routestar(g);
 	ecrire_fichierGraph(g);
@@ -129,34 +139,28 @@ TwoWayTrip algo_bruteforce(int P)
 	int dispo[taille];
 	int offsets[taille];
 	int offsetsr[taille];
+	int tab[taille];
 	int i,j;
 	for(i=0;i<taille;i++)
 	{
 		offsets[i] = -1;
 		offsetsr[i] = -1;
 		dispo[i] = i;
+		tab[i] = -1;
 		
 	}
 	solutions = 0;
-	//on fait ca que pour la route 0, faire une boucle pour le faire de 0 a n
-	for(i=0;i<taille;i++)
-	{
-		//reinit
-		for(j=0;j<taille;j++)
-		{
-			offsets[j] = -1;
-			offsetsr[j] = -1;
-			dispo[j] = j;
-		
-		}
-		offsets[i] = 0;
-		offsetsr[i] = r.y[i]*2;
-		dispo[i] = -1;
-		int budget = P - taille * taille_paquet;
-		bruteforce(r,dispo,offsets,offsetsr , taille, taille-1,budget,taille_paquet, P);
-	}
+	best_window = P;
+	offsets[0] = 0;
+	offsetsr[0] = r.y[0]*2;
+	dispo[0] = -1;
+	tab[0] = 0;
+	int budget = P - taille * taille_paquet;
+	bruteforce(tab,r,dispo,offsets,offsetsr , taille, taille-1,budget,taille_paquet, P);
+
 	printf("%d solutions trouvées\n",solutions);
-	int k;
+	printf("Best window = %d\n",best_window);
+	
 
 
 	
@@ -315,7 +319,7 @@ TwoWayTrip longest_shortest(Graphe g)
 			
 			if(Dl[i] ==0)
 			{
-				offset+=100;
+				offset+=1;
 			}
 			else
 			{
