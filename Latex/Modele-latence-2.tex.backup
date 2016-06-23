@@ -239,7 +239,8 @@ The middle link can be represented without weight, because it is common to all t
 Likewise, we do not consider $\theta$, the calculation time.
 
 The first case is the easiest to solve. Indeed, it is obvious that if we schedule all messages following each others, we will obtain an optimal
-$T_{max}$ : All the message will cross the first switch, without collisions, then 
+$T_{max}$ : there is no waiting times on any routes.
+Also, all the message will cross the first switch, without collisions, then 
 they will not be another conflict point between all routes.
 
 This solution is optimal because the messages will not wait on source nodes, so $\omega(r) = 0$, $\forall r \in \rho$. $T_{max}$ is
@@ -249,7 +250,7 @@ equal to the physical delay of the longer route, that we can not minimize.\\
 Given this observation, one can try to solve a simpler problem for cases 2 and 3 : is it possible to find a two way trip
 with all $w_i = 0$ ? 
 
-It is alwas possible when the windows $P$ is large enough(for example: send all messages one by one, waiting the previous one to be back),
+It is always possible when the windows $P$ is large enough(for example: send all messages one by one, waiting the previous one to be back),
 therefore the problem is to find the smallest windows such that it is possible.
 
 
@@ -265,25 +266,22 @@ Consider the graph :
 
 Consider messages of 10 slots. If you search for a P-periodic affectation, without using waiting times, there are 2 choices : 
 \begin{itemize}
- \item l1 is sent before l2 : the message from l1 will leave A after 11 slots. Let us call X the minimal time slot in which l2 can emit. 
- To avoid collisions with the message from l1 in A , $X\ge1$.
- In the other way, the message from l1 will use B from time slot 21 to 21+10. The route from l2 is 12 units long from l2 to B. So, to avoid collisions with 
- the message from l1 in B $X+12 \ge 21+10 \rightarrow x\ge 19$. Then if we take $X=19$, our time
- windows is at least 29 slots(19 + 10 corresponding to the time to send the message)
- \item l2 is sent before l1: at the first node A, l2 will have to wait 19 time slots to send his message, so the windows will be at lest 29 too.
+ \item l1 is sent before l2 : the message from l1 will leave A after 11 slots.X is he minimal time slot in which l2 can emit. 
+ To avoid collisions with the message from l1 in A,l2 must emit after 1 slot :  $X\ge1$.
+ In the other way, the message from l1 will use B from time slot 21 to 30. The route from l2 is 12 units long from l2 to B. So, to avoid collisions with 
+ the message from l1 in B $X+12 \ge 31 \rightarrow x\ge 19$. Then, by taking $X=19$, the time
+ windows is at least 38 slots in A (corresponding to the transit time of the 2 messages and the time lost between those 2 transits).
+ \item l2 is sent before l1: symmetrically the collision the collision occurs in node A if l1 emits before time 19. The time window in B is at least 38 too.
 \end{itemize}
 
 If we allow waiting times: there is an easy scheduling using only a 3 time slots windows : 
 Sending message 1 at time 0, message 2 at time 1, so the messages will not cross A in the same time. to be sent back,
-message 2 comes back immediately and is using B from slots 13 to 23,then message 1 is using B from slots 23 to 33, waiting 2 time slots at s1.
+message 2 comes back immediately and is using B from slots 13 to 22,then message 1 is using B from slots 23 to 32, waiting 2 time slots at s1.
 
-So the smaller time windows is 12, 1/3 smaller than best solution without waiting times.
+So the smaller time windows is 20, half smaller than best solution without waiting times.
 
-\todo{On peut utiliser l'exemple décrit en rajoutant un très long chemin de manière à ce que les 
+\todo{temps de traje 22 contre 24 On peut utiliser l'exemple décrit en rajoutant un très long chemin de manière à ce que les 
 waiting times ne changent pas la taille du plus long two way trip.}
-
-One can prove that if $P$ is small enough with regard to $l$ and $T$, then there is always a two way trip
-with waiting time $0$.
 
 Let us define a simplification of a matched graph. Ignore weights on arcs starting from leaves, and find a starting order without collisions 
 (then to find the real values,add the corresponding delay to each routes). 
@@ -329,7 +327,7 @@ Solving this problem in P is finding the best solution for cases 2 and 3 of the 
 We suggest the following algorithm to find a star affectation in which $d_0$ is the shortest route, and $d_{l-1}$ the longest one, 
 l is the number of routes and T is the size of the messages :
 
-\begin{algorithm}
+\begin{algorithm}[H]
 \caption{Star affectation from shortest to longest}
 \begin{algorithmic}
 \REQUIRE star s
@@ -348,15 +346,17 @@ Recursively, the second message is sent before the others, and also will be back
 Because the second message is sent T slots after the first message ($o_2 = o_1 + T$, where T is the size of the message), it come back after
 the end of the message one : $o_1+ T + 2a_1 \le o_2 + 2a_2$ with $a_2 \ge a_1$.
 
-The period given by this algorithm is P = 2$\Lambda(r_{{\cal L}-1}$) + ${\cal L}$ * T - 2$\Lambda(r_0)$, if routes $\{r_0,...,r_{{\cal L}-1}\}$ are ordered
-from the shortest to the longest. 2$\Lambda(r_0)$ is the first slot in which the first message is back, and 2$\Lambda(r_{{\cal L}-1}$ is
-the first slot in which the last message is back.${\cal L}$ * T is the time to transfer the messages from all routes.
+The period given by this algorithm is P = 2$\lambda(r_{{\cal L}-1}$) + ${\cal L}$ * T - 2$\lambda(r_0)$, if routes $\{r_0,...,r_{{\cal L}-1}\}$ are ordered
+from the shortest to the longest. 2$\lambda(r_0)$ is the first slot in which the first message is back, and 2$\lambda(r_{{\cal L}-1})$ is
+the first slot in which the last message is back.${\cal L}$ * T is the time to transfer the messages from all routes.\\
 
 
-We can also use a greedy algorithm, chosing the offset of each packet in turn so that there is no collision. We must chose an offset $o_i$ for each route $r_i$, so that no two routes have a collision on the central link the two times they use it.  We denote by $[o_i]_P$ the set of times $\{ t \mod P \mid o_i \geq t < o_i + T \}$ which are the time used by the route $r_i$ on the central link on its first use. There are no collision if for all $i\neq j$
+We can also use a greedy algorithm, choosing the offset of each packet in turn so that there is no collision. We must chose an offset $o_i$ for each route $r_i$, so that no two routes have a collision on the central link the two times they use it.  We denote by $[o_i]_P$ the set of times $\{ t \mod P \mid o_i \geq t < o_i + T \}$ which are the time used by the route $r_i$ on the central link on its first use. There are no collision if for all $i\neq j$
  $[o_i]_P \cap [o_j]_P = \emptyset$. Moreover no two routes must have a collision on the way back, hence we must have for all $i\neq j$
  $[o_i + a_i]_P \cap [o_j + a_j]_P = \emptyset$.
  
+One can prove that if $P$ is large enough with regard to $l$ and $T$, then there is always a two way trip
+with waiting time $0$ with this algorithm.
  Assume $P \geq 4lT$, the algorithm works as follows. 
 We cut the time windows of size $P$ into $2l$ slots of size $2T$ and we will asign one to each route.
 A different slot is assigned to each route, where the offset is chosen inside the slot so that 
@@ -371,7 +371,7 @@ de montrer qu'on ne peut pas faire mieux que $2lT$.}
 
 
 
-\begin{algorithm}
+\begin{algorithm}[H]
 \caption{start assignment greedy algorithm}
 \begin{algorithmic}
 \REQUIRE star s, window size $p$
@@ -400,30 +400,62 @@ de montrer qu'on ne peut pas faire mieux que $2lT$.}
 \end{algorithmic}
 \end{algorithm}
 
-In this algorithm,for each route we search for a free time slot in P1, and we look if the corresponding time slot in P2 is free too. If it is, we allow the 
-route to use those time slots.
-\todo{notations de la preuve pour expliquer l'algo}
+In this algorithm,for each route, search for a free time slot in P1,then set $o_i \in [cT,cT+1]$ so that $o_i + a_i \mod P = dT$.
+If $[dT,(d+1)T]$ is free, and allow the route to use the time slot $[cT,cT+1]$ at the first use of middle link.\\
 
-From now, the period P is set and waiting times are allowed. The following heuristic is suggested :
+The following algorithm is a simplified way to find a star affectation
 
-\begin{algorithm}
+\begin{algorithm}[H]
+\caption{start assignment greedy algorithm v2}
+\begin{algorithmic}
+\REQUIRE star s, window size $p$
+\ENSURE star affectation in P<p 
+\STATE $P1[p]$ slots in first way period.
+\STATE $P2[p]$ slots in back way period.
+\FORALL{route i in $\rho$ }
+
+\FORALL{slot j in P1}
+
+\IF{$[j,j+T]_P$ is free in P1}
+
+\IF{$[j + 2r_j,j + 2r_j+T]_P$ is free in P2}
+
+\STATE $o_i \leftarrow j$
+\ENDIF
+
+\ENDIF
+
+\ENDFOR
+
+\ENDFOR
+
+\end{algorithmic}
+\end{algorithm}
+
+In this algorithm,for each route, search for the first free slot [j,j+T] in P1 such that the slot $[j + 2r_j,j + 2r_j+T]_P$ in P2 is free too,
+then give the route the offset j(shifted by the distance from the leave to the first node).\\
+
+Now, the waiting times are allowed, and try to solve PALL on topologie 1.
+The following heuristic is suggested :
+
+\begin{algorithm}[H]
 \caption{Longest to shortest with waiting times}
 \begin{algorithmic}
-\REQUIRE Matched graph N, window size $P$
+\REQUIRE Matched graph N, window size $P$, packed size T
 \ENSURE 2way Trip affectation in P
 \STATE offset $\leftarrow$ 0
 \FORALL{route i in $\rho$ from the longest to the shortest }
 \STATE  $m_i \leftarrow$ offset
-\STATE offset $\leftarrow$ offset + 2500
+\STATE offset $\leftarrow$ offset + T
 \ENDFOR
 \STATE offset $\leftarrow$ 0
 \STATE take i such that $r_i$ is the first route to come back in sources node
 \STATE $w_i \leftarrow $ offset;
-\STATE offset $\leftarrow$ $a_i$ + 2500
+\STATE offset $\leftarrow$ $a_i$ + T
 \WHILE{there is a route which has no $w_i$}
 \STATE take i such that $r_i$ is the longest route able to come back in source node before the last one has totally passed
 \STATE $w_i \leftarrow $ offset - $a_i$;
-\STATE offset $\leftarrow$ offset + 2500
+\STATE offset $\leftarrow$ offset + T
 
 \ENDWHILE
 
@@ -440,9 +472,22 @@ The running of this algorithm is the following one :
  \item 6 while all the messages are not scheduled, get back to 3
 \end{itemize}
 
-\todo{prouver bornes expliquer algo}
+This algorithm gives us solution with the minimum period possible : ${\cal L}$ x T. Indeed, all the messages are scheduled following each others on conflict node :
+there is no wasted time between the transit of two messages.
 
-\todo{ajouter les autres topologies}
+After some simulations on values corresponding to reality $(P\simeq19500,T\simeq2500,l\simeq2000)$, the results are giving good solutions.
+
+For the case 1, this algorithm is similar to the obvious way to schedule the messages mentioned above. It gives optimal solution without increase 
+the calculation time.
+
+For the case 2, this algorithm gives optimal solutions: Indeed, in the manner we order messages, from leaves toward sources,
+the messages are sent from the one using the longest route to the one using the shortest one. Number the routes in this order from 1 to ${\cal L-1}$.
+
+We have $\forall \ i<j$, $r_i<r_j$.
+The first message leaves the source switch at time 2$r_1+T$, the second message, can use it at the time 2$r_2+T$.
+The second message waited $2r_1+T-2r_2+T = 2(r_1+r_2)$ to use the middle link
+
+
 
 \section{Complexity results}
 
