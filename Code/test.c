@@ -3,6 +3,11 @@
 
 void afficheTwoWayTrip(TwoWayTrip t)
 {
+	if(t.taille == 0)
+	{
+		printf("twowaytrip vide\n");
+		return;
+	}
 	int i;
 	for(i=0;i<t.taille;i++)
 	{
@@ -57,17 +62,17 @@ void afficheRouteStar(RouteStar r)
 
 void simulation(int mode)
 {
-	int tab[7] = {435, 450, 424, 0, 423, 450, 438};
-	Graphe g = topologie1_manuelle(3,3,tab);
+	int taille = 6;
+	Graphe g = topologie1(taille,taille,mode);
 	ecrire_fichierGraph(g);
 	printf("-------------------G-------------\n");
 	affiche_graphe(g);
-	int P = 30000;
+	int P = 19500;
 	//printf("-------------------Gr-------------\n");
 	Graphe gr = renverse(g);
 	//affiche_graphe(gr);
 
-	TwoWayTrip t = shortest_to_longest(g);
+	TwoWayTrip t = algo_bruteforce(g,P);
 	if(t.window_size == -1)
 	{
 		printf("NE RENTRE PAS %d\n",t.window_size);
@@ -81,9 +86,14 @@ void simulation(int mode)
 	int collisions[g.sources];
 	for(i=0;i<g.sources;i++)
 	{
-		collisions[i] = t.M[i]+distance(g.routes[i],1);
-		arrivee[i] = t.M[i]+distance(g.routes[i],g.routes[i].route_lenght);
+		
+		collisions[i] = (t.M[i]+distance(g.routes[i],1))%P;
+	
+		arrivee[i] = (t.M[i]+distance(g.routes[i],g.routes[i].route_lenght))%P;
+	
 	}
+	
+
 	creationfichierWindow(collisions, g.sources,"results/Aller.txt");
 	//printf("ARRIVEE\n");
 	//affichetab(arrivee,g.sources);
@@ -91,7 +101,7 @@ void simulation(int mode)
 	printf("taille de la fenetre = %d\n",taille_fenetre(collisions,g.sources));
 	for(i=0;i<g.sources;i++)
 	{
-		collisions[i] = arrivee[i]+t.W[i]+distance(gr.routes[i],1);
+		collisions[i] = (arrivee[i]+t.W[i]+distance(gr.routes[i],1))%P;
 	}
 	
 	creationfichierWindow(collisions, g.sources,"results/Retour.txt");
@@ -108,29 +118,31 @@ void simulation(int mode)
 
 void  simulationsTmax()
 {
-	int i,j,k,l,m;
+	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
 	int nb_simul = 1000;
 	int moyenne_Tmax=0;
 	int pire_Tmax=0;
+	int moyenne_Tmaxopti = 0;
+	int pire_Tmaxopti = 0;
+	int longesttmp = 0;
+	int tmaxtmp = 0;
 	char nom[64];
 	for(i=1;i<8;i++)//taille route
 	{
 		ecrire_bornesTMax(i);
-		for(j=0;j<2;j++)//algo
+		for(j=0;j<1;j++)//algo
 		{
 			for(k=0;k<3;k++)//mode
 			{
 				moyenne_Tmax= 0;
+				moyenne_Tmaxopti = 0;
 				pire_Tmax = 0;
+				pire_Tmaxopti = 0;
 				if(j == 0)
 				{
 					strcpy(nom,"results/Tmax_heuristique_longest-shortest");
-				}
-				else if(j == 1)
-				{
-					strcpy(nom,"results/Tmax_greedy_star_assignment");
 				}
 				for(l=0;l<nb_simul;l++)
 				{
@@ -139,19 +151,10 @@ void  simulationsTmax()
 					{
 						t = longest_shortest(g);
 					}
-					else if(j == 1)
-					{
-						t = greedy_star(g,i*4*taille_paquet);
-					}
-					else if(j == 2)
-					{
-						t = shortest_to_longest(g);
-					}
-					else if(j == 3)
-					{
-						t = greedy_prime(g,4*i*taille_paquet);
-					}					
-					moyenne_Tmax+=tMax(g,t);
+					longesttmp = 2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght);
+					tmaxtmp = tMax(g,t);
+					moyenne_Tmaxopti+=longesttmp;
+					moyenne_Tmax+=tmaxtmp;
 					/*if((tMax(g,t)> pire_Tmax )&&(j==0))
 					{
 						printf("%d routes----------------------------\n",i);
@@ -160,25 +163,32 @@ void  simulationsTmax()
 						printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
 	
 					}*/
-					pire_Tmax = max(pire_Tmax,tMax(g,t));
+					pire_Tmax = max(pire_Tmax,tmaxtmp);
+					pire_Tmaxopti = max(pire_Tmaxopti,longesttmp);
+					
 				}
 				moyenne_Tmax /= nb_simul;
+				moyenne_Tmaxopti /= nb_simul;
 				if(k==0)
 				{
 					strcat(nom,"_mode0.txt");
 					creationfichier(i,moyenne_Tmax,pire_Tmax,nom);
+					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode0.txt");
+					
 					printf("écriture dans %s\n",nom);
 				}
 				else if(k==1)
 				{
 					strcat(nom,"_mode1.txt");
 					creationfichier(i,moyenne_Tmax,pire_Tmax,nom);
+					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode1.txt");
 					printf("écriture dans %s\n",nom);
 				}
 				else if(k==2)
 				{
 					strcat(nom,"_mode2.txt");
 					creationfichier(i,moyenne_Tmax,pire_Tmax,nom);
+					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode2.txt");
 					printf("écriture dans %s\n",nom);
 				}
 			}

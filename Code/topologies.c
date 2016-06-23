@@ -56,7 +56,7 @@ Graphe topologie1(int sources, int leaves,int mode)
 	g.vertices[i].weight[0] = rand_entier(700);
 	i++;
 	//leaves
-	for(i;i<sources+leaves+2;i++)
+	for(;i<sources+leaves+2;i++)
 	{
 		g.vertices[i].index = i;
 		g.vertices[i].edge_number = 1;
@@ -77,12 +77,14 @@ Graphe topologie1(int sources, int leaves,int mode)
 		{
 			if(j==0)
 				g.routes[i].vertices[j] = g.vertices[i];
-			else if(j==1)
-				g.routes[i].vertices[j] = g.vertices[sources];
-			else if(j==2)
-				g.routes[i].vertices[j] = g.vertices[sources +1];
 			else 
-				g.routes[i].vertices[j] = g.vertices[sources+1+i+1];
+				if(j==1)
+					g.routes[i].vertices[j] = g.vertices[sources];
+				else 
+					if(j==2)
+						g.routes[i].vertices[j] = g.vertices[sources +1];
+					else 
+						g.routes[i].vertices[j] = g.vertices[sources+1+i+1];
 			
 		}
 	
@@ -152,7 +154,7 @@ Graphe renverse(Graphe g)
 
 Graphe topologie1_manuelle(int sources, int leaves,int * tab)
 {
-	int x,y;
+
 	Graphe g;
 	g.sources = sources;
 	g.vertex_number = sources+leaves+2;
@@ -188,7 +190,7 @@ Graphe topologie1_manuelle(int sources, int leaves,int * tab)
 	g.vertices[i].weight[0] = tab[sources];
 	i++;
 	//leaves
-	for(i;i<sources+leaves+2;i++)
+	for(;i<sources+leaves+2;i++)
 	{
 		g.vertices[i].index = i;
 		g.vertices[i].edge_number = 1;

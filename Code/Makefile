@@ -55,13 +55,10 @@ Success:
 	rm -f $(DIRgplt)success2.ps	
 	
 lance: main
-	mkdir -p $(DIRbin)
-	mkdir -p $(DIRtxt)
-	mkdir -p $(DIRgplt)
 	./main
 	
 main: $(OBJ)
-	gcc -g -Wall $(OBJ) -o main -lm
+	gcc -g -O2 -Wall $(OBJ) -o main -lm
 
 $(DIRbin)main.o: graph.h main.c
 	gcc -g -Wall -c main.c -o $(DIRbin)main.o 
@@ -82,6 +79,9 @@ $(DIRbin)test.o: graph.h test.c
 	gcc -g -Wall -c test.c -o $(DIRbin)test.o
 	
 clean:
+	mkdir -p $(DIRbin)
+	mkdir -p $(DIRtxt)
+	mkdir -p $(DIRgplt)
 	rm -f main
 	rm -f results/*.txt
 	
