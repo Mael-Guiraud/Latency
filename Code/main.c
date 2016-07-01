@@ -8,7 +8,7 @@ int main(){
  
 
 	//0 pour avoir des alea partout, 1 pour des 0 vers feuilles, 2 pour des0 vers sources
-	simulation(0);
+	//simulation(0);
 
 	//simulationsTmax();
 	//simulationsWindow();
