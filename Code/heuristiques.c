@@ -157,7 +157,7 @@ TwoWayTrip algo_bruteforce(Graphe g, int P)
 	//offsets
 	t.M = malloc(sizeof(int)*g.sources);
 	t.W = malloc(sizeof(int)*g.sources);
-	afficheRouteStar(r);
+	//afficheRouteStar(r);
 	int dispo[taille];
 	int offsets[taille];
 	int offsetsr[taille];
@@ -209,7 +209,6 @@ TwoWayTrip greedy_prime(Graphe g, int P)
 	int offset = 0;
 	for(i=0;i<P;i++)
 	{
-
 		periode_retour[i] = 0;
 	}
 	//on prend les routes une par une
@@ -217,6 +216,7 @@ TwoWayTrip greedy_prime(Graphe g, int P)
 	{
 		for(j=offset;j<P;j++)
 		{
+			
 			if(offset == 0)
 				a = (j+distance(g.routes[i],4)+distance(gr.routes[i],1))%P;
 			else
@@ -356,6 +356,7 @@ return t;
 TwoWayTrip greedy_star(Graphe g, int P)
 {
 	TwoWayTrip t;
+	t.window_size = 1;
 	//si trop petit, on ne calcul meme pas
 	if(P < g.sources * taille_paquet)
 	{
@@ -372,6 +373,7 @@ TwoWayTrip greedy_star(Graphe g, int P)
 	int nombre_slots_aller = P/(taille_paquet*2);
 	int periode_aller[nombre_slots_aller];
 	int periode_retour[P];
+	int a,b,decalage;
 	int i,j;
 	for(i=0;i<nombre_slots_aller;i++)
 	{
@@ -388,7 +390,7 @@ TwoWayTrip greedy_star(Graphe g, int P)
 		{
 			if(periode_aller[j] == 0)
 			{
-				int a,b,decalage;
+				
 				a = (2*distance(gr.routes[i],1))%P;
 				decalage = decaler_a(a);
 				a += decalage+(j*(taille_paquet*2));
@@ -465,6 +467,41 @@ TwoWayTrip dichotomique(Graphe g,int P, int mode)
 	//printf("debut %d milieu %d fin %d window size %d\n",id,im,ifin,t.window_size);
 	return t;
 }
+TwoWayTrip recherche_lineaire_star(Graphe g, int P)
+{
 
+	TwoWayTrip t;
+	int i;
+	for(i=g.sources*taille_paquet;i<P;i++)
+	{
+		t = greedy_star(g,i);
+		if(valide(g,t,P))
+		{
+			return t;
+			
+		}
+		freeTwoWayTrip(t);
+	}
+	t.window_size = -1;
+	return t;
+}
 
+TwoWayTrip recherche_lineaire_prime(Graphe g, int P)
+{
+
+	TwoWayTrip t;
+	int i;
+	for(i=g.sources*taille_paquet;i<P;i++)
+	{
+		t = greedy_prime(g,i);
+		if(valide(g,t,P))
+		{
+			return t;
+			
+		}
+		freeTwoWayTrip(t);
+	}
+	t.window_size = -1;
+	return t;
+}
 

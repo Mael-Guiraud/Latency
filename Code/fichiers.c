@@ -74,7 +74,15 @@ void ecrire_bornesTMax(int i)
 }
 
 
+//Ecris les resultats données dans le fichier donné(pour Tmax)
+void creationfichierTmax(int i, int moyenne,int pire,int ecart,char * nom){
 
+	FILE *f;
+	f=fopen(nom,"a");
+	fprintf(f,"%d %d %d %d\n",i,moyenne,pire,ecart);
+	fclose(f);
+	
+}
 
 
 

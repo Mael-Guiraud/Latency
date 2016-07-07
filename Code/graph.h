@@ -8,6 +8,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
+#include <dirent.h>
 
 //Structures de données
 
@@ -61,7 +62,8 @@ TwoWayTrip shortest_to_longest(Graphe g);
 TwoWayTrip longest_shortest(Graphe g);
 TwoWayTrip dichotomique(Graphe g,int P,int mode);
 TwoWayTrip bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P);
-
+TwoWayTrip recherche_lineaire_star(Graphe g, int P);
+TwoWayTrip recherche_lineaire_prime(Graphe g, int P);
 
 //Fichiers.c Fonctions de gestions des fichiers
 void creationfichierGraph(Graphe g,char * nom);
@@ -70,6 +72,7 @@ void creationfichier(int i, int tmax,int piretmax,char * nom);
 void creationfichierWindow(int* tab, int taille,char * nom);
 void ecrire_bornesWindow(int l, int t);
 void ecrire_bornesTMax(int i);
+void creationfichierTmax(int i, int moyenne,int pire,int ecart,char * nom);
 
 //Test.c fonctions d'affichage
 void affiche_graphe(Graphe g);
@@ -78,6 +81,8 @@ void affichetab(int* tab, int taille);
 void afficheRouteStar(RouteStar r);
 void simulation(int mode);
 void simulationsTmax();
+void  simulationsWindow();
+int valide(Graphe g, TwoWayTrip t, int P);
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);

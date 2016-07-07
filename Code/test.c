@@ -9,6 +9,7 @@ void afficheTwoWayTrip(TwoWayTrip t)
 		return;
 	}
 	int i;
+	printf("Taille %d\n",t.window_size);
 	for(i=0;i<t.taille;i++)
 	{
 		printf("Route %d : m = %d, w = %d\n",i,t.M[i],t.W[i]);
@@ -67,17 +68,13 @@ void simulation(int mode)
 	ecrire_fichierGraph(g);
 	printf("-------------------G-------------\n");
 	affiche_graphe(g);
-	int P = 19500;
+	int P = taille*taille_paquet*4;
 	//printf("-------------------Gr-------------\n");
 	Graphe gr = renverse(g);
 	//affiche_graphe(gr);
 
-	TwoWayTrip t = algo_bruteforce(g,P);
-	if(t.window_size == -1)
-	{
-		printf("NE RENTRE PAS %d\n",t.window_size);
-		return;
-	}
+	TwoWayTrip t = greedy_star(g,P);
+
 	printf("----------2way------\n");
 	afficheTwoWayTrip(t);
 	int i;
@@ -118,6 +115,28 @@ void simulation(int mode)
 
 void  simulationsTmax()
 {
+	
+	DIR * rep = opendir ("./results/");
+  
+   if (rep != NULL)
+   {
+      struct dirent * ent;
+  
+      while ((ent = readdir (rep)) != NULL)
+      {
+          if((strstr(ent->d_name, "Tmax") != NULL)||(strstr(ent->d_name, "tmax") != NULL)) // si on a tmax ou Tmax dans le nom du fichier
+		{ 
+		 char nom[64];
+		strcpy(nom,"./results/");
+ 		 remove (strcat(nom,ent->d_name));
+		printf("deletion of %s\n",nom);
+	}
+      }
+       
+      closedir (rep);
+   }
+   
+   
 	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
@@ -128,7 +147,9 @@ void  simulationsTmax()
 	int pire_Tmaxopti = 0;
 	int longesttmp = 0;
 	int tmaxtmp = 0;
+	long long int ecart_type=0;
 	char nom[64];
+	
 	for(i=1;i<8;i++)//taille route
 	{
 		ecrire_bornesTMax(i);
@@ -140,6 +161,7 @@ void  simulationsTmax()
 				moyenne_Tmaxopti = 0;
 				pire_Tmax = 0;
 				pire_Tmaxopti = 0;
+				ecart_type = 0;
 				if(j == 0)
 				{
 					strcpy(nom,"results/Tmax_heuristique_longest-shortest");
@@ -154,7 +176,9 @@ void  simulationsTmax()
 					longesttmp = 2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght);
 					tmaxtmp = tMax(g,t);
 					moyenne_Tmaxopti+=longesttmp;
-					moyenne_Tmax+=tmaxtmp;
+					moyenne_Tmax += tmaxtmp;
+					ecart_type = (long long)ecart_type + (long long)(longesttmp * longesttmp);
+					
 					/*if((tMax(g,t)> pire_Tmax )&&(j==0))
 					{
 						printf("%d routes----------------------------\n",i);
@@ -167,29 +191,34 @@ void  simulationsTmax()
 					pire_Tmaxopti = max(pire_Tmaxopti,longesttmp);
 					
 				}
-				moyenne_Tmax /= nb_simul;
+				//moyenne_Tmax /= nb_simul;
 				moyenne_Tmaxopti /= nb_simul;
+				moyenne_Tmax /= nb_simul;
+				ecart_type /= (long long)nb_simul;
+				ecart_type -= (long long)(moyenne_Tmax * moyenne_Tmax);
+				ecart_type = (long long)sqrt((double)ecart_type);
+				//printf("%d\n", (int)ecart_type);
 				if(k==0)
 				{
 					strcat(nom,"_mode0.txt");
-					creationfichier(i,moyenne_Tmax,pire_Tmax,nom);
+					creationfichierTmax(i,moyenne_Tmax,pire_Tmax,(int)ecart_type,nom);
 					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode0.txt");
 					
-					printf("écriture dans %s\n",nom);
+					//printf("écriture dans %s\n",nom);
 				}
 				else if(k==1)
 				{
 					strcat(nom,"_mode1.txt");
-					creationfichier(i,moyenne_Tmax,pire_Tmax,nom);
+					creationfichierTmax(i,moyenne_Tmax,pire_Tmax,(int)ecart_type,nom);
 					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode1.txt");
-					printf("écriture dans %s\n",nom);
+					//printf("écriture dans %s\n",nom);
 				}
 				else if(k==2)
 				{
 					strcat(nom,"_mode2.txt");
-					creationfichier(i,moyenne_Tmax,pire_Tmax,nom);
+					creationfichierTmax(i,moyenne_Tmax,pire_Tmax,(int)ecart_type,nom);
 					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode2.txt");
-					printf("écriture dans %s\n",nom);
+					//printf("écriture dans %s\n",nom);
 				}
 			}
 		}
@@ -198,157 +227,139 @@ void  simulationsTmax()
 	
 void  simulationsWindow()
 {
+	
+	
+	DIR * rep = opendir ("./results/");
+  
+   if (rep != NULL)
+   {
+      struct dirent * ent;
+  
+      while ((ent = readdir (rep)) != NULL)
+      {
+          if((strstr(ent->d_name, "Window") != NULL)||(strstr(ent->d_name, "bornes.txt") != NULL)) 
+		{ 
+		 char nom[64];
+		strcpy(nom,"./results/");
+ 		 remove (strcat(nom,ent->d_name));
+		printf("deletion of %s\n",nom);
+	}
+      }
+       
+      closedir (rep);
+   }
+	
+	
 	int i,j,k,l,m;
 	Graphe g;
 	TwoWayTrip t;
 	int nb_simul = 1000;
-	int moyenne_window = 0;
+	int moyenne_window[3];
 	int taillewindowmax;
-	int piretaille = 0;
+	int piretaille[3];
 	char nom[64];
+	for(i=0;i<3;i++)
+	{
+		moyenne_window[i] = 0;
+		piretaille[i] = 0;
+	}
 	for(i=1;i<8;i++)//taille route
 	{
 		int collisions[i];
 		int collisionsr[i];
 		ecrire_bornesWindow(i,taille_paquet);
-		for(j=0;j<3;j++)//algo
-		{
 			for(k=0;k<3;k++)//mode
 			{
-				moyenne_window=0;
-				piretaille = 0;
-				if(j == 0)
-				{
-					strcpy(nom,"results/Window_greedy_prime");
-				}
-				else if(j == 1)
-				{
-					strcpy(nom,"results/Window_greedy_star_assignment");
-				}
-				else if(j == 2)
-				{
-					strcpy(nom,"results/Window_shortest_longest");
-				}
 				for(l=0;l<nb_simul;l++)
 				{
 					g=topologie1(i,i,k);
+					for(j=0;j<3;j++)//algo
+					{
+						if(j == 0)
+						{
+							t = recherche_lineaire_prime(g,4*i*taille_paquet);
+						}
+						else if(j == 1)
+						{
+							t = recherche_lineaire_star(g,4*i*taille_paquet);
+						}
+						else if(j == 2)
+						{
+							t = shortest_to_longest(g);
+						}
+						for(m=0;m<g.sources;m++)
+						{
+							collisions[m] = t.M[m]+distance(g.routes[m],1);
+							collisionsr[m] = t.M[m]+distance(g.routes[m],g.routes[m].route_lenght)+t.W[m]+(distance(g.routes[m],g.routes[m].route_lenght)-distance(g.routes[m],2));
+						}
+						//printf("Calcul window\n");
+						taillewindowmax = max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
+						moyenne_window[j] += taillewindowmax;
+						piretaille[j] = max(piretaille[j],taillewindowmax);
+					}
+				}
+				
+				for(j=0;j<3;j++)//algo
+				{
+					moyenne_window[j] /= nb_simul;
 					if(j == 0)
 					{
-						t = dichotomique(g,4*i*taille_paquet,1);
+						sprintf(nom,"results/Window_greedy_prime_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
 					}
 					else if(j == 1)
 					{
-						t = dichotomique(g,4*i*taille_paquet,0);
+						sprintf(nom,"results/Window_greedy_star_assignment_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
 					}
 					else if(j == 2)
 					{
-						t = shortest_to_longest(g);
+						sprintf(nom,"results/Window_shortest_longest_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
 					}
-					for(m=0;m<g.sources;m++)
-					{
-						collisions[m] = t.M[m]+distance(g.routes[m],1);
-						collisionsr[m] = t.M[m]+distance(g.routes[m],g.routes[m].route_lenght)+t.W[m]+(distance(g.routes[m],g.routes[m].route_lenght)-distance(g.routes[m],2));
-					}
-					//printf("Calcul window\n");
-					taillewindowmax = max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
-					moyenne_window += taillewindowmax;
-					piretaille = max(piretaille,taillewindowmax);
+					creationfichier(i,moyenne_window[j],piretaille[j],nom);
+					moyenne_window[j]=0;
+					piretaille[j] = 0;	
 				}
-				moyenne_window /= nb_simul;
-						
-				if(k==0)
-				{
-					strcat(nom,"_mode0.txt");
-					creationfichier(i,moyenne_window,piretaille,nom);
-					printf("écriture dans %s\n",nom);
-				}
-				else if(k==1)
-				{
-					strcat(nom,"_mode1.txt");
-					creationfichier(i,moyenne_window,piretaille,nom);
-					printf("écriture dans %s\n",nom);
-				}
-				else if(k==2)
-				{
-					strcat(nom,"_mode2.txt");
-					creationfichier(i,moyenne_window,piretaille,nom);
-					printf("écriture dans %s\n",nom);
-				}
+					
+				
 			}
-		}
 	}
 }
 
-void  simulationsSuccess()
+
+
+//renvoie  0 si le twowaytrip n'est pas valide, 1 sinon
+int valide(Graphe g, TwoWayTrip t, int P)
 {
-	int periode = 35000 ;
-	int i,j,k,l;
-	Graphe g;
-	TwoWayTrip t;
-	int nb_simul = 1000;
-	int success = 0;
-	char nom[64];
-	for(i=1;i<8;i++)//taille route
+	Graphe gr = renverse(g);
+	int i;
+	int arrivee[gr.sources];
+	int collisions[g.sources];
+	for(i=0;i<g.sources;i++)
 	{
-		for(j=0;j<2;j++)//algo
-		{
-			for(k=0;k<3;k++)//mode
-			{
-				success=0;
-				if(j == 0)
-				{
-					strcpy(nom,"results/Success_greedy_prime");
-				}
-				else if(j == 1)
-				{
-					strcpy(nom,"results/Success_greedy_star_assignment");
-				}
-				for(l=0;l<nb_simul;l++)
-				{
-					g=topologie1(i,i,k);
-					if(j == 0)
-					{
-						t = greedy_prime(g,periode);
-						if(t.window_size != -1)
-						{
-							success ++;
-						}
-					}
-					else if(j == 1)
-					{
-						t = greedy_star(g,periode);
-						if(t.window_size != -1)
-						{
-							success ++;
-						}
-					}
-
-				}
-				success *= 100;
-				success /= nb_simul;
-						
-				if(k==0)
-				{
-					strcat(nom,"_mode0.txt");
-					creationfichier(i,success,0,nom);
-					printf("écriture dans %s\n",nom);
-				}
-				else if(k==1)
-				{
-					strcat(nom,"_mode1.txt");
-					creationfichier(i,success,0,nom);
-					printf("écriture dans %s\n",nom);
-				}
-				else if(k==2)
-				{
-					strcat(nom,"_mode2.txt");
-					creationfichier(i,success,0,nom);
-					printf("écriture dans %s\n",nom);
-				}
-			}
-		}
+		collisions[i] = (t.M[i]+distance(g.routes[i],1))%P;
+		arrivee[i] = (t.M[i]+distance(g.routes[i],g.routes[i].route_lenght))%P;
 	}
+	if(test_collisions(collisions,g.sources,P))
+	{
+		freeGraphe(gr);
+		return 0;
+	}
+	for(i=0;i<g.sources;i++)
+	{
+		collisions[i] = (arrivee[i]+t.W[i]+distance(gr.routes[i],1))%P;
+	}
+	if(test_collisions(collisions,g.sources,P))
+	{
+		freeGraphe(gr);
+		return 0;
+	}
+	freeGraphe(gr);
+	return 1;
+
 }
+
 
 
 

@@ -273,15 +273,15 @@ int collision_a_b(int a, int b, int P)
 		//printf("1 %d %d \n",a,b);
 		return 1;
 	}
-	if((a<b) && (afin>bfin))
+	if((a<b) && (afin>bfin) && (a<bfin))
 	{
 		//printf("2 %d %d %d %d\n",a,b,afin,bfin);
 		return 1;
 	}	
-	if((a>b) && (bfin>afin))
+	if((a>b) && (bfin>afin) && (b<afin))
 	{
 		
-		printf("3 %d %d %d %d\n",a,b,afin,bfin);
+		//printf("3 %d %d %d %d\n",a,b,afin,bfin);
 		return 1;
 	}
 	//printf("OK\n");
@@ -319,7 +319,7 @@ int test_collisions(int * tab, int taille, int P)
 		{
 			if(collision_a_b(tab[i],tab[j],P))
 			{
-				printf("collision entre %d(%d) et %d(%d)\n",i,tab[i],j,tab[j]);
+				//printf("collision entre %d(%d) et %d(%d)\n",i,tab[i],j,tab[j]);
 				err++;
 			}
 		}
