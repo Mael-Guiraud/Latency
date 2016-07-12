@@ -441,8 +441,19 @@ void freeRouteStar(RouteStar r)
 	free(r.y);
 	r.y = NULL;
 }
-
-
+//transforme un graphe en un tableau de temps de retour
+int * graphe_to_temps_retour(Graphe g)
+{
+	int * tab = malloc(sizeof(int)*g.sources);
+	int i;
+	Graphe gr = renverse(g);
+	for(i=0;i<g.sources;i++)
+	{
+		tab[i]=distance(gr.routes[i],1);
+	}
+	freeGraphe(gr);
+	return tab;
+}
 
 
 

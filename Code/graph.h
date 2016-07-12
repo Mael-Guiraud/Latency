@@ -48,6 +48,14 @@ typedef struct routeStar{
 	int *y;
 }RouteStar;
 
+//intervalle fermé à gauche et ouvert à droite
+// le codage debut, taille serait sans doute légèrement mieux
+typedef struct{
+  int debut;
+  int fin;
+  int suivant;
+}intervalle_liste;
+
 
 //TOPOLOGIE.c fonctions de créations de graphe
 Graphe topologie1(int sources, int leaves, int mode);
@@ -64,6 +72,7 @@ TwoWayTrip dichotomique(Graphe g,int P,int mode);
 TwoWayTrip bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P);
 TwoWayTrip recherche_lineaire_star(Graphe g, int P);
 TwoWayTrip recherche_lineaire_prime(Graphe g, int P);
+TwoWayTrip recherche_lineaire_brute(Graphe g, int P);
 
 //Fichiers.c Fonctions de gestions des fichiers
 void creationfichierGraph(Graphe g,char * nom);
@@ -81,8 +90,9 @@ void affichetab(int* tab, int taille);
 void afficheRouteStar(RouteStar r);
 void simulation(int mode);
 void simulationsTmax();
-void  simulationsWindow();
+void simulationsWindow();
 int valide(Graphe g, TwoWayTrip t, int P);
+void etude_exp_bruteforce();
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);
@@ -113,5 +123,16 @@ void occuper_p(int * tab, int a, int b);
 void freeGraphe(Graphe g);
 void freeTwoWayTrip(TwoWayTrip t);
 void freeRouteStar(RouteStar r);
+int * graphe_to_temps_retour(Graphe g);
+
+//Bruteforce.c Fonctions sur le bruteforce de Yann
+intervalle_liste *initialise(int nbr_route,int taille_paquets, int periode);
+void affiche_intervalle(intervalle_liste *liste);
+int ajoute_element(intervalle_liste *liste, int debut, int taille, int taille_paquets, int *nombre_slot, int nbr_route);
+void retire_element(intervalle_liste *liste, int debut, int taille, int *nombre_slot,int taille_paquets);
+int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_paquets);
+int* genere_reseau(int nbr_route, int taille_route);
+void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget);
+TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour);
 
 

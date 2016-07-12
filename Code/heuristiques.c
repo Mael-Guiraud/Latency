@@ -505,3 +505,22 @@ TwoWayTrip recherche_lineaire_prime(Graphe g, int P)
 	return t;
 }
 
+
+TwoWayTrip recherche_lineaire_brute(Graphe g, int P)
+{
+	TwoWayTrip t;
+	int * temps_retour = graphe_to_temps_retour(g);
+	int i;
+	for(i=g.sources*taille_paquet;i<P;i++)
+	{
+		t = bruteforceiter(g,taille_paquet,P,g.sources,temps_retour);
+		if(valide(g,t,P))
+		{
+			return t;
+		}
+		freeTwoWayTrip(t);
+	}
+	t.window_size = -1;
+	return t;
+}
+					

@@ -8,8 +8,8 @@ Graphe topologie1(int sources, int leaves,int mode)
 	int x,y;
 	if(mode == 0)
 	{
-		x = 700;
-		y = 700;
+		x = 1500;
+		y = 1500;
 	}
 	else if(mode == 1)
 	{

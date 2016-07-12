@@ -3,7 +3,7 @@ DIRtxt = results/
 DIRgplt = gplt/
 
 
-OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)test.o $(DIRbin)main.o
+OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)bruteforce.o $(DIRbin)test.o $(DIRbin)main.o
 FLAGS = -g -O3 -Wall
 all: clean lance
 
@@ -36,6 +36,13 @@ Tmax:
 	rm -f $(DIRgplt)tmax1.ps
 	rm -f $(DIRgplt)tmax2.ps
 		
+Bruteforce:
+	gnuplot $(DIRgplt)expbruteforce.gplt
+	ps2pdf $(DIRgplt)expbruteforce.ps $(DIRgplt)expbruteforce.pdf
+	evince $(DIRgplt)expbruteforce.pdf &
+	rm -f $(DIRgplt)expbruteforce.ps
+
+	
 lance: main
 	./main
 	
@@ -56,6 +63,9 @@ $(DIRbin)topologies.o: graph.h topologies.c
 	
 $(DIRbin)calcul.o: graph.h calcul.c
 	gcc $(FLAGS) -c calcul.c -o $(DIRbin)calcul.o
+	
+$(DIRbin)bruteforce.o: graph.h bruteforce.c
+	gcc $(FLAGS) -c bruteforce.c -o $(DIRbin)bruteforce.o
 	
 $(DIRbin)test.o: graph.h test.c
 	gcc $(FLAGS) -c test.c -o $(DIRbin)test.o
