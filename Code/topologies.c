@@ -8,17 +8,17 @@ Graphe topologie1(int sources, int leaves,int mode)
 	int x,y;
 	if(mode == 0)
 	{
-		x = 1500;
-		y = 1500;
+		x = TAILLE_ROUTE/3;
+		y = TAILLE_ROUTE/3;
 	}
 	else if(mode == 1)
 	{
 		x=0;
-		y=700;
+		y=TAILLE_ROUTE/3;;
 	}
 	else
 	{
-		x=700;
+		x=TAILLE_ROUTE/3;;
 		y=0;
 	}
 	Graphe g;

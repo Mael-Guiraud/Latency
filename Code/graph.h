@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
+#define TAILLE_ROUTE 2000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -56,6 +57,21 @@ typedef struct{
   int suivant;
 }intervalle_liste;
 
+typedef struct element{
+	int index;
+	int release;
+	int deadline;
+	struct element * next;
+} Element;
+
+typedef struct ensemble{
+	int numero_element; // vaut -1 si c'est un ensemble
+	int temps_depart;
+	struct ensemble * filsG;
+	struct ensemble * frereG;
+	struct ensemble * frereD;
+} Ensemble;
+
 
 //TOPOLOGIE.c fonctions de créations de graphe
 Graphe topologie1(int sources, int leaves, int mode);
@@ -106,6 +122,7 @@ int lower(int * tab,int taille);
 int full(int * tab, int taille);
 int factorielle(int a);
 int max(int a, int b);
+int min(int a,int b);
 void ajoutetab(int * t1, int * t2,int taille);
 int taille_fenetre(int * tab, int taille);
 int tMax(Graphe g,TwoWayTrip t);
@@ -134,5 +151,26 @@ int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_pa
 int* genere_reseau(int nbr_route, int taille_route);
 void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget);
 TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour);
+
+
+//simons.c Fonctions sur l'algo de barabara Simons
+Ensemble * init_ensemble();
+Element * init_element();
+void affiche_ensemble_unique(Ensemble * ens);
+void affiche_ensemble(Ensemble * ens);
+Element * ajoute_elemt(Element * elem,int index, int release, int deadline);
+Ensemble * cree_ensemble(int numero, int temps);
+Element* retire_element_i(Element * elem, int index);
+Element * get_element_i(Element * elem, int index);
+void freeelems(Element * elem);
+void affichejobs(Element* elem);
+Element * cpy_elems(Element * elems);
+int date_fin(Ensemble * ens);
+int eligible(Element * elems, int time);
+void libereens(Ensemble * ens);
+Ensemble * cpyens(Ensemble * ens);
+Ensemble * invade(Ensemble * ens,Element * touselems,int depart);
+Ensemble * crisis(Ensemble * ens,Element * crisise, Element * elemspere,Element * touselems);
+TwoWayTrip simons(Graphe g);
 
 

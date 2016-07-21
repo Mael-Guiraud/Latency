@@ -3,7 +3,7 @@ DIRtxt = results/
 DIRgplt = gplt/
 
 
-OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)bruteforce.o $(DIRbin)test.o $(DIRbin)main.o
+OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)bruteforce.o $(DIRbin)simons.o $(DIRbin)test.o $(DIRbin)main.o
 FLAGS = -g -O3 -Wall
 all: clean lance
 
@@ -66,7 +66,10 @@ $(DIRbin)calcul.o: graph.h calcul.c
 	
 $(DIRbin)bruteforce.o: graph.h bruteforce.c
 	gcc $(FLAGS) -c bruteforce.c -o $(DIRbin)bruteforce.o
-	
+
+$(DIRbin)simons.o: graph.h simons.c
+	gcc $(FLAGS) -c simons.c -o $(DIRbin)simons.o
+		
 $(DIRbin)test.o: graph.h test.c
 	gcc $(FLAGS) -c test.c -o $(DIRbin)test.o
 	

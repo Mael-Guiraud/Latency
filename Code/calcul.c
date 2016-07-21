@@ -158,7 +158,12 @@ int max(int a, int b)
 		return a;
 	return b;
 }
-
+int min(int a,int b)
+{
+	if(a<b)
+		return a;
+	return b;
+}
 //additionne les valeurs de deux tableaux de meme taille
 void ajoutetab(int * t1, int * t2, int taille)
 {

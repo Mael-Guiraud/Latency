@@ -146,7 +146,7 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
 		for(i=0;i<nbr_route;i++)
 		{
 			
-			t.M[solution_num[i]] = solution_pos[i]-distance(g.routes[solution_num[i]],2); 
+			t.M[solution_num[i]] = solution_pos[i]-distance(g.routes[solution_num[i]],2)+distance(g.routes[solution_num[0]],2); 
 			//securité pour eviter d'avoir des offsets de départ négatifs
 			if(t.M[solution_num[i]] < 0)
 			{

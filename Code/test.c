@@ -63,7 +63,7 @@ void afficheRouteStar(RouteStar r)
 
 void simulation(int mode)
 {
-	int taille = 6;
+	int taille = 5;
 	Graphe g = topologie1(taille,taille,mode);
 	ecrire_fichierGraph(g);
 	printf("-------------------G-------------\n");
@@ -72,9 +72,10 @@ void simulation(int mode)
 	//printf("-------------------Gr-------------\n");
 	Graphe gr = renverse(g);
 	//affiche_graphe(gr);
-	int * temps_retour = graphe_to_temps_retour(g);
+	//int * temps_retour = graphe_to_temps_retour(g);
 	
-	TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
+	//TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
+	TwoWayTrip t = simons(g);
 	
 
 	printf("----------2way------\n");
@@ -143,89 +144,91 @@ void  simulationsTmax()
 	Graphe g;
 	TwoWayTrip t;
 	int nb_simul = 1000;
-	int moyenne_Tmax=0;
-	int pire_Tmax=0;
-	int moyenne_Tmaxopti = 0;
-	int pire_Tmaxopti = 0;
-	int longesttmp = 0;
+	int moyenne_Tmax[3];
+	int pire_Tmax[3];
 	int tmaxtmp = 0;
-	long long int ecart_type=0;
-	int slotsperdus=0;
+	int longesttmp = 0;
+	long long int ecart_type[3];
+	int slotsperdus[3];
+	for(i=0;i<3;i++)
+	{
+		moyenne_Tmax[i] = 0;
+		pire_Tmax[i] =0;
+		ecart_type[i] = 0;
+		slotsperdus[i] = 0;
+	}
 	char nom[64];
 	
 	for(i=1;i<8;i++)//taille route
 	{
 		ecrire_bornesTMax(i);
-		for(j=0;j<1;j++)//algo
-		{
 			for(k=0;k<3;k++)//mode
 			{
-				moyenne_Tmax= 0;
-				moyenne_Tmaxopti = 0;
-				pire_Tmax = 0;
-				pire_Tmaxopti = 0;
-				ecart_type = 0;
-				slotsperdus = 0;
-				if(j == 0)
-				{
-					strcpy(nom,"results/Tmax_heuristique_longest-shortest");
-				}
 				for(l=0;l<nb_simul;l++)
 				{
-					g=topologie1(i,i,k);
+				g=topologie1(i,i,k);
+				for(j=0;j<3;j++)
+				{
+					
+						
+				longesttmp = 2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght);
 					if(j == 0)
 					{
 						t = longest_shortest(g);
 					}
-					longesttmp = 2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght);
-					tmaxtmp = tMax(g,t);
-					moyenne_Tmaxopti+=longesttmp;
-					moyenne_Tmax += tmaxtmp;
-					ecart_type = (long long)ecart_type + (long long)(longesttmp * longesttmp);
-					slotsperdus += tmaxtmp - longesttmp;
-					/*if((tMax(g,t)> pire_Tmax )&&(j==0))
-					{
-						printf("%d routes----------------------------\n",i);
-						affiche_graphe(g);
-						afficheTwoWayTrip(t);
-						printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
-	
-					}*/
-					pire_Tmax = max(pire_Tmax,tmaxtmp);
-					pire_Tmaxopti = max(pire_Tmaxopti,longesttmp);
+					else if(j==1)
+						t = longest_shortest(g);
+						
+					if(j==2)
+					{ 
+						moyenne_Tmax[j] += longesttmp;
+						pire_Tmax[j] = max(pire_Tmax[j],longesttmp);
+					}
+					else{
+						tmaxtmp = tMax(g,t);
+						moyenne_Tmax[j] += tmaxtmp;
+						ecart_type[j] = (long long)ecart_type[j] + (long long)(longesttmp * longesttmp);
+						slotsperdus[j] += tmaxtmp - longesttmp;
+						pire_Tmax[j] = max(pire_Tmax[j],tmaxtmp);
+					}
 					
-				}
-				//moyenne_Tmax /= nb_simul;
-				moyenne_Tmaxopti /= nb_simul;
-				moyenne_Tmax /= nb_simul;
-				ecart_type /= (long long)nb_simul;
-				ecart_type -= (long long)(moyenne_Tmax * moyenne_Tmax);
-				ecart_type = (long long)sqrt((double)ecart_type);
-				slotsperdus /= nb_simul;
-				//printf("%d\n", (int)ecart_type);
-				if(k==0)
-				{
-					strcat(nom,"_mode0.txt");
-					creationfichierTmax(i,moyenne_Tmax,pire_Tmax,slotsperdus,nom);
-					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode0.txt");
 					
-					//printf("écriture dans %s\n",nom);
-				}
-				else if(k==1)
-				{
-					strcat(nom,"_mode1.txt");
-					creationfichierTmax(i,moyenne_Tmax,pire_Tmax,(int)ecart_type,nom);
-					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode1.txt");
-					//printf("écriture dans %s\n",nom);
-				}
-				else if(k==2)
-				{
-					strcat(nom,"_mode2.txt");
-					creationfichierTmax(i,moyenne_Tmax,pire_Tmax,(int)ecart_type,nom);
-					creationfichier(i,moyenne_Tmaxopti,pire_Tmaxopti,"results/bornestmax_mode2.txt");
-					//printf("écriture dans %s\n",nom);
+					
+					
 				}
 			}
+			for(j=0;j<3;j++)
+			{
+				moyenne_Tmax[j] /= nb_simul;
+				ecart_type[j] /= (long long)nb_simul;
+				ecart_type[j] -= (long long)(moyenne_Tmax[j] * moyenne_Tmax[j]);
+				ecart_type[j] = (long long)sqrt((double)ecart_type[j]);
+				slotsperdus[j] /= nb_simul;
+				//printf("%d\n", (int)ecart_type);
+					if(j == 0)
+					{
+						sprintf(nom,"results/Tmax_heuristique_longest-shortest_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
+						creationfichierTmax(i,moyenne_Tmax[j],pire_Tmax[j],slotsperdus[j],nom);
+					}
+					else if(j == 1)
+					{
+						sprintf(nom,"results/Tmax_simons_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
+						creationfichierTmax(i,moyenne_Tmax[j],pire_Tmax[j],slotsperdus[j],nom);
+					}
+					else if(j == 2)
+					{
+						sprintf(nom,"results/bornestmax_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
+						creationfichier(i,moyenne_Tmax[j],pire_Tmax[j],nom);
+					}
+				moyenne_Tmax[j] = 0;
+				pire_Tmax[j] = 0;
+				ecart_type[j] = 0;
+				slotsperdus[j] = 0;		
+			}
+			
 		}
 	}
 }
@@ -406,9 +409,6 @@ void etude_exp_bruteforce()
 		reussite /=100;
 		fprintf(f,"%f %d \n",6.25*i, reussite);
 	}
-		
-	
-	
 	fclose(f);
 }
 
