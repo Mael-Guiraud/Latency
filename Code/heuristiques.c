@@ -523,4 +523,68 @@ TwoWayTrip recherche_lineaire_brute(Graphe g, int P)
 	t.window_size = -1;
 	return t;
 }
+
+TwoWayTrip random_sending(Graphe g)
+{
+	TwoWayTrip t;
+	t.taille = g.sources;
+	t.M = malloc(sizeof(int)*g.sources);
+	t.buffer = malloc(sizeof(int)*g.sources);
+	t.W = malloc(sizeof(int)*g.sources);
+	Graphe gr = renverse(g);
+	int i;
+	int departs[g.sources];
+	int arrivees[g.sources];
+	for(i=0;i<g.sources;i++)
+	{
+		departs[i] = rand_entier(16942);
+		arrivees[i] = 0;
+		t.M[i] = 0;
+		t.W[i] = 0;
+		t.buffer[i] = 0;
+	}
+	int j;
+	int date = 0;
+	affichetab(departs,g.sources);
+	for(i=0;i<g.sources;i++)//calcul des buffers et temps allers
+	{
+		j= lower(departs,g.sources);
+		
+		if(date < departs[j])//pas de buffer
+		{
+			t.buffer[j] = 0;
+			date = departs[j] + taille_paquet;
+			t.M[j] = departs[j] -distance(g.routes[j],1);
+			arrivees[j] = t.M[j] + distance(g.routes[j],3) + distance(gr.routes[j],1);
+		}
+		else//bufferistation
+		{
+			t.buffer[j] = date - departs[j];
+			t.M[j] = date - distance(g.routes[j],1);
+			date += taille_paquet;
+			arrivees[j] = t.M[j] + distance(g.routes[j],3) + distance(gr.routes[j],1);
+		}
+		departs[j] = 99999;
+	}
+	
+	date = 0;
+	for(i=0;i<g.sources;i++)//on rajoute les décalages 
+	{
+		j = lower(arrivees,g.sources);
+		
+		if(date < arrivees[j])//pas de buffer
+		{
+			date = arrivees[j] + taille_paquet;
+			t.W[j] = 0;
+		}
+		else//bufferistation
+		{
+			t.W[j] = date - arrivees[j];
+			date += taille_paquet;
+		}
+		arrivees[j] = 99999;
+	}
+	freeGraphe(gr);
+	return t;
+}
 					

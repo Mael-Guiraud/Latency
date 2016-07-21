@@ -449,7 +449,7 @@ Ensemble * crisis(Ensemble * ens,Element * crisise, Element * elemspere,Element 
 {
 	if(ens == NULL)
 		return NULL;
-	//printf("------------------ENTREE DANS LA FONCTION CRISIS-----------------------------\n");
+	printf("------------------ENTREE DANS LA FONCTION CRISIS-----------------------------\n");
 	//affiche_ensemble(ens);printf("\n");
 	Ensemble * ens2 = NULL;
 	Ensemble * tmp = NULL;

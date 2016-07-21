@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
-#define TAILLE_ROUTE 2000
+#define TAILLE_ROUTE 2100
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -41,6 +41,7 @@ typedef struct twoWayTrip{
 	int window_size;
 	int *M;
 	int *W;
+	int *buffer;
 }TwoWayTrip;
 
 typedef struct routeStar{
@@ -89,6 +90,7 @@ TwoWayTrip bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offs
 TwoWayTrip recherche_lineaire_star(Graphe g, int P);
 TwoWayTrip recherche_lineaire_prime(Graphe g, int P);
 TwoWayTrip recherche_lineaire_brute(Graphe g, int P);
+TwoWayTrip random_sending(Graphe g);
 
 //Fichiers.c Fonctions de gestions des fichiers
 void creationfichierGraph(Graphe g,char * nom);
@@ -126,6 +128,7 @@ int min(int a,int b);
 void ajoutetab(int * t1, int * t2,int taille);
 int taille_fenetre(int * tab, int taille);
 int tMax(Graphe g,TwoWayTrip t);
+int tMax_random(Graphe g,TwoWayTrip t);
 int indiceTMax(Graphe g,TwoWayTrip t);
 int longerOfeEligible(int * Dl, int * lambda, int * arrivee,int offset, int taille);
 int collision_a_b(int a, int b, int P);

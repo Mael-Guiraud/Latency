@@ -63,7 +63,7 @@ void afficheRouteStar(RouteStar r)
 
 void simulation(int mode)
 {
-	int taille = 5;
+	int taille = 6;
 	Graphe g = topologie1(taille,taille,mode);
 	ecrire_fichierGraph(g);
 	printf("-------------------G-------------\n");
@@ -75,7 +75,7 @@ void simulation(int mode)
 	//int * temps_retour = graphe_to_temps_retour(g);
 	
 	//TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
-	TwoWayTrip t = simons(g);
+	TwoWayTrip t = random_sending(g);
 	
 
 	printf("----------2way------\n");
@@ -86,7 +86,7 @@ void simulation(int mode)
 	int collisions[g.sources];
 	for(i=0;i<g.sources;i++)
 	{
-		
+		printf("route %d : %d\n",i,t.buffer[i]);
 		collisions[i] = (t.M[i]+distance(g.routes[i],1))%P;
 	
 		arrivee[i] = (t.M[i]+distance(g.routes[i],g.routes[i].route_lenght))%P;
@@ -106,7 +106,7 @@ void simulation(int mode)
 	
 	creationfichierWindow(collisions, g.sources,"results/Retour.txt");
 	printf("il y a %d collisions au retour\n",test_collisions(collisions,g.sources,P));
-	printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
+	printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax_random(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
 	printf("taille de la fenetre = %d\n",taille_fenetre(collisions,g.sources));
 	//printf("taille theorique (uniquement pour shortest longest) de la fenetre = %d\n",2*distance(gr.routes[longest_on_sources(gr.routes,g.sources)],1)+g.sources*taille_paquet-2*distance(gr.routes[shortest_on_sources(gr.routes,g.sources)],1));
 
@@ -144,13 +144,13 @@ void  simulationsTmax()
 	Graphe g;
 	TwoWayTrip t;
 	int nb_simul = 1000;
-	int moyenne_Tmax[3];
-	int pire_Tmax[3];
+	int moyenne_Tmax[4];
+	int pire_Tmax[4];
 	int tmaxtmp = 0;
 	int longesttmp = 0;
-	long long int ecart_type[3];
-	int slotsperdus[3];
-	for(i=0;i<3;i++)
+	long long int ecart_type[4];
+	int slotsperdus[4];
+	for(i=0;i<4;i++)
 	{
 		moyenne_Tmax[i] = 0;
 		pire_Tmax[i] =0;
@@ -167,7 +167,7 @@ void  simulationsTmax()
 				for(l=0;l<nb_simul;l++)
 				{
 				g=topologie1(i,i,k);
-				for(j=0;j<3;j++)
+				for(j=0;j<4;j++)
 				{
 					
 						
@@ -178,14 +178,27 @@ void  simulationsTmax()
 					}
 					else if(j==1)
 						t = longest_shortest(g);
-						
+					else if(j==3)
+					{
+						t = random_sending(g);
+					}
+					
 					if(j==2)
 					{ 
 						moyenne_Tmax[j] += longesttmp;
 						pire_Tmax[j] = max(pire_Tmax[j],longesttmp);
 					}
+
+					
 					else{
-						tmaxtmp = tMax(g,t);
+						if(j == 3)
+						{
+							tmaxtmp = tMax_random(g,t);
+						}
+						else
+						{
+							tmaxtmp = tMax(g,t);
+						}
 						moyenne_Tmax[j] += tmaxtmp;
 						ecart_type[j] = (long long)ecart_type[j] + (long long)(longesttmp * longesttmp);
 						slotsperdus[j] += tmaxtmp - longesttmp;
@@ -197,7 +210,7 @@ void  simulationsTmax()
 					
 				}
 			}
-			for(j=0;j<3;j++)
+			for(j=0;j<4;j++)
 			{
 				moyenne_Tmax[j] /= nb_simul;
 				ecart_type[j] /= (long long)nb_simul;
@@ -222,6 +235,12 @@ void  simulationsTmax()
 						sprintf(nom,"results/bornestmax_mode%d.txt",k);
 						printf("%d routes , écriture dans %s\n",i,nom);
 						creationfichier(i,moyenne_Tmax[j],pire_Tmax[j],nom);
+					}
+					else if(j == 3)
+					{
+						sprintf(nom,"results/Tmax_random_mode%d.txt",k);
+						printf("%d routes , écriture dans %s\n",i,nom);
+						creationfichierTmax(i,moyenne_Tmax[j],pire_Tmax[j],slotsperdus[j],nom);
 					}
 				moyenne_Tmax[j] = 0;
 				pire_Tmax[j] = 0;
@@ -397,7 +416,7 @@ void etude_exp_bruteforce()
 		for(j=0;j<10000;j++)
 		{
 			if(j%100 ==0)
-				printf("%d\n",j/100);
+				printf("%d(%d pourcents)\n",i,j/100);
 			g = topologie1(i,i,0);
 			temps_retour = graphe_to_temps_retour(g);
 			t = bruteforceiter(g,taille_paquet,periode,g.sources,temps_retour);

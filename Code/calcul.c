@@ -210,6 +210,22 @@ int tMax(Graphe g,TwoWayTrip t)
 	return max;
 }
 
+
+//Renvoie le Tmax dans une graphe g avec un twowaytrip assigné t avec les buffers
+int tMax_random(Graphe g,TwoWayTrip t)
+{
+	int i;
+	//afficheTwoWayTrip(t);
+	//affiche_graphe(g);
+	int max = 2*distance(g.routes[0],g.routes[0].route_lenght)+t.W[0]+t.buffer[0];
+	for(i=0;i<t.taille;i++)
+	{
+		if(2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i]+t.buffer[i] > max)
+			max = 2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i]+t.buffer[i];
+	}
+	return max;
+}
+
 int indiceTMax(Graphe g,TwoWayTrip t)
 {
 	int i;
@@ -324,7 +340,7 @@ int test_collisions(int * tab, int taille, int P)
 		{
 			if(collision_a_b(tab[i],tab[j],P))
 			{
-				//printf("collision entre %d(%d) et %d(%d)\n",i,tab[i],j,tab[j]);
+				printf("collision entre %d(%d) et %d(%d)\n",i,tab[i],j,tab[j]);
 				err++;
 			}
 		}
@@ -459,8 +475,6 @@ int * graphe_to_temps_retour(Graphe g)
 	freeGraphe(gr);
 	return tab;
 }
-
-
 
 
 
