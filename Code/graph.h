@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
-#define TAILLE_ROUTE 2100
+#define TAILLE_ROUTE 2000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -111,6 +111,8 @@ void simulationsTmax();
 void simulationsWindow();
 int valide(Graphe g, TwoWayTrip t, int P);
 void etude_exp_bruteforce();
+void genere_distrib();
+void genere_distrib_cumulee();
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);

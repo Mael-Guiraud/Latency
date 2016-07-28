@@ -217,9 +217,12 @@ int tMax_random(Graphe g,TwoWayTrip t)
 	int i;
 	//afficheTwoWayTrip(t);
 	//affiche_graphe(g);
+	if(!t.buffer)return-1;
+	
 	int max = 2*distance(g.routes[0],g.routes[0].route_lenght)+t.W[0]+t.buffer[0];
 	for(i=0;i<t.taille;i++)
 	{
+		
 		if(2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i]+t.buffer[i] > max)
 			max = 2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i]+t.buffer[i];
 	}
@@ -431,12 +434,13 @@ void occuper_p(int * tab, int a, int b)
 void freeGraphe(Graphe g)
 {
 	int i;
+	
 	for(i=0;i<g.vertex_number;i++)
 	{
 		free(g.vertices[i].weight);
-		g.vertices[i].weight = NULL;
+		
 		free(g.vertices[i].neighboors);
-		g.vertices[i].neighboors = NULL;
+
 	}
 	for(i=0;i<g.sources;i++)
 	{

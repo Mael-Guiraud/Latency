@@ -447,9 +447,10 @@ Ensemble * invade(Ensemble * ens,Element * touselems,int depart)
 }
 Ensemble * crisis(Ensemble * ens,Element * crisise, Element * elemspere,Element * touselems)
 {
+	printf("------------------ENTREE DANS LA FONCTION CRISIS-----------------------------\n");
 	if(ens == NULL)
 		return NULL;
-	printf("------------------ENTREE DANS LA FONCTION CRISIS-----------------------------\n");
+	printf("ens != NULL\n");
 	//affiche_ensemble(ens);printf("\n");
 	Ensemble * ens2 = NULL;
 	Ensemble * tmp = NULL;
@@ -779,7 +780,7 @@ TwoWayTrip simons(Graphe g)
 		if(date+taille_paquet > tmp->deadline)//CRISIS
 		{
 			
-			//printf("Crisis(main) sur la tache %d\n",tmp->index);
+			printf("Crisis(main) sur la tache %d\n",tmp->index);
 			Element * crisise = NULL;
 			crisise = ajoute_elemt(crisise,tmp->index,tmp->release,tmp->deadline);
 			elems2=retire_element_i(elems2,crisise->index);

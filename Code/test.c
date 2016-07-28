@@ -75,9 +75,13 @@ void simulation(int mode)
 	//int * temps_retour = graphe_to_temps_retour(g);
 	
 	//TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
-	TwoWayTrip t = random_sending(g);
+	TwoWayTrip t = simons(g);
 	
-
+	if(t.window_size == -1)
+	{
+		printf("Pas de solutions\n");
+		return;
+	}
 	printf("----------2way------\n");
 	afficheTwoWayTrip(t);
 	int i;
@@ -86,7 +90,7 @@ void simulation(int mode)
 	int collisions[g.sources];
 	for(i=0;i<g.sources;i++)
 	{
-		printf("route %d : %d\n",i,t.buffer[i]);
+		//printf("route %d : %d\n",i,t.buffer[i]);
 		collisions[i] = (t.M[i]+distance(g.routes[i],1))%P;
 	
 		arrivee[i] = (t.M[i]+distance(g.routes[i],g.routes[i].route_lenght))%P;
@@ -106,7 +110,7 @@ void simulation(int mode)
 	
 	creationfichierWindow(collisions, g.sources,"results/Retour.txt");
 	printf("il y a %d collisions au retour\n",test_collisions(collisions,g.sources,P));
-	printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax_random(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
+	printf("Tmax = %d(route %d) (longest *2 = %d)\n",tMax(g,t),indiceTMax(g,t),2*distance(g.routes[longest(g.routes,g.sources)],g.routes[longest(g.routes,g.sources)].route_lenght));
 	printf("taille de la fenetre = %d\n",taille_fenetre(collisions,g.sources));
 	//printf("taille theorique (uniquement pour shortest longest) de la fenetre = %d\n",2*distance(gr.routes[longest_on_sources(gr.routes,g.sources)],1)+g.sources*taille_paquet-2*distance(gr.routes[shortest_on_sources(gr.routes,g.sources)],1));
 
@@ -143,7 +147,7 @@ void  simulationsTmax()
 	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
-	int nb_simul = 1000;
+	int nb_simul = 10000;
 	int moyenne_Tmax[4];
 	int pire_Tmax[4];
 	int tmaxtmp = 0;
@@ -433,11 +437,153 @@ void etude_exp_bruteforce()
 
 
 
+void genere_distrib()
+{
+	
+	DIR * rep = opendir ("./results/");
+  
+   if (rep != NULL)
+   {
+      struct dirent * ent;
+  
+      while ((ent = readdir (rep)) != NULL)
+      {
+          if(strstr(ent->d_name, "distrib") != NULL) // si on a distrib dans le nom du fichier
+		{ 
+		 char nom[64];
+		strcpy(nom,"./results/");
+ 		 remove (strcat(nom,ent->d_name));
+		printf("deletion of %s\n",nom);
+	}
+      }
+       
+      closedir (rep);
+   }
+	
+	FILE *f;
+	Graphe g;
+	TwoWayTrip t;
+	int taille;
+	int j;
+	int T_max ;
+	char nom[64];
+	double compteur = 0;
+	int distribs[150];
+
+	for(taille = 1;taille < 8; taille ++)
+	{
+		for(j=0;j<150;j++)
+		{
+			distribs[j] = 0;
+		}
+		sprintf(nom,"results/distribution_random_%d.txt",taille);
+		f=fopen(nom,"a");
+		for(j=0;j<100000;j++)
+		{
+			
+			g = topologie1(taille,taille,0);
+			t = longest_shortest(g);
+			T_max = tMax(g,t);
+			T_max /= 100;
+			if(T_max < 150)
+			{
+				distribs[T_max]++;
+			}
+			else
+				printf("plus loins\n");
+			//freeGraphe(g);
+			freeTwoWayTrip(t);
+		}	
+		
+		for(j=0;j<150;j++)	
+		{
+			compteur+=(double)((double)distribs[j]/1000);
+			fprintf(f,"%d %f\n",j*100,(double)((double)distribs[j]/1000));
+		}
+		
+		printf("counter = %f\n",compteur);
+		compteur = 0;
+		fclose(f);
+
+	}
+
+}
 
 
 
 
+void genere_distrib_cumulee()
+{
+	
+	DIR * rep = opendir ("./results/");
+  
+   if (rep != NULL)
+   {
+      struct dirent * ent;
+  
+      while ((ent = readdir (rep)) != NULL)
+      {
+          if(strstr(ent->d_name, "distribution_cumulee_") != NULL) // si on a distrib dans le nom du fichier
+		{ 
+		 char nom[64];
+		strcpy(nom,"./results/");
+ 		 remove (strcat(nom,ent->d_name));
+		printf("deletion of %s\n",nom);
+	}
+      }
+       
+      closedir (rep);
+   }
+	
+	FILE *f;
+	Graphe g;
+	TwoWayTrip t;
+	int taille;
+	int j;
+	int T_max ;
+	char nom[64];
+	int distribs[150];
 
+	for(taille = 1;taille < 8; taille ++)
+	{
+		for(j=0;j<150;j++)
+		{
+			distribs[j] = 0;
+		}
+		sprintf(nom,"results/distribution_cumulee_%d.txt",taille);
+		f=fopen(nom,"a");
+		for(j=0;j<100000;j++)
+		{
+			
+			g = topologie1(taille,taille,0);
+			t = longest_shortest(g);
+			T_max = tMax(g,t);
+
+			T_max /= 100;
+			if(T_max < 150)
+			{
+				distribs[T_max]++;
+			}
+			else
+				printf("plus loins\n");
+			//freeGraphe(g);
+			freeTwoWayTrip(t);
+		}	
+		
+		for(j=0;j<150;j++)	
+		{
+			if(j)
+			distribs[j] += distribs[j-1];
+			fprintf(f,"%d %f\n",j*100,(double)((double)distribs[j]/1000));
+		}
+		
+		
+
+		fclose(f);
+
+	}
+
+}
 
 
 

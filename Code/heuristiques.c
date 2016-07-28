@@ -545,7 +545,7 @@ TwoWayTrip random_sending(Graphe g)
 	}
 	int j;
 	int date = 0;
-	affichetab(departs,g.sources);
+	//affichetab(departs,g.sources);
 	for(i=0;i<g.sources;i++)//calcul des buffers et temps allers
 	{
 		j= lower(departs,g.sources);

@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{xspace}
+\usepackage{graphicx,graphics} 
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc}
+
+%opening
+\title{Résumé : A fast algorithm for single processor scheduling, Barbara Simons }
+\author{Maël Guiraud}
+
+\begin{document}
+\maketitle
+\parindent=0pt
+\section*{Introduction}
+L'article ``A fast algorithm for single processor scheduling, de Barbar Simons présente un algorithme efficace pour l’ordonnancement de tâches de même durée
+sur un processeur unique. La complexité de cet algorithme est de n²log(n), ou n est le nombre de tâches a ordonnancer.
+\section{Modèle}
+
+L'algorithme travail sur un ensemble de tâches qui ont toutes la même durée d’exécution, une release time et une deadline.
+
+Le but est d'ordonnancer les tâches sur un seul processeur de façon à ce que chaque tâche ne débute qu'après son release time et finisse avant sa deadline.
+
+\section{Algorithme}
+L'algorithme est composé de trois parties:
+ 
+Une partie naïve, qui choisi la tache prioritaire selon deux critères
+\begin{itemize}
+ \item On cherche parmi les tâches restantes celles qui sont disponible (c'est à dire dont la release time est inférieure ou égale à la date actuelle).
+ \item Parmi ces tâches, on prend la tâche qui à la deadline la plus petite.
+\end{itemize}
+Lorsqu'une tâche choisie a une deadline inférieure à sa date de départ plus son temps d’exécution, c'est une tâche critique,
+on appel la deuxième partie de l'algorithme.
+
+Cette deuxième partie (CRISIS) recherche parmi les tâches déjà ordonnancées une tâche dont la deadline est supérieure à la tache critique.
+Si la tache critique est X, la tâche recherchée est appelée PULL(X). Si on ne trouve pas PULL(X), l'algorithme s'arrête.
+Cette recherche s'effectue depuis la fin de l'ordonnancement partiel, et la tâche critique ainsi que toutes les taches que l'on à parcouru sont enlevés et placées dans un 
+nouvel ensemble appelé ''restricted set``. PULL(X) n'appartiens pas au restricted set.
+
+Une fois ce restricted set établi, on applique l'algorithme naïf pour ordonnancer les taches à l’intérieur. Il peut y avoir une tâche critique,
+dans ce cas la, un appel récursif sur CR
+
+Lorsque l'on effectue la recherche sur PULL(X), on ne considère pas les tâches appartenant aux r.s. compris dans le r.s. que l'on est en train 
+d'ordonnancer. En revanche, on compte le nombre de tache dans les intervalles entre chaque r.s., et on doit y ordonnancer le même nombre de tâches.
+L'intervalle au début du r.s. que l'on est en train d'ordonnancer doit contenir une tache de plus qu'on en a enlevé.
+
+Dans le cas ou l'ordonnancement des tâches dans un intervalle déborde sur le début d'un r.s., on appel la troisième partie de l'algorithme : INVADE.
+
+Cette partie reprends l'ordonnancement du r.s. concerné avec une date de départ qui est celle de la fin de la dernière tâche de l'intervalle qui 
+dépassait. Il faut de la même manière réorganiser tous les intervalles du r.s., si un problème cités précédemment se produit, on appel récursivement
+la fonction adaptée.
+
+
+\section{Application}
+Dans notre problème, cet algorithme permet d'améliorer l'heuristique ''longest shortest`` proposée. En effet, cette dernière n'utilise que la partie
+naïve de l'algorithme pour ordonnancer les messages au retour. Notre heuristique définissant d’abord de façon gloutonne les dates de départ,
+on peut calculer le release time de chaque message (symbolisés par des tâches dans l'algorithme), et les deadlines(3ms après l'envoi du message).
+
+Cet algorithme, prouvé comme donnant une solution optimale permet donc d'obtenir la meilleure solution avec les offset de départ choisis.
+Il résout donc la moitié du problème en temps polynomial, mais pas tout le problème (appliquer cet algorithme sur chaque configuration de départ 
+rends le problème exponentiel).
+
+Cet algorithme ne traite pas de la périodicité du problème, pour l’adapter à notre modèle, il suffit de faire en sorte de définir les deadlines comme
+le minimum entre la deadline réelle du message, et la taille de la fenêtre, de façon a pouvoir répéter le processus périodiquement.
+
+\section{Analyse}
+
+La faible complexité de cet algorithme est due au fait que chaque tâche ne pourra être qu'une seule fois critique.
+En effet, si une tâche X est une tâche critique, elle va former un r.s. dans lequel chaque tâche aura une deadline inférieure à celle de X.
+Donc, si X redeviens critique, PULL(X) n'existera pas et l'algorithme va s'arrêter.
+
+L'algorithme trouve toujours une solution optimal car ....
+\end{document}

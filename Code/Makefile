@@ -41,6 +41,18 @@ Bruteforce:
 	ps2pdf $(DIRgplt)expbruteforce.ps $(DIRgplt)expbruteforce.pdf
 	evince $(DIRgplt)expbruteforce.pdf &
 	rm -f $(DIRgplt)expbruteforce.ps
+		
+Distributions:
+	gnuplot $(DIRgplt)distris.gplt
+	ps2pdf $(DIRgplt)distribs.ps $(DIRgplt)distributions.pdf
+	evince $(DIRgplt)distributions.pdf &
+	rm -f $(DIRgplt)distributions.ps
+
+DistributionsCumul:
+	gnuplot $(DIRgplt)distriscumul.gplt
+	ps2pdf $(DIRgplt)distriscumul.ps $(DIRgplt)distriscumul.pdf
+	evince $(DIRgplt)distriscumul.pdf &
+	rm -f $(DIRgplt)distriscumul.ps
 
 	
 lance: main
