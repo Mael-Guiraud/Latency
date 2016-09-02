@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define NBR_ROUTE 16
+#define NBR_ROUTE 8
 #define TAILLE_PAQUET 2558
-#define PERIODE 100000
-#define TAILLE_ROUTE 2000
+#define PERIODE 24000
+#define TAILLE_ROUTE 6000
+
+int coupe;
 
 typedef struct{
   int debut;
@@ -37,9 +39,11 @@ int ajoute_element(intervalle_liste *liste, int debut, int taille, int taille_pa
   int pos=0;
   while(pos != -1){//détecte l'intervalle à découper si il existe
     if(liste[pos].debut <= debut && liste[pos].fin - debut >=  taille_paquet){//l'intervalle existe, on le découpe
-      //on calcule le nombre de slot après décooupage (en prenant en compte les paquets déjà placés)
+      //on calcule le nombre de slot après découpage (en prenant en compte les paquets déjà placés)
       *nombre_slot+= (debut - liste[pos].debut)/taille_paquet +  (liste[pos].fin - debut)/taille_paquet -  (liste[pos].fin - liste[pos].debut)/taille_paquet;
-      if(*nombre_slot >= nbr_route){ // si le nombre de slots retour est insuffisant, on ne permet pas l'ajout de l'élément à cet endroit     
+      //if((debut - liste[pos].debut)/taille_paquet +  (liste[pos].fin - debut)/taille_paquet -  (liste[pos].fin - liste[pos].debut)/taille_paquet){printf("Décrémente: %d\n",*nombre_slot);}
+      //else{printf("Décrémente pas %d\n",*nombre_slot);}
+      if(*nombre_slot >= nbr_route){// si le nombre de slots retour est insuffisant, on ne permet pas l'ajout de l'élément à cet endroit     
       liste[taille].debut = debut + taille_paquet;
       liste[taille].fin = liste[pos].fin;
       liste[taille].suivant = liste[pos].suivant;
@@ -47,7 +51,11 @@ int ajoute_element(intervalle_liste *liste, int debut, int taille, int taille_pa
       liste[pos].suivant = taille;
       return 1;
       }
-      else{return 0;}
+      else{
+	coupe++;
+	*nombre_slot +=1;
+	return 0;
+      }
     }
     pos = liste[pos].suivant;
   }
@@ -59,7 +67,9 @@ void retire_element(intervalle_liste *liste, int debut, int taille, int *nombre_
   for (i = 0; i< taille; i++){
     if(liste[i].fin == debut){break;}
   }//cherche l'intervalle à fusionner, l'autre est en dernière position par construction
-  *nombre_slot+= - (debut - liste[i].debut)/taille_paquet -  (liste[taille].fin - debut)/taille_paquet +  (liste[taille].fin - liste[i].debut)/taille_paquet;
+  *nombre_slot-=  (debut - liste[i].debut)/taille_paquet +  (liste[taille].fin - debut)/taille_paquet  - (liste[taille].fin - liste[i].debut)/taille_paquet;
+  //if( (debut - liste[i].debut)/taille_paquet +  (liste[taille].fin - debut)/taille_paquet  - (liste[taille].fin - liste[i].debut)/taille_paquet){ printf("Incrémente : %d\n",*nombre_slot);}
+  //else{printf("Incrémente pas %d \n",*nombre_slot);}
   liste[i].suivant = liste[taille].suivant;
   liste[i].fin = liste[taille].fin;
 }
@@ -126,10 +136,12 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
   solution_num[0] = 0;
   int solution_taille = 1;//première route fixée
   int budget = periode - nbr_route*taille_paquet;
+  
   int num_courant = 1, decalage_courant = 0;
   intervalle_liste *retour = initialise(nbr_route,taille_paquet,periode);
   int debut_retour,i;
   int nombre_slot = periode/taille_paquet;
+   printf("Nombre slot initial: %d\n",nombre_slot);
     printf("\n");
   for(int j = 0; j < nbr_route; j++){
     printf("%d ",temps_retour[j]);
@@ -149,7 +161,11 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
   /////////////////// Début de l'arbre de recherche ////////////////////////////
 
   while(solution_taille > 0){
-    if(solution_taille == nbr_route) {print_sol(solution_pos,solution_num,nbr_route,budget);affiche_intervalle(retour);return 1;} //sortir la solution et arrêt
+    if(solution_taille == nbr_route) {
+      print_sol(solution_pos,solution_num,nbr_route,budget);
+      affiche_intervalle(retour);
+      printf("Nombre de coupe de type 3 %d \n",coupe);
+      return 1;} //sortir la solution et arrêt
     if(num_courant == nbr_route){//plus de route à utiliser, on revient en arrière et on utilise un début de route plus élevé
       solution_taille--;
       num_courant = solution_num[solution_taille];
@@ -197,6 +213,7 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
     }
   }
   printf("Pas de solution \n");
+  printf("Nombre de coupe de type 3 %d \n",coupe);
   return 0;
 }
 
@@ -226,4 +243,6 @@ int main(){
   printf("Nbr slot libre %d \n",nbr_slot);
   printf("Prochain %d \n",prochain_debut(liste, 9200, 4,2000));*/
   bruteforce(TAILLE_PAQUET,PERIODE,NBR_ROUTE,temps_retour);
+  //int temps_retour[6] = {36,458,266,274,182};
+  //bruteforce(2558,13212,5,temps_retour);
 }
