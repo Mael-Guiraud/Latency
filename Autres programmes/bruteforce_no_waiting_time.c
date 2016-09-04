@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define NBR_ROUTE 16
+#define NBR_ROUTE 7
 #define TAILLE_PAQUET 2558
-#define PERIODE 100000
+#define PERIODE 13000
 #define TAILLE_ROUTE 2000
 
 typedef struct{
@@ -47,7 +47,9 @@ int ajoute_element(intervalle_liste *liste, int debut, int taille, int taille_pa
       liste[pos].suivant = taille;
       return 1;
       }
-      else{return 0;}
+      else{
+		  *nombre_slot+=1;
+		  return 0;}
     }
     pos = liste[pos].suivant;
   }
@@ -59,9 +61,10 @@ void retire_element(intervalle_liste *liste, int debut, int taille, int *nombre_
   for (i = 0; i< taille; i++){
     if(liste[i].fin == debut){break;}
   }//cherche l'intervalle à fusionner, l'autre est en dernière position par construction
-  *nombre_slot+= - (debut - liste[i].debut)/taille_paquet -  (liste[taille].fin - debut)/taille_paquet +  (liste[taille].fin - liste[i].debut)/taille_paquet;
+ *nombre_slot+= - (debut - liste[i].debut)/taille_paquet - (liste[taille].fin - debut)/taille_paquet + (liste[taille].fin - liste[i].debut)/taille_paquet; 
   liste[i].suivant = liste[taille].suivant;
   liste[i].fin = liste[taille].fin;
+
 }
   
 int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_paquet){//renvoie la prochaine position possible pour la route (décalage à la position actuelle donnée par debut)
@@ -130,7 +133,7 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
   intervalle_liste *retour = initialise(nbr_route,taille_paquet,periode);
   int debut_retour,i;
   int nombre_slot = periode/taille_paquet;
-    printf("\n");
+    printf("Periode %d \n",periode);
   for(int j = 0; j < nbr_route; j++){
     printf("%d ",temps_retour[j]);
   }
@@ -204,6 +207,7 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
 int main(){
   srand(time(NULL));
   int *temps_retour = genere_reseau(NBR_ROUTE,TAILLE_ROUTE);
+
   /*intervalle_liste *liste = initialise(6,2000,16000);
   int nbr_slot = 8;
   ajoute_element(liste, 5000, 1, 2000,&nbr_slot,6);
@@ -225,5 +229,7 @@ int main(){
   affiche_intervalle(liste);
   printf("Nbr slot libre %d \n",nbr_slot);
   printf("Prochain %d \n",prochain_debut(liste, 9200, 4,2000));*/
-  bruteforce(TAILLE_PAQUET,PERIODE,NBR_ROUTE,temps_retour);
+  int i = 12790;
+	while(!bruteforce(TAILLE_PAQUET,i,NBR_ROUTE,temps_retour))
+		i++;
 }

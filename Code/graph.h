@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
-#define TAILLE_ROUTE 2000
+#define TAILLE_ROUTE 5000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -155,7 +155,7 @@ void retire_element(intervalle_liste *liste, int debut, int taille, int *nombre_
 int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_paquets);
 int* genere_reseau(int nbr_route, int taille_route);
 void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget);
-TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour);
+TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour_param);
 
 
 //simons.c Fonctions sur l'algo de barabara Simons

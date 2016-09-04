@@ -14,11 +14,11 @@ Graphe topologie1(int sources, int leaves,int mode)
 	else if(mode == 1)
 	{
 		x=0;
-		y=TAILLE_ROUTE/3;;
+		y=TAILLE_ROUTE/3;
 	}
 	else
 	{
-		x=TAILLE_ROUTE/3;;
+		x=TAILLE_ROUTE/3;
 		y=0;
 	}
 	Graphe g;

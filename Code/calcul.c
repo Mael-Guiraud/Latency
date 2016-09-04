@@ -177,6 +177,7 @@ void ajoutetab(int * t1, int * t2, int taille)
 //renvoie la taille d'une fenetre a partir du tableau avec les arrivées de chacuns.
 int taille_fenetre(int * tab, int taille)
 {
+	
 	int min = tab[0];
 	int max = tab[0];
 	int i;
@@ -343,7 +344,7 @@ int test_collisions(int * tab, int taille, int P)
 		{
 			if(collision_a_b(tab[i],tab[j],P))
 			{
-				printf("collision entre %d(%d) et %d(%d)\n",i,tab[i],j,tab[j]);
+				//printf("collision entre %d(%d) et %d(%d)\n",i,tab[i],j,tab[j]);
 				err++;
 			}
 		}
@@ -474,7 +475,7 @@ int * graphe_to_temps_retour(Graphe g)
 	Graphe gr = renverse(g);
 	for(i=0;i<g.sources;i++)
 	{
-		tab[i]=distance(gr.routes[i],1);
+		tab[i]=2*distance(gr.routes[i],1);
 	}
 	freeGraphe(gr);
 	return tab;
