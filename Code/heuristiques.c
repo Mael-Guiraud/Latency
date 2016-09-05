@@ -511,12 +511,6 @@ int recherche_lineaire_brute(Graphe g)
 	t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
 	while(t.window_size != 1)
 	{
-		printf("%d %d \n",i,t.window_size);
-		if(i>100000)
-		{affiche_graphe(g);
-		affichetab(temps_retour,g.sources);
-		printf("%d %d \n",taille_paquet,g.sources);
-		}
 		i++;
 		freeTwoWayTrip(t);
 		t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
