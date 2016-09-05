@@ -60,43 +60,6 @@ void afficheRouteStar(RouteStar r)
 		printf("x = %d y = %d \n",r.x[i],r.y[i]);
 }
 
-void simul_bruteforce()
-{
-	int taille = 7;
-
-	Graphe g = topologie1(taille,taille,0);
-	Graphe gr = renverse(g);
-	printf("-------------------G-------------\n");
-	affiche_graphe(g);
-	int P = taille*taille_paquet;
-	int Theorique = 2*distance(gr.routes[longest_on_sources(gr.routes,g.sources)],1)+g.sources*taille_paquet-2*distance(gr.routes[shortest_on_sources(gr.routes,g.sources)],1);
-	int * temps_retour = graphe_to_temps_retour(g);
-	printf("temps retour\n");affichetab(temps_retour,taille);
-
-	TwoWayTrip t=recherche_lineaire_brute(g,4*P);
-	/*t = bruteforceiter(g,taille_paquet,P,g.sources,temps_retour);
-	while(t.window_size != 1)
-	{
-		P++;
-		t = bruteforceiter(g,taille_paquet,P,g.sources,temps_retour);
-	}*/
-	
-
-	
-	afficheTwoWayTrip(t);
-	
-	printf("taille / Theorique = %d  %d\n",P,Theorique);
-	int dates[taille];
-	int i;
-	temps_retour = graphe_to_temps_retour(g);
-	affichetab(temps_retour,taille);
-	for(i=0;i<taille;i++)
-	{
-		dates[i] = t.M[i]+temps_retour[i];
-	}
-	affichetab(dates,taille);
-	printf("----------------------  %d  %d %d\n",t.window_size,Theorique-taille_fenetre(dates,taille),Theorique-taille_fenetre(t.M,taille));
-}
 void simulation(int mode)
 {
 	int taille = 4;
@@ -115,8 +78,8 @@ void simulation(int mode)
 	//TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
 	//TwoWayTrip t = greedy_prime(g,P);
 	//TwoWayTrip t = algo_bruteforce(g,P);
-	//TwoWayTrip t = shortest_to_longest(g);
-	TwoWayTrip t = recherche_lineaire_star(g,P);
+	TwoWayTrip t = shortest_to_longest(g);
+	//TwoWayTrip t = recherche_lineaire_star(g,P);
 	if(t.window_size == -1)
 	{
 		printf("Pas de solutions\n");
@@ -323,10 +286,10 @@ void  simulationsWindow()
    }
 	
 	
-	int i,j,k,l,m;
+	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
-	int nb_simul = 100;
+	int nb_simul = 1000;
 	int moyenne_window[4];
 	int taillewindowmax;
 	int piretaille[4];
@@ -338,8 +301,6 @@ void  simulationsWindow()
 	}
 	for(i=1;i<8;i++)//taille route
 	{
-		int collisions[i];
-		int collisionsr[i];
 		ecrire_bornesWindow(i,taille_paquet);
 			for(k=0;k<1;k++)//mode
 			{
@@ -354,42 +315,34 @@ void  simulationsWindow()
 					{
 						if(j == 0)
 						{
-							t = recherche_lineaire_prime(g,4*i*taille_paquet);
-							
+					
+							taillewindowmax = recherche_lineaire_prime(g);
+
 						}
 						else if(j == 1)
 						{
-							t = recherche_lineaire_star(g,4*i*taille_paquet);
+						
+							taillewindowmax = recherche_lineaire_star(g);
 							
 						}
 						else if(j == 2)
 						{
+						
 							t = shortest_to_longest(g);
+							taillewindowmax = t.window_size;
 							
 						}
 						else if(j == 3)
 						{
-							t = recherche_lineaire_brute(g,4*i*taille_paquet);
+							taillewindowmax = recherche_lineaire_brute(g);
 							
 						}
-						for(m=0;m<g.sources;m++)
-						{
-							if(j == 3)
-							{
-								collisions[m] = t.M[m];
-								collisionsr[m] = t.M[m] + 2*(distance(g.routes[m],g.routes[m].route_lenght)-distance(g.routes[m],2));
-							}
-							else
-							{
-								collisions[m] = t.M[m]+distance(g.routes[m],1);
-								collisionsr[m] = t.M[m]+distance(g.routes[m],g.routes[m].route_lenght)+t.W[m]+(distance(g.routes[m],g.routes[m].route_lenght)-distance(g.routes[m],2));
-							}
-						}
+						
 						//printf("Calcul window\n");
-						taillewindowmax = max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
-						moyenne_window[j] += taillewindowmax;
-						//printf("%d %d\n",j,tmpwindow[j]);
+						moyenne_window[j]  += taillewindowmax;
 						piretaille[j] = max(piretaille[j],taillewindowmax);
+						//printf("%d %d\n",j,tmpwindow[j]);
+						
 					}
 										
 				}

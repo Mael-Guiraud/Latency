@@ -16,12 +16,13 @@ int main(){
 	//etude_exp_bruteforce();
 	//simulationsTmax();
 	simulationsWindow();
-	/*Graphe g = topologie1(7,7,0);
-	Graphe gr = renverse(g);
-	int P = 7*taille_paquet*4;
-	recherche_lineaire_brute(g,P);
-	printf("theorique = %d\n",2*distance(gr.routes[longest_on_sources(gr.routes,g.sources)],1)+g.sources*taille_paquet-2*distance(gr.routes[shortest_on_sources(gr.routes,g.sources)],1));
-	*/
+	/*Graphe g = topologie1(4,4,0);
+	
+	printf("Star %d\n",recherche_lineaire_star(g));
+	printf("Prime %d\n",recherche_lineaire_prime(g));
+	TwoWayTrip t = shortest_to_longest(g);
+	printf("SL %d\n",t.window_size);
+	printf("Brute %d\n",recherche_lineaire_brute(g));*/
 	//afficheTwoWayTrip(algo_bruteforce(6,19500));
  
    //la structure clock

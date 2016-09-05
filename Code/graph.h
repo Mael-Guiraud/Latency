@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
-#define TAILLE_ROUTE 5000
+#define TAILLE_ROUTE 2000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -87,9 +87,9 @@ TwoWayTrip shortest_to_longest(Graphe g);
 TwoWayTrip longest_shortest(Graphe g);
 TwoWayTrip dichotomique(Graphe g,int P,int mode);
 TwoWayTrip bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P);
-TwoWayTrip recherche_lineaire_star(Graphe g, int P);
-TwoWayTrip recherche_lineaire_prime(Graphe g, int P);
-TwoWayTrip recherche_lineaire_brute(Graphe g, int P);
+int recherche_lineaire_star(Graphe g);
+int recherche_lineaire_prime(Graphe g);
+int recherche_lineaire_brute(Graphe g);
 TwoWayTrip random_sending(Graphe g);
 
 //Fichiers.c Fonctions de gestions des fichiers
