@@ -197,7 +197,7 @@ TwoWayTrip greedy_prime(Graphe g, int P)
 		return t;
 	}
 	else
-		t.window_size = 0;
+		t.window_size = 1;
 	Graphe gr;
 	gr = renverse(g);
 	//affiche_graphe(gr);
@@ -253,7 +253,7 @@ TwoWayTrip greedy_prime(Graphe g, int P)
 			break;
 		}
 	}
-	t.window_size = 1;
+	
 	freeGraphe(gr);
 	return t;
 }
@@ -505,16 +505,23 @@ int recherche_lineaire_prime(Graphe g)
 
 int recherche_lineaire_brute(Graphe g)
 {
-	int * temps_retour= graphe_to_temps_retour(g);;
+	int * temps_retour= graphe_to_temps_retour(g);
 	int i = g.sources*taille_paquet;
 	TwoWayTrip t;
 	t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
 	while(t.window_size != 1)
 	{
+		printf("%d %d \n",i,t.window_size);
+		if(i>100000)
+		{affiche_graphe(g);
+		affichetab(temps_retour,g.sources);
+		printf("%d %d \n",taille_paquet,g.sources);
+		}
 		i++;
 		freeTwoWayTrip(t);
 		t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
 	}
+	free(temps_retour);
 	freeTwoWayTrip(t);
 	return i;
 }

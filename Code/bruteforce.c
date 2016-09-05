@@ -161,6 +161,11 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
 			t.M[solution_num[k]] = solution_pos[k]; 
 			t.W[solution_num[k]]= 0;
 		}
+		
+		free(solution_num);
+		free(solution_pos);
+		free(route_restante);
+		free(temps_retour);
 		t.window_size = 1;
 		return t;
 		} //sortir la solution et arrêt
@@ -211,6 +216,10 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
     }
   }
   //printf("Pas de solution \n");
+  free(solution_num);
+  free(solution_pos);
+  free(route_restante);
+  free(temps_retour);
   t.window_size = -1;
   return t;
 }

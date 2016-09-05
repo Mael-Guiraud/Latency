@@ -15,14 +15,18 @@ int main(){
 	//genere_distrib_cumulee();
 	//etude_exp_bruteforce();
 	//simulationsTmax();
-	simulationsWindow();
-	/*Graphe g = topologie1(4,4,0);
+	//simulationsWindow();
 	
-	printf("Star %d\n",recherche_lineaire_star(g));
+	
+	/*printf("Star %d\n",recherche_lineaire_star(g));
 	printf("Prime %d\n",recherche_lineaire_prime(g));
 	TwoWayTrip t = shortest_to_longest(g);
-	printf("SL %d\n",t.window_size);
-	printf("Brute %d\n",recherche_lineaire_brute(g));*/
+	printf("SL %d\n",t.window_size);*/
+	for(int i = 0;i<1000;i++)
+	{
+		Graphe g = topologie1(2,2,0);
+		printf("Brute %d\n",recherche_lineaire_brute(g));
+	}
 	//afficheTwoWayTrip(algo_bruteforce(6,19500));
  
    //la structure clock
