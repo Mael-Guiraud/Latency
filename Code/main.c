@@ -13,9 +13,9 @@ int main(){
 	//simul_bruteforce();
 	//genere_distrib();
 	//genere_distrib_cumulee();
-	//etude_exp_bruteforce();
+	etude_exp_bruteforce();
 	//simulationsTmax();
-	simulationsWindow();
+	//simulationsWindow();
 	
 	
 	/*printf("Star %d\n",recherche_lineaire_star(g));
@@ -24,8 +24,8 @@ int main(){
 	printf("SL %d\n",t.window_size);*/
 	/*for(int i = 0;i<1000;i++)
 	{
-		Graphe g = topologie1(2,2,0);
-		printf("Brute %d\n",recherche_lineaire_brute(g));
+		Graphe g = topologie1(4,4,0);
+		printf("%d\n",recherche_lineaire_prime(g)-recherche_lineaire_brute(g));
 	}*/
 	//afficheTwoWayTrip(algo_bruteforce(6,19500));
  

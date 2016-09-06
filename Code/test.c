@@ -418,7 +418,7 @@ int valide(Graphe g, TwoWayTrip t, int P)
 
 void etude_exp_bruteforce()
 {
-	int periode = 40928;
+	
 	TwoWayTrip t;
 	int i,j;
 	int reussite;
@@ -427,24 +427,24 @@ void etude_exp_bruteforce()
 	remove ("./results/expbruteforce.txt");
 	f=fopen("results/expbruteforce.txt","a");
 	int * temps_retour;
-	for(i=1;i<17;i++)
+	for(i=1;i<8;i++)
 	{
-		printf("%d\n",i);
+		printf("%d \n",i);
 		reussite = 0;
 		for(j=0;j<10000;j++)
 		{
 			if(j%100 ==0)
-				printf("%d(%d pourcents)\n",i,j/100);
+				printf("%d %d\n",j/100,reussite);
 			g = topologie1(i,i,0);
 			temps_retour = graphe_to_temps_retour(g);
-			t = bruteforceiter(g,taille_paquet,periode,g.sources,temps_retour);
-			if(t.taille!=0)
+			t = bruteforceiter(g,taille_paquet,19500,g.sources,temps_retour);
+			if(t.window_size==1)
 				reussite++;
 			freeTwoWayTrip(t);
 			//freeGraphe(g);
 		}
 		reussite /=100;
-		fprintf(f,"%f %d \n",6.25*i, reussite);
+		fprintf(f,"%i %d \n",i, reussite);
 	}
 	fclose(f);
 }

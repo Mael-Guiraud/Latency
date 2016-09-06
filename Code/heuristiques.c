@@ -472,7 +472,7 @@ TwoWayTrip dichotomique(Graphe g,int P, int mode)
 int recherche_lineaire_star(Graphe g)
 {
 	TwoWayTrip t;
-	int i =g.sources*taille_paquet;
+	int i =3*g.sources*taille_paquet;
 	t = greedy_star(g,i);
 	while(t.window_size != 1)
 	{
@@ -481,8 +481,16 @@ int recherche_lineaire_star(Graphe g)
 		t = greedy_star(g,i);
 		
 	}
+	int collisions[g.sources];
+	int collisionsr[g.sources];
+	Graphe gr = renverse(g);
+	for(int j = 0;j<g.sources;j++)
+	{
+		collisions[j] = t.M[j] + distance(g.routes[j],1);
+		collisionsr[j] = t.M[j] +distance(g.routes[j],g.routes[j].route_lenght) + distance(gr.routes[j],1);	
+	}
 	freeTwoWayTrip(t);
-	return i;
+	return max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
 }
 
 int recherche_lineaire_prime(Graphe g)
@@ -498,8 +506,16 @@ int recherche_lineaire_prime(Graphe g)
 		t = greedy_prime(g,i);
 		
 	}
+	int collisions[g.sources];
+	int collisionsr[g.sources];
+	Graphe gr = renverse(g);
+	for(int j = 0;j<g.sources;j++)
+	{
+		collisions[j] = t.M[j] + distance(g.routes[j],1);
+		collisionsr[j] = t.M[j] +distance(g.routes[j],g.routes[j].route_lenght) + distance(gr.routes[j],1);	
+	}
 	freeTwoWayTrip(t);
-	return i;
+	return max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
 }
 
 
