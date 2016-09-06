@@ -16,16 +16,25 @@ int main(){
 	etude_exp_bruteforce();
 	//simulationsTmax();
 	//simulationsWindow();
-	
+	 //simulation_brute_shortest();
 	
 	/*printf("Star %d\n",recherche_lineaire_star(g));
 	printf("Prime %d\n",recherche_lineaire_prime(g));
 	TwoWayTrip t = shortest_to_longest(g);
 	printf("SL %d\n",t.window_size);*/
-	/*for(int i = 0;i<1000;i++)
+	/*Graphe g = topologie1_variation(7,4000);
+	affiche_graphe(g);
+	ecrire_fichierGraph(g);*/
+	/*int j;
+	TwoWayTrip t;
+	for(int i = 0;i<1000;i++)
 	{
-		Graphe g = topologie1(4,4,0);
-		printf("%d\n",recherche_lineaire_prime(g)-recherche_lineaire_brute(g));
+		
+		 g = topologie1(3,3,0);
+		 t = shortest_to_longest(g);
+		 j = recherche_lineaire_brute(g);
+		printf("%d\n",t.window_size-j);
+		freeTwoWayTrip(t);
 	}*/
 	//afficheTwoWayTrip(algo_bruteforce(6,19500));
  

@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
-#define TAILLE_ROUTE 5000
+#define TAILLE_ROUTE 2000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -78,6 +78,7 @@ typedef struct ensemble{
 Graphe topologie1(int sources, int leaves, int mode);
 Graphe renverse(Graphe g);
 Graphe topologie1_manuelle(int sources, int leaves,int * tab);
+Graphe topologie1_variation(int taille, int taille_SS);
 
 //heuristiques.c Differents algos
 TwoWayTrip greedy_prime(Graphe g, int P);
@@ -113,6 +114,7 @@ int valide(Graphe g, TwoWayTrip t, int P);
 void etude_exp_bruteforce();
 void genere_distrib();
 void genere_distrib_cumulee();
+void simulation_brute_shortest();
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);

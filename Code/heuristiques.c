@@ -524,6 +524,7 @@ int recherche_lineaire_brute(Graphe g)
 	int * temps_retour= graphe_to_temps_retour(g);
 	int i = g.sources*taille_paquet;
 	TwoWayTrip t;
+	
 	t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
 	while(t.window_size != 1)
 	{

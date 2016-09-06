@@ -100,7 +100,7 @@ int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_pa
     pos = liste[pos].suivant;
     if(liste[pos].fin -liste[pos].debut >= taille_paquet) {return liste[pos].debut - debut; }
   }
-  return liste[pos].fin;//on a pas trouvé de bon emplacement
+  return liste[pos].fin - debut + taille_paquet;//on a pas trouvé de bon emplacement, on retourne au début des temps retour 
 }
 
 

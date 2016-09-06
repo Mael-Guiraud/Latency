@@ -261,6 +261,25 @@ void  simulationsTmax()
 	ecrire_bornesTMax(i+1);
 }
 	
+void simulation_brute_shortest()
+{
+	Graphe g;
+	TwoWayTrip t;
+	int j;
+	for(int i = 2558;i<10000;i++)
+	{
+		//printf("%d i \n",i);
+		 g = topologie1_variation(7,i);
+		 affiche_graphe(g);
+		 //affiche_graphe(g);
+		 //printf("1\n");
+		 t = shortest_to_longest(g);
+		 //printf("2\n");
+		 j = recherche_lineaire_brute(g);
+		printf("%d %d (%d)\n",t.window_size,j,t.window_size-j);
+		freeTwoWayTrip(t);
+	}
+}
 void  simulationsWindow()
 {
 	
@@ -308,7 +327,7 @@ void  simulationsWindow()
 				{ 
 					if(l%100 == 0)
 					{
-						printf("%d\% \n",l/10);
+						printf("%d \n",l/10);
 					}
 					g=topologie1(i,i,k);
 					for(j=0;j<4;j++)//algo
