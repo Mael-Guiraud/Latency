@@ -158,7 +158,12 @@ int max(int a, int b)
 		return a;
 	return b;
 }
-
+int min(int a,int b)
+{
+	if(a<b)
+		return a;
+	return b;
+}
 //additionne les valeurs de deux tableaux de meme taille
 void ajoutetab(int * t1, int * t2, int taille)
 {
@@ -172,6 +177,7 @@ void ajoutetab(int * t1, int * t2, int taille)
 //renvoie la taille d'une fenetre a partir du tableau avec les arrivées de chacuns.
 int taille_fenetre(int * tab, int taille)
 {
+	
 	int min = tab[0];
 	int max = tab[0];
 	int i;
@@ -201,6 +207,25 @@ int tMax(Graphe g,TwoWayTrip t)
 	{
 		if(2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i] > max)
 			max = 2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i];
+	}
+	return max;
+}
+
+
+//Renvoie le Tmax dans une graphe g avec un twowaytrip assigné t avec les buffers
+int tMax_random(Graphe g,TwoWayTrip t)
+{
+	int i;
+	//afficheTwoWayTrip(t);
+	//affiche_graphe(g);
+	if(!t.buffer)return-1;
+	
+	int max = 2*distance(g.routes[0],g.routes[0].route_lenght)+t.W[0]+t.buffer[0];
+	for(i=0;i<t.taille;i++)
+	{
+		
+		if(2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i]+t.buffer[i] > max)
+			max = 2*distance(g.routes[i],g.routes[i].route_lenght)+t.W[i]+t.buffer[i];
 	}
 	return max;
 }
@@ -410,12 +435,13 @@ void occuper_p(int * tab, int a, int b)
 void freeGraphe(Graphe g)
 {
 	int i;
+	
 	for(i=0;i<g.vertex_number;i++)
 	{
 		free(g.vertices[i].weight);
-		g.vertices[i].weight = NULL;
+		
 		free(g.vertices[i].neighboors);
-		g.vertices[i].neighboors = NULL;
+
 	}
 	for(i=0;i<g.sources;i++)
 	{
@@ -449,13 +475,11 @@ int * graphe_to_temps_retour(Graphe g)
 	Graphe gr = renverse(g);
 	for(i=0;i<g.sources;i++)
 	{
-		tab[i]=distance(gr.routes[i],1);
+		tab[i]=2*distance(gr.routes[i],1);
 	}
 	freeGraphe(gr);
 	return tab;
 }
-
-
 
 
 

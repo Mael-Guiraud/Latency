@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
+#define TAILLE_ROUTE 2000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -40,6 +41,7 @@ typedef struct twoWayTrip{
 	int window_size;
 	int *M;
 	int *W;
+	int *buffer;
 }TwoWayTrip;
 
 typedef struct routeStar{
@@ -56,6 +58,21 @@ typedef struct{
   int suivant;
 }intervalle_liste;
 
+typedef struct element{
+	int index;
+	int release;
+	int deadline;
+	struct element * next;
+} Element;
+
+typedef struct ensemble{
+	int numero_element; // vaut -1 si c'est un ensemble
+	int temps_depart;
+	struct ensemble * filsG;
+	struct ensemble * frereG;
+	struct ensemble * frereD;
+} Ensemble;
+
 
 //TOPOLOGIE.c fonctions de créations de graphe
 Graphe topologie1(int sources, int leaves, int mode);
@@ -70,9 +87,10 @@ TwoWayTrip shortest_to_longest(Graphe g);
 TwoWayTrip longest_shortest(Graphe g);
 TwoWayTrip dichotomique(Graphe g,int P,int mode);
 TwoWayTrip bruteforce(int * tab,RouteStar r,int * dispo,int * offsets,int * offsetsr, int taille, int nb_dispo, int budget, int offset, int P);
-TwoWayTrip recherche_lineaire_star(Graphe g, int P);
-TwoWayTrip recherche_lineaire_prime(Graphe g, int P);
-TwoWayTrip recherche_lineaire_brute(Graphe g, int P);
+int recherche_lineaire_star(Graphe g);
+int recherche_lineaire_prime(Graphe g);
+int recherche_lineaire_brute(Graphe g);
+TwoWayTrip random_sending(Graphe g);
 
 //Fichiers.c Fonctions de gestions des fichiers
 void creationfichierGraph(Graphe g,char * nom);
@@ -93,6 +111,8 @@ void simulationsTmax();
 void simulationsWindow();
 int valide(Graphe g, TwoWayTrip t, int P);
 void etude_exp_bruteforce();
+void genere_distrib();
+void genere_distrib_cumulee();
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);
@@ -106,9 +126,11 @@ int lower(int * tab,int taille);
 int full(int * tab, int taille);
 int factorielle(int a);
 int max(int a, int b);
+int min(int a,int b);
 void ajoutetab(int * t1, int * t2,int taille);
 int taille_fenetre(int * tab, int taille);
 int tMax(Graphe g,TwoWayTrip t);
+int tMax_random(Graphe g,TwoWayTrip t);
 int indiceTMax(Graphe g,TwoWayTrip t);
 int longerOfeEligible(int * Dl, int * lambda, int * arrivee,int offset, int taille);
 int collision_a_b(int a, int b, int P);
@@ -133,6 +155,27 @@ void retire_element(intervalle_liste *liste, int debut, int taille, int *nombre_
 int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_paquets);
 int* genere_reseau(int nbr_route, int taille_route);
 void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget);
-TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour);
+TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour_param);
+
+
+//simons.c Fonctions sur l'algo de barabara Simons
+Ensemble * init_ensemble();
+Element * init_element();
+void affiche_ensemble_unique(Ensemble * ens);
+void affiche_ensemble(Ensemble * ens);
+Element * ajoute_elemt(Element * elem,int index, int release, int deadline);
+Ensemble * cree_ensemble(int numero, int temps);
+Element* retire_element_i(Element * elem, int index);
+Element * get_element_i(Element * elem, int index);
+void freeelems(Element * elem);
+void affichejobs(Element* elem);
+Element * cpy_elems(Element * elems);
+int date_fin(Ensemble * ens);
+int eligible(Element * elems, int time);
+void libereens(Ensemble * ens);
+Ensemble * cpyens(Ensemble * ens);
+Ensemble * invade(Ensemble * ens,Element * touselems,int depart);
+Ensemble * crisis(Ensemble * ens,Element * crisise, Element * elemspere,Element * touselems);
+TwoWayTrip simons(Graphe g);
 
 

@@ -196,6 +196,8 @@ TwoWayTrip greedy_prime(Graphe g, int P)
 		t.window_size = -1;
 		return t;
 	}
+	else
+		t.window_size = 1;
 	Graphe gr;
 	gr = renverse(g);
 	//affiche_graphe(gr);
@@ -467,60 +469,118 @@ TwoWayTrip dichotomique(Graphe g,int P, int mode)
 	//printf("debut %d milieu %d fin %d window size %d\n",id,im,ifin,t.window_size);
 	return t;
 }
-TwoWayTrip recherche_lineaire_star(Graphe g, int P)
+int recherche_lineaire_star(Graphe g)
 {
-
 	TwoWayTrip t;
-	int i;
-	for(i=g.sources*taille_paquet;i<P;i++)
+	int i =g.sources*taille_paquet;
+	t = greedy_star(g,i);
+	while(t.window_size != 1)
 	{
+		i++;
+		freeTwoWayTrip(t);
 		t = greedy_star(g,i);
-		if(valide(g,t,P))
-		{
-			return t;
-			
-		}
-		freeTwoWayTrip(t);
+		
 	}
-	t.window_size = -1;
-	return t;
+	freeTwoWayTrip(t);
+	return i;
 }
 
-TwoWayTrip recherche_lineaire_prime(Graphe g, int P)
+int recherche_lineaire_prime(Graphe g)
 {
 
 	TwoWayTrip t;
-	int i;
-	for(i=g.sources*taille_paquet;i<P;i++)
+	int i =g.sources*taille_paquet;
+	t = greedy_prime(g,i);
+	while(t.window_size != 1)
 	{
+		i++;
+		freeTwoWayTrip(t);
 		t = greedy_prime(g,i);
-		if(valide(g,t,P))
-		{
-			return t;
-			
-		}
-		freeTwoWayTrip(t);
+		
 	}
-	t.window_size = -1;
-	return t;
+	freeTwoWayTrip(t);
+	return i;
 }
 
 
-TwoWayTrip recherche_lineaire_brute(Graphe g, int P)
+int recherche_lineaire_brute(Graphe g)
+{
+	int * temps_retour= graphe_to_temps_retour(g);
+	int i = g.sources*taille_paquet;
+	TwoWayTrip t;
+	t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
+	while(t.window_size != 1)
+	{
+		i++;
+		freeTwoWayTrip(t);
+		t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
+	}
+	free(temps_retour);
+	freeTwoWayTrip(t);
+	return i;
+}
+
+TwoWayTrip random_sending(Graphe g)
 {
 	TwoWayTrip t;
-	int * temps_retour = graphe_to_temps_retour(g);
+	t.taille = g.sources;
+	t.M = malloc(sizeof(int)*g.sources);
+	t.buffer = malloc(sizeof(int)*g.sources);
+	t.W = malloc(sizeof(int)*g.sources);
+	Graphe gr = renverse(g);
 	int i;
-	for(i=g.sources*taille_paquet;i<P;i++)
+	int departs[g.sources];
+	int arrivees[g.sources];
+	for(i=0;i<g.sources;i++)
 	{
-		t = bruteforceiter(g,taille_paquet,P,g.sources,temps_retour);
-		if(valide(g,t,P))
-		{
-			return t;
-		}
-		freeTwoWayTrip(t);
+		departs[i] = rand_entier(16942);
+		arrivees[i] = 0;
+		t.M[i] = 0;
+		t.W[i] = 0;
+		t.buffer[i] = 0;
 	}
-	t.window_size = -1;
+	int j;
+	int date = 0;
+	//affichetab(departs,g.sources);
+	for(i=0;i<g.sources;i++)//calcul des buffers et temps allers
+	{
+		j= lower(departs,g.sources);
+		
+		if(date < departs[j])//pas de buffer
+		{
+			t.buffer[j] = 0;
+			date = departs[j] + taille_paquet;
+			t.M[j] = departs[j] -distance(g.routes[j],1);
+			arrivees[j] = t.M[j] + distance(g.routes[j],3) + distance(gr.routes[j],1);
+		}
+		else//bufferistation
+		{
+			t.buffer[j] = date - departs[j];
+			t.M[j] = date - distance(g.routes[j],1);
+			date += taille_paquet;
+			arrivees[j] = t.M[j] + distance(g.routes[j],3) + distance(gr.routes[j],1);
+		}
+		departs[j] = 99999;
+	}
+	
+	date = 0;
+	for(i=0;i<g.sources;i++)//on rajoute les décalages 
+	{
+		j = lower(arrivees,g.sources);
+		
+		if(date < arrivees[j])//pas de buffer
+		{
+			date = arrivees[j] + taille_paquet;
+			t.W[j] = 0;
+		}
+		else//bufferistation
+		{
+			t.W[j] = date - arrivees[j];
+			date += taille_paquet;
+		}
+		arrivees[j] = 99999;
+	}
+	freeGraphe(gr);
 	return t;
 }
 					

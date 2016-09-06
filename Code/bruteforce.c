@@ -34,7 +34,11 @@ int ajoute_element(intervalle_liste *liste, int debut, int taille, int taille_pa
       liste[pos].suivant = taille;
       return 1;
       }
-      else{return 0;}
+      else{  
+		*nombre_slot+=1;
+		return 0;
+		}
+		
     }
     pos = liste[pos].suivant;
   }
@@ -46,7 +50,7 @@ void retire_element(intervalle_liste *liste, int debut, int taille, int *nombre_
   for (i = 0; i< taille; i++){
     if(liste[i].fin == debut){break;}
   }//cherche l'intervalle à fusionner, l'autre est en dernière position par construction
-  *nombre_slot+= - (debut - liste[i].debut)/taille_paquets -  (liste[taille].fin - debut)/taille_paquets +  (liste[taille].fin - liste[i].debut)/taille_paquets;
+   *nombre_slot+= - (debut - liste[i].debut)/taille_paquet - (liste[taille].fin - debut)/taille_paquet + (liste[taille].fin - liste[i].debut)/taille_paquet; 
   liste[i].suivant = liste[taille].suivant;
   liste[i].fin = liste[taille].fin;
 }
@@ -102,19 +106,29 @@ void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget){
 //mettre debut_courant à la place de décalage_courant partout ? Ca pourrait simplifier un peu
 //on pourrait utiliser un entier dont les bits représente les routes restantes et trouver la première route libre avec une instruction processeur spéciale
 
-TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour){
+TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_route, int* temps_retour_param){
 
   TwoWayTrip t;
   t.taille = 0;
+
   t.M = malloc(sizeof(int)*nbr_route);
   t.W = malloc(sizeof(int)*nbr_route);
-  for(int j = 0; j < nbr_route; j++){
-    temps_retour[j]*=2;
-  }
   int *solution_pos = malloc(sizeof(int)*nbr_route);
   int *solution_num = malloc(sizeof(int)*nbr_route);
-  int *route_restante = malloc(sizeof(int)*nbr_route);
-  for(int j=1; j <nbr_route;j++) route_restante[j]=1; //on pourrait juste virer la première route ?
+  int *temps_retour = malloc(sizeof(int)*nbr_route);
+ int *route_restante = malloc(sizeof(int)*nbr_route);
+   //affiche les données sur lesquelles on lance le bruteforce
+
+  temps_retour[0] = temps_retour_param[0];
+  for(int j=1; j <nbr_route;j++)
+  { route_restante[j]=1; //on pourrait juste virer la première route ?
+	 temps_retour[j] = temps_retour_param[j];
+  }
+  /* printf("\n");
+  for(int j = 0; j < nbr_route; j++){
+    printf("%d(%d)",temps_retour[j],temps_retour_param[j]);
+  }
+  printf("\n");*/
   route_restante[0] = 0;
   solution_pos[0] = 0;
   solution_num[0] = 0;
@@ -122,40 +136,38 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
   int budget = periode - nbr_route*taille_paquets;
   int num_courant = 1, decalage_courant = 0;
   intervalle_liste *retour = initialise(nbr_route,taille_paquets,periode);
-  int debut_retour,i;
+  int debut_retour,i,k;
   int nombre_slot = periode/taille_paquets;
-  
+
   //normalise les temps retour en mettant le premier à 0
   for(int j=nbr_route-1; j>=0;j--) temps_retour[j]= (temps_retour[j] - temps_retour[0] + periode)%periode;
   //affiche les données sur lesquelles on lance le bruteforce
- /* printf("\n");
+/* printf("\n");
   for(int j = 0; j < nbr_route; j++){
-    printf("%d ",temps_retour[j]);
+    printf("%d(%d)",temps_retour[j],temps_retour_param[j]);
   }
   printf("\n");*/
   
 
   /////////////////// Début de l'arbre de recherche ////////////////////////////
 
-  while(solution_taille > 0){
-	 
+
+	while(solution_taille > 0){
     if(solution_taille == nbr_route) {
-		
+		//print_sol(solution_pos,solution_num,nbr_route,budget);
+		//printf("PERIODE %d \n",periode);
 		t.taille = nbr_route;
-		int i;
-		for(i=0;i<nbr_route;i++)
-		{
-			
-			t.M[solution_num[i]] = solution_pos[i]-distance(g.routes[solution_num[i]],2); 
-			//securité pour eviter d'avoir des offsets de départ négatifs
-			if(t.M[solution_num[i]] < 0)
-			{
-				t.M[solution_num[i]] = periode + t.M[solution_num[i]];
-			}
-			t.W[solution_num[i]] = 0;
+		for(k=0;k<nbr_route;k++){
+			t.M[solution_num[k]] = solution_pos[k]; 
+			t.W[solution_num[k]]= 0;
 		}
-		return t;
 		
+		free(solution_num);
+		free(solution_pos);
+		free(route_restante);
+		free(temps_retour);
+		t.window_size = 1;
+		return t;
 		} //sortir la solution et arrêt
     if(num_courant == nbr_route){//plus de route à utiliser, on revient en arrière et on utilise un début de route plus élevé
       solution_taille--;
@@ -167,12 +179,12 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
       }
       //printf("Taille %d, debut %d \n",solution_taille, debut_retour);
       //affiche_intervalle(retour);
-      retire_element(retour,debut_retour,solution_taille,&nombre_slot,taille_paquets);
+      retire_element(retour,debut_retour,solution_taille,&nombre_slot,taille_paquet);
       //affiche_intervalle(retour);
-      decalage_courant = solution_pos[solution_taille] - solution_pos[solution_taille-1] - taille_paquets; //decalage de la route qu'on enlève
+      decalage_courant = solution_pos[solution_taille] - solution_pos[solution_taille-1] - taille_paquet; //decalage de la route qu'on enlève
       //de la solution avec la précédente
       budget += decalage_courant;
-      decalage_courant += prochain_debut(retour,debut_retour,solution_taille,taille_paquets);//calcul le prochain point ou on va placer le paquet de num_courant 
+      decalage_courant += prochain_debut(retour,debut_retour,solution_taille,taille_paquet);//calcul le prochain point ou on va placer le paquet de num_courant 
     }
     else{
       if(budget - decalage_courant <0){// plus de budget pour la route, on essaye de mettre la route suivante à la place
@@ -181,12 +193,12 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
 	decalage_courant = 0;
       }
       else{
-	debut_retour = solution_pos[solution_taille-1] + taille_paquets + decalage_courant + temps_retour[num_courant];
+	debut_retour = solution_pos[solution_taille-1] + taille_paquet + decalage_courant + temps_retour[num_courant];
 	if(debut_retour >= periode) {
 	  debut_retour -= periode; // valeur au plus deux fois la période
 	}
-	if(ajoute_element(retour,debut_retour,solution_taille,taille_paquets,&nombre_slot,nbr_route)){//on agrandit ici la solution partielle d'une nouvelle route
-	  solution_pos[solution_taille] = solution_pos[solution_taille-1] + decalage_courant + taille_paquets;
+	if(ajoute_element(retour,debut_retour,solution_taille,taille_paquet,&nombre_slot,nbr_route)){//on agrandit ici la solution partielle d'une nouvelle route
+	  solution_pos[solution_taille] = solution_pos[solution_taille-1] + decalage_courant + taille_paquet;
 	  solution_num[solution_taille] = num_courant;
 	  budget -= decalage_courant;
 	  solution_taille++;
@@ -198,12 +210,17 @@ TwoWayTrip bruteforceiter(Graphe g,int taille_paquets, int periode, int nbr_rout
 	  //affiche_intervalle(retour);
 	}
 	else{ //pas de place pour le retour, on essaye le décalage suivant.
-	  decalage_courant+= prochain_debut(retour,debut_retour,solution_taille,taille_paquets);
+	  decalage_courant+= prochain_debut(retour,debut_retour,solution_taille,taille_paquet);
 	}
       }
     }
   }
   //printf("Pas de solution \n");
+  free(solution_num);
+  free(solution_pos);
+  free(route_restante);
+  free(temps_retour);
+  t.window_size = -1;
   return t;
 }
 
