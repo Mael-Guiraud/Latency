@@ -203,7 +203,7 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
 
 int main(){
   srand(time(NULL));
-  int *temps_retour = genere_reseau(NBR_ROUTE,TAILLE_ROUTE);
+  //int *temps_retour = genere_reseau(NBR_ROUTE,TAILLE_ROUTE);
   /*intervalle_liste *liste = initialise(6,2000,16000);
   int nbr_slot = 8;
   ajoute_element(liste, 5000, 1, 2000,&nbr_slot,6);
@@ -225,5 +225,16 @@ int main(){
   affiche_intervalle(liste);
   printf("Nbr slot libre %d \n",nbr_slot);
   printf("Prochain %d \n",prochain_debut(liste, 9200, 4,2000));*/
-  bruteforce(TAILLE_PAQUET,PERIODE,NBR_ROUTE,temps_retour);
+  int temps_retour[6] = {178,344,456,872,924,1272};
+  for(int i = 6*2558; i < 12*2558;i++){
+    
+    temps_retour[3]= 178;
+    temps_retour[4]= 344;
+    temps_retour[1]= 456;
+    temps_retour[5]= 872;
+    temps_retour[2]= 924;
+    temps_retour[0]= 1272;
+    if(bruteforce(2558,i,6,temps_retour)) {printf("Taille de la fenêtre %d \n",i); break;}
+  }
+  //bruteforce(TAILLE_PAQUET,PERIODE,NBR_ROUTE,temps_retour);
 }
