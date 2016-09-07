@@ -266,17 +266,23 @@ void simulation_brute_shortest()
 	Graphe g;
 	TwoWayTrip t;
 	int j;
-	for(int i = 2558;i<10000;i++)
+	int tmp;
+	for(int i = 9000;i<9001;i++)
 	{
 		//printf("%d i \n",i);
-		 g = topologie1_variation(7,i);
+		 g = topologie1_variation(2,i);
 		 affiche_graphe(g);
 		 //affiche_graphe(g);
 		 //printf("1\n");
 		 t = shortest_to_longest(g);
+		 tmp = t.window_size;
+		 afficheTwoWayTrip(t);
 		 //printf("2\n");
 		 j = recherche_lineaire_brute(g);
-		printf("%d %d (%d)\n",t.window_size,j,t.window_size-j);
+		 int * temps_retour= graphe_to_temps_retour(g);
+		 t = bruteforceiter(g,taille_paquet,j,g.sources,temps_retour);
+		 afficheTwoWayTrip(t);
+		printf("%d %d (%d)\n",tmp,j,tmp-j);
 		freeTwoWayTrip(t);
 	}
 }
@@ -450,10 +456,10 @@ void etude_exp_bruteforce()
 	{
 		printf("%d \n",i);
 		reussite = 0;
-		for(j=0;j<10000;j++)
+		for(j=0;j<100;j++)
 		{
-			if(j%100 ==0)
-				printf("%d %d\n",j/100,reussite);
+			if(j%10 ==0)
+				printf("%d %d\n",j/10,reussite);
 			g = topologie1(i,i,0);
 			temps_retour = graphe_to_temps_retour(g);
 			t = bruteforceiter(g,taille_paquet,19500,g.sources,temps_retour);
@@ -462,7 +468,7 @@ void etude_exp_bruteforce()
 			freeTwoWayTrip(t);
 			//freeGraphe(g);
 		}
-		reussite /=100;
+		//reussite /=100;
 		fprintf(f,"%i %d \n",i, reussite);
 	}
 	fclose(f);

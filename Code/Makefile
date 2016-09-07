@@ -4,7 +4,7 @@ DIRgplt = gplt/
 
 
 OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)bruteforce.o $(DIRbin)simons.o $(DIRbin)test.o $(DIRbin)main.o
-FLAGS = -g -O3 -Wall
+FLAGS = -g -O -Wall
 all: clean lance
 
 Graphe:

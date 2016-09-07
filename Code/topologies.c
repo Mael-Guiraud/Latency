@@ -87,7 +87,7 @@ Graphe topologie1(int sources, int leaves,int mode)
 	if(mode == 0)
 	{
 		x = TAILLE_ROUTE/3;
-		y = 4000;
+		y = TAILLE_ROUTE/3;
 	}
 	else if(mode == 1)
 	{

@@ -25,11 +25,11 @@ int main(){
 	/*Graphe g = topologie1_variation(7,4000);
 	affiche_graphe(g);
 	ecrire_fichierGraph(g);*/
-	/*int j;
+	/*Graphe g;
+	int j;
 	TwoWayTrip t;
 	for(int i = 0;i<1000;i++)
 	{
-		
 		 g = topologie1(3,3,0);
 		 t = shortest_to_longest(g);
 		 j = recherche_lineaire_brute(g);
