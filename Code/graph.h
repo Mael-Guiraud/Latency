@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
 #define taille_paquet 2558
-#define TAILLE_ROUTE 2000
+#define TAILLE_ROUTE 10000
 #include <math.h>
 #include <string.h>
 #include <time.h>

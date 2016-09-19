@@ -1,14 +1,27 @@
-\documentclass{beamer}
+\documentclass[10 pt]{beamer}
 \usetheme{Madrid}
 \usepackage[utf8]{inputenc}
 \usepackage{default}
+\usepackage{xspace}
+\usepackage{graphicx,graphics} 
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{complexity}
 \usepackage{tkz-graph}
+\usepackage{float}
+\usepackage{setspace}
 
 \tikzset{
   LabelStyle/.style = { rectangle, rounded corners, draw,
                        font = \bfseries },
   EdgeStyle/.append style = {-} }
-\title{Latency optimization for C-RAN}
+\title{Contention management for Deterministic Networking}
 
 \author{M.~Guiraud }
 
@@ -24,9 +37,30 @@
 \begin{document}
 
 \begin{frame}
+
   \titlepage
+  
 \end{frame}
 
+\begin{frame}
+
+  \tableofcontents[]
+\end{frame}
+
+\AtBeginSection[]{\begin{frame}
+
+  \small \tableofcontents[currentsection]
+\end{frame}
+}
+
+\begin{section}{Presentation}
+ 
+\begin{subsection}{Introduction}
+\begin{frame}{Context}
+  \centering
+  \includegraphics[scale=0.2]{bts.png}\\
+  \includegraphics[scale=0.175]{BBURRH.png}
+\end{frame}
 
 \begin{frame}{Context}
   \centering
@@ -37,14 +71,17 @@
   \centering
   \includegraphics[scale=0.38]{fronthaul.png}
 \end{frame}
+\end{subsection}
+\begin{subsection}{Model}
+\begin{frame}{Model}
+\begin{center}
+ 
 
 
-\begin{frame}{Problem}
-  \centering
-  
 \scalebox{0.5}{
 \begin{tikzpicture}
   \SetGraphUnit{5}
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
   \Vertex[x=0,y=0]{RRH 3}
   \Vertex[x=0,y=4]{RRH 2}
   \Vertex[x=0,y=8]{RRH 1}
@@ -56,70 +93,141 @@
   \Vertex[x=4,y=4]{Switch 1}
   \Vertex[x=12,y=4]{Switch 2}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-, green} }
+  \Edge(BBU 1)(Switch 2)
+  \Edge(Switch 1)(RRH 1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge(BBU 2)(Switch 2)
+  \Edge(Switch 1)(RRH 2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge(BBU 3)(Switch 2)
+  \Edge(Switch 1)(RRH 3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(Switch 2)(Switch 1)
 
 \end{tikzpicture}
 }
 
-  Scheduling the messages
-  \begin{itemize}
-   \item No collisions on switches
-   \item Periodicity
-  \end{itemize}
-
- 
+ Network $\rightarrow$ Graph G=(V,A).\\
+ \end{center}
 \end{frame}
+
+
+\begin{frame}{Model}
+\begin{center}
+\scalebox{0.5}{
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
+  
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
+  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
+  \tikzset{
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
+  
+  \tikzset{
+  EdgeStyle/.append style = {blue} }
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
+  
+  \tikzset{
+  EdgeStyle/.append style = {red} }
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
+  
+  \tikzset{
+  EdgeStyle/.append style = {black} }
+  \Edge(SS)(SL)
+
+\end{tikzpicture}
+}
+\end{center}
+\begin{block}{}
+ BBU / RRH $\rightarrow$ set of vertices S and L.\\
+
+ Physical Delay of a link $\rightarrow$ Weight on arcs.\\
+  Slotted time.\\
+\end{block}
+
+\end{frame}
+
+% 
+% \begin{frame}{Slots}
+% 
+%    Each links does have a delay in slots corresponding to it's transit time.\\
+% 
+%   The Flow values in slots correspond to the transmission time.\\
+% \vspace{1cm}
+%   \centering
+%    \begin{tabular}{|c|c|}
+%    \hline
+%    Period & 19500 slots(1ms) \\
+%    \hline
+%    1 Flow & 2500 slots\\
+%    \hline
+%    Range & 0 - 2000 slots\\
+%    \hline
+%    1 arc & 0 - 700 slots\\
+%    \hline
+%   \end{tabular}
+% 
+%   
+%   
+% \end{frame}
+\end{subsection}
+\begin{subsection}{Problem}
+
 
 \begin{frame}{Problem}
   \centering
   
 \scalebox{0.5}{
 \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 
   \draw[->,line width=1pt,green] (1,8) parabola bend (8,5) (15,7.5);
 
@@ -137,35 +245,36 @@ RRH $\rightarrow$ BBU
   
 \scalebox{0.5}{
 \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 
   \draw[->,line width=1pt,green] (1,8) parabola bend (8,5) (15,7.5);
   \node[draw,green] at (14,8) {Computation};
@@ -185,36 +294,37 @@ Computation time
   
 \scalebox{0.5}{
 \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
-
+  \Edge(SS)(SL)
+  
   \draw[->,line width=1pt,green] (1,8) parabola bend (8,5) (15,7.5);
   \node[draw,green] at (14,8) {Computation};
   \draw[<-,line width=1pt,green] (1,8.5) parabola bend (8,5.5) (14,7.5);
@@ -223,49 +333,100 @@ Computation time
 \end{tikzpicture}
 }
 
-BBU $\rightarrow$ RRH
+BBU $\rightarrow$ RRH\\
+\pause
+3ms
 \end{frame}
 
+\begin{frame}{Problem}
+  \centering
+  
+\scalebox{0.5}{
+\begin{tikzpicture}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
+  
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
+  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
+  \tikzset{
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
+  
+  \tikzset{
+  EdgeStyle/.append style = {blue} }
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
+  
+  \tikzset{
+  EdgeStyle/.append style = {red} }
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
+  
+  \tikzset{
+  EdgeStyle/.append style = {black} }
+  \Edge(SS)(SL)
 
+\end{tikzpicture}
+}
+
+  Scheduling the messages
+  \begin{itemize}
+   \item No collisions on switches
+   \item Periodicity
+  \end{itemize}
+
+ 
+\end{frame}
+\end{subsection}
+\begin{subsection}{Goal}
 \begin{frame}{Tools}
   \centering
   
 \scalebox{0.5}{
 \begin{tikzpicture}
+  
   \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
-
+  \Edge(SS)(SL)
   \node (0) at (1,-1){\includegraphics[scale=0.1]{chronogrames/0.jpeg}};
   \node (1) at (1,3){\includegraphics[scale=0.1]{chronogrames/1.jpeg}};
   \node (2) at (1,7){\includegraphics[scale=0.1]{chronogrames/2.jpeg}};
-  \node (2) at (4,5){\includegraphics[scale=0.1]{chronogrames/3.jpeg}};
+  \node (2) at (4,5){\includegraphics[scale=0.15]{chronogrames/3.jpeg}};
 \end{tikzpicture}
 }
 
@@ -277,40 +438,41 @@ BBU $\rightarrow$ RRH
   
 \scalebox{0.5}{
 \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 
   \node (0) at (1,-1){\includegraphics[scale=0.1]{chronogrames/4.jpeg}};
   \node (1) at (1,3){\includegraphics[scale=0.1]{chronogrames/1.jpeg}};
   \node (2) at (1,7){\includegraphics[scale=0.1]{chronogrames/5.jpeg}};
-  \node (2) at (4,5){\includegraphics[scale=0.1]{chronogrames/6.jpeg}};
+  \node (2) at (4,5){\includegraphics[scale=0.15]{chronogrames/6.jpeg}};
 \end{tikzpicture}
 }
 
@@ -323,40 +485,41 @@ Deterministic sending
   
 \scalebox{0.5}{
 \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 
   \node (0) at (1,-1){\includegraphics[scale=0.1]{chronogrames/4.jpeg}};
   \node (1) at (1,3){\includegraphics[scale=0.1]{chronogrames/1.jpeg}};
   \node (2) at (1,7){\includegraphics[scale=0.1]{chronogrames/5.jpeg}};
-  \node (2) at (4,5){\includegraphics[scale=0.1]{chronogrames/6.jpeg}};
+  \node (2) at (4,5){\includegraphics[scale=0.15]{chronogrames/6.jpeg}};
   \node (2) at (15,-1){\includegraphics[scale=0.1]{chronogrames/7.jpeg}};
   \node (2) at (15,3){\includegraphics[scale=0.1]{chronogrames/8.jpeg}};
   \node (2) at (15,7){\includegraphics[scale=0.1]{chronogrames/9.jpeg}};
@@ -374,119 +537,88 @@ Deterministic sending
   
 \scalebox{0.5}{
 \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {->,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 
  
-  \node (2) at (15,-1){\includegraphics[scale=0.1]{chronogrames/19.jpeg}};
-  \node (2) at (15,3){\includegraphics[scale=0.1]{chronogrames/17.jpeg}};
-  \node (2) at (15,7){\includegraphics[scale=0.1]{chronogrames/18.jpeg}};
+  \node (2) at (15,-1){\includegraphics[scale=0.15]{chronogrames/19.jpeg}};
+  \node (2) at (15,3){\includegraphics[scale=0.15]{chronogrames/17.jpeg}};
+  \node (2) at (15,7){\includegraphics[scale=0.15]{chronogrames/18.jpeg}};
   \node (2) at (11,5){\includegraphics[scale=0.1]{chronogrames/20.jpeg}};
 \end{tikzpicture}
 }
 
 Deterministic sending, waiting times.
+
+$T_i = 2(RRH \rightarrow BBU) +$ waiting time.
 \end{frame}
+\end{subsection}
+\end{section}
 
-
-
-\begin{frame}{Inputs}
-
-
-  \begin{tabular}{|c|c|}
-  \hline
-   Links capacity & 10Gbps \\
-   \hline
-   Flow/RRH & 1.228Gbps \\
-   \hline
-   Flow max ($l_{max}$) & 7 \\
-   \hline
-   Considered Range & 0-5km \\
-   \hline
-   Periodicity & 1ms \\
-   \hline
-   \end{tabular}
-   
-   Each links does have a delay in slots corresponding to it's transit time.\\
-
-  The Flow values in slots correspond to the transmission time.\\
-
-   \begin{tabular}{|c|c|}
-   \hline
-   Period & 19500 slots(1ms) \\
-   \hline
-   1 Flow & 2500 slots\\
-   \hline
-   Range & 2000 slots\\
-   \hline
-  \end{tabular}
-
-  
-  
-\end{frame}
-
+\begin{section}{Proposed heuristics}
 
 \begin{frame}{Trivial case}
 \centering
 \scalebox{0.5}{
   \begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}
-    
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = 0](BBU 1)(Switch 2)
-  \Edge[label = $b_1$](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = 0](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = 0](BBU 2)(Switch 2)
-  \Edge[label = $b_2$](Switch 1)(RRH 2)
+  \Edge[label = 0](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = 0](BBU 3)(Switch 2)
-  \Edge[label = $b_3$](Switch 1)(RRH 3)
+  \Edge[label = 0](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 \end{tikzpicture}
 }
 
@@ -496,276 +628,216 @@ Deterministic sending, waiting times.
   \end{itemize}
 \end{frame}
 
-
-\begin{frame}{Harder case}
+\begin{frame}{Shortest Longest}
 \centering
 \scalebox{0.5}{
-\begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+  \begin{tikzpicture}
+    \SetGraphUnit{5}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}
-  
-  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = 0](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+ 
+ 
+   \Edge[label = $a_1$](s1)(SS)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = 0](Switch 1)(RRH 2)
+ 
+  
+    \Edge[label = $a_2$](s2)(SS)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = 0](Switch 1)(RRH 3)
+
+ 
+     \Edge[label = $a_3$](s3)(SS)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+ 
+  \Edge(SS)(SL)
+   \Edge[label = $b_1$](SL)(l1)
+   \Edge[label = $b_3$](SL)(l3)
+ \Edge[label = $b_2$](SL)(l2)
+   
 \end{tikzpicture}
 }
 
-  Collisions on switch 2.
+ $a_1 < a_2 < a_3$\\
+ Send the messages from shortest route to the longest
+ \begin{itemize}
+ \item No collisions.
+  \item Given period.
+  \end{itemize}
 \end{frame}
 
 
-
-
-\begin{frame}{No waiting times}
-  No waiting times = optimal solution.
-  
-  Question : Does there exist a solution without waiting times in our given period?
-   
-  Message length(k) = 10.
-  \centering
-  \scalebox{0.5}{
-  
-\begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 1}
-  \Vertex[x=0,y=4]{RRH 2}
-
-  
-  \Vertex[x=16,y=0]{BBU 1}
-  \Vertex[x=16,y=4]{BBU 2}
-
-  \Vertex[x=4,y=2]{Switch 1}
-  \Vertex[x=12,y=2]{Switch 2}
-  
-
-  \tikzset{
-  EdgeStyle/.append style = {red} }
-  \Edge[label = 1](BBU 1)(Switch 2)
-  \Edge[label = 10](Switch 1)(RRH 1)
-  
-  \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = 10](BBU 2)(Switch 2)
-  \Edge[label = 1](Switch 1)(RRH 2)
-  
-  
-  \tikzset{
-  EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
-\end{tikzpicture}
-  }
-
-  
-\end{frame}
-
-
-\begin{frame}{No waiting times}
-
-  \centering
-  \scalebox{0.65}{
-  
-\begin{tikzpicture}
-  \SetGraphUnit{5}
-
-  
-  \node (0) at (1,-1){\includegraphics[scale=0.1]{chronogrames/10.jpeg}};
-  \node (1) at (1,5){\includegraphics[scale=0.1]{chronogrames/11.jpeg}};
-  \node (2) at (5,2){\includegraphics[scale=0.1]{chronogrames/12.jpeg}};
-  \node (3) at (10,2){\includegraphics[scale=0.1]{chronogrames/15.jpeg}};
-  \node (4) at (15,-1){\includegraphics[scale=0.1]{chronogrames/13.jpeg}};
-  \node (5) at (15,5){\includegraphics[scale=0.1]{chronogrames/14.jpeg}};
-  
-     \Edge(2)(3)
-    \tikzset{
-    EdgeStyle/.append style = {red} }
-    \Edge[label = 10](0)(2) 
-    \Edge[label = 1](3)(4)
-
-    \tikzset{
-    EdgeStyle/.append style = {green} }
-    \Edge[label = 1](1)(2)
-    \Edge[label = 10](3)(5)
-\end{tikzpicture}
-  }
-  
-  
-  With waiting times: 20(2k)
-  
-\end{frame}
-
-
-\begin{frame}{No waiting times}
-
-  \centering
-  \scalebox{0.65}{
-  
-\begin{tikzpicture}
-  \SetGraphUnit{5}
-
-  
-  \node (0) at (1,-1){\includegraphics[scale=0.1]{chronogrames/10.jpeg}};
-  \node (1) at (1,5){\includegraphics[scale=0.1]{chronogrames/11.jpeg}};
-  \node (2) at (5,2){\includegraphics[scale=0.1]{chronogrames/12.jpeg}};
-  \node (3) at (10,2){\includegraphics[scale=0.1]{chronogrames/15.jpeg}};
-  \node (4) at (15,-1){\includegraphics[scale=0.1]{chronogrames/13.jpeg}};
-  \node (5) at (15,5){\includegraphics[scale=0.1]{chronogrames/14.jpeg}};
-  
-     \Edge(2)(3)
-    \tikzset{
-    EdgeStyle/.append style = {red} }
-    \Edge[label = 10](0)(2) 
-    \Edge[label = 1](3)(4)
-
-    \tikzset{
-    EdgeStyle/.append style = {green} }
-    \Edge[label = 1](1)(2)
-    \Edge[label = 10](3)(5)
-\end{tikzpicture}
-  }
-  
-  
-Without waiting times : 38(2k + 18)
-  
-\end{frame}
-
-
-\begin{frame}{Heuristic}
+\begin{frame}{LSG}
 
    \centering
   \scalebox{0.5}{
   
 \begin{tikzpicture}
   \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
+  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+  \Vertex[x=0,y=0]{l3}
+  \Vertex[x=0,y=4]{l2}
+  \Vertex[x=0,y=8]{l1}
   
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
+  \Vertex[x=16,y=0]{s3}
+  \Vertex[x=16,y=4]{s2}
+  \Vertex[x=16,y=8]{s1}
   
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}
-  
-  
+  \Vertex[x=4,y=4]{SL}
+  \Vertex[x=12,y=4]{SS}  
   \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = $a_1$](BBU 1)(Switch 2)
-  \Edge[label = 0](Switch 1)(RRH 1)
+  EdgeStyle/.append style = {<-,green} }
+  \Edge[label = $a_1$](s1)(SS)
+  \Edge[label = $b_1$](SL)(l1)
   
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = $a_2$](BBU 2)(Switch 2)
-  \Edge[label = 0](Switch 1)(RRH 2)
+  \Edge[label = $a_2$](s2)(SS)
+  \Edge[label = $b_2$](SL)(l2)
   
   \tikzset{
   EdgeStyle/.append style = {red} }
-  \Edge[label = $a_3$](BBU 3)(Switch 2)
-  \Edge[label = 0](Switch 1)(RRH 3)
+  \Edge[label = $a_3$](s3)(SS)
+  \Edge[label = $b_3$](SL)(l3)
   
   \tikzset{
   EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
+  \Edge(SS)(SL)
 \end{tikzpicture}
   
   }
   
   \begin{itemize}
-  \item No waiting times on the longest route
-  \item No route will have $T_i > T_j$ (j is the longer route)
+  \item SL: Scheduling all messages from the one using the longest route to the one using the shortest.
+  \item SS: 
+    \begin{enumerate}
+    \item Send the first message able to be sent.
+    \item After each sending, among the messages able to be sent, send the one using the longest route.
+    \end{enumerate}
+
   \end{itemize}
 
 \end{frame}
 
-\begin{frame}{Limits}
-    
-  \centering
-  \scalebox{0.5}
-  {
-\begin{tikzpicture}
-  \SetGraphUnit{5}
-  \Vertex[x=0,y=0]{RRH 3}
-  \Vertex[x=0,y=4]{RRH 2}
-  \Vertex[x=0,y=8]{RRH 1}
-  
-  \Vertex[x=16,y=0]{BBU 3}
-  \Vertex[x=16,y=4]{BBU 2}
-  \Vertex[x=16,y=8]{BBU 1}
-  
-  \Vertex[x=4,y=4]{Switch 1}
-  \Vertex[x=12,y=4]{Switch 2}
-    
-  \tikzset{
-  EdgeStyle/.append style = {green} }
-  \Edge[label = 687](BBU 1)(Switch 2)
-  \Edge[label = 256](Switch 1)(RRH 1)
-  
-  \tikzset{
-  EdgeStyle/.append style = {blue} }
-  \Edge[label = 288](BBU 2)(Switch 2)
-  \Edge[label = 633](Switch 1)(RRH 2)
-  
-  \tikzset{
-  EdgeStyle/.append style = {red} }
-  \Edge[label = 329](BBU 3)(Switch 2)
-  \Edge[label = 193](Switch 1)(RRH 3)
-  
-  \tikzset{
-  EdgeStyle/.append style = {black} }
-  \Edge(Switch 1)(Switch 2)
-\end{tikzpicture}
+% 
+% \begin{frame}{Limits}
+%     
+%   \centering
+%   \scalebox{0.5}
+%   {
+% \begin{tikzpicture}
+%   \SetGraphUnit{5}
+%    \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+%   \Vertex[x=0,y=0]{l3}
+%   \Vertex[x=0,y=4]{l2}
+%   \Vertex[x=0,y=8]{l1}
+%   
+%   \Vertex[x=16,y=0]{s3}
+%   \Vertex[x=16,y=4]{s2}
+%   \Vertex[x=16,y=8]{s1}
+%   
+%   \Vertex[x=4,y=4]{SL}
+%   \Vertex[x=12,y=4]{SS}
+%     
+%   \tikzset{
+%   EdgeStyle/.append style = {<-,green} }
+%   \Edge[label = 687](s1)(SS)
+%   \Edge[label = 256](SL)(l1)
+%   
+%   \tikzset{
+%   EdgeStyle/.append style = {blue} }
+%   \Edge[label = 288](s2)(SS)
+%   \Edge[label = 633](SL)(l2)
+%   
+%   \tikzset{
+%   EdgeStyle/.append style = {red} }
+%   \Edge[label = 329](s3)(SS)
+%   \Edge[label = 193](SL)(l3)
+%   
+%   \tikzset{
+%   EdgeStyle/.append style = {black} }
+%   \Edge(SS)(SL)
+% \end{tikzpicture}
+% 
+%   }
+%   \includegraphics[scale = 0.2]{chronogrames/16.jpeg}
+%   
+%   $T_{max}$ = 4022 slots - Longest route delay *2 = 3268
+%   
+%   Optimal by splitting the emissions
+% \end{frame}
 
-  }
-  \includegraphics[scale = 0.2]{chronogrames/16.jpeg}
+\end{section}
+\begin{section}{Performance Evaluations}
   
-  $T_{max}$ = 4022 slots - Longest route delay *2 = 3268
-  
-  Optimal by splitting the emissions
+ \begin{frame}{Inputs}
+ 
+ \centering
+   \begin{tabular}{|c|c|c|}
+   \hline
+    Links capacity & 10Gbps & -\\
+    \hline
+    Flow/RRH & 1.228Gb/s & 2500 slots/ms\\
+    \hline
+    Flow max ($l_{max}$) & 7 & - \\
+    \hline
+    Considered Range & 0-5km & 2000 slots\\
+    \hline
+    Period & 1ms & 19500 slots\\
+    \hline
+    \end{tabular}
+
+ \end{frame}
+
+\begin{frame}{Periods of algorithms without waiting times}
+   \centering
+  \includegraphics[scale=0.4]{window0.pdf}\\
 \end{frame}
 
+\begin{frame}{LSG performance}
+   \centering
+  \includegraphics[scale=0.4]{tmax0.pdf}\\
+\end{frame}
 
+\begin{frame}{LSG performance}
+   \centering
+  \includegraphics[scale=0.2]{distriscumul_longest.pdf}
+  \includegraphics[scale=0.2]{distriscumul_random.pdf}\\
+\end{frame}
+
+\end{section}
+
+\begin{section}{Conclusion}
+ 
 
 \begin{frame}{Conclusion}
-\setbeamertemplate{blocks}[rounded]%
-[shadow = true]
-\begin{block}{Good results}
-Heuristic giving optimal solutions on single cases, and good solution on hardest cases.
-\end{block}
-\begin{block}{Np-Hardness}
-Similar problems proven Np-Hard.
-\end{block}
-\begin{block}{Approximations}
-Algorithms trying to find optimal solutions in given periods.
-\end{block}
-\begin{block}{``Smart Bruteforce''}
-Algorithm branch and bound to find an optimal solution, if it exists in a given period.
-\end{block}
+
+ \begin{block}{Some good results}
+    Optimal algorithm without waiting times for a reasonable load of the network (Exhaustive Generation). Good heuristic (LSG) when waiting times are allowed.
+ \end{block}
+ 
+  \begin{block}{but much improvements to do !}
+    Better model, study of the others topologies, ...
+ \end{block}
 
 \end{frame}
+
+\end{section}
+
 
 \end{document}

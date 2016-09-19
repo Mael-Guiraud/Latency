@@ -78,7 +78,9 @@ void simulation(int mode)
 	//TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
 	//TwoWayTrip t = greedy_prime(g,P);
 	//TwoWayTrip t = algo_bruteforce(g,P);
-	TwoWayTrip t = shortest_to_longest(g);
+	//TwoWayTrip t = shortest_to_longest(g);
+	TwoWayTrip t= simons(g);
+	TwoWayTrip t2= longest_shortest(g);
 	//TwoWayTrip t = recherche_lineaire_star(g,P);
 	if(t.window_size == -1)
 	{
@@ -87,6 +89,7 @@ void simulation(int mode)
 	}
 	printf("----------2way------\n");
 	afficheTwoWayTrip(t);
+	afficheTwoWayTrip(t2);
 	int i;
 	
 	int arrivee[gr.sources];
@@ -316,7 +319,7 @@ void  simulationsWindow()
 	TwoWayTrip t;
 	int nb_simul = 1000;
 	int moyenne_window[4];
-	int taillewindowmax;
+	int taillewindowmax=0;
 	int piretaille[4];
 	char nom[64];
 	for(i=0;i<4;i++)

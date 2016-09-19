@@ -9,11 +9,11 @@ int main(){
 
 	//0 pour avoir des alea partout, 1 pour des 0 vers feuilles, 2 pour des0 vers sources
 	
-	//simulation(0);
+	simulation(0);
 	//simul_bruteforce();
 	//genere_distrib();
 	//genere_distrib_cumulee();
-	etude_exp_bruteforce();
+	//etude_exp_bruteforce();
 	//simulationsTmax();
 	//simulationsWindow();
 	 //simulation_brute_shortest();
