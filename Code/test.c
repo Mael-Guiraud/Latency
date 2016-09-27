@@ -173,11 +173,12 @@ void  simulationsTmax()
 	for(i=1;i<8;i++)//taille route
 	{
 		ecrire_bornesTMax(i);
-			for(k=0;k<3;k++)//mode
+			for(k=0;k<1;k++)//mode
 			{
 				for(l=0;l<nb_simul;l++)
 				{
 				g=topologie1(i,i,k);
+				//affiche_graphe(g);
 				for(j=0;j<4;j++)
 				{
 					
@@ -317,7 +318,7 @@ void  simulationsWindow()
 	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
-	int nb_simul = 1000;
+	int nb_simul = 100;
 	int moyenne_window[4];
 	int taillewindowmax=0;
 	int piretaille[4];
@@ -628,9 +629,43 @@ void genere_distrib_cumulee()
 }
 
 
-
-
-
+void simulataions_petits_paquets()
+{
+	char nom[64];
+	int a;
+	for(a=0;a<3;a++)
+	{
+		sprintf(nom,"results/petits_paquets%d.txt",a);
+		int nbr_paquets = pow(10,a);
+		//printf("%d\n",nbr_paquets);
+		FILE *f;
+		Graphe g;
+		f=fopen(nom,"w+");
+		int i,j;
+		int somme = 0;
+		int pire_cas = 0;
+		int tmp;
+		for(i=1;i<8;i++)
+		{
+			for(j=0;j<1000;j++)
+			{
+				g = topologie1(i,i,0);
+				tmp = random_petits_paquets(g,nbr_paquets);
+				somme += tmp;
+				if(tmp > pire_cas)
+				{
+					pire_cas = tmp;
+				}
+			}
+			//printf("somme = %d\n",somme);
+			somme /= 1000;
+			fprintf(f,"%d %d %d \n",i,somme,pire_cas);
+			somme = 0;
+			pire_cas = 0;
+		}
+		fclose(f);
+	}
+}
 
 
 

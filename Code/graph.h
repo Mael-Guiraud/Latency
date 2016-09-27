@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #define MAX_TIC_TOC  2000000
-#define taille_paquet 2558
-#define TAILLE_ROUTE 10000
+#define taille_paquet 2550
+#define TAILLE_ROUTE 2000
 #include <math.h>
 #include <string.h>
 #include <time.h>
@@ -92,6 +92,7 @@ int recherche_lineaire_star(Graphe g);
 int recherche_lineaire_prime(Graphe g);
 int recherche_lineaire_brute(Graphe g);
 TwoWayTrip random_sending(Graphe g);
+int random_petits_paquets(Graphe g,int nombre_paquets);
 
 //Fichiers.c Fonctions de gestions des fichiers
 void creationfichierGraph(Graphe g,char * nom);
@@ -115,6 +116,7 @@ void etude_exp_bruteforce();
 void genere_distrib();
 void genere_distrib_cumulee();
 void simulation_brute_shortest();
+void simulataions_petits_paquets();
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);

@@ -745,7 +745,7 @@ TwoWayTrip simons(Graphe g)
 	int deadline_route;
 	for(j=0;j<g.sources;j++)
 	{
-		deadline_route = 45155145+t.M[j]-distance(g.routes[j],2);
+		deadline_route = 7800+t.M[j]-distance(g.routes[j],2);
 		elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_fenetre,deadline_route));
 
 	}

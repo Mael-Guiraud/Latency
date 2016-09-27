@@ -8,8 +8,8 @@ int main(){
  
 
 	//0 pour avoir des alea partout, 1 pour des 0 vers feuilles, 2 pour des0 vers sources
-	
-	simulation(0);
+	simulataions_petits_paquets();
+	//simulation(0);
 	//simul_bruteforce();
 	//genere_distrib();
 	//genere_distrib_cumulee();
