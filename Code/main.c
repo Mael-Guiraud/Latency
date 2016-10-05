@@ -5,10 +5,9 @@ int main(){
 	gettimeofday(&trecv,NULL);
 	srandom(trecv.tv_usec);
 	clock_t debut = clock();
- 
 
-	//0 pour avoir des alea partout, 1 pour des 0 vers feuilles, 2 pour des0 vers sources
-	simulataions_petits_paquets();
+	genere_distrib_cumulee_petits_paquets();
+	//simulataions_petits_paquets();
 	//simulation(0);
 	//simul_bruteforce();
 	//genere_distrib();

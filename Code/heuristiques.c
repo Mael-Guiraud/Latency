@@ -618,13 +618,22 @@ void affichematrice(int ** m, int x, int y)
 int  random_petits_paquets(Graphe g,int nombre_paquets)
 {
 	int departs[g.sources];
+	int i,j;
 	//affiche_graphe(g);
+	int ** dates = malloc(sizeof(int *) * g.sources);
+	int ** dates2 = malloc(sizeof(int *) * g.sources);
+	for(i=0;i<g.sources;i++)
+	{
+		dates[i] = malloc(sizeof(int)*nombre_paquets);
+		dates2[i] = malloc(sizeof(int)*nombre_paquets);
+	}
+	/*
 	int dates[g.sources][nombre_paquets];
-	int dates2[g.sources][nombre_paquets];
+	int dates2[g.sources][nombre_paquets];*/
 	int taille_petit_paquet = taille_paquet / nombre_paquets;
 	//printf("petit paquet = %d\n",taille_petit_paquet);
 	Graphe gr = renverse(g);
-	int i,j;
+	
 	for(i=0;i<g.sources;i++)
 	{
 		departs[i]  = rand_entier(16942);
@@ -746,6 +755,13 @@ int  random_petits_paquets(Graphe g,int nombre_paquets)
 	}
 	
 	//printf("tmax %d \n",tmax);
+	for(i=0;i<g.sources;i++)
+	{
+		free(dates[i]);
+		free(dates2[i]);
+	}
+	free(dates);
+	free(dates2);
 	return tmax;
 	
 }

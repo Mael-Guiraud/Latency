@@ -647,7 +647,7 @@ void simulataions_petits_paquets()
 		int tmp;
 		for(i=1;i<8;i++)
 		{
-			for(j=0;j<1000;j++)
+			for(j=0;j<10000;j++)
 			{
 				g = topologie1(i,i,0);
 				tmp = random_petits_paquets(g,nbr_paquets);
@@ -668,6 +668,50 @@ void simulataions_petits_paquets()
 }
 
 
+
+void genere_distrib_cumulee_petits_paquets()
+{
+	char nom[64];
+	int a;
+	int distribs[150];
+	for(a=0;a<3;a++)
+	{
+		
+		int nbr_paquets = pow(10,a);
+		//printf("%d\n",nbr_paquets);
+		FILE *f;
+		Graphe g;
+		
+		int i,j,k;
+		int tmp;
+		for(i=1;i<8;i++)
+		{
+			sprintf(nom,"results/petits_paquets_distrib%d_%d.txt",a,i);
+			f=fopen(nom,"w+");
+			for(j=0;j<150;j++)
+			{	
+				distribs[j] = 0;
+			}
+			for(j=0;j<10000;j++)
+			{
+				g = topologie1(i,i,0);
+				tmp = random_petits_paquets(g,nbr_paquets);
+				freeGraphe(g);
+				tmp /= 100 ;
+				if(tmp < 150)
+				{
+					distribs[tmp]++;
+				}
+			}
+			for(k=0;k<150;k++)	
+			{
+				distribs[k] += distribs[k-1];
+				fprintf(f,"%d %f\n",k*100,(double)((double)distribs[k]/100));
+			}
+		}
+		fclose(f);
+	}
+}
 
 
 

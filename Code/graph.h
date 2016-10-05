@@ -117,6 +117,7 @@ void genere_distrib();
 void genere_distrib_cumulee();
 void simulation_brute_shortest();
 void simulataions_petits_paquets();
+void genere_distrib_cumulee_petits_paquets();
 
 //Calculs.c Fonctions de petits calculs basiques
 long int rand_entier(int n);

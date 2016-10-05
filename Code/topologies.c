@@ -109,6 +109,8 @@ Graphe topologie1(int sources, int leaves,int mode)
 	{
 		g.vertices[i].index = i;
 		g.vertices[i].edge_number = 0;
+		g.vertices[i].neighboors = NULL;
+		g.vertices[i].weight = NULL;
 	}
 	
 	//sources switch

@@ -44,8 +44,14 @@ Tmax:
 		
 Petitspaquets:
 	gnuplot $(DIRgplt)petits_paquets.gplt
+	gnuplot $(DIRgplt)petits_paquets_worst.gplt
+	gnuplot $(DIRgplt)cumul_petits_paquets.gplt
 	ps2pdf $(DIRgplt)petits_paquets.ps $(DIRgplt)petits_paquets.pdf
+	ps2pdf $(DIRgplt)petits_paquets_worst.ps $(DIRgplt)petits_paquets_worst.pdf
+	ps2pdf $(DIRgplt)cumul_petits_paquets.ps $(DIRgplt)cumul_petits_paquets.pdf
 	rm -f $(DIRgplt)petits_paquets.ps
+	rm -f $(DIRgplt)petits_paquets_worst.ps
+	rm -f $(DIRgplt)cumul_petits_paquets.ps
 Bruteforce:
 	gnuplot $(DIRgplt)expbruteforce.gplt
 	ps2pdf $(DIRgplt)expbruteforce.ps $(DIRgplt)expbruteforce.pdf
