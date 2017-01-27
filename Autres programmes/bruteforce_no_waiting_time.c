@@ -100,7 +100,7 @@ int prochain_debut(intervalle_liste *liste, int debut, int taille, int taille_pa
     pos = liste[pos].suivant;
     if(liste[pos].fin -liste[pos].debut >= taille_paquet) {return liste[pos].debut - debut; }
   }
-  return liste[pos].fin;//on a pas trouvé de bon emplacement
+  return liste[pos].fin - debut + taille_paquet;//on a pas trouvé de bon emplacement, on retourne au début des temps retour 
 }
 
 
@@ -225,10 +225,7 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
 int main(){
   srand(time(NULL));
   //int *temps_retour = genere_reseau(NBR_ROUTE,TAILLE_ROUTE);
-<<<<<<< HEAD
-=======
 
->>>>>>> 7955e12ab1faf6c2bd31341dda69025556c0852d
   /*intervalle_liste *liste = initialise(6,2000,16000);
   int nbr_slot = 8;
   ajoute_element(liste, 5000, 1, 2000,&nbr_slot,6);
@@ -250,7 +247,7 @@ int main(){
   affiche_intervalle(liste);
   printf("Nbr slot libre %d \n",nbr_slot);
   printf("Prochain %d \n",prochain_debut(liste, 9200, 4,2000));*/
-<<<<<<< HEAD
+
   int temps_retour[6] = {178,344,456,872,924,1272};
   for(int i = 6*2558; i < 12*2558;i++){
     
@@ -263,19 +260,6 @@ int main(){
     if(bruteforce(2558,i,6,temps_retour)) {printf("Taille de la fenêtre %d \n",i); break;}
   }
   //bruteforce(TAILLE_PAQUET,PERIODE,NBR_ROUTE,temps_retour);
-=======
-	int * temps_retour = malloc(sizeof(int)*2);
 
-  int i = 5000;
-	while(!bruteforce(TAILLE_PAQUET,i,2,temps_retour))
-	{
-			temps_retour[0] = 2964;
-	temps_retour[1] = 314;
-		i++;
-	}
-	printf("%d\n",i);
-  //int temps_retour[6] = {36,458,266,274,182};
-  //bruteforce(2558,13212,5,temps_retour);
 
->>>>>>> 7955e12ab1faf6c2bd31341dda69025556c0852d
 }

@@ -5,27 +5,35 @@ int main(){
 	gettimeofday(&trecv,NULL);
 	srandom(trecv.tv_usec);
 	clock_t debut = clock();
- 
 
-	//0 pour avoir des alea partout, 1 pour des 0 vers feuilles, 2 pour des0 vers sources
-	
+	genere_distrib_cumulee_petits_paquets();
+	//simulataions_petits_paquets();
 	//simulation(0);
 	//simul_bruteforce();
 	//genere_distrib();
 	//genere_distrib_cumulee();
 	//etude_exp_bruteforce();
 	//simulationsTmax();
-	simulationsWindow();
-	
+	//simulationsWindow();
+	 //simulation_brute_shortest();
 	
 	/*printf("Star %d\n",recherche_lineaire_star(g));
 	printf("Prime %d\n",recherche_lineaire_prime(g));
 	TwoWayTrip t = shortest_to_longest(g);
 	printf("SL %d\n",t.window_size);*/
-	/*for(int i = 0;i<1000;i++)
+	/*Graphe g = topologie1_variation(7,4000);
+	affiche_graphe(g);
+	ecrire_fichierGraph(g);*/
+	/*Graphe g;
+	int j;
+	TwoWayTrip t;
+	for(int i = 0;i<1000;i++)
 	{
-		Graphe g = topologie1(2,2,0);
-		printf("Brute %d\n",recherche_lineaire_brute(g));
+		 g = topologie1(3,3,0);
+		 t = shortest_to_longest(g);
+		 j = recherche_lineaire_brute(g);
+		printf("%d\n",t.window_size-j);
+		freeTwoWayTrip(t);
 	}*/
 	//afficheTwoWayTrip(algo_bruteforce(6,19500));
  

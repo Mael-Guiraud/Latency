@@ -78,7 +78,9 @@ void simulation(int mode)
 	//TwoWayTrip t = bruteforceiter(g,taille_paquet,P,taille,temps_retour);
 	//TwoWayTrip t = greedy_prime(g,P);
 	//TwoWayTrip t = algo_bruteforce(g,P);
-	TwoWayTrip t = shortest_to_longest(g);
+	//TwoWayTrip t = shortest_to_longest(g);
+	TwoWayTrip t= simons(g);
+	TwoWayTrip t2= longest_shortest(g);
 	//TwoWayTrip t = recherche_lineaire_star(g,P);
 	if(t.window_size == -1)
 	{
@@ -87,6 +89,7 @@ void simulation(int mode)
 	}
 	printf("----------2way------\n");
 	afficheTwoWayTrip(t);
+	afficheTwoWayTrip(t2);
 	int i;
 	
 	int arrivee[gr.sources];
@@ -170,11 +173,12 @@ void  simulationsTmax()
 	for(i=1;i<8;i++)//taille route
 	{
 		ecrire_bornesTMax(i);
-			for(k=0;k<3;k++)//mode
+			for(k=0;k<1;k++)//mode
 			{
 				for(l=0;l<nb_simul;l++)
 				{
 				g=topologie1(i,i,k);
+				//affiche_graphe(g);
 				for(j=0;j<4;j++)
 				{
 					
@@ -261,6 +265,31 @@ void  simulationsTmax()
 	ecrire_bornesTMax(i+1);
 }
 	
+void simulation_brute_shortest()
+{
+	Graphe g;
+	TwoWayTrip t;
+	int j;
+	int tmp;
+	for(int i = 9000;i<9001;i++)
+	{
+		//printf("%d i \n",i);
+		 g = topologie1_variation(2,i);
+		 affiche_graphe(g);
+		 //affiche_graphe(g);
+		 //printf("1\n");
+		 t = shortest_to_longest(g);
+		 tmp = t.window_size;
+		 afficheTwoWayTrip(t);
+		 //printf("2\n");
+		 j = recherche_lineaire_brute(g);
+		 int * temps_retour= graphe_to_temps_retour(g);
+		 t = bruteforceiter(g,taille_paquet,j,g.sources,temps_retour);
+		 afficheTwoWayTrip(t);
+		printf("%d %d (%d)\n",tmp,j,tmp-j);
+		freeTwoWayTrip(t);
+	}
+}
 void  simulationsWindow()
 {
 	
@@ -289,9 +318,9 @@ void  simulationsWindow()
 	int i,j,k,l;
 	Graphe g;
 	TwoWayTrip t;
-	int nb_simul = 1000;
+	int nb_simul = 100;
 	int moyenne_window[4];
-	int taillewindowmax;
+	int taillewindowmax=0;
 	int piretaille[4];
 	char nom[64];
 	for(i=0;i<4;i++)
@@ -308,7 +337,7 @@ void  simulationsWindow()
 				{ 
 					if(l%100 == 0)
 					{
-						printf("%d\% \n",l/10);
+						printf("%d \n",l/10);
 					}
 					g=topologie1(i,i,k);
 					for(j=0;j<4;j++)//algo
@@ -418,7 +447,7 @@ int valide(Graphe g, TwoWayTrip t, int P)
 
 void etude_exp_bruteforce()
 {
-	int periode = 40928;
+	
 	TwoWayTrip t;
 	int i,j;
 	int reussite;
@@ -427,24 +456,24 @@ void etude_exp_bruteforce()
 	remove ("./results/expbruteforce.txt");
 	f=fopen("results/expbruteforce.txt","a");
 	int * temps_retour;
-	for(i=1;i<17;i++)
+	for(i=1;i<8;i++)
 	{
-		printf("%d\n",i);
+		printf("%d \n",i);
 		reussite = 0;
-		for(j=0;j<10000;j++)
+		for(j=0;j<100;j++)
 		{
-			if(j%100 ==0)
-				printf("%d(%d pourcents)\n",i,j/100);
+			if(j%10 ==0)
+				printf("%d %d\n",j/10,reussite);
 			g = topologie1(i,i,0);
 			temps_retour = graphe_to_temps_retour(g);
-			t = bruteforceiter(g,taille_paquet,periode,g.sources,temps_retour);
-			if(t.taille!=0)
+			t = bruteforceiter(g,taille_paquet,19500,g.sources,temps_retour);
+			if(t.window_size==1)
 				reussite++;
 			freeTwoWayTrip(t);
 			//freeGraphe(g);
 		}
-		reussite /=100;
-		fprintf(f,"%f %d \n",6.25*i, reussite);
+		//reussite /=100;
+		fprintf(f,"%i %d \n",i, reussite);
 	}
 	fclose(f);
 }
@@ -600,11 +629,89 @@ void genere_distrib_cumulee()
 }
 
 
+void simulataions_petits_paquets()
+{
+	char nom[64];
+	int a;
+	for(a=0;a<3;a++)
+	{
+		sprintf(nom,"results/petits_paquets%d.txt",a);
+		int nbr_paquets = pow(10,a);
+		//printf("%d\n",nbr_paquets);
+		FILE *f;
+		Graphe g;
+		f=fopen(nom,"w+");
+		int i,j;
+		int somme = 0;
+		int pire_cas = 0;
+		int tmp;
+		for(i=1;i<8;i++)
+		{
+			for(j=0;j<10000;j++)
+			{
+				g = topologie1(i,i,0);
+				tmp = random_petits_paquets(g,nbr_paquets);
+				somme += tmp;
+				if(tmp > pire_cas)
+				{
+					pire_cas = tmp;
+				}
+			}
+			//printf("somme = %d\n",somme);
+			somme /= 1000;
+			fprintf(f,"%d %d %d \n",i,somme,pire_cas);
+			somme = 0;
+			pire_cas = 0;
+		}
+		fclose(f);
+	}
+}
 
 
 
-
-
+void genere_distrib_cumulee_petits_paquets()
+{
+	char nom[64];
+	int a;
+	int distribs[150];
+	for(a=0;a<3;a++)
+	{
+		
+		int nbr_paquets = pow(10,a);
+		//printf("%d\n",nbr_paquets);
+		FILE *f;
+		Graphe g;
+		
+		int i,j,k;
+		int tmp;
+		for(i=1;i<8;i++)
+		{
+			sprintf(nom,"results/petits_paquets_distrib%d_%d.txt",a,i);
+			f=fopen(nom,"w+");
+			for(j=0;j<150;j++)
+			{	
+				distribs[j] = 0;
+			}
+			for(j=0;j<10000;j++)
+			{
+				g = topologie1(i,i,0);
+				tmp = random_petits_paquets(g,nbr_paquets);
+				freeGraphe(g);
+				tmp /= 100 ;
+				if(tmp < 150)
+				{
+					distribs[tmp]++;
+				}
+			}
+			for(k=0;k<150;k++)	
+			{
+				distribs[k] += distribs[k-1];
+				fprintf(f,"%d %f\n",k*100,(double)((double)distribs[k]/100));
+			}
+		}
+		fclose(f);
+	}
+}
 
 
 

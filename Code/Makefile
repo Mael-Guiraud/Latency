@@ -4,7 +4,7 @@ DIRgplt = gplt/
 
 
 OBJ = $(DIRbin)heuristiques.o $(DIRbin)fichiers.o $(DIRbin)topologies.o $(DIRbin)calcul.o $(DIRbin)bruteforce.o $(DIRbin)simons.o $(DIRbin)test.o $(DIRbin)main.o
-FLAGS = -g -O3 -Wall
+FLAGS = -g -O -Wall
 all: clean lance
 
 Graphe:
@@ -24,24 +24,34 @@ Windows:
 	
 Tmax:
 	gnuplot $(DIRgplt)tmax0.gplt
-	gnuplot $(DIRgplt)tmax1.gplt
-	gnuplot $(DIRgplt)tmax2.gplt
+	#gnuplot $(DIRgplt)tmax1.gplt
+	#gnuplot $(DIRgplt)tmax2.gplt
 	gnuplot $(DIRgplt)tmaxsimons.gplt
 	gnuplot $(DIRgplt)tmaxlongest.gplt
 	gnuplot $(DIRgplt)tmax0worst.gplt
 	ps2pdf $(DIRgplt)tmax0.ps $(DIRgplt)tmax0.pdf
-	ps2pdf $(DIRgplt)tmax1.ps $(DIRgplt)tmax1.pdf
-	ps2pdf $(DIRgplt)tmax2.ps $(DIRgplt)tmax2.pdf
+	#ps2pdf $(DIRgplt)tmax1.ps $(DIRgplt)tmax1.pdf
+	#ps2pdf $(DIRgplt)tmax2.ps $(DIRgplt)tmax2.pdf
 	ps2pdf $(DIRgplt)tmaxsimons.ps $(DIRgplt)tmaxsimons.pdf
 	ps2pdf $(DIRgplt)tmaxlongest.ps $(DIRgplt)tmaxlongest.pdf
 	ps2pdf $(DIRgplt)tmax0worst.ps $(DIRgplt)tmax0worst.pdf
 	rm -f $(DIRgplt)tmax0.ps
-	rm -f $(DIRgplt)tmax1.ps
-	rm -f $(DIRgplt)tmax2.ps
+	#rm -f $(DIRgplt)tmax1.ps
+	#rm -f $(DIRgplt)tmax2.ps
 	rm -f $(DIRgplt)tmaxsimons.ps
 	rm -f $(DIRgplt)tmaxlongest.ps
 	rm -f $(DIRgplt)tmax0worst.ps
 		
+Petitspaquets:
+	gnuplot $(DIRgplt)petits_paquets.gplt
+	gnuplot $(DIRgplt)petits_paquets_worst.gplt
+	gnuplot $(DIRgplt)cumul_petits_paquets.gplt
+	ps2pdf $(DIRgplt)petits_paquets.ps $(DIRgplt)petits_paquets.pdf
+	ps2pdf $(DIRgplt)petits_paquets_worst.ps $(DIRgplt)petits_paquets_worst.pdf
+	ps2pdf $(DIRgplt)cumul_petits_paquets.ps $(DIRgplt)cumul_petits_paquets.pdf
+	rm -f $(DIRgplt)petits_paquets.ps
+	rm -f $(DIRgplt)petits_paquets_worst.ps
+	rm -f $(DIRgplt)cumul_petits_paquets.ps
 Bruteforce:
 	gnuplot $(DIRgplt)expbruteforce.gplt
 	ps2pdf $(DIRgplt)expbruteforce.ps $(DIRgplt)expbruteforce.pdf

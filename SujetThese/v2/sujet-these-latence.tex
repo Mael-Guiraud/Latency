@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{xspace}
+\usepackage{graphicx,graphics} 
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{complexity}
+\usepackage{hyperref}
+
+\begin{document}
+
+
+\title{Deterministic architectures for low latency in 5G and beyond systems}
+
+
+\maketitle
+
+\section*{Context}
+
+ Current mobile network (aka cellular network) architecture consists in a distributed radio access networks: the mobile terminals connect to base stations (BTS for Base Transceiver Station as a generic name, eNB for evolved Node B in 3GPP LTE “4G” standard) that encompasses all the sub-systems needed to realize mobile communication \cite{bouguen2012lte}. 
+ It mainly comprises the radio part, that furnishes the connection between the mobile terminal and the BTS, and the network part that provides control and management functions like mobility support (the main functionality being the support of handover from one BTS to another, i.e. the ability to pursue a communication when moving from range of an antenna to another.) The evolutions proposed in next generations aim at evolving toward centralized radio network architectures (C-RAN, for Cloud Radio Access Network) to reduce consumption costs and power at the base stations \cite{mobile2011c}. These C-RAN architectures include simplified base stations on the field. Depending on the architecture choice, it can be restricted to the radio part and the digital to analog conversion only. This can be identified by different names depending on the reference documents, including RU for Remote Unit or Remote Radio Heads (RRH). The later will be used the rest of the document. The other component of the C-RAN is composed of the processing units (baseband unit: BBU – used in this document – or FU for Frontend Unit) located in the cloud. By cloud we define in this document the capability of instantiating executable programs in data center that are transparently connected to the systems  requiring the results of the program execution \cite{mobile2011c}. The execution may be indifferently performed on virtualized machines, or bare metal one, or any other combinations. The network between RRH and BBU is called “Fronthaul Network”, or ``Fronthaul'' for short \cite{ieeep802}.\\
+
+ This type of architecture faces the challenge of mastering the latency in the transfer process between the RRHs on the field and BBUs in the cloud.
+ Low latency is already critical for the deployment of C-RAN approach in LTE “4G” networks. 
+ The standard requires hard time constraints for functions like HARQ (Hybrid Automatic Repeat reQuest) that needs to be processed in less than 3ms \cite{bouguen2012lte}. Considering processing time into the BBU, the time budget over the network can be as low as 400 micro seconds for a round trip. One specificity in this C-RAN context is not only the latency constraint, but also the periodicity of the data transfer between RRH and BBU (this HARQ constraint must be enforced for each frame emitted every millisecond).
+ Looking beyond current mobile network generation, one must have in mind that ongoing 5G standards will require to reach end-to-end expected latency as low as 1ms (depending on targeted services) \cite{boccardi2014five}.
+ New scheduling as well as routing paradigms and new technologies have to be considered to guarantee delay constrained periodic data transfers.\\
+
+The expressed constraints expressed for C-RAN architecture and 5G standard are hardly met in current networks. In IP or even Ethernet networks, the traffic usually suffers of delay due to buffering. The amazing success of the packet based networks for the last 40 years relies on the statistical multiplexing: the packets are sent when they are ready and are buffered in intermediate nodes (routers for IP networks, switches for Ethernet networks) when contention arises \cite{venkatramani1994supporting}. A contention means that one resource (node out interface) is needed at the same time for transmission of several packets. In this case, the supplementary packets are stored in a buffer until the resources become available. This allows an easy deployment and management of a network, leading to a delivery of the packet with few loss (under conditions that buffers are big enough) but at the price of uncertainty on the delivery time. This uncontrolled and non predictable delay prevents to offer low latency and no jitter in the current network. 
+Statistically managed QoS do not allow contention avoidance, then they can not provide null jitter \cite{khaunte2003technique}. If they can be used to prioritize some packets over the others (e.g. Express Forwarding against Best Effort), they fail to ensure delivery of a given packet in a given time delay when several packets compete for the same resource.\\ 
+
+The best current solution is to rely on an almost full optical approach, where each end-points (RRH on one side, BBU on the other side) are connected through direct fiber or full optical switches \cite{5gppparchitecture}. This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about 10,000 base stations. This number will increase by a factor of 2 to 20 with the emergence of “small cells” that allow increasing base station density and to reach higher throughput \cite{5gppparchitecture}. It is then needed to find a solution to offer low latency over commoditized packet based networks.\\ 
+
+\section*{Objective}
+This PhD subject targets to elaborate an architecture for contention free packet network including new scheduling and routing paradigms to solve this periodic and delay constrained data transfer. Indeed, one of the most promising approach relies on the concept of Deterministic Networking (DetNet) that is to get rid of statistical multiplexing. The traditional queue management is replaced by time based forwarding. Mechanisms for Deterministic Networking are under standardization in IEEE 802.1 TSN group \cite{ieee802}, as well at IETF DetNet working group \cite{finn-detnet-architecture-08}.  To make DetNet working over a network composed of several nodes, it is needed to manage the time at which the packets of deterministic paths are crossing each node. Several patents from Nokia on concepts and mechanisms for DetNet have been  already   published \cite{howe2005time,leclerc2015contention,leclerc2016signaling,leclerc2016transmission,roos1994method,coherentflow}. The work will be based on and will extend them.\\
+
+A first algorithmic modeling have been proposed and analyzed in collaboration between Nokia Bell Labs France and DAVID laboratory from Versailles Saint-Quentin en Yvelines University. The network topology is modeled by a graph, a set of routes from source nodes (modeling connections to BBU) and destination nodes (modeling RRH). The time is divided into discrete slots. The problem is to select, for each destination node, a route from one source node to it and a periodic scheduling to allow periodically sending a packet to each RRH without congestion conflicts between all such packets. Moreover we would like to minimize the duration of the period, such that 1ms periodic sending of LTE frames can be fulfilled. Even if the selected set of routes is given, this optimization problem has been shown to be NP-complete \cite{rapportstage}. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies\cite{borndorfer1998frequency},  bandwidths\cite{erlebach2001complexity} or routes\cite{cole1996benefit} in a network or train schedules\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity and the associated problems are also NP-complete. The only model which incorporates some periodicity is the circular coloring\cite{zhu2006recent,zhou2013multiple,zhu2001circular} but is not expressive enough to capture our problem.\\
+
+Then, during a 6 months internship, we studied the full problem of finding a periodic scheduling for the round trip with fixed period and minimal latency. We considered a basic network topology composed of two connected switches: one connecting the BBUs and another for the RRHs. We proposed efficient heuristics which find solutions without contention and no latency added by the scheduling, when the load of the network is small enough. Once the network starts to be loaded, we proposed another efficient heuristic to manage the flows. We experimentally observed that this deterministic approach satisfies the criteria of a 3ms maximum latency with a given period of 1ms, while the statistical approach fails when the load increases. To confirm that, some simulations were performed in the laboratory DAVID for the ANR project N-Green, in an optical ring: small packets were periodically exchanged between each RRH and its associated BBU. These simulations have shown that for low levels of load, the required latency guarantees can not be ensured with statistical multiplexing.\\
+
+One of the goal of this PhD is to study several other topologies of networks: the star for which several results are already available, the cycle representing an optical ring and the acyclic graph representing a general meshed network. We will try to find restrictions of the previous topologies which are realistic and strong enough to solve the problem or to find some approximation in polynomial time. In particular, the time to transmit a packet seems to be large with regards to the size of a route. We hope to use this property to come up with new efficient algorithms.
+Another goal is to enrich our model to make it more general, by allowing different bandwidths on the links or to allow to cut the packets into pieces, and to adapt our algorithms to these more general settings.\\
+
+Our approach will produce some deterministic schedules which require a centralized control of the network. This approach looks very well aligned to the Software-Defined Networking (SDN) concept \cite{haleplidis2015software}, that is the capacity to manage the network behavior via standardized interface. In this approach, the forwarding and control planes are separated, such that an entity (SDN controller) can regroup the control planes of all the devices, so it can manage the routing with a global vision of the network, instead of a local one. In this PhD, we will study how the control of deterministic network will be implemented in a SDN architecture, with the objective to demonstrate the value of the approach through prototype.\\
+
+In the context of 5G, the deterministic networking will be also integrated with the network slicing concept. Slicing means to provision and to allocate dedicated resources into the network for every different service proposed to the users.  In this PhD, it will be studied how deterministic networking is a prerequisite to enable network slicing.\\
+
+It is expected to get at the end of the PhD Thesis a complete solution for providing low latency and no jitter  in C-RAN as well as in 5G and beyond networks, including analysis, algorithms, patents and prototype.\\
+
+\section*{Organisation}
+The study program of this project consists in :
+ \begin{enumerate}
+  \item Given a routing in a network connecting various RRH and BBU, analyzing theoretically the problem of defining a periodic scheduling (complexity, approximability, particular cases) and proposing efficient heuristic algorithms to solve it , in the context of complex networks well beyond those studied in \cite{rapportstage}.
+\item  Proposing some new routing algorithms to define the set of paths  best suited to the resolution of  the previous scheduling problem.
+\item  Benchmarking the proposed algorithms through simulation on the defined instances in comparison with existing architectural solutions.
+\item  Proposing solutions for an efficient coordination between computed scheduling and computation elements.
+\item  Extending the solutions to complex cases like dynamical change of the flows between RRH and BBU.
+\item  Defining methods, procedures and tools needed to perform computed scheduling.
+\item  Defining SDN based architecture to support the previous methods and procedures, in relation with on going standards.
+\item  Integrating this architecture within 5G slicing approach.
+\item  Demonstrating feasibility of the solutions proposed in the context of the 5G and beyond, through simulation and prototype. 
+ \end{enumerate}
+\bibliographystyle{ieeetr}
+\bibliography{Bib}
+
+
+\end{document}
+
+
+ 

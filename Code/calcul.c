@@ -435,12 +435,20 @@ void occuper_p(int * tab, int a, int b)
 void freeGraphe(Graphe g)
 {
 	int i;
-	
 	for(i=0;i<g.vertex_number;i++)
 	{
-		free(g.vertices[i].weight);
+		if(g.vertices[i].weight != NULL)
+		{
+			//printf("free de %p\n",g.vertices[i].weight);
+			free(g.vertices[i].weight);
+		}
 		
-		free(g.vertices[i].neighboors);
+		if(g.vertices[i].neighboors != NULL)
+		{
+			
+			//printf("free de %p\n",g.vertices[i].neighboors);
+			free(g.vertices[i].neighboors);
+		}
 
 	}
 	for(i=0;i<g.sources;i++)

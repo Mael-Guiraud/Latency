@@ -472,7 +472,7 @@ TwoWayTrip dichotomique(Graphe g,int P, int mode)
 int recherche_lineaire_star(Graphe g)
 {
 	TwoWayTrip t;
-	int i =g.sources*taille_paquet;
+	int i =3*g.sources*taille_paquet;
 	t = greedy_star(g,i);
 	while(t.window_size != 1)
 	{
@@ -481,8 +481,16 @@ int recherche_lineaire_star(Graphe g)
 		t = greedy_star(g,i);
 		
 	}
+	int collisions[g.sources];
+	int collisionsr[g.sources];
+	Graphe gr = renverse(g);
+	for(int j = 0;j<g.sources;j++)
+	{
+		collisions[j] = t.M[j] + distance(g.routes[j],1);
+		collisionsr[j] = t.M[j] +distance(g.routes[j],g.routes[j].route_lenght) + distance(gr.routes[j],1);	
+	}
 	freeTwoWayTrip(t);
-	return i;
+	return max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
 }
 
 int recherche_lineaire_prime(Graphe g)
@@ -498,8 +506,16 @@ int recherche_lineaire_prime(Graphe g)
 		t = greedy_prime(g,i);
 		
 	}
+	int collisions[g.sources];
+	int collisionsr[g.sources];
+	Graphe gr = renverse(g);
+	for(int j = 0;j<g.sources;j++)
+	{
+		collisions[j] = t.M[j] + distance(g.routes[j],1);
+		collisionsr[j] = t.M[j] +distance(g.routes[j],g.routes[j].route_lenght) + distance(gr.routes[j],1);	
+	}
 	freeTwoWayTrip(t);
-	return i;
+	return max(taille_fenetre(collisions,g.sources),taille_fenetre(collisionsr,g.sources));
 }
 
 
@@ -508,6 +524,7 @@ int recherche_lineaire_brute(Graphe g)
 	int * temps_retour= graphe_to_temps_retour(g);
 	int i = g.sources*taille_paquet;
 	TwoWayTrip t;
+	
 	t = bruteforceiter(g,taille_paquet,i,g.sources,temps_retour);
 	while(t.window_size != 1)
 	{
@@ -583,4 +600,169 @@ TwoWayTrip random_sending(Graphe g)
 	freeGraphe(gr);
 	return t;
 }
+
+void affichematrice(int ** m, int x, int y)
+{
+	int i,j;
+	printf(" Matrice de taille %dx%d\n",x,y);
+	for(i=0;i<x;i++)
+	{
+		for(j=0;j<y;j++)
+		{
+			printf("%d ",m[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+int  random_petits_paquets(Graphe g,int nombre_paquets)
+{
+	int departs[g.sources];
+	int i,j;
+	//affiche_graphe(g);
+	int ** dates = malloc(sizeof(int *) * g.sources);
+	int ** dates2 = malloc(sizeof(int *) * g.sources);
+	for(i=0;i<g.sources;i++)
+	{
+		dates[i] = malloc(sizeof(int)*nombre_paquets);
+		dates2[i] = malloc(sizeof(int)*nombre_paquets);
+	}
+	/*
+	int dates[g.sources][nombre_paquets];
+	int dates2[g.sources][nombre_paquets];*/
+	int taille_petit_paquet = taille_paquet / nombre_paquets;
+	//printf("petit paquet = %d\n",taille_petit_paquet);
+	Graphe gr = renverse(g);
+	
+	for(i=0;i<g.sources;i++)
+	{
+		departs[i]  = rand_entier(16942);
+		dates[i][0] = departs[i]+distance(g.routes[i],1);
+		for(j=1;j<nombre_paquets;j++)
+			dates[i][j] = dates[i][j-1]+taille_petit_paquet;
+	}
+	/*affichetab(departs,g.sources);
+	printf(" Matrice de taille %dx%d\n",g.sources,nombre_paquets);
+	for(i=0;i<g.sources;i++)
+	{
+		for(j=0;j<nombre_paquets;j++)
+		{
+			printf("%d ",dates[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");*/
+	//Calcul des temps 
+	int offset=0;
+	
+	int imin =0;
+	int jmin =0;
+	int k;
+	for(k=0;k<g.sources*nombre_paquets;k++)
+	{
+		int min = 999999;
+		for(i=0;i<g.sources;i++)
+		{
+			for(j=0;j<nombre_paquets;j++)
+			{
+				if(dates[i][j] < min)
+				{
+					imin = i;
+					jmin = j;
 					
+					//printf("%d %d %d %d \n",dates[i][j], min,imin,jmin);
+					min = dates[i][j];
+										
+				}
+			}
+		}
+		if(offset == 0)
+		{
+			offset = min;
+		}
+		else
+		{
+			if(min > offset)
+				offset = min;
+		}
+	//	printf("on prends %d %d %d\n",imin,jmin,offset);
+		dates[imin][jmin] = 999999;
+		dates2[imin][jmin] =  offset + distance(gr.routes[imin],2) + distance(gr.routes[imin],1);
+		offset += taille_petit_paquet;
+	}
+
+	/*printf(" Matrice de taille %dx%d\n",g.sources,nombre_paquets);
+	for(i=0;i<g.sources;i++)
+	{
+		for(j=0;j<nombre_paquets;j++)
+		{
+			printf("%d ",dates2[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");*/
+	offset = 0;
+	for(k=0;k<g.sources*nombre_paquets;k++)
+	{
+		int min = 999999;
+		for(i=0;i<g.sources;i++)
+		{
+			for(j=0;j<nombre_paquets;j++)
+			{
+				if(dates2[i][j] < min)
+				{
+					imin = i;
+					jmin = j;
+					
+					//printf("%d %d %d %d \n",dates[i][j], min,imin,jmin);
+					min = dates2[i][j];
+										
+				}
+			}
+		}
+		if(offset == 0)
+		{
+			offset = min;
+		}
+		else
+		{
+			if(min > offset)
+				offset = min;
+		}
+		//printf("on prends %d %d %d\n",imin,jmin,offset);
+		dates2[imin][jmin] = 999999;
+		dates[imin][jmin] =  offset + distance(g.routes[imin],2) ;
+		offset += taille_petit_paquet;
+	}
+	/*affichetab(departs,g.sources);
+	printf(" Matrice de taille %dx%d\n",g.sources,nombre_paquets);
+	for(i=0;i<g.sources;i++)
+	{
+		for(j=0;j<nombre_paquets;j++)
+		{
+			printf("%d ",dates[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");*/
+	int tmax = 0;
+	for(i=0;i<g.sources;i++)
+	{
+		if((dates[i][nombre_paquets-1]-taille_petit_paquet*(nombre_paquets-1)-departs[i]) > tmax)
+		{
+			tmax = dates[i][nombre_paquets-1]-taille_petit_paquet*(nombre_paquets-1)-departs[i];
+		}
+	}
+	
+	//printf("tmax %d \n",tmax);
+	for(i=0;i<g.sources;i++)
+	{
+		free(dates[i]);
+		free(dates2[i]);
+	}
+	free(dates);
+	free(dates2);
+	return tmax;
+	
+}
+								
