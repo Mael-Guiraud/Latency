@@ -40,7 +40,7 @@
 \newtheorem{definition}{Definition}
 \newtheorem{corollary}{Corollary}
 
-\renewcommand{\thefootnote}{\*}
+% \renewcommand{\thefootnote}{\*}
 
 \newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
 \newcommand\pazl{\textsc{pazl}\xspace}
@@ -66,14 +66,13 @@
 \begin{abstract}
 A recent trend in mobile networks is to centralize in distant data-centers the processing units which were attached to 
 antennas until now. The main challenge is to guarantee that the latency of the periodic messages sent from the antennas to their processing
-units and back, fulfills protocol time constraints. We show that traditional statistical multiplexing does not allow such a low latency, due to collisions and buffering at nodes. Hence, we propose in this article to use a deterministic scheme for sending periodic messages without collisions in the network thus without buffering and the resulting additional latency. 
+units and back, fulfills protocol time constraints. We show that traditional statistical multiplexing does not allow such a low latency, due to collisions and buffering at nodes. Hence, we propose in this article to use a deterministic scheme for sending periodic messages without collisions in the network thus saving the latency incurred by buffering.
+
 We give several algorithms to compute such schemes for a common topology where one link is shared by all antennas.
 We show that there is always a solution when the routes are short or the load is small. When the parameters are unconstrained,
 and some buffering is allowed in the processing units, we propose an algorithm (PMLS) adapted from a classical scheduling method.
 The experimental results show that even under full load, most of the time PMLS finds a deterministic sending scheme with no latency.
 \end{abstract}
-
-%\footnote{This work is partially supported by the french ANR project N-GREEN.}
 
 
 \section{Introduction}
@@ -83,22 +82,27 @@ Our aim is to operate a C-RAN on a low-cost shared switched network.
 The question we address is the following: is it possible to schedule messages such that there are no collisions to avoid latency caused by queuing delays? 
 Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
-Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the transmission of a minimal unit of data over the network. Since statistical multiplexing does not ensure a good latency we want to avoid any  buffering in internal nodes of the graph.  The process must be  predictable (i.e. the date of arrival of packets is known beforehand). Following LTE standard~\cite{bouguen2012lte}, in this article we assume that the process is periodic. That is, if we look at the network at times $t$ and $t+P$ where $P$ is the period, all messages are at the same position in the network. Hence we need to design a periodic process with no collisions between messages. To ensure that this property is always true we propose a deterministic process.  We have two sets of values that we can set when building a periodic sending process, called a \emph{periodic assignment} in this article: the time at which each packet is sent by a RRH in each period and the waiting time in the BBU before the answer is sent back to the RRH. When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the other messages sent by the others BBU/RRH in the same period, but also in the previous and following periods. The latency, that is the time between the emission of a message and the complete return of its answer must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long. Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size.   
+Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the time needed to transmit a minimal unit of data over the network. Since statistical multiplexing does not ensure a good latency we want to avoid any  buffering in internal nodes of the graph.  We take advantage of the deterministic nature of the messages we must manage i.e. the dates of arrival of messages are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that the arrivals of all the packets are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process we mean that the network at times $t$ and $t+P$ where $P$ is the period, is in the exact same state. 
+
+We assume that the routes of the messages are already fixed, and there are no buffering allowed inside the network. Hence we only have two sets of values that we can set when building a periodic sending process, called a \emph{periodic assignment}: the time at which each packet is sent by a RRH in each period and the waiting time in the BBU before the answer is sent back to the RRH. When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the other messages sent by the others BBU/RRH in the same period, but also in the previous and following periods. The latency, that is the time between the emission of a message and the complete return of its answer must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long. Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size.   
 
 Our main contributions are the following.
  In Sec.~\ref{sec:def} we propose a model of the network and the periodic sending of messages along its routes.
  We then formalize our two problems of finding a periodic assignment for sending messages without collisions: PRA (sending of the message only) and PALL (sending of the message and of the answer).  
 In Sec.~\ref{sec:complexity}, we prove that the problem PRA and PALL are $\NP$-hard and cannot be approximated even for very
 restricted classes of graphs. 
-Therefore in the next two sections, we study a simple but very common topology, that we call the
-star routed network, where all messages can collide on a single arc.
-In Sec.\ref{sec:PAZL}, we study a variant of PALL called PAZL  where the waiting times must all be zero. We provide several algorithms, some of their theoretical properties and give experimental evidences that they find periodic assignments when the network is not too loaded. Finally in Sec.\ref{sec:PALL}, we propose algorithms for the general PALL problem and exhibit one which works extremely well in our experiments even in loaded networks. In particular we show that the deterministic communication schemes we design largely outperform the traditional stochastic multiplexing with regard to latency. 
+Therefore in the next two sections, we study a simple but very common topology, that we call the \emph{star routed network}, where all messages use a common arc.
+In Sec.\ref{sec:PAZL}, we study a variant of PALL called PAZL  where the waiting times must all be zero. We provide several algorithms, some of their theoretical properties and give experimental evidences that they find periodic assignments when the network is not too loaded. Finally in Sec.\ref{sec:PALL}, we propose algorithms for the general PALL problem and exhibit one which works extremely well in our experiments even in loaded networks. In particular we show that the deterministic communication schemes we design largely outperform the traditional statistical multiplexing with regard to latency. 
 
    \subsection*{Related works}
    
  Statistical multiplexing even with a large bandwidth does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
      
-The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but  we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. Periodic or cyclic multiprocessor scheduling problems~\cite{aupy2017periodic,hanen1993cyclic,korst1991periodic} are also close to our problem, but the models consider some parallel multiprocessor architecture, while our model would be a serial processor architecture. 
+The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
+\todo{Dire que notre problème est proche d'un two flow shop scheduling (problème dur) et que les notions de cyclic schedulings ne sont pas adaptés : - soit minimisés le nombre deprocesseurs utiles alors qu'on a un problème à un processeur, soit batch scheduling
+minimiser la période pour avoir un periodic scheduling alors que nous elle est fixée}
+
+Periodic or cyclic multiprocessor scheduling problems~\cite{aupy2017periodic,hanen1993cyclic,korst1991periodic} are also close to our problem, but the models consider some parallel multiprocessor architecture, while our model would be a serial processor architecture. 
 
 
 \section{Model and Problems}\label{sec:def}
@@ -106,13 +110,13 @@ The algorithmic problem we focus on may look like wormhole problems~\cite{cole19
   \subsection{Network modeling}
   
 
-The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc. A {\bf route} $r$ in $G$ is a path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
+The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
 We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
 The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
 
    \subsection{Messages dynamic}
       
-      In the process we study, a message is sent on each route at each period, noted $P$.
+      In the process we study, a message is sent on each route at each period, denoted by $P$.
       Let $r$ be a route, if a message is sent at time $m$ from $s$ the first vertex of $r$ then it will arrive at vertex $v$ in $r$ at time $m + \lambda(v,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [0,P-1]$, 
       then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $v$ in $r$ is $t(v,r) = m + \lambda(v,r)\mod P$. 
       
@@ -213,16 +217,15 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
 	\end{lemma}
 \begin{proof}
 
-      Consider the routed network $(G,{\cal R})$ given in the previous subsection. 
-      We change the weights so that for $v$, the first vertex which belongs to $r_i$ and $r_j$,
-      we have $\lambda(v,r_i) - \lambda(v,r_j)= P$, where $P$ is an odd number smaller than $n$, the number of routes in ${\cal R_{\cal C}}$. In such a graph, there is no $(P,\tau)$-periodic assignment, since the problem reduces to finding a $P$-coloring in a complete graph with $n > P$ vertices, the colors being the offsets of the routes.\\
+      We consider a generalization of the routed network $(G,{\cal R})$ given in Fig.~\ref{fig:example}. 
+      There are $n$ routes in the routed network and each pair of routes $r_i,r_j$ share a single arc and it is not in any other route. The weights are chosen so that for $v$, the first vertex which belongs to $r_i$ and $r_j$, we have $\lambda(v,r_i) - \lambda(v,r_j)= P$, where $P$ is an odd number smaller than $n$. In such a graph, there is no $(P,\tau)$-periodic assignment, since the problem reduces to finding a $P$-coloring in a complete graph with $n > P$ vertices, the colors being the offsets of the routes.\\
       If we consider a period of $2$, for all $i \neq j$, $\lambda(v,r_i) - \lambda(v,r_j) \mod 2 = 1$ . Therefore $(0,\dots,0)$ is a $(2,1)$-periodic assignment of ${\cal R}$.      
 \end{proof}
       
       
       \subsection{Periodic assignment for low latency}
       In the context of cloud-RAN applications, we need to send a message from a RRH $u$ to a BBU $v$ and then 
-      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of forward routes and $B$ of backward routes. Moreover there is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in the networks, but we need not to enforce this property.
+      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of forward routes and $B$ of backward routes. Moreover there is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to \emph{bidirectional links} in the networks, but we need not to enforce this property.
          
          We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
 	This assignment represents the following process: first a message is sent at $u$, through the route $r \in F$, at time $m_r$.
