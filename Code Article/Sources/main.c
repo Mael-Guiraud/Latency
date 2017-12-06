@@ -17,7 +17,7 @@ int main()
 	/*****
 	Effectue une recherche linéaire pour les algos PAZL afin de trouver la plus petite periode moyenne
 	*****/
-	//simuls_periode_PAZL(8,2500,700,1000);
+	simuls_periode_PAZL(14,2500,700,1000);
 
 	/******************************************/	
 
@@ -71,7 +71,7 @@ int main()
 	Tmax moyen pour sto vs sp
 	*******/
 
-	marge_PALL_stochastique(8,2500,20000,1000,50000);
+	//marge_PALL_stochastique(8,2500,20000,1000,50000);
 
 
 
