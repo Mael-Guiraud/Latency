@@ -52,8 +52,8 @@ int ajoute_element(intervalle_liste *liste, int debut, int taille, int taille_pa
       return 1;
       }
       else{
-		  *nombre_slot+=1;
-		  return 0;}
+	*nombre_slot+=1;
+	return 0;}
     }
     pos = liste[pos].suivant;
   }
@@ -112,10 +112,13 @@ int* genere_reseau(int nbr_route, int taille_route){
   return temps_retour;
 }
 
-void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget){
-  printf("Budget restant: %d \n",budget);
+typedef struct stack_route{int numero_route, position_route, budget, prochain_retour;} stack_route;
+
+
+void print_sol(stack_route *stack, int nbr_route){
+  printf("Budget restant: %d \n",stack[nbr_route-1].budget);
   for(int i = 0; i < nbr_route;i++){
-    printf("(%d,%d) ",solution_num[i],solution_pos[i]);
+    printf("(%d,%d) ",stack[i].numero_route,stack[i].position_route);
   }
   printf("\n");
 }
@@ -126,48 +129,50 @@ void print_sol(int *solution_pos,int *solution_num,int nbr_route,int budget){
 
 int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour){
 
-  int *solution_pos = malloc(sizeof(int)*nbr_route);
-  int *solution_num = malloc(sizeof(int)*nbr_route);
   int *route_restante = malloc(sizeof(int)*nbr_route);
+  stack_route *stack =  malloc(sizeof(stack_route)*nbr_route);
+  intervalle_liste *retour = initialise(nbr_route,taille_paquet,periode);
+  
   for(int j=1; j <nbr_route;j++) route_restante[j]=1; //on pourrait juste virer la première route ?
   route_restante[0] = 0;
-  solution_pos[0] = 0;
-  solution_num[0] = 0;
-  int solution_taille = 1;//première route fixée
-  int budget = periode - nbr_route*taille_paquet;
+  stack[0].numero_route = 0;
+  stack[0].position_route = 0;
+  stack[0].budget = periode - nbr_route*taille_paquet;
+  stack[0].prochaine_route = taille_paquet;
+
   
-  int num_courant = 1, decalage_courant = 0;
-  intervalle_liste *retour = initialise(nbr_route,taille_paquet,periode);
+  int solution_taille = 1;//première route fixée
+  int num_courant = 1, decalage_courant = 0; //à commenter
   int debut_retour,i;
   int nombre_slot = periode/taille_paquet;
 
-  for(int j = 0; j < nbr_route; j++){
+  /*  for(int j = 0; j < nbr_route; j++){
     printf("%d ",temps_retour[j]);
   }
   printf("\n");
-  
+  */
   //normalise les temps retour en mettant le premier à 0
   for(int j=nbr_route-1; j>=0;j--) temps_retour[j]= (temps_retour[j] - temps_retour[0] + periode)%periode;
   //affiche les données sur lesquelles on lance le bruteforce
-  printf("\n");
+  /*printf("\n");
   for(int j = 0; j < nbr_route; j++){
     printf("%d ",temps_retour[j]);
   }
-  printf("\n");
+  printf("\n");*/
   
 
   /////////////////// Début de l'arbre de recherche ////////////////////////////
 
   while(solution_taille > 0){
     if(solution_taille == nbr_route) {
-      print_sol(solution_pos,solution_num,nbr_route,budget);
+      print_sol(stack);
       affiche_intervalle(retour);
       return 1;} //sortir la solution et arrêt
     if(num_courant == nbr_route){//plus de route à utiliser, on revient en arrière et on utilise un début de route plus élevé
       solution_taille--;
-      num_courant = solution_num[solution_taille];
+      num_courant = stack[solution_taille].numero_route;
       route_restante[num_courant] = 1;
-      debut_retour = solution_pos[solution_taille] + temps_retour[num_courant];
+      debut_retour = stack[solution_taille].prochain_retour;
       if(debut_retour >= periode) {
 	debut_retour -= periode;// valeur au plus deux fois la période
       }
@@ -175,22 +180,24 @@ int bruteforce(int taille_paquet, int periode, int nbr_route, int* temps_retour)
       //affiche_intervalle(retour);
       retire_element(retour,debut_retour,solution_taille,&nombre_slot,taille_paquet);
       //affiche_intervalle(retour);
-      decalage_courant = solution_pos[solution_taille] - solution_pos[solution_taille-1] - taille_paquet; //decalage de la route qu'on enlève
+      decalage_courant = stack[solution_taille].prochain_retour; //decalage de la route qu'on enlève
       //de la solution avec la précédente
-      budget += decalage_courant;
-      decalage_courant += prochain_debut(retour,debut_retour,solution_taille,taille_paquet);//calcul le prochain point ou on va placer le paquet de num_courant 
+      budget = stack[solution_taille].budget;
     }
     else{
-      if(budget - decalage_courant <0){// plus de budget pour la route, on essaye de mettre la route suivante à la place
-	for(i= num_courant+1; i<nbr_route && !route_restante[i];i++){}
+      if(budget - decalage_courant < 0){// plus de budget pour la route, on essaye de mettre la route suivante à la place
+	for(i = num_courant+1; i<nbr_route && !route_restante[i];i++){}
 	num_courant = i;
 	decalage_courant = 0;
       }
       else{
-	debut_retour = solution_pos[solution_taille-1] + taille_paquet + decalage_courant + temps_retour[num_courant];
+	debut_retour = 
+
+
+	  /*solution_pos[solution_taille-1] + taille_paquet + decalage_courant + temps_retour[num_courant];
 	if(debut_retour >= periode) {
 	  debut_retour -= periode; // valeur au plus deux fois la période
-	}
+	  }*/
 	if(ajoute_element(retour,debut_retour,solution_taille,taille_paquet,&nombre_slot,nbr_route)){//on agrandit ici la solution partielle d'une nouvelle route
 	  solution_pos[solution_taille] = solution_pos[solution_taille-1] + decalage_courant + taille_paquet;
 	  solution_num[solution_taille] = num_courant;
