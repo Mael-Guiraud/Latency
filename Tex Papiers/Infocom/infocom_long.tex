@@ -100,10 +100,9 @@ In Sec.\ref{sec:PAZL}, we study a variant of PALL called PAZL  where the waiting
  Statistical multiplexing even with a large bandwidth does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
      
 The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
-\todo{Dire que notre problème est proche d'un two flow shop scheduling (problème dur) et que les notions de cyclic schedulings ne sont pas adaptés : - soit minimisés le nombre deprocesseurs utiles alors qu'on a un problème à un processeur, soit batch scheduling
-minimiser la période pour avoir un periodic scheduling alors que nous elle est fixée}
-
-Periodic or cyclic multiprocessor scheduling problems~\cite{aupy2017periodic,hanen1993cyclic,korst1991periodic} are also close to our problem, but the models consider some parallel multiprocessor architecture, while our model would be a serial processor architecture. 
+The problem PALL on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing}
+with the additional constraint of periodicity. To our knowledge, all periodic scheduling problems are quite different from PALL.
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while we have a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
 
 \section{Model and Problems}\label{sec:def}
@@ -231,23 +230,17 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
          We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
 	This assignment represents the following process: first a message is sent at $u$, through the route $r \in F$, at time $m_r$.
        
-      \begin{figure}
-      \begin{center}
-      \includegraphics[width=0.47\textwidth]{rrh.pdf}
-      \end{center}
-      \caption{Emission of messages in a RRH}
-      \end{figure}
-      
+  
 
       This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. It is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise.
  
-      \begin{figure}
-       \begin{center}
-      \includegraphics[width=0.47\textwidth]{BBU.pdf}
+     \begin{figure}
+      \begin{center}
+      \includegraphics[width=0.47\textwidth]{rrh.pdf}
       \end{center}
-           \caption{Reception and emission in the BBU}
+      \caption{Periodic process}
       \end{figure}
-    
+      
       Thus, the whole process time for a message sent on the route $r$ is equal to
       $PT(r)=\lambda(r)+ w_r+\lambda(r)$.      
       In the process time, we count the time between the time the first slot of the message is emitted and the first time at which the first slot of the message comes back. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time.
@@ -943,14 +936,14 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
 \begin{figure}[h] 
   \centering
     \includegraphics[width=0.5\textwidth]{departs_gp_21000.pdf}
-      \caption{Success rate of different orders, $95\%$ load.}
+      \caption{Success rate of different sending orders, $95\%$ load.}
       \label{fig:success95}
           \end{figure}
 
      
      According to our experiments, sending the messages from the shortest to the longest route or arc does not work well. It corresponds to the policy of Prop.~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending from the longest to the shortest route or arc works better and it seems that sorting the routes according to the length of the last arc rather than the route is better, at least in a loaded network. 
      
-     The random order is the best by far: with a load of $95\%$, there is solution with margin $0$ most of the time. Note that, when disallowing waiting times, there were no instances with an assignment for these parameters (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying the \pall problem.
+     The random order is the best by far: with a load of $95\%$, there is a solution with margin $0$ most of the time. Note that, when disallowing waiting times, there were no instances with an assignment for these parameters (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying the \pall problem.
      
       We now want to compare the performances of the three different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms on high load. Moreover, we will use $1,000$ random orders for the first stage as it gives the best results. In Fig.~\ref{fig:success21000}, we represent the success rate of the three algorithms with regards to the margin,  computed over $10,000$ random star routed networks and the same parameters as previously.
      
@@ -962,12 +955,12 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
      \label{fig:success21000}
      \end{figure}
 
-     The MLS algorithm performs poorly, worst than GD and PMLS, which shows that taking into account the periodicity is fundamental.
+     The MLS algorithm performs poorly, worst than GD and PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
      The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS algorithm finds a solution in more than $97\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are a few instances for which we do not find a solution. However, with a margin of $1,000$, which corresponds to about $0.05$ms of additional delay with the chosen parameters, we always find a solution. 
      
-    Recall that the random order corresponds to the best of $1,000$ orders drawn uniformly which means that a computation can be up to $1,000$ time slower than for a fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. Up to now, we chose $1,000$ random orders arbitrarily.
+    Recall that the random order corresponds to the best of $1,000$ orders drawn uniformly which means that a computation can be up to $1,000$ time slower than for a fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. Up to now, we have chosen the number of random orders to be $1000$ arbitrarily.
     
-    In Fig.~\ref{fig:randomdrawing}, We investigate the success rate of our algorithm with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The following tables presents the average success rate for each number of sending orders, on $10,000$ instances, for GD and PMLS.
+    In Fig.~\ref{fig:randomdrawing}, we investigate the success rate of our algorithm with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The following tables presents the average success rate for each number of sending orders, on $10,000$ instances, for GD and PMLS.
          \begin{figure}[h] 
        \begin{center}
    \begin{tabularx}{0.5\textwidth}{|c|X|X|X|X|X|X|}
@@ -990,8 +983,8 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
      Now that we have found the best amongst the algorithms solving \pall, we need to compare its performances against the actual way to manage the messages in a network:  statistical multiplexing, where there is a FIFO buffer in each node of the network to resolve collisions. The time at which the messages are sent in the network is not computed as in our approach, thus we fix the offsets of each route to some random value.
      Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. Remark that the process is not periodic, therefore we must measure the process time of each route over several periods if we want to compute its maximum. We choose to simulate it for $1,000$ periods and we have observed that the process time usually stabilizes after $10$ periods. The margin is defined as the maximum process time, computed as explained, minus twice the size of the longest route. 
 	    
-     In Fig.~\ref{fig:sto}, we represent the cumulative distribution of margins for 
-     statistical multiplexing and PMLS. The distribution is computed from $1000$ star routed networks drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
+     In Fig.~\ref{fig:sto}, we represent the probability of success for 
+     statistical multiplexing and PMLS for different margin. The distribution is computed from $1000$ star routed networks drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
      
 
     \begin{figure}
@@ -1000,7 +993,7 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
        %\input{figures/stochastic}
       \end{center}
          \vspace{-0.5cm}
-      \caption{Cumulative distribution of the margin of statistical multiplexing}
+      \caption{Probability of success of statistical multiplexing function of the margin}
       \label{fig:sto}   
      \end{figure}    
      
