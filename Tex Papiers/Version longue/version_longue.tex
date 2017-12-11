@@ -46,6 +46,7 @@
 \newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
 \newcommand\pazl{\textsc{pazl}\xspace}
 \newcommand\pall{\textsc{pall}\xspace}
+\newcommand\bra{\textsc{bra}\xspace}
 %opening
 \title{Deterministic Scheduling of Periodic Messages for Cloud RAN}
  
@@ -82,10 +83,6 @@ Our aim is to operate a C-RAN on a low-cost shared switched network.
 The question we address is the following: is it possible to schedule messages such that there are no collisions to avoid latency caused by queuing delays? 
 Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
-
-\renewcommand{\thefootnote}{\*}
-
-\footnote{This work is partially supported by the french ANR project N-GREEN.}
 
 Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the time needed to transmit a minimal unit of data over the network. Since statistical multiplexing does not ensure a good latency we want to avoid any  buffering in internal nodes of the graph.  We take advantage of the deterministic nature of the messages we must manage i.e. the dates of arrival of messages are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that the arrivals of all the packets are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process we mean that the network at times $t$ and $t+P$ where $P$ is the period, is in the exact same state. 
 
@@ -635,7 +632,7 @@ Finally, there are no collisions between routes at the beginning and since we mo
 We now present an algorithm to find a $(P,\tau)$-periodic assignment by trying all compact assignments.
 
 \begin{theorem}\label{th:FPT}
-$\pall \in \FPT$ when parametrized by the number of routes.
+$\pazl \in \FPT$ when parametrized by the number of routes.
 \end{theorem}
 \begin{proof}
 Let $(G, {\cal R})$ be a star routed network and let $m$ be a $(P,\tau)$-periodic assignment of $(G, {\cal R})$. First, remark that for a given assignment and a route $r_0$ with offset $m$, by removing $m$ to all offsets, we can always assume that its offset is zero. Therefore we need only to consider all \emph{compact assignments} with an \emph{offset $0$} for the route $r_0$. 
@@ -648,9 +645,9 @@ Then we select a route in $r' \in {\cal R} \setminus S$ and set its offset such 
 if we remove $1$ then $r'$ collides with $r$. Note that if $r$ is a forward route (resp. a backward route) then $r'$ is also a forward route (resp. a backward route). We can also decide to definitly skip $r$. At a given step of the algorithm, if $|S| = 2i$, we have $n-i$ choices 
 of routes to select. The value of the offset of the selected route is entirely determined by the values of the offsets of routes in $S$. Therefore there are at most $n!$ different compact assignments with offset $r_0$ fixed to $0$. 
 
-The algorithm to solve \pall builds every possible compact assignment as described here, and
+The algorithm to solve \pazl builds every possible compact assignment as described here, and
 tests at each step whether there is a collision, which can be done in time linear in the size of 
-$(G, {\cal R})$. Therefore $\pall \in \FPT$.
+$(G, {\cal R})$. Therefore $\pazl \in \FPT$.
 \end{proof}
 
 We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Search of Compact Assignments}. To make it more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set of $k$ forward routes whose offsets has been fixed at some point in the search tree. We consider the times at which the messages of these routes cross the central arc. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ such that the central arc is free only during the intervals $(a_i,b_i)$. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor} $ forward routes can still use the central arc. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the one on $S$ and we backtrack in the search tree. The same cut is used for the backward routes.
@@ -801,7 +798,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
         As a conclusion there are no collisions on the arc $(c_t,c_s)$ as soon as the 
         period is larger than $n\tau$ (there are no gaps between the messages).
         The process time of the route $r_i$ is $PT(r_i) = w_i + 2\lambda(r_{i}) $. We obtain $PT(r_i) = 2\lambda(r_{0})$ and thus the maximum process time of the assignment is also equal to $2\lambda(r_0)$.
-Finally the complexity is $O(n)$ since we have to find the maximum of the length of the $n$ routes and the computation of each $w_i$ is done by a constant number of arithmetic operations.
+	Finally the complexity is $O(n)$ since we have to find the maximum of the length of the $n$ routes and the computation of each $w_i$ is done by a constant number of arithmetic operations.
      \end{proof}
      
      Assume that for any pair of indices $(i,j)$ the difference between the weights of the arcs $(s_i,c_s)$ and $(s_j,c_s)$ is bounded by $d$ and the length of the longest route is $l$. Using the same idea as in Th.~\ref{th:asym}, there is an assignment with maximum process time bounded by  $2l + d$.
@@ -809,7 +806,7 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
     
      \subsection{A two stage approach}
      
-     We can decompose any algorithm solving the PALL problem in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.  
+     We can decompose any algorithm solving \pall in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.      
      The offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots in between the end of a message on the central arc and the beginning of the next one. 
      It is done to minimize the period needed to send the messages of the forward route.
      We tried the five following orders. 
@@ -822,16 +819,19 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
 	 \item Random: A random order of the routes.
 	\end{itemize}
 
-   In the rest of the section we will study different methods to compute the offsets of the backward routes, once
-   the offsets of the forward routes are fixed by one of the previous orders.
+   \todo{Ajouter les allers ou on tire au hasard un ordre et des espacement et le cas ou on tire un ordre et on espace de manière uniforme}
+	
+	
+    We denote by \bra (backward routes assignment) the problem \pall where the offsets of the forward routes are also given as input.
+    In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. 
    
    \subsection{Greedy scheduling of backward routes}
     
-    Consider a forward route $r_i$ and the corresponding backward route $\rho(r_i)$.
+    Consider a forward route $r_i$, whose offset is fixed at $m_{r_i}$, its backward route is $\rho(r_i)$.
     We define the {\bf deadline} of $\rho(r_i)$ as $m_{r_i} + T_{max} - \omega(s_i,c_s)$, that is the latest time at which the message can go out of $c_t$ such that $PT(r_i) \leq T_{max}$.
     We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if $m_{i} +  \lambda(r_i) + \omega(c_t,t_i) \leq t$, that is the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ when $w_i = 0$.
     
-    The first algorithm we propose is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
+    The first algorithm we propose to solve \bra is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
     backward routes. It prioritizes the routes with the earliest deadline to best satisfy the
     constraint on the process time. Set $t=0$ and repeat the following: find $s \geq t$ the first time for which there is an eligible route with its offset not fixed. Then amongst all eligible routes at time $s$ choose the one with the smallest deadline, fix its offset to $s - \omega(c_t,t_i) $ and set $t = s + \tau$.
     
@@ -878,7 +878,7 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
      \end{algorithm}
 
 
-    The complexity of Algorithm~\ref{alg:GD} is $O(n\log(n))$, using the proper data structures.
+    The complexity of Algorithm~\ref{alg:GD} is in $O(n\log(n))$, using the proper data structures.
     The set of eligible routes must be maintained in a binary heap
     to be able to find the one with smallest deadline in time $O(\log(n))$. 
     To deal with the possible collisions, one maintains a list of the intervals
@@ -887,18 +887,15 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
     Since the algorithm goes over the elements of this list at most twice when doing an insertion
     or looking for the next free interval, the time needed to maintain it is $O(n)$. 
   
-     \subsection{Earliest deadline scheduling}
+     \subsection{Earliest deadline scheduling}\label{sec:braheuristic}
      
      
-     The problem to solve in the second stage of our approach is very similar to the following scheduling problem: 
-     we are given a set of jobs and each job has a \emph{release time} and a \emph{deadline}. 
-     The problem is to schedule all jobs on a single processor, that is choosing the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be finished before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution with the earliest possible deadline. On the other hand if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
-     The  polynomial time algorithm  which solves this scheduling problem is similar to the Greedy algorithm presented in the previous section. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there is no solution, which proves that the algorithm is in polynomial time.
+     The problem \bra is very similar to the following scheduling problem. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be finished before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution which minimize the time at which the last job is scheduled. On the other hand if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
+     The  polynomial time algorithm  which solves this scheduling problem is similar to the greedy algorithm presented in the previous section. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there are no solutions, which proves that the algorithm is in polynomial time.
      
-     We reduce our problem of setting the offsets of the backwards routes once the order of the forward routes is fixed to this
-     scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job,
+     We reduce \bra to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job,
      the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} this algorithm.
-     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$ its always satisfies $MPT(m) < T_{max}$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work in practice (as shown in Section~\ref{sec:resultsPALL}).
+     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$ it always satisfies $MPT(m) < T_{max}$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work in practice (as shown in Section~\ref{sec:resultsPALL}).
      
      We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}
      which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc at time $t$. Then we modify the deadline of each backward route to be the minimum of their previous deadline and $t + P$.  We execute this algorithm for every possible first backward route and we return the solution that minimizes $MPT(m)$. Since we run the previous algorithm at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that it finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. Moreover when PMLS finds a solution, it is always a $(P,\tau)$ periodic assignment since we guarantee that all messages are scheduled in a period of time of size $P$ and it satisfies $MPT(m) < T_{max}$ by construction of the deadlines. Remark that PMLS may fail while there is an assignment. Indeed, in the algorithm we restrict the assignments we look for by not allowing to choose an offset for a route after $t+P- \tau$.
@@ -926,6 +923,67 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
 % 
 %     \end{algorithmic}
 %     \end{algorithm}
+
+\subsection{Two other FPT algorithms}
+
+As a warm-up, let us give a simple FPT alogirthm for \bra which is practical,
+and then we will give an FPT algorithm for \pall whose dependency on $n$ the number of routes is 
+to large tu be useful. 
+
+
+\begin{theorem}\label{th:braFPT}
+$\bra \in \FPT$ when parametrized by the number of routes.
+\end{theorem}
+\begin{proof}
+ Consider an instance of \bra such that there is a solution. 
+W.l.o.g. say that the first message on a backward route is sent through the central arc at time $0$. Assume that 
+the delays and the waiting times of the solution are such that all messages are sent before $P - \tau$. Then the periodicity does not come into play for this solution and the algorithm PMLS will find it as explained in Section~\ref{sec:braheuristic}. 
+
+ If a message in a solution goes through the central arc after $P - \tau$, since all delays and waiting time
+ can be taken modulo $P$ without changing the solutions, we can say that it goes through the central arc 
+between $P$ and $2P - \tau$. Now, if we subtract $P$ to the release time of the message and to its deadline it does not change the solutions, but the message goes through the central arc before $P- \tau$.
+
+The FTP algorithm is thus the following: for each subsets of routes, remove $P$ to the release times and to the deadlines of the routes in the subset and run PMLS on the instance. If there is a solution, then as explained, by removing $P$ to the release times of all routes which are sent after $P$ in the solution, we obtain a new instance which can be solved by PMLS.
+\end{proof}
+
+The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. However, it is easy to compute for each backward route if it is possible to have an offset larger than $P + \tau$. When the deadline is not large with regards to  the release time, 
+not many routes will have this possibility and the number of subsets or routes to consider will be much less than $2^n$.
+
+
+\begin{theorem}\label{th:pallFPT}
+$\pall \in \FPT$ when parametrized by the number of routes.
+\end{theorem}
+\begin{proof}
+ Consider an instance of \pall which has a solution. We now express the constraints that such a solution
+ must satisfy as linear equations and inequations. 
+We consider the offsets of the forward routes on the forward period, 
+up to renaming the routes, we have for all $i$ $m_i + \tau \leq m_{i+1}$ since there are no collisions.
+For the backward routes, there is a permutation $\sigma : [n] \rightarrow [n]$, such that the offsets of the  backward routes on the backward period satisfies  $m_{\rho(\sigma(i))} + \tau \leq m_{\rho(\sigma(i+1))}$ for all $i$ since there are no collisions. 
+
+We denote by $w_i$ the waiting time of the route $r_i$, then the offsets $m_i$ and $m_{\rho(i)}$
+satisfy the following equation: $m_{\rho(i)} = m_i + 2*\omega(c_t,t_i) + w_i$.
+
+Assume also that the first route has delay and waiting time zero, 
+that is $m_0 = m_{\rho(0)} = 0$. As in Theorem~\ref{th:braFPT}, may assume 
+that all $m_{\rho(i)} < P$ by subtracting $P$ to their release time,
+which corresponds to the equation $m_{\rho(i)} = m_i + 2*\omega(c_t,t_i) + w_i - P$.
+
+We must guarantee that no offset is larger than $P-\tau$ which can be written for all 
+$i$, $m_i \leq P-\tau$ and $m_{\rho(i)} \leq P-\tau$. 
+Finally, the maximum process time of the solution must be less than $T_{max}$ given in the instance,
+that is for each $i$, $2\lambda(r_i) + w_i \leq T_{max}$. 
+Let $S$ be the system of all the previous equations, by construction of $S$, one of its solution seen as a choice of offsets 
+is an assignment since there are no collisions in the forward and backward period between $0$ and $P$ and we have guaranteed that 
+all messages have an offset between $0$ and $P-\tau$. 
+
+Remark that $S$ may have a solution with rational values, while offsets must be integers. 
+However, remark that $x +e_1 \leq y + e_2$ implies $\lceil x \rceil +e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers.
+Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solutionof $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any solution of $S$ yields a solution of the considered instance of \pall.
+
+Now remark that the construction of $S$ depends on choosing the right order of the offsets on the forward period and the backward period, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems of size linear in $n$, a complexity of $O(2^n(n!)^2n^3)$ which is FPT in the number of routes $n$.
+\end{proof}
+
+
     \subsection{Experimental evaluation}
     \label{sec:resultsPALL}
     
@@ -950,6 +1008,7 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
       \label{fig:success95}
           \end{figure}
 
+     \todo{Faire les expériences avec des paquets espacés aléatoirement ou uniformément}
      
      According to our experiments, sending the messages from the shortest to the longest route or arc does not work well. It corresponds to the policy of Prop.~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending from the longest to the shortest route or arc works better and it seems that sorting the routes according to the length of the last arc rather than the route is better, at least in a loaded network. 
      
@@ -964,6 +1023,8 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
       \caption{Success rate of GD, MLS and PMLS, $95\%$ load}
      \label{fig:success21000}
      \end{figure}
+     
+     \todo{ajouter l'algo FPT qui améliore PMLS}
 
      The MLS algorithm performs poorly, worst than GD and PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
      The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS algorithm finds a solution in more than $97\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are a few instances for which we do not find a solution. However, with a margin of $1,000$, which corresponds to about $0.05$ms of additional delay with the chosen parameters, we always find a solution. 
@@ -986,7 +1047,9 @@ Finally the complexity is $O(n)$ since we have to find the maximum of the length
    \caption{Impact of the number of random sending orders}
         \label{fig:randomdrawing}
      \end{figure}
-
+     \todo{ajouter l'algo FPT qui améliore PMLS et dire quelque chose sur le temps de calcul pour voir jusqu'à quand c'est faisable}
+     
+     
 First, remark that we can improve our previous results by taking $10,000$ random orders,
 instead of $1,000$. The number of different orders is $7!= 5,040$ since we have $8$ routes and the solutions are invariant up to a circular permutation of the order. Therefore instead of doing $10,000$ random draws we could test every possible order in less time. However the computation time of this method would scale badly with $n$. On the other hand, remark that the success rate of PMLS is already high for $100$ random orders, which means it will work even better than the other methods when $n$ is larger and that the number of random orders drawn becomes critical.
      
@@ -1029,9 +1092,9 @@ When the load is higher, buffering is allowed in the BBUs and we propose the alg
    Moreover we could allow preemption, that is the messages are allowed to be cut into pieces, which would certainly change the complexity of the problem. 
    Finally, the routes may not be fixed but chosen in the graph to minimize the maximum process time, which would make the problem even more difficult (maybe $\Pi_2$-complete instead of $\NP$-complete). 
 
-%   
-%  \paragraph*{Acknowledgments} The authors thanks Christian Cad\'er\'e and David Auger for the friendly discussions
-%  they had on the subject and their insightful remarks. 
+  
+ \paragraph*{Acknowledgments} The authors thank Christian Cad\'er\'e and David Auger for the friendly discussions
+ they had on the subject and their insightful remarks. This work is partially supported by the french ANR project N-GREEN.
 
 \bibliographystyle{ieeetr}
 \bibliography{Sources}
