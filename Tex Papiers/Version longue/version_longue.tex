@@ -808,7 +808,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      We can decompose any algorithm solving \pall in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.      
      The offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots in between the end of a message on the central arc and the beginning of the next one. 
      It is done to minimize the period needed to send the messages of the forward route.
-     We tried the five following orders. 
+     We propose following orders. 
 	\begin{itemize}
 	 
 	 \item Longest-Shortest on Routes (LSR): Decreasing order on the length of the routes.
@@ -923,29 +923,40 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 %     \end{algorithmic}
 %     \end{algorithm}
 
-\subsection{Two other FPT algorithms}
+\subsection{FPT algorithms for \bra and \pall}
 
-As a warm-up, let us give a simple FPT alogirthm for \bra which is practical,
-and then we will give an FPT algorithm for \pall whose dependency on $n$ the number of routes is 
-to large tu be useful. 
+As a warm-up, we give a simple FPT algorithm for \bra which is practical,
+and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes
+in the second algorithm is yet to large to be useful in practice. 
+
+The problem \pall can be slightly generalized by allowing different process times for each route. Note that the algorithms of previous sections
+are able to solve this variant. We call $d_i$ the \emph{deadline} of the route $r_i$, that is the maximum time at which a packet 
+can go through $c_t$. This allows to consider a simpler form of the problems \pall or \bra inspired by the scheduling problem of the previous section. An instance is given by, for each route $r_i$, a latency $\lambda_i \in [P]$ and a deadline $d_i$. The corresponding star routed network has all arcs $(s_i,c_s)$ and $(c_s,s_i)$ with weights zero 
+and the arcs $(c_t,t_i)$ and $(t_i,c_t)$ with weights $\lambda_i/2$.
+We prove by self reduction from \pall to \pall that we can always restrict ourselves to such a star routed network. 
+First, the weight of all arcs $(s_i,c_s)$ can be set to $0$, by subtracting $2\omega(s_i,c_s)$ to $d_i$
+and the satisfying assignment of both problems are in bijection by removing $\omega(s_i,c_s)$ to the offset of $r_i$. 
+Second, we can subtract $P/2$ to $w(c_t,t_i)$ and $w(t_i,c_t)$ if we subtract $P$ to $d_i$ and to $\lambda_i$, 
+since it does not change the possible periodic assignments.
 
 
 \begin{theorem}\label{th:braFPT}
 $\bra \in \FPT$ when parametrized by the number of routes.
 \end{theorem}
 \begin{proof}
- Consider an instance of \bra such that there is a solution. 
+ Consider an instance of \bra, which can be characterized by a release time and a deadline for each route.
 W.l.o.g. say that the first message on a backward route is sent through the central arc at time $0$. Assume that 
-the delays and the waiting times of the solution are such that all messages are sent before $P - \tau$. Then the periodicity does not come into play for this solution and the algorithm PMLS will find it as explained in Section~\ref{sec:braheuristic}. 
+the delays and the waiting times of the solution are such that all messages on forwards routes go through $c_t$ before $P - \tau$. Then the periodicity does not come into play for this solution and the algorithm PMLS will find it as explained in Section~\ref{sec:braheuristic}. 
 
- If a message in a solution goes through the central arc after $P - \tau$, since all delays and waiting time
- can be taken modulo $P$ without changing the solutions, we can say that it goes through the central arc 
-between $P$ and $2P - \tau$. Now, if we subtract $P$ to the release time of the message and to its deadline it does not change the solutions, but the message goes through the central arc before $P- \tau$.
+We have explained that $\lambda_i$ is in $[P]$, and the release times cannot be larger than  
+$P-\tau$ (since $\omega(s_i,c_s) = 0$) therefore the messages on forward routes goes through $c_t$ always before $2P - \tau$.
+If we subtract $P$ to the release time of the message and to its deadline it does not change the possible solutions, but the message goes through the central arc before $P- \tau$.
 
-The FTP algorithm is thus the following: for each subsets of routes, remove $P$ to the release times and to the deadlines of the routes in the subset and run PMLS on the instance. If there is a solution, then as explained, by removing $P$ to the release times of all routes which are sent after $P$ in the solution, we obtain a new instance which can be solved by PMLS.
+The FTP algorithm is thus the following: for each subsets of routes, remove $P$ to the release times and to the deadlines of the routes in the subset and run PMLS on the instance. If there is an assignment, then $PMLS$ will find a solution for some choice 
+of subset of routes.
 \end{proof}
 
-The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. However, it is easy to compute for each backward route if it is possible to have an offset larger than $P + \tau$. When the deadline is not large with regards to  the release time, 
+The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, it is easy to compute for each backward route if it is possible to have an offset larger than $P + \tau$. When the deadline is not large with regards to  the release time, 
 not many routes will have this possibility and the number of subsets or routes to consider will be much less than $2^n$.
 
 
@@ -955,34 +966,36 @@ $\pall \in \FPT$ when parametrized by the number of routes.
 \begin{proof}
  Consider an instance of \pall which has a solution. We now express the constraints that such a solution
  must satisfy as linear equations and inequations. 
-We consider the offsets of the forward routes on the forward period, 
-up to renaming the routes, we have for all $i$ $m_i + \tau \leq m_{i+1}$ since there are no collisions.
-For the backward routes, there is a permutation $\sigma : [n] \rightarrow [n]$, such that the offsets of the  backward routes on the backward period satisfies  $m_{\rho(\sigma(i))} + \tau \leq m_{\rho(\sigma(i+1))}$ for all $i$ since there are no collisions. 
+ We denote by $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ 
+ and by $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
+ Note that the choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
+ 
+ We denote by $w_i$ the waiting time of the route $r_i$, then the values $x_i$ and $y_i$
+satisfies the following equation: $y_i = x_i + \lambda_i + w_i$.
+We may assume that the first route has delay and waiting time zero, 
+that is $x_0 = y_0 = 0$. We can also guarantee that all $x_i$ are less than $P-\tau$.
+As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
+and  when $y_i >= P - \tau$ we replace $y_i = x_i + \lambda_i + w_i$
+by $y_i = x_i + \lambda_i + w_i - P$ and we replace the deadline $d_i$ by $d_i -P$.
+In that way we guarantee that all $y_i$ are less than $P-\tau$.  
+ 
+ Since all $x_i$ and $y_i$ are in $[P-\tau]$, hence taking the values of $x_i$ and $y_i$ modulo $P$
+ does not change anything, which makes easy to express the absence of collisions between routes.
+ To express that there are no collision between forward routes, the following equations must be  satisfied: for all $i$, $x_i + \tau \leq x_{i+1}$. The routes are here indexed in order of growing $x_i$.
+ To express that there are no collision between backward routes, there is a permutation $\sigma : [n] \rightarrow [n]$ such that the following equations must be  satisfied: for all $i$, $y_{\sigma(i)} + \tau \leq y_{\sigma(i+1)}$.
+ Finally, the deadline of each route must be respected, that is for each $i$, $y_i \leq d_i$. 
 
-We denote by $w_i$ the waiting time of the route $r_i$, then the offsets $m_i$ and $m_{\rho(i)}$
-satisfy the following equation: $m_{\rho(i)} = m_i + 2*\omega(c_t,t_i) + w_i$.
-
-Assume also that the first route has delay and waiting time zero, 
-that is $m_0 = m_{\rho(0)} = 0$. As in Theorem~\ref{th:braFPT}, may assume 
-that all $m_{\rho(i)} < P$ by subtracting $P$ to their release time,
-which corresponds to the equation $m_{\rho(i)} = m_i + 2*\omega(c_t,t_i) + w_i - P$.
-
-We must guarantee that no offset is larger than $P-\tau$ which can be written for all 
-$i$, $m_i \leq P-\tau$ and $m_{\rho(i)} \leq P-\tau$. 
-Finally, the maximum process time of the solution must be less than $T_{max}$ given in the instance,
-that is for each $i$, $2\lambda(r_i) + w_i \leq T_{max}$. 
-Let $S$ be the system of all the previous equations, by construction of $S$, one of its solution seen as a choice of offsets 
+ Let $S$ be the system of all the previous equations, by construction of $S$, one of its solution seen as a choice of offsets 
 is an assignment since there are no collisions in the forward and backward period between $0$ and $P$ and we have guaranteed that 
-all messages have an offset between $0$ and $P-\tau$. 
-
-Remark that $S$ may have a solution with rational values, while offsets must be integers. 
+all routes meet their deadlines.
+The solutions of $S$ may have rational values, while offsets must be integers. 
 However, remark that $x +e_1 \leq y + e_2$ implies $\lceil x \rceil +e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers.
-Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solutionof $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any solution of $S$ yields a solution of the considered instance of \pall.
+Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solution of $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any solution of $S$ by rounding yields a solution of the considered instance of \pall.
 
-Now remark that the construction of $S$ depends on choosing the right order of the offsets on the forward period and the backward period, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems of size linear in $n$, a complexity of $O(2^n(n!)^2n^3)$ which is FPT in the number of routes $n$.
+Now remark that the construction of $S$ depends on choosing the right order of the offsets on the forward period and the backward period, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems with $2n$ variables and a bitsize of the same order than the instance of \pall. Since solving each system can be done in polynomial time it proves the theorem.
 \end{proof}
 
-
+\todo{Trouver une référence pour la fesabilité d'un progamme linéaire (bouquin)}
     \subsection{Experimental evaluation}
     \label{sec:resultsPALL}
     
