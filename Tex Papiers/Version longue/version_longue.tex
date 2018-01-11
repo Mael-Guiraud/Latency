@@ -102,9 +102,9 @@ In Sec.\ref{sec:PAZL}, we study a variant of PALL called PAZL  where the waiting
  Statistical multiplexing even with a large bandwidth does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
      
 The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
-The problem PALL on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing}
-with the additional constraint of periodicity. To our knowledge, all periodic scheduling problems are quite different from PALL.
-Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while we have a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
+The problem \pall on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing}
+with the additional constraint of periodicity. To our knowledge, all periodic scheduling problems are quite different from \pall.
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem correspond to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
 
 \section{Model and Problems}\label{sec:def}
@@ -259,7 +259,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment $m$ of $(G,{\cal R})$ such that $MPT(m) \leq T_{max}$?
 
       As a consequence of the $\NP$-hardness of PRA, we show in the next subsection that this problem is $\NP$-hard. 
-      In Sec.~\ref{sec:PALL} we will study heuristics used to solve the search version of PALL (computing an assignment), also denoted by PALL for simplicity. In PALL, we have chosen to bound the \emph{maximum} process time, that is the worst case latency. It is justified by our C-RAN application with hard constraint on the latency. It would be interesting to study the case of a constraint on the \emph{average} process time, which may be more relevant in other contexts.
+      In Sec.~\ref{sec:PALL} we will study heuristics used to solve the search version of PALL (computing an assignment), also denoted by PALL for simplicity. In PALL, we have chosen to bound the \emph{maximum} process time, that is the worst case latency. It is justified by our C-RAN application with hard constraint on the latency. It would be interesting to study the case of a constraint on the \emph{average} of process times of routes, which may be more relevant in other contexts.
 
      
       The following table summarize the main notations used in the paper.
@@ -297,7 +297,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
   \label{sec:complexity}
 
  In this section we always assume that the size of a message $\tau$ is equal to one. 
- We will prove the hardness of PRA and PALL for $\tau =1$ which implies the hardness of problems with $\tau$ unconstrained. 
+ We will prove the hardness of PRA and \pall for $\tau =1$ which implies the hardness of problems with $\tau$ unconstrained. 
 Consider an instance of the problem PRA, i.e., a routed network $(G,\cal{R})$ and a period $P$.
 The {\bf conflict depth} of a route is the number of arcs of the route which also belong to other routes.
 The conflict depth of a routed network $(G,\cal{R})$ is the maximum of the conflict depth of its routes.
@@ -514,8 +514,7 @@ In particular, this reduction shows that even with small maximal load, the minim
   Consider an assignment $(m_0,\dots,m_{n-1})$ of a star routed network and let $m_i'= m_{i} - t(c_s,r_i) \mod P$.
   Then $(m_0',\dots,m_{n-1}')$ is an assignment of the same star routed network where the weights of the arcs from $s_i$ to $c_s$ are $0$ for all $i$. Therefore we assume from now on that the \emph{weight of the arcs from $s_i$ to $c_s$ are all equal to $0$}.
   
-  The problem PAZL is similar to the problem of minimizing makespan in a two flow-shop with delays, a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that PAZL is $\NP$-complete, however we have not been able to prove it yet,
-  because the periodicity is hard to deal with. With additional constraints we can get rid of the periodicity in the hardness proof, for instance if we consider that the central link is unidirectional, that is collisions can happen between messages going from $c_s$ to $c_t$ and messages  going from $c_t$ to $c_s$. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
+   The problem \pazl is similar to the minimization of makespan in a two flow-shop with delays (see Section \ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that PAZL is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. With additional constraints we can get rid of the periodicity in the hardness proof, for instance if we consider that the central link is unidirectional, that is collisions can happen between messages going from $c_s$ to $c_t$ and messages  going from $c_t$ to $c_s$. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
   On the other hand we show positive results:  when the period is large or when the routes are short there is always a solution to PAZL and it can be found in polynomial time. We then give fixed parameter tractable algorithm which finds a solution to PAZL if there is one in time exponential in the number of routes only. 
   
 \subsection{Shortest-longest policy}
@@ -597,8 +596,8 @@ In particular, this reduction shows that even with small maximal load, the minim
 % 	\end{algorithmic}
 % 	\end{algorithm}
 	
-This algorithm, contrarily to the previous one, may work well, even from load higher than $1/3$.
-In fact, experimental data in Subsection~\ref{sec:exp_PAZL} suggests that the algorithm finds a solution when the load is less than $1/2$. Note that we have experimented with other greedy algorithms which do not use macro-slots, they work even better in practice but their theoretical upper bound is worse.
+This algorithm, contrarily to the previous one, may work well, even for loads higher than $1/3$.
+In fact, experimental data in Subsection~\ref{sec:exp_PAZL} suggest that the algorithm finds a solution when the load is less than $1/2$. Note that we have experimented with other greedy algorithms which do not use macro-slots, they work even better in practice but their theoretical upper bound is worse.
 
 \subsection{An FPT algorithm}
 
@@ -707,15 +706,15 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
       The following experimental results compare the three presented algorithms.
       Notice that both Greedy algorithm and Shortest-Longest are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, the exhaustive search finds a solution if it exists, but works in exponential time. We compare the performance of the algorithms in two different regimes: routes are either short with regard to $\tau$, or unrestricted.
       From the C-RAN context we choose the following parameters: the number of routes is at most $n = 20$, $\tau$ is equal to $2,500$.
-      It corresponds to slots of $64$ bits, messages of approximately $1$Mb and links of bandwidth $10$Gbps.
-       The code in C is available on the webpage of the authors\footnote{\url{http://www.prism.uvsq.fr/~ystr/textesmaths.html}} under a copyleft license. The code has been run on a standard $2016$ laptop, and most experiments run in a few dozen of seconds.
+      It corresponds to slots of $64$ bits, messages of approximately $1$Mb and links of bandwidth $10$Gbps when $P$ is one millisecond.
+       The code in C is available on the web page of the authors\footnote{\url{http://www.prism.uvsq.fr/~ystr/textesmaths.html}} under a copyleft license. The code has been run on a standard $2016$ laptop, and most experiments run in a few dozen of seconds.
 
        In the experiments we try to understand how the algorithms work with regards to the load. To change the load, we fix the parameters $\tau$ and $n$ and modify the period $P$, which allows for a smooth control of the load and does not impact the run time of the algorithms.
       
 
       \paragraph{Short routes}
       
-      First we consider routes which are shorter than $\tau$: a message cannot be contained completely in a single arc which is very common in our applications. We generate star routed networks in which the weights of the arcs $(c_t,t_i)$ are drawn uniformly between $0$ and $700$ which corresponds to links of less than $5$km between the BBU and the RRH. 
+      First we consider routes which are shorter than $\tau$: a message cannot be contained completely in a single arc which is very common in our applications. We generate star routed networks in which the weights of the arcs $(c_t,t_i)$ are drawn uniformly between $0$ and $700$ which corresponds to links of less than $5$km between a BBU and an RRH. 
       
       Our aim is to understand how well the algorithms are working under high load. To do that we evaluate the highest load 
       under which a $(P,\tau)$-periodic assignment can be found by each algorithm when we change the number of routes. 
@@ -771,7 +770,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
       
          \section{Solving \pall on Star Routed Networks}\label{sec:PALL}
     
-    In this section, we consider the more general \pall problem on star routed networks. It means that the messages can wait in the target vertices (BBUs) to find assignments, when there are no assignments with zero waiting time. We allow the process time of the routes to be greater than twice the weights of the routes, but it should be less than $T_{max}$.
+    In this section, we consider the more general \pall problem on star routed networks. The messages are allowed to wait in the target vertices (BBUs) to find assignments more easily. Hence, we allow the process time of the routes to be greater than twice the weights of the routes, but it should be less than $T_{max}$.
 
 	\subsection{Special cases}
 		
@@ -805,10 +804,10 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
     
      \subsection{A two stage approach}
      
-     We can decompose any algorithm solving \pall in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.      
-     The offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots in between the end of a message on the central arc and the beginning of the next one. 
-     It is done to minimize the period needed to send the messages of the forward route.
-     We propose following orders. 
+     We can decompose any algorithm solving \pall in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.   
+     
+     In the following policies, the offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots between the end of a message on the central arc and the beginning of the next one. It is done to minimize the period needed to send the messages of the forward route.
+     The offsets of the forward routes are then defined by the order of the messages through the central arc. We propose to study the following orders. 
 	\begin{itemize}
 	 
 	 \item Longest-Shortest on Routes (LSR): Decreasing order on the length of the routes.
@@ -818,15 +817,17 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 	 \item Random: A random order of the routes.
 	\end{itemize}
 
-   \todo{Ajouter les allers ou on tire au hasard un ordre et des espacement et le cas ou on tire un ordre et on espace de manière uniforme}
-	
+   \todo{On peut commenter la partie suivante si on a pas fini}
+   We also study another way to fix the offsets of the forward routes. Instead of packing all messages so that they follow each other
+   in the central arc, we allow time between them. The order of the message is random and we consider two variations. 
+   Either the time between two messages on the central arc is random and we call this policy Random Order and Random Spacing (RORS) or the gap is evenly distributed between messages and we call this policy Random Order and Balanced Spacing (ROBS).
 	
     We denote by \bra (backward routes assignment) the problem \pall where the offsets of the forward routes are also given as input.
-    In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. 
+    In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. The method to solve \bra are then combined with the proposed policies for fixing the offsets of the forward routes.  
    
    \subsection{Greedy scheduling of backward routes}
     
-    Consider a forward route $r_i$, whose offset is fixed at $m_{r_i}$, its backward route is $\rho(r_i)$.
+    Consider a forward route $r_i$, whose offset is $m_{r_i}$ and its backward route is $\rho(r_i)$.
     We define the {\bf deadline} of $\rho(r_i)$ as $m_{r_i} + T_{max} - \omega(s_i,c_s)$, that is the latest time at which the message can go out of $c_t$ such that $PT(r_i) \leq T_{max}$.
     We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if $m_{i} +  \lambda(r_i) + \omega(c_t,t_i) \leq t$, that is the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ when $w_i = 0$.
     
@@ -893,11 +894,11 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      The  polynomial time algorithm  which solves this scheduling problem is similar to the greedy algorithm presented in the previous section. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there are no solutions, which proves that the algorithm is in polynomial time.
      
      We reduce \bra to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job,
-     the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} this algorithm.
-     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$ it always satisfies $MPT(m) < T_{max}$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work in practice (as shown in Section~\ref{sec:resultsPALL}).
+     the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} the algorithm which transform \bra into the described scheduling problem to solve it in polynomial time.
+     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$ it always satisfies $MPT(m) < T_{max}$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work in practice (as shown in Section~\ref{sec:resultsPALL}), but not for all instances.
      
      We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}
-     which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc at time $t$. Then we modify the deadline of each backward route to be the minimum of their previous deadline and $t + P$.  We execute this algorithm for every possible first backward route and we return the solution that minimizes $MPT(m)$. Since we run the previous algorithm at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that it finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. Moreover when PMLS finds a solution, it is always a $(P,\tau)$ periodic assignment since we guarantee that all messages are scheduled in a period of time of size $P$ and it satisfies $MPT(m) < T_{max}$ by construction of the deadlines. Remark that PMLS may fail while there is an assignment. Indeed, in the algorithm we restrict the assignments we look for by not allowing to choose an offset for a route after $t+P- \tau$.
+     which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc at time $t$. Then we modify the deadline of each backward route to be the minimum of their previous deadline and $t + P$.  We execute this algorithm for every possible first backward route and we return the solution that minimizes $MPT(m)$. Since we run the previous algorithm at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that it finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. Moreover when PMLS finds a solution, it is always a $(P,\tau)$ periodic assignment since we guarantee that all messages are scheduled in a period of time $P$ and it satisfies $MPT(m) < T_{max}$ by construction of the deadlines. Remark that PMLS may fail while there is an assignment. Indeed, in the algorithm we restrict the assignments we look for by not allowing to choose an offset for a route after $t+P- \tau$.
      
 %     \begin{algorithm}[H]
 %     \caption{ Minimized Scheduling Periodic (MSP)}
@@ -929,12 +930,8 @@ As a warm-up, we give a simple FPT algorithm for \bra which is practical,
 and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes
 in the second algorithm is yet to large to be useful in practice. 
 
-The problem \pall can be slightly generalized by allowing different process times for each route. Note that the algorithms of previous sections
-are able to solve this variant. We call $d_i$ the \emph{deadline} of the route $r_i$, that is the maximum time at which a packet 
-can go through $c_t$. This allows to consider a simpler form of the problems \pall or \bra inspired by the scheduling problem of the previous section. An instance is given by, for each route $r_i$, a latency $\lambda_i \in [P]$ and a deadline $d_i$. The corresponding star routed network has all arcs $(s_i,c_s)$ and $(c_s,s_i)$ with weights zero 
-and the arcs $(c_t,t_i)$ and $(t_i,c_t)$ with weights $\lambda_i/2$.
-We prove by self reduction from \pall to \pall that we can always restrict ourselves to such a star routed network. 
-First, the weight of all arcs $(s_i,c_s)$ can be set to $0$, by subtracting $2\omega(s_i,c_s)$ to $d_i$
+The problems \bra and \pall can be slightly generalized by allowing different process times for each route instead of fixing a global maximum. Note that the algorithms of previous sections are able to solve these variants. We call $d_i$ the \emph{deadline} of the route $r_i$, that is the maximum time at which a packet can go through $c_t$. This allows to consider a simpler form of the problems \pall or \bra inspired by the scheduling problem of the previous section. An instance is a set of route, the route $r_i$ being defined by its latency $\lambda_i \in [P]$ and its deadline $d_i$. In the corresponding star routed network, all arcs $(s_i,c_s)$ and $(c_s,s_i)$ have weight zero and all arcs $(c_t,t_i)$ and $(t_i,c_t)$ have weight $\lambda_i/2$.
+We prove by self reduction from \pall to \pall (and similarly \bra to \bra) that we can always restrict ourselves to such a star routed network. First, the weight of all arcs $(s_i,c_s)$ can be set to $0$, by subtracting $2\omega(s_i,c_s)$ to $d_i$
 and the satisfying assignment of both problems are in bijection by removing $\omega(s_i,c_s)$ to the offset of $r_i$. 
 Second, we can subtract $P/2$ to $w(c_t,t_i)$ and $w(t_i,c_t)$ if we subtract $P$ to $d_i$ and to $\lambda_i$, 
 since it does not change the possible periodic assignments.
@@ -950,10 +947,9 @@ the delays and the waiting times of the solution are such that all messages on f
 
 We have explained that $\lambda_i$ is in $[P]$, and the release times cannot be larger than  
 $P-\tau$ (since $\omega(s_i,c_s) = 0$) therefore the messages on forward routes goes through $c_t$ always before $2P - \tau$.
-If we subtract $P$ to the release time of the message and to its deadline it does not change the possible solutions, but the message goes through the central arc before $P- \tau$.
+If we subtract $P$ to the release time of the message and to its deadline it does not change the possible solutions, but the message goes through the central arc before $P - \tau$.
 
-The FTP algorithm is thus the following: for each subsets of routes, remove $P$ to the release times and to the deadlines of the routes in the subset and run PMLS on the instance. If there is an assignment, then $PMLS$ will find a solution for some choice 
-of subset of routes.
+The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run PMLS on the new instance. If there is an assignment, then we have proved that there is a $S$ such that the modified instance has a solution with all messages going through the central arc before $P - \tau$, a solution that $PMLS$ will find.
 \end{proof}
 
 The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, it is easy to compute for each backward route if it is possible to have an offset larger than $P + \tau$. When the deadline is not large with regards to  the release time, 
@@ -964,38 +960,36 @@ not many routes will have this possibility and the number of subsets or routes t
 $\pall \in \FPT$ when parametrized by the number of routes.
 \end{theorem}
 \begin{proof}
- Consider an instance of \pall which has a solution. We now express the constraints that such a solution
- must satisfy as linear equations and inequations. 
- We denote by $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ 
- and by $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
- Note that the choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
+ Consider an instance of \pall which has a solution. We now characterize such a solution by a set of necessary and sufficient 
+ linear equations and inequations it must satisfy. 
+ For simplicity, we consider $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ 
+ and $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
+ Note that choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
  
  We denote by $w_i$ the waiting time of the route $r_i$, then the values $x_i$ and $y_i$
 satisfies the following equation: $y_i = x_i + \lambda_i + w_i$.
 We may assume that the first route has delay and waiting time zero, 
-that is $x_0 = y_0 = 0$. We can also guarantee that all $x_i$ are less than $P-\tau$.
-As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
-and  when $y_i >= P - \tau$ we replace $y_i = x_i + \lambda_i + w_i$
-by $y_i = x_i + \lambda_i + w_i - P$ and we replace the deadline $d_i$ by $d_i -P$.
-In that way we guarantee that all $y_i$ are less than $P-\tau$.  
+that is $x_0 = y_0 = 0$. We can also guarantee that all $x_i$ are less than $P-\tau$ if we modify
+the delays and deadlines without changing the possible assignments. As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
+and  when $y_i >= P - \tau$ we replace $y_i = x_i + \lambda_i + w_i$ by $y_i = x_i + \lambda_i + w_i - P$ and we replace the deadline $d_i$ by $d_i -P$. In that way we guarantee that all $y_i$ are less than $P-\tau$.  
  
- Since all $x_i$ and $y_i$ are in $[P-\tau]$, hence taking the values of $x_i$ and $y_i$ modulo $P$
+ Since all $x_i$ and $y_i$ are in $[P-\tau]$, taking the values of $x_i$ and $y_i$ modulo $P$
  does not change anything, which makes easy to express the absence of collisions between routes.
- To express that there are no collision between forward routes, the following equations must be  satisfied: for all $i$, $x_i + \tau \leq x_{i+1}$. The routes are here indexed in order of growing $x_i$.
- To express that there are no collision between backward routes, there is a permutation $\sigma : [n] \rightarrow [n]$ such that the following equations must be  satisfied: for all $i$, $y_{\sigma(i)} + \tau \leq y_{\sigma(i+1)}$.
- Finally, the deadline of each route must be respected, that is for each $i$, $y_i \leq d_i$. 
+ To express that there are no collision between forward routes, the following equations must be  satisfied: for all $i$, $x_i + \tau \leq x_{i+1}$. We assume that the routes are here indexed in order of growing $x_i$.
+ Let $\sigma : [n] \rightarrow [n]$ be the permutation such that $r_{\sigma(i)}$ are in order of growing $y_{\sigma(i)}$.
+ To express that there are no collision between backward routes, the following equations must be  satisfied: for all $i$, $y_{\sigma(i)} + \tau \leq y_{\sigma(i+1)}$. Finally, the deadline of each route must be respected, that is for each $i$, $y_i \leq d_i$. 
 
- Let $S$ be the system of all the previous equations, by construction of $S$, one of its solution seen as a choice of offsets 
+ Let $S$ be the system of all the previous equations, by construction of $S$, any of its solutions seen as a choice of offsets 
 is an assignment since there are no collisions in the forward and backward period between $0$ and $P$ and we have guaranteed that 
-all routes meet their deadlines.
-The solutions of $S$ may have rational values, while offsets must be integers. 
-However, remark that $x +e_1 \leq y + e_2$ implies $\lceil x \rceil +e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers.
-Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solution of $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any solution of $S$ by rounding yields a solution of the considered instance of \pall.
+all routes meet their deadlines. However, the solutions of $S$ may have rational values, while offsets must be integers. 
+Remark that $x +e_1 \leq y + e_2$ implies $\lceil x \rceil +e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers.
+Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solution of $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any rounded solution of $S$ yields a solution of the considered instance of \pall.
 
-Now remark that the construction of $S$ depends on choosing the right order of the offsets on the forward period and the backward period, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems with $2n$ variables and a bitsize of the same order than the instance of \pall. Since solving each system can be done in polynomial time it proves the theorem.
+Now remark that the construction of $S$ depends on the choice of the order of the forward routes, the order of the backward routes, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems with $2n$ variables and a bitsize of the same order than the instance of \pall. Since solving each system can be done in polynomial time it proves the theorem.
 \end{proof}
 
 \todo{Trouver une référence pour la fesabilité d'un progamme linéaire (bouquin)}
+
     \subsection{Experimental evaluation}
     \label{sec:resultsPALL}
     
@@ -1082,9 +1076,8 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
      \end{figure}    
      
      The experiment clearly shows that statistical multiplexing does not ensure a minimal latency. 
-     The latency is extremely high when the load is high, with a margin of about $10,000$ for the worst $10\%$ which corresponds to half the period, that is $0.5$ms. Even when the network is lightly loaded, $20\%$ of the instances have a margin of more than $2,000$. On the other hand, PMLS finds an assignment with margin $0$ in a highly loaded $97\%$ of the time! 
-     For each $1000$ slots of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact.
-     We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.     
+     The latency is extremely high when the load is high, with a margin of about $10,000$ for the worst $10\%$ which corresponds to half the period, that is $0.5$ms. Even when the network is lightly loaded, $20\%$ of the instances have a margin of more than $2,000$. On the other hand, PMLS finds an assignment with margin $0$ in a highly loaded network $97\%$ of the time! 
+     For each $1000$ slots of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.     
      
  \section{Conclusion}
 In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in 
@@ -1096,12 +1089,12 @@ When the load is higher, buffering is allowed in the BBUs and we propose the alg
 
    
    We plan to generalize our study of the PALL problem to other common fronthaul topologies,
-   such as caterpillar, trees, cycles or bounded treewidth graphs.  The cycles in particular are 
-   different since their forward and backward routes are not symmetric.
-   We would like to design FPT algorithms in the number of routes for PALL on the star routed network, by generalizing the compact assignment idea used for PAZL. 
+   such as caterpillar, trees, cycles or bounded treewidth graphs. The cycles in particular are 
+   different since their forward and backward routes are not symmetric. 
+   We would like to design an FPT algorithm for \pall which is as efficient as the one for \pazl 
+   and prove that both problems are $\NP$-hard.
 
-   We could also study variations of our problem. Instead of minimizing the maximum process time, we could try to minimize the average process time, a linear objective which could make linear programming useful.
-   Moreover we could allow preemption, that is the messages are allowed to be cut into pieces, which would certainly change the complexity of the problem. 
+   We could also study variations of our problem. Instead of minimizing the maximum process time, we could try to minimize the average process time, a linear objective which could make linear programming useful. We could allow preemption, that is the messages are allowed to be cut into pieces, which would certainly change the complexity of the problem.  Instead of periodic communication we could try to organize communications with pseudo-periodic schemes or even a temporal law. Moreover we could allow a bounded message loss.
    Finally, the routes may not be fixed but chosen in the graph to minimize the maximum process time, which would make the problem even more difficult (maybe $\Pi_2$-complete instead of $\NP$-complete). 
 
   
