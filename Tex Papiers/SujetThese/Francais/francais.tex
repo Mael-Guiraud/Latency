@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[french]{babel}
+
+\usepackage{xspace}
+\usepackage{graphicx,graphics} 
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{complexity}
+\usepackage{hyperref}
+
+\begin{document}
+
+
+\title{Deterministic architectures for low latency in 5G and beyond systems}
+
+
+\maketitle
+
+\section*{Context}
+
+L'architecture actuelle du réseau mobile (réseau cellulaire) consiste en un réseau d'accès radio distribué: les terminaux mobiles se connectent aux stations de base (BTS pour Base Transceiver Station en tant que nom générique, eNB pour Evolved Node B  dans la norme 4G 3GPP LTE) qui contienent tous les sous-systèmes nécessaires à la réalisation de la communication mobile \cite{bouguen2012lte}. 
+Une station de base comprends d'une part la partie radio, qui fournit la connexion entre le terminal mobile et la BTS, et la partie réseau qui fournit des fonctions de contrôle et de gestion comme le support de mobilité (la fonctionnalité principale étant le support de transfert d'une BTS à une autre pour pouvoir poursuivre une communication en se déplaçant de la portée d'une antenne à l'autre). Les évolutions proposées dans les prochaines générations visent à évoluer vers des architectures de réseau radio centralisées (C-RAN, pour Cloud Radio Access Network) pour réduire les coûts de consommation et la puissance des stations de base \cite{mobile2011c}. Ces architectures C-RAN visent des stations de base simplifiées sur le terrain. Selon le choix de l'architecture, elles peuvent être limitées à la partie radio et à la conversion numérique-analogique uniquement. Cela peut être identifié par des noms différents en fonction des documents de référence, y compris RU pour Remote Unit ou Remote Radio Heads (RRH). Ce dernier sera utilisé le reste du document. L'autre composant du C-RAN est l'unité de traitement (BaseBand Unit: BBU, utilisée dans ce document, ou FU pour Frontend Unit) situées dans le cloud. Par cloud, nous définissons dans ce document la capacité d'instancier des programmes exécutables dans des centres de données qui sont connectés de manière transparente aux systèmes nécessitant les résultats de l'exécution du programme \cite{mobile2011c}. L'exécution peut être indifféremment effectuée sur des machines virtualisées, ou sur des machines nues, ou toute autre combinaison. Le réseau entre RRH et BBU est appelé «Frontaul Network», ou «Fronthaul» pour abréger \cite{ieeep802}. \\
+
+Ce type d'architecture est confronté au défi de maîtriser la latence dans le processus de transfert entre les RRH sur le terrain et les BBU dans le cloud.
+ La faible latence est déjà critique pour le déploiement de l'approche C-RAN dans les réseaux LTE «4G».
+ La norme nécessite des fortes contraintes de temps pour des fonctions telles que HARQ (Hybrid Automatic Repeat reQuest) qui doit être traitée en moins de 3ms \cite{bouguen2012lte}. Compte tenu du temps de traitement dans le BBU, le temps passé sur le réseau doit être inférieur à 400 micro-secondes pour un aller-retour. Une spécificité dans ce contexte C-RAN est non seulement la contrainte de latence, mais aussi la périodicité du transfert de données entre RRH et BBU (cette contrainte HARQ doit être appliquée pour chaque trame, émise toutes les millisecondes).
+ Au-delà de la génération actuelle du réseau mobile, il faut garder à l'esprit que les normes 5G en cours devront atteindre une latence attendue de bout en bout de 1ms (selon les services ciblés) \cite{boccardi2014five}.
+ Les nouvelles technologies doivent être prises en compte pour garantir des transferts périodiques de données avec des contraintes de faible latence. \\
+
+Les contraintes exprimées pour l'architecture C-RAN et la norme 5G sont rarement respectées dans les réseaux actuels. Dans les réseaux IP ou même Ethernet, le trafic souffre généralement d'un retard dû à la mise en mémoire tampon. L'étonnant succès des réseaux à base de paquets des 40 dernières années repose sur le multiplexage statistique: les paquets sont envoyés lorsqu'ils sont prêts et sont mis en mémoire tampon dans les nœuds intermédiaires (routeurs pour réseaux IP, commutateurs pour réseaux Ethernet) en cas de contention \cite{venkatramani1994supporting}. Une contention signifie qu'une ressource (interface de sortie de noeud) est nécessaire en même temps pour la transmission de plusieurs paquets. Dans ce cas, les paquets supplémentaires sont stockés dans un tampon jusqu'à ce que les ressources deviennent disponibles. Ceci permet un déploiement et une gestion aisés d'un réseau, conduisant à une livraison du paquet avec peu de perte (dans des conditions où les tampons sont assez gros) mais au prix d'une incertitude sur le délai de transmition. Ce retard incontrôlé et non prévisible empêche d'offrir une faible latence et aucune gigue dans le réseau actuel.
+Les réseaux gérés statistiquement n'autorisent pas l'évitement des contentions, ils ne peuvent donc pas fournir de gigues nuls \cite{khaunte2003technique}. S'ils peuvent être utilisés pour hiérarchiser certains paquets par rapport aux autres (par exemple Express Forwarding contre Best Effort), ils ne parviennent pas à assurer la livraison d'un paquet donné dans un délai donné lorsque plusieurs paquets sont en concurrence pour la même ressource.
+
+
+La meilleure solution actuelle consiste à s'appuyer sur une approche optique presque complète, où les terminaux (RRH d'un côté, BBU de l'autre) sont connectés par fibre optique ou par des commutateurs optiques complets \cite{5gppparchitecture}. Cette architecture est très coûteuse et peine à évoluer dans le cas d'un réseau mobile. A titre illustratif, un seul réseau mobile (un opérateur) en France est composé d'environ 10 000 stations de base. Ce nombre va augmenter d'un facteur de 2 à 20 avec l'émergence de «petites cellules» qui permettent d'augmenter la densité des stations de base et d'atteindre un débit plus élevé \cite{5gppparchitecture}. Il est alors nécessaire de trouver une solution pour offrir une faible latence sur les réseaux à base de paquets banalisés.
+
+\section*{Objectifs}
+Ce sujet de thèse vise à élaborer une architecture pour un réseau de paquets sans contentions incluant de nouveaux paradigmes d'ordonnancement prenant en compte la topologie de réseau pour résoudre ce transfert de données périodique et à contrainte de latence. En effet, l'une des approches les plus prometteuses repose sur le concept de réseau déterministe (DetNet) qui consiste à se débarrasser du multiplexage statistique. La gestion de file d'attente traditionnelle est remplacée par la gestion des envois de paquets dans le temps. Les mécanismes de réseaux déterministes sont en cours de normalisation par le groupe IEEE 802.1 TSN \cite{ieee802}, ainsi que par le groupe de travail IETF DetNet \cite{finn-detnet-architecture-08}. Pour faire fonctionner le DetNet sur un réseau composé de plusieurs nœuds, il est nécessaire de gérer le moment à laquelle les paquets de chemins déterministes traversent chaque nœud. Plusieurs brevets de Nokia sur les concepts et mécanismes de DetNet ont déjà été publiés: \cite{howe2005time, leclerc2015contention, leclerc2016signaling, leclerc2016transmission, roos1994method, coherentflow}. Le travail sera basé sur ces travaux et les prolongera. \\
+
+Une première modélisation algorithmique a été proposée et analysée par collaboration entre Nokia Bell Labs France et le laboratoire DAVID de l'Université de Versailles Saint-Quentin en Yvelines \cite{Mael2017}. La topologie du réseau est modélisée par un graphe, un ensemble de routes depuis les nœuds source (modélisation des connexions vers BBU) et les nœuds de destination (modélisation RRH). Le temps est divisé en slots. Le problème est de sélectionner, pour chaque nœud de destination, une route d'un nœud source vers celui-ci et une programmation périodique pour permettre d'envoyer périodiquement un paquet à chaque RRH sans contention entre tous ces paquets. De plus, nous souhaitons minimiser la durée de la période, de sorte que l'envoi périodique de trames LTE chaque milli-seconde puisse être satisfait. Même si l'ensemble des routes est donné, il a été montré que ce problème d'optimisation est NP-complet \cite{rapportstage}. Plusieurs colorations de graphes ont été introduites pour modéliser des problèmes similaires tels que l'allocation de fréquences \cite{borndorfer1998frequency}, de bandes passantes \cite{erlebach2001complexity} ou de routes \cite{cole1996benefit} dans un réseau, ou des horaires de train \cite{strotmann2007railway}. Malheureusement, ces modèles ne prennent pas en compte la périodicité et les problèmes associés sont également NP-complets. Le seul modèle qui incorpore une certaine périodicité est la coloration circulaire \cite{zhu2006recent, zhou2013multiple, zhu2001circular} mais ne ressemble pas suffisamment à notre problème. \\
+
+Pendant un stage de 6 mois, nous avons étudié le problème de trouver un ordonnancement périodique pour l'aller-retour avec une période fixe et une latence minimale. Nous avons considéré une topologie de réseau de base composée de deux commutateurs connectés: l'un reliant les BBU et l'autre pour les RRH. Nous avons proposé des heuristiques efficaces qui trouvent des solutions sans contention et aucune latence ajoutée par l'ordonnancement, lorsque la charge du réseau est suffisamment faible. Une fois que le réseau commence à être chargé, nous avons proposé une autre heuristique efficace pour gérer les flux. Nous avons observé expérimentalement que cette approche déterministe satisfait les critères d'une latence maximale de 3 ms avec une période donnée de 1 ms, alors que l'approche statistique échoue lorsque la charge augmente. Pour confirmer et ensuite utiliser ces résultats, le laboratoire DAVID participe actuellement au projet ANR N-Green, mené par Nokia Bell Labs France, concernant les garanties de latence dans une nouvelle architecture pour un anneau tout optique dans lequel des petits paquets sont  périodiquement échangés entre chaque RRH et sa BBU associée. En effet, des premières simulations réalisées lors du stage initial ont montrées que, même pour de faibles niveaux de charge, les garanties de latence requises ne peuvent être assurées avec le multiplexage statistique.
+
+L'un des objectifs de ce doctorat est d'étudier plusieurs autres topologies de réseaux: l'étoile pour laquelle plusieurs résultats sont déjà disponibles, le cycle représentant un anneau optique et le graphe acyclique représentant un réseau maillé général. Nous essaierons de trouver des restrictions des topologies précédentes qui sont réalistes et assez fortes pour résoudre le problème ou pour trouver une approximation en temps polynomial. En particulier, le temps de transmission d'un paquet semble important par rapport à la taille d'un chemin. Nous espérons utiliser cette propriété pour proposer de nouveaux algorithmes efficaces.
+Un autre but est d'enrichir notre modèle pour le rendre plus général, en permettant des débits différents sur les liens ou pour permettre de découper les paquets en morceaux, et d'adapter nos algorithmes à ces paramètres plus généraux.
+
+
+Notre approche produira des plannings déterministes qui nécessitent un contrôle centralisé du réseau. Cette approche semble très bien alignée sur le concept SDN (Software-Defined Networking) \cite{haleplidis2015software}, qui est la capacité à gérer le comportement du réseau via une interface standardisée. Dans cette approche, les plans d'acheminement et de contrôle sont séparés, de sorte qu'une entité (contrôleur SDN) puisse regrouper les plans de contrôle de tous les équipements, afin de gérer le réseau de trafic avec une vision globale plutôt que locale. Dans ce doctorat, nous étudierons comment le contrôle du réseau déterministe sera implémenté dans une architecture SDN, avec l'objectif de démontrer la valeur de l'approche par le biais d'un prototype. \\
+
+Dans le contexte de la 5G, la mise en réseau déterministe sera également intégrée au concept de "network slicing". Les slicing consiste à répartir et allouer des ressources dédiées dans le réseau pour chaque service différent proposé aux utilisateurs. Dans ce doctorat, il sera étudié comment la mise en réseau déterministe est une condition préalable pour permettre le network slicing. \\
+
+Il est prévu d'obtenir à la fin de la thèse une solution complète pour fournir une faible latence et aucune gigue dans C-RAN ainsi que dans les réseaux 5G et au-delà, y compris l'analyse, les algorithmes, les brevets et les prototypes.
+
+
+
+\section*{Organisation}
+Le programme d'étude de ce projet consiste à:
+  \begin{enumerate}
+  \item Etant donné un routage dans un réseau reliant plusieurs RRH et BBU, analyser théoriquement le problème de la définition d'un ordonnancement périodique (complexité, approximabilité, cas particuliers) et proposer des algorithmes et heuristiques efficaces pour le résoudre, dans des contextes plus complexes que celui étudié dans \cite{rapportstage}.
+  \item Prendre en compte des contraintes temporelles et périodiques propres à l'architecture télécom et cloud pour définir l'ensemble des routes les mieux adaptés à la résolution du problème d'ordonnancement précédent.
+\item Faire du Benchmarking des algorithmes proposés par des simulation sur les instances définies par rapport aux solutions architecturales existantes.
+\item Proposer des solutions pour une coordination efficace entre les éléments.
+\item Etendre des solutions aux cas complexes comme le changement dynamique des flux entre RRH et BBU.
+\item Définir les méthodes, les procédures et les outils nécessaires pour mettre en place l'ordonnancement calculé.
+\item Définir une architecture basée sur SDN pour supporter les méthodes et procédures précédentes, en relation avec les standards en cours.
+\item Intégrer cette architecture dans une approche de découpage 5G.
+\item Démontrer la faisabilité des solutions proposées dans le contexte de la 5G et au-delà, à travers la simulation et le prototype.
+ \end {enumerate}
+ \subsection * {Planification de projet de thèse}
+ La planification préliminaire du projet de thèse consiste à determiner des étapes spécifiques pour chacun des six semestres du doctorat:
+\begin{itemize}
+\item {\it Semestre 1}: modélisation des différents aspects de la mise en réseau déterministe adaptée aux différentes familles de topologies de réseaux, de contextes et d'architectures; études de bibliographies; identification des applications réseau ciblées et des cas d'utilisation et de leurs contraintes temporelles et architecturales.
+ \item {\it Semestre 2}: études de complexité; analyse et évaluation des premières heuristiques.
+ \item {\it Semestre 3}: définition, analyse théorique et évaluation par simulation d'algorithmes efficaces avec des garanties de performances possibles.
+ \item {\it Semestre 4}: extension des algorithmes pour les cas complexes et dynamiques; définition de l'ensemble final des algorithmes proposés et évaluation de leurs performances sur des scénarios de réseaux cibles.
+ \item {\it Semestre 5}: finalisation de la mise en place du prototype et exploitation des activités de démonstration.
+ \item {\it Semestre 6}: dernière valorisation; rédaction de la thèse de doctorat et préparation de la soutenance.
+  \end {itemize}
+
+\bibliographystyle{ieeetr}
+\bibliography{Bib}
+
+
+\end{document}
+
+
+ 
