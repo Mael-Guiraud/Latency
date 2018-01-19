@@ -86,7 +86,7 @@ Eliminating this source of latency leaves us with more time budget for latency d
 
 Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the time needed to transmit a minimal unit of data over the network. Since statistical multiplexing does not ensure a good latency we want to avoid any  buffering in internal nodes of the graph.  We take advantage of the deterministic nature of the messages we must manage i.e. the dates of arrival of messages are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that the arrivals of all the packets are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process we mean that the network at times $t$ and $t+P$ where $P$ is the period, is in the exact same state. 
 
-We assume that the routes of the messages are already fixed, and there are no buffering allowed inside the network. Hence we only have two sets of values that we can set when building a periodic sending process, called a \emph{periodic assignment}: the time at which each packet is sent by a RRH in each period and the waiting time in the BBU before the answer is sent back to the RRH. When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the other messages sent by the others BBU/RRH in the same period, but also in the previous and following periods. The latency, that is the time between the emission of a message and the complete return of its answer must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long. Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size.   
+We assume that the routes of the messages are already fixed, and there are no buffering allowed inside the network. Hence we only have two sets of values that we can set when building a periodic sending process, called a \emph{periodic assignment}: the time at which each packet is sent by an RRH in each period and the waiting time in the BBU before the answer is sent back to the RRH. When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the other messages sent by the others BBU/RRH in the same period, but also in the previous and following periods. The latency, that is the time between the emission of a message and the complete return of its answer must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long. Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size.   
 
 Our main contributions are the following.
  In Sec.~\ref{sec:def} we propose a model of the network and the periodic sending of messages along its routes and we introduce the star routed network. We formalize the problem of finding a periodic assignment for sending messages without buffering (\pazl) or with buffering in the processing unit only (\pall). In Sec.~\ref{sec:PAZL}, we propose several algorithms to solving \pazl and evaluate their efficiency experimntally. Finally in Sec.~\ref{sec:PALL}, we introduce two algorithms to solve \pall and our experimentations show that the deterministic communication schemes we design vastly outperform the traditional statistical multiplexing with regard to latency. 
@@ -107,7 +107,7 @@ The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ i
 We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
 The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
 
-   In the context of cloud-RAN applications, we need to send a message from a RRH $u$ to a BBU $v$ and then 
+   In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
       we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of forward routes and $B$ of backward routes. Moreover there is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. 
        
 
@@ -118,17 +118,16 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $v$ in $r$ is $t(v,r) = m + \lambda(v,r)\mod P$. 
       
       A message usually cannot be transported in a single time slot. We denote by $\tau$ the number 
-      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(v,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $v$ in a period $P$, that is $[t(v,r)]_{P,\tau} = \{t(v,r) + k \mod P \mid 0 \leq k < \tau \}$. Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
+      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(v,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $v$ in a period $P$, that is $[t(v,r)]_{P,\tau} = \{t(v,r) + k \mod P \mid 0 \leq k < \tau \}$. 
+%       Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
       Let $r_1$ and $r_2$ be two routes, on which messages are sent at time $m_1$ and $m_2$ in their first vertex.
-      We say that the two routes have a {\bf collision} if they share an arc $(v,w)$ and $[t(v,r_{1})] \cap [t(v,r_{2})] \neq \emptyset$.
+      We say that the two routes have a {\bf collision} if they share an arc $(v,w)$ and $[t(v,r_{1})]_{P,\tau} \cap [t(v,r_{2})]_{P,\tau} \neq \emptyset$.
       
          A {\bf $(P,\tau)$-periodic assignment} of a routed network $(G,\cal R)$ is a function that associates to each route 
-         $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$. \emph{No pair of routes must have a collision} in a $(P,\tau)$-periodic assignment.
-                     We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
+         $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$.  In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
+                     
+                     Let us give an interpretation of a $(P,\tau)$-periodic assignment of $(G,{\cal R})$ a symmetric routed network, so that it represents the sending of a message and of its answer.
 	This assignment represents the following process: first a message is sent at $u$, through the route $r \in F$, at time $m_r$.
-       
-  
-
       This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. It is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise.
  
      \begin{figure}
@@ -138,15 +137,10 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       \caption{Periodic process}
       \end{figure}
       
-         Note that, in the process we describe, we do not take into account time the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(r)+ w_r+\lambda(r)$. Each route must respect some time limit that we call a \emph{deadline}. To represent these deadlines, 
+%          Note that, in the process we describe, we do not take into account time the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
+The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(r)+ w_r+\lambda(r)$. Each route must respect some time limit that we call a \emph{deadline}. To represent these deadlines, 
       we use a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
-
-      
-      \subsection{Periodic assignment for low latency}
-
-
-      
-    We consider the following decision problem.
+    We can now define the problem we solve in this article.
 
       \noindent {\bf Periodic Assignment for Low Latency (\pall)} 
 
@@ -158,7 +152,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
 
 
       It turns out that the problem \pall is $\NP$-hard to solve and even to approximate for \emph{general} routed networks (see the long version \cite{}).      
-        We also consider a simpler version of \pall, that we call {\bf Periodic Assignment for Zero Latency} or \pazl: we ask for a $(P,\tau)$-periodic assignment {\bf with all waiting times equal to $0$}. We introduce \pazl because it is simpler to study and we are able to prove theoretical results and find better algorithms than for \pall. As we  experimentally show in Sec.~\ref{sec:exp_PAZL}, this problem can often be solved positively albeit less often than the general problem. Finally, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need buffering at all. A full version paper contrains the deeper studies on the complexity of those problems and the algorithm we propose in this paper\cite{versionlongue}.
+        We also consider a simpler version of \pall, that we call {\bf Periodic Assignment for Zero Latency} or \pazl: we ask for a $(P,\tau)$-periodic assignment {\bf with all waiting times equal to $0$}. We introduce \pazl because it is simpler to study and we are able to prove theoretical results and find better algorithms than for \pall. As we  experimentally show in Sec.~\ref{sec:exp_PAZL}, this problem can often be solved positively albeit less often than the general problem. Finally, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need buffering at all. 
        
     
     \subsection{The star routed network}
