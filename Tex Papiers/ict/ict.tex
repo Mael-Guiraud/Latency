@@ -84,24 +84,24 @@ The question we address is the following: is it possible to schedule messages su
 Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
 
-Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the time needed to transmit a minimal unit of data over the network. Since statistical multiplexing does not ensure a good latency we want to avoid any  buffering in internal nodes of the graph.  We take advantage of the deterministic nature of the messages we must manage i.e. the dates of arrival of messages are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that the arrivals of all the packets are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process we mean that the network at times $t$ and $t+P$ where $P$ is the period, is in the exact same state. 
+Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the time needed to transmit a minimal unit of data over the network. Since statistical multiplexing does not ensure a good latency we want to avoid any  buffering in internal nodes of the graph.  We take advantage of the deterministic nature of the messages we must manage i.e. the dates of arrival of messages are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that the arrivals of all the packets are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process we mean that the network at times $t$ and $t+P$, where $P$ is the period, is in the exact same state. 
 
 We assume that the routes of the messages are already fixed, and there are no buffering allowed inside the network. Hence we only have two sets of values that we can set when building a periodic sending process, called a \emph{periodic assignment}: the time at which each packet is sent by an RRH in each period and the waiting time in the BBU before the answer is sent back to the RRH. When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the other messages sent by the others BBU/RRH in the same period, but also in the previous and following periods. The latency, that is the time between the emission of a message and the complete return of its answer must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long. Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size.   
 
 Our main contributions are the following.
- In Sec.~\ref{sec:def} we propose a model of the network and the periodic sending of messages along its routes and we introduce the star routed network. We formalize the problem of finding a periodic assignment for sending messages without buffering (\pazl) or with buffering in the processing unit only (\pall). In Sec.~\ref{sec:PAZL}, we propose several algorithms to solving \pazl and evaluate their efficiency experimntally. Finally in Sec.~\ref{sec:PALL}, we introduce two algorithms to solve \pall and our experimentations show that the deterministic communication schemes we design vastly outperform the traditional statistical multiplexing with regard to latency. 
+ In Sec.~\ref{sec:def} we propose a model of the network and the periodic sending of messages along its routes and we introduce the star routed network. We formalize the problem of finding a periodic assignment for sending messages without buffering (\pazl) or with buffering in the processing unit only (\pall). In Sec.~\ref{sec:PAZL}, we propose several polynomial time algorithms to solve \pazl when the length of the routes, the number of routes or the load is small and evaluate their efficiency experimentally. Finally in Sec.~\ref{sec:PALL}, we introduce two algorithms to solve \pall and our experimentations show that the deterministic communication schemes we design vastly outperform traditional statistical multiplexing with regard to latency. 
  
  \subsection*{Related works}
 
  Statistical multiplexing even with a large bandwidth does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
      
-The algorithmic problems we study are similar to several optimization problems: such as the allocation of frequencies~\cite{borndorfer1998frequency}, designing train schedules~\cite{strotmann2007railway} with small latency or the two flow shop scheduling problem~\cite{yu2004minimizing}. However, in our case the periodicity of our problems makes them significantly different.
+The algorithmic problems we study are similar to several optimization problems: such as the allocation of frequencies~\cite{borndorfer1998frequency}, designing train schedules~\cite{strotmann2007railway} with small latency or the two flow shop scheduling problem~\cite{yu2004minimizing}. However, the periodicity of our problems makes them significantly different and not reducible to these classical models.
 
 
 \section{Model and Problems}\label{sec:def}
 
 A long version of this paper~\cite{versionlongue} contains details on the models, hardness results, 
-additional algorithms and proofs.  
+several additional algorithms, the proofs of all propositions and more experiments.  
 
   \subsection{Network modeling}
   
@@ -111,7 +111,7 @@ We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf ro
 The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
 
    In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
-      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of forward routes and $B$ of backward routes. Moreover there is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. 
+      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. 
        
 
    \subsection{Messages dynamic}
@@ -130,14 +130,14 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
          $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$.  In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
                      
                      Let us give an interpretation of a $(P,\tau)$-periodic assignment of $(G,{\cal R})$ a symmetric routed network, so that it represents the sending of a message and of its answer.
-	This assignment represents the following process: first a message is sent at $u$, through the route $r \in F$, at time $m_r$.
+	First a message is sent at $u$, through the route $r \in F$, at time $m_r$.
       This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. It is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise.
  
      \begin{figure}[h]
       \begin{center}
       \includegraphics[width=0.47\textwidth]{rrh.pdf}
       \end{center}
-      \caption{Periodic process}
+      \caption{The process defined by a $(P,\tau)$-periodic assignment}
       \end{figure}
       
 %          Note that, in the process we describe, we do not take into account time the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
@@ -155,7 +155,7 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
 
 
       It turns out that the problem \pall is $\NP$-hard to solve and even to approximate for \emph{general} routed networks (see the long version \cite{versionlongue}).      
-        We also consider a simpler version of \pall, that we call {\bf Periodic Assignment for Zero Latency} or \pazl: we ask for a $(P,\tau)$-periodic assignment {\bf with all waiting times equal to $0$}. We introduce \pazl because it is simpler to study and we are able to prove theoretical results and find better algorithms than for \pall. As we  experimentally show in Sec.~\ref{sec:exp_PAZL}, this problem can often be solved positively albeit less often \pall. Finally, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need buffering at all. 
+        We also consider a simpler version of \pall, that we call {\bf Periodic Assignment for Zero Latency} or \pazl: we ask for a $(P,\tau)$-periodic assignment {\bf with all waiting times equal to $0$}. We introduce \pazl because it is simpler to study and we are able to prove theoretical results and find better algorithms than for \pall. As we  experimentally show in Sec.~\ref{sec:exp_PAZL}, this problem can often be solved positively albeit less often than \pall. Finally, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need buffering at all. 
        
     
     \subsection{The star routed network}
@@ -165,9 +165,8 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
       the central source node {\bf $c_s$} and the central target node {\bf $c_t$}.
       There is an arc between {\bf $c_s$} and {\bf $c_t$} and for all $i$, there is an arc between $s_i$ and $c_s$ and between $t_i$ and $c_t$.
       All the symmetric arcs are also in the graph with the same weights.
-      The forward routes are the directed paths $r_i = (s_i,c_s,c_t,t_i)$ and $\rho(r_i) = (t_i,c_t,c_s,s_i)$ which define a symmetric routed network. 
-      The symmetric routed networks $(G, \{r_i,\rho(r_i)\}_{i<n})$ is called a \textbf{star routed network}. This graph looks very simple, but every network in which all routes share an arc can be reduced to a star routed network. This topology is realistic, since often all the BBUs are located in the same data-center. 
-      In the following we will consider the problems \pall and \pazl on star routed networks only. 
+      The forward routes are the directed paths $r_i = (s_i,c_s,c_t,t_i)$ and the backward routes are $\rho(r_i) = (t_i,c_t,c_s,s_i)$. 
+      The symmetric routed networks $(G, \{r_i,\rho(r_i)\}_{i<n})$ is called a \textbf{star routed network} and is represented in Fig.~\ref{fig:star_routed_network}. While it seems very simple, every network in which all routes share an arc can be reduced to it. This topology is realistic, since often all the BBUs are located in the same data-center. In the following we will consider the problems \pall and \pazl on star routed networks only. 
       In this context, we can assume w.l.o.g. that the weights are zero on $(c_s,c_t)$ and for all $i$ on $(s_i,c_s)$ (see~\cite{versionlongue}).
 
 %In such a situation, we can see the weights of the arcs $(c_t,t_i)$ either as all equals (in that case, the problem is trivial, see Sec.\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for different BBUs. 
@@ -210,7 +209,11 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
 }
 
   \caption{A star routed network}
+
   \end{center}
+
+
+  \label{fig:star_routed_network}
 
   \end{figure}
  	
@@ -225,7 +228,7 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
 \section{The Star Routed Network: No Waiting Time} \label{sec:PAZL}
   
   
-     In this section, we deal with the problem PAZL on star routed networks. We want an assignment with waiting times zero, that is, $d(r) = 2\lambda(r)$ . For a route $r$, choosing the offset $m_r$ also sets the offset of the route $\rho(r)$ to $m_{\rho(r)} = m_{r} + \lambda(r) \mod P$.
+     In this section, we deal with the problem PAZL on star routed networks. We want an assignment with waiting times zero, that is, $d(r) = 2\lambda(r)$. For a route $r$, choosing the offset $m_r$ also sets the offset of the route $\rho(r)$ to $m_{\rho(r)} = m_{r} + \lambda(r) \mod P$.
 
     \subsection{Three algorithms to solve \pazl}
 
@@ -262,7 +265,7 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
       \end{figure}
       
       
-      For short routes, both  Shortest Longest or the exhaustive search have the same performance and succeed very often but \emph{not always}. It is surprising, since exhaustive search is guaranteed to find a solution when it exists, while Shortest Longest is only an heuristic. The Greedy algorithm is less effective but it works when the load is less than $0.6$, much better than the theoritical bound of $1/3$. We now look at the performance of the algorithms on longer routes. The weights of the arcs are drawn between $0$ and $20,000$.
+      For short routes, both  Shortest Longest or the exhaustive search have the same performance and succeed very often but \emph{not always}. It is surprising, since exhaustive search is guaranteed to find a solution when it exists, while Shortest Longest is only a heuristic. The Greedy algorithm is less effective but it works when the load is less than $2/3$, twice better than the theoretical bound of $1/3$. We now look at the performance of the algorithms on longer routes. The weights of the arcs are drawn between $0$ and $20,000$.
 
    
 \begin{figure}[h]
@@ -293,10 +296,10 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
     
     The first algorithm we propose to solve \pall is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
     backward routes. It prioritizes the routes with the earliest deadline to best satisfy the
-    constraint on the process time. We call it \textbf{Greedy Deadline (GD)}. We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ with $w_i = 0$. For each time $t$, amongst all eligible routes at $t$, we choose the one with the smallest deadline and fix its offset to $t$.
+    constraint on the process time. We call it \textbf{Greedy Deadline (GD)}. We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ with $w_i = 0$. For each time $t$, amongst all eligible routes at $t$, we choose $r$ with the smallest deadline and fix its offset to $m_r = t - \lambda(r)$.
     This algorithm can fail since it does not take into account the periodicity.
     
-     The problem \pall is very similar to the following scheduling problem. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. When the running time is the same on all jobs, this problem can be solved in polynomial time~\cite{simons1978fast}. We use the polynomial time scheduling algorithm to solve \pall and we make some adjustments to take the periodicity into account: we run it once for each forward route $r$ and we fix $m_r$ so that the waiting time for this route is zero and we change the deadline of each route $r'$ to be less than $m_{r} + P$. The algorithm we obtain, when it succeeds always finds a correct peridoic assignment and we call it {\bf Periodic Minimal Latency Scheduling (PMLS)}.
+     The problem \pall is very similar to the following scheduling problem. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. When the running time is the same on all jobs, this problem can be solved in polynomial time~\cite{simons1978fast}. We use the polynomial time scheduling algorithm to solve \pall and we make some adjustments to take the periodicity into account: we run it once for each forward route $r$ and we fix $m_r$ so that the waiting time for this route is zero and we change the deadline of each route $r'$ to be less than $m_{r} + P$. The algorithm we obtain, when it succeeds always finds a correct periodic assignment and we call it {\bf Periodic Minimal Latency Scheduling (PMLS)}.
 
      
     \subsection{Experimental evaluation}
@@ -327,7 +330,7 @@ Fig.~\ref{fig:success21000} shows that PMLS is better than GD since it finds a s
     We now compare the performances of our algorithms to find periodic assignments against the actual way to manage the messages in a network:  statistical multiplexing with a FIFO buffer in each node of the network to resolve collisions. The time at which the messages are sent in the network is not computed as in our approach, thus we fix the offsets of each route to some random value.
      Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. Remark that the process is not periodic, therefore we must measure the process time of each route over several periods if we want to compute its maximum. We choose to simulate it for $1,000$ periods and we have observed that the process time usually stabilizes after $10$ periods. The margin is defined as the maximum process time, computed as explained, minus twice the size of the longest route. 
 	    
-     In Figure.~\ref{fig:sto}, we represent the probability of success for statistical multiplexing and PMLS for different margin. The distribution is computed from $1000$ star routed networks drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
+     In Figure.~\ref{fig:sto}, we represent the probability of success for statistical multiplexing and PMLS for different margin. The distribution is computed from $1000$ star routed networks drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the algorithm always succeed. 
      
 
     \begin{figure}
