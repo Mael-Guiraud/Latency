@@ -14,7 +14,7 @@
 #include "tests.h"
 #include "random.h"
 
-#define PARALLEL 1
+#define PARALLEL 0
 
 //Effectue une recherche linéaire pour les algos PAZL afin de trouver la plus petite periode moyenne
 void simuls_periode_PAZL(int nb_routes, int taille_message, int taille_routes,int nb_simuls)
@@ -280,8 +280,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 			
 			for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-					//resgp = longest_etoile_periodique(g,taille_paquets,periode,tmax,0);
-					resgp = 1;
+					resgp = longest_etoile_periodique(g,taille_paquets,periode,tmax,0);
+					//resgp = 1;
 					if(resgp != -2)
 					{	
 						if(resgp != -1)
@@ -300,8 +300,9 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
+					ress = FPT_PALL(g,taille_paquets, tmax, periode, 2);
 					//ress = simons(g,taille_paquets,tmax,periode,0);
-					ress = 1;
+					//ress = 1;
 					if(ress != -2)
 					{	
 						if(ress != -1)
@@ -319,7 +320,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-					ressp = simons_periodique(g,taille_paquets,tmax,periode,0);
+
+					ressp = simons_periodique(g,taille_paquets,tmax,periode,2);
 					if(ressp != -2)
 					{	
 						if(ressp != -1)
@@ -709,5 +711,78 @@ void succes_PALL_3D(int nb_routes, int taille_paquets,int taille_route, int nb_s
 		fprintf(F, "\n" );
 	}
 	fclose(F);
+}
+
+
+//Taux de reussite des allers sur pmls avec 0 de marge
+void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int nb_simuls, int pmin,int pmax)
+{
+
+	char nom[64];
+	
+	Graphe g ;
+	int ressp;
+	float sp;
+	int tmax;
+	int nb_rand = 1000;
+
+	
+		
+	for(int mode=0;mode< 3;mode ++)
+	{
+		sprintf(nom,"../datas/allers_random%d.data",mode);
+		FILE * F = fopen(nom,"w");
+		printf("Mode: %d \n",mode);
+
+		
+
+		for(int periode=pmin;periode<pmax;periode+=100)
+		{		
+			sp =0;
+			#pragma omp parallel for private(ressp,g,tmax) if (PARALLEL) schedule (dynamic)
+			for(int i = 0;i<nb_simuls;i++)
+			{
+				g = init_graphe(2*nb_routes+1);
+				graphe_etoile(g,taille_route);
+				tmax = longest_route(g);
+				//affiche_etoile(g);
+				//printf("TMAX = %d\n",tmax);
+				//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
+			
+
+				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
+				{
+
+					ressp = simons_periodique(g,taille_paquets,tmax,periode,mode);
+
+					if(ressp != -2)
+					{	
+						if(ressp != -1)
+						{
+							
+							#pragma omp atomic
+								sp++;
+
+							break;
+						}
+						
+					}
+				}
+
+
+		
+				//printf("-----------------------------------------\n");
+				libere_matrice(g);
+			}
+			     fprintf(F,"%f %f \n",20000/(float)periode*100,sp/nb_simuls*100);
+   		    fprintf(stdout,"%f %f \n",20000/(float)periode*100,sp/nb_simuls*100);
+		
+		}
+		
+	
+   		fclose(F);    
+
+	}
+	
 }
 
