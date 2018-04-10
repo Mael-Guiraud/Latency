@@ -17,7 +17,7 @@ int main()
 	/*****
 	Effectue une recherche linéaire pour les algos PAZL afin de trouver la plus petite periode moyenne
 	*****/
-	simuls_periode_PAZL(14,2500,700,1000);
+	//simuls_periode_PAZL(14,2500,700,1000);
 
 	/******************************************/	
 
@@ -56,7 +56,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	//sucess_retour_PALL(8,2500,20000,3000,10000,21052);
+	sucess_retour_PALL(8,2500,20000,3000,1000,21052);
 
 
 	/******************************************/

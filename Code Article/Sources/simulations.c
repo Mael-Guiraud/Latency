@@ -280,7 +280,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 			
 			for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-					resgp = longest_etoile_periodique(g,taille_paquets,periode,tmax,0);
+					//resgp = longest_etoile_periodique(g,taille_paquets,periode,tmax,0);
+					resgp = 1;
 					if(resgp != -2)
 					{	
 						if(resgp != -1)
@@ -299,7 +300,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-					ress = simons(g,taille_paquets,tmax,periode,0);
+					//ress = simons(g,taille_paquets,tmax,periode,0);
+					ress = 1;
 					if(ress != -2)
 					{	
 						if(ress != -1)

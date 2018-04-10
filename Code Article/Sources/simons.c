@@ -1228,21 +1228,12 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
 	return maximum;
 }
 
-
-//Algo naif
-int simons_per(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int premier)
-{	
-	///////////////////////////////////////////////////////taille_paquet = 6;
-	 if (!(g.N % 2))
-    {
-      printf ("G n'est peut être pas une étoile\n");
-      exit (5);
-    }
+int* retourne_departs(Graphe g, int taille_paquet, int mode, int premier)
+{
 
 	  int nbr_route = g.N / 2;
 	  int Dl[nbr_route];
-	  int m_i[nbr_route];
-	  int w_i[nbr_route];
+	  int * m_i = (int*)malloc(sizeof(int)*nbr_route);
 	int i;
 
 	int permutation[nbr_route];
@@ -1281,14 +1272,47 @@ int simons_per(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int p
 			fisher_yates(permutation,nbr_route);
 		break;
 	}
+/*
+	m_i[premier] = 0;
+	offset = taille_paquet+g.matrice[nbr_route][premier];
 
-	m_i[permutation[0]]=0;
-	offset = taille_paquet+g.matrice[nbr_route][permutation[0]];
-	for(int i=1;i<nbr_route;i++)
+	for(int i=0;i<nbr_route;i++)
 	{
-		m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
-		offset+=taille_paquet;
+		if(i!=premier)
+		{
+			m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
+			offset+=taille_paquet;
+		}
+	}*/
+
+	m_i[permutation[0]] = 0;
+	offset = taille_paquet+g.matrice[nbr_route][permutation[0]];
+
+	for(int i=0;i<nbr_route;i++)
+	{
+			m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
+			offset+=taille_paquet;
+		
 	}
+	return m_i;
+}
+
+//Algo naif
+int simons_per(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int premier)
+{	
+	///////////////////////////////////////////////////////taille_paquet = 6;
+	 if (!(g.N % 2))
+    {
+      printf ("G n'est peut être pas une étoile\n");
+      exit (5);
+    }
+
+	  int nbr_route = g.N / 2;
+	  int Dl[nbr_route];
+	  int w_i[nbr_route];
+	int i;
+
+
 
 
 
@@ -1301,7 +1325,7 @@ int simons_per(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int p
 
 	//release times
 	int arrivee[nbr_route];
-	offset = 0;
+	int offset = 0;
 	for(i=0;i<nbr_route;i++)
 	{
 		Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
@@ -1499,18 +1523,20 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int mod
 	int min = -1;
 	int res;
 	int nbr_route = g.N/2;
-
+	int* m_i;
 	for(int i=0;i<nbr_route;i++)
 	{
 		//printf("On fixe la route %d en premier\n",i);
 		//affiche_etoile(g);
-		res= simons_per(g,taille_paquet,TMAX,periode,mode,i);
+		m_i = retourne_departs( g, taille_paquet, mode, i);
+		res= simons_per(g,taille_paquet,TMAX,periode,m_i,i);
 		//printf("%d\n",res);
 		if(res != -1)
 		{
 			if((res < min)||(min == -1))
 				min = res;
 		}
+		free(m_i);
 	}
 	return (min>TMAX)?-1:min;
 }
