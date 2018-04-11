@@ -1570,8 +1570,16 @@ int simons_FPT(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int p
 		printf("%d ",m_i[i]);
 	}
 	printf(" m i \n");
-
-
+	affiche_etoile(g);
+	for(i=1;i<nbr_route;i++)
+	{
+		m_i[i] -= g.matrice[nbr_route][i]; 
+	}
+	for(i=0;i<nbr_route;i++)
+	{
+		printf("%d ",m_i[i]);
+	}
+	printf(" m i \n");
 	exit(45);
 	for(i=0;i<nbr_route;i++)
 	{
