@@ -255,8 +255,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 	sprintf(nom,"../datas/compare_retour_%d.data",periode);
 	FILE * F = fopen(nom,"w");
 	Graphe g ;
-	int resgp,ress,ressp;
-	float gp,s,sp;
+	int resgp,ress,ressp,resfpt;
+	float gp,s,sp,fpt;
 	int tmax;
 	int nb_rand = 1000;
 
@@ -266,9 +266,10 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 	{
 		gp=0;
 		s=0;
+		fpt = 0;
 		sp =0;
 
-		#pragma omp parallel for private(resgp,ress,ressp,g,tmax) if (PARALLEL) schedule (dynamic)
+		#pragma omp parallel for private(resgp,ress,ressp,resfpt,g,tmax) if (PARALLEL) schedule (dynamic)
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
@@ -300,8 +301,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-					ress = FPT_PALL(g,taille_paquets, tmax, periode, 2);
-					//ress = simons(g,taille_paquets,tmax,periode,0);
+					
+					ress = simons(g,taille_paquets,tmax,periode,0);
 					//ress = 1;
 					if(ress != -2)
 					{	
@@ -336,6 +337,25 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 					}
 				}
+				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
+				{
+
+					resfpt = FPT_PALL(g,taille_paquets, tmax, periode, 2);
+					//printf("%d \n",resfpt);
+					if(resfpt != -2)
+					{	
+						if(resfpt != -1)
+						{
+							
+							#pragma omp atomic
+								fpt++;
+
+
+							break;
+						}
+						
+					}
+				}
 
 
 		
@@ -344,8 +364,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		}
 		
 	
-   			      fprintf(F,"%d %f %f %f \n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100);
-   		     fprintf(stdout,"%d %f %f %f \n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100);
+   			      fprintf(F,"%d %f %f %f %f\n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
+   		     fprintf(stdout,"%d %f %f %f %f\n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
 		
 
 	}

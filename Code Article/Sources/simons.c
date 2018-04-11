@@ -1559,15 +1559,46 @@ int simons_FPT(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int p
 
 	//release times
 	int arrivee[nbr_route];
-	
+	printf("______________ premier= %d \n",premier);
+	for(i=0;i<nbr_route;i++)
+	{
+		printf("%d ",subset[i]);
+	}
+	printf("subset \n");
+	for(i=0;i<nbr_route;i++)
+	{
+		printf("%d ",m_i[i]);
+	}
+	printf(" m i \n");
+
+
+	exit(45);
 	for(i=0;i<nbr_route;i++)
 	{
 		Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
 
 		arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
 		if(subset[i])
+		{
 			arrivee[i] -= periode;
+			printf("On enleve P a la release time de la route %d \n",i);
+		}
 	}
+	for(i=0;i<nbr_route;i++)
+	{
+		printf("%d ",Dl[i]);
+	}
+	printf(" dl \n");
+	for(i=0;i<nbr_route;i++)
+	{
+		printf("%d ",arrivee[i]);
+	}
+	printf(" arrivee\n");
+	for(i=0;i<nbr_route;i++)
+	{
+		printf("%d ",g.matrice[nbr_route][i+nbr_route+1]);
+	}
+	printf(" route retour \n");
 	
 
 	
@@ -1583,15 +1614,19 @@ int simons_FPT(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int p
 	for(j=0;j<nbr_route;j++)
 	{
 		deadline_route = TMAX+m_i[j]- g.matrice[nbr_route][j]+taille_paquet;
-		if(subset[i])
+		if(subset[j])
+		{
+			printf("On enleve P a la deadline de la route %d \n",j);
 			deadline_route -= periode;
+		}
 		if(j != premier)
 		{
 			elems = ajoute_elemt(elems,j,arrivee[j],deadline_route);
-			//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline_route,deadline_periode);
+			printf("ajout de %d ( %d, %d  )\n",j,arrivee[j],deadline_route);
 		}
 
 	}
+
 	/*
 	elems= ajoute_elemt(elems,0,0,74);
 	elems= ajoute_elemt(elems,1,21,46);
@@ -1730,7 +1765,7 @@ int simons_FPT(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int p
 
 	//affiche_tab(m_i,nbr_route);
 	//printf("simons wi\n");affiche_tab(w_i,nbr_route);
-	//affiche_solution(g,taille_paquet,m_i,w_i);
+	affiche_solution(g,taille_paquet,m_i,w_i);
 	/*
 		int retour[nbr_route];
 		for(int i=0;i<nbr_route;i++)
@@ -1741,16 +1776,29 @@ int simons_FPT(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int p
 		printf("Periode de taille %d \n\n",taille_periode_retour);
 	*/
 
-	//if(!is_ok(g,taille_paquet,m_i,w_i,periode)){printf("ERROR simons fpt\n");}
+	//if(!is_ok(g,taille_paquet,m_i,w_i,periode)){printf("ERROR simons fpt\n");exit(22);}
+		int maximum ;
 
-	int maximum ;
-
+		//CALCUL TMAX
 		maximum= w_i[0]+2*Dl[0];
 		for(int i=0;i<nbr_route;i++)
 		{
 			if(w_i[i]+2*Dl[i] > maximum)
 				maximum= w_i[i]+2*Dl[i];
 		}
+		
+
+		//TEST DEPASSEMENT PERIODE
+		int retour[nbr_route];
+		for(int i=0;i<nbr_route;i++)
+		{
+			retour[i] = m_i[i]+g.matrice[nbr_route][i]+2*g.matrice[nbr_route][nbr_route+i+1]+w_i[i];
+		}
+		int taille_periode_retour = retour[greater(retour,nbr_route)]-retour[lower(retour,nbr_route)]+taille_paquet;
+		if(taille_periode_retour > periode){exit(33);return -2;	}
+	
+
+
 
 	return maximum;
 }
