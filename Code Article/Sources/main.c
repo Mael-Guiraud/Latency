@@ -17,7 +17,7 @@ int main()
 	/*****
 	Effectue une recherche linéaire pour les algos PAZL afin de trouver la plus petite periode moyenne
 	*****/
-	simuls_periode_PAZL(14,2500,700,1000);
+	//simuls_periode_PAZL(14,2500,700,1000);
 
 	/******************************************/	
 
@@ -56,7 +56,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	//sucess_retour_PALL(8,2500,20000,3000,10000,21052);
+	sucess_retour_PALL(8,2500,20000,3000,1000,21000);
 
 
 	/******************************************/
@@ -80,6 +80,10 @@ int main()
 
 	//search_efficiency(2500,20000,100);
 
+
+	//Taux de reussite des allers sur pmls avec 0 de marge
+	//allers_random_PMLS(8, 2500,20000, 1000, 20000,23000);
+	
 
 	/******
 	Bout de code pour tester la stabilisation de la marge necessaire quand on simule plusieurs periodes en stochastique
