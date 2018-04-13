@@ -56,7 +56,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	sucess_retour_PALL(8,2500,20000,3000,1000,20000);
+	sucess_retour_PALL(8,2500,20000,3000,1000,21000);
 
 
 	/******************************************/
@@ -82,7 +82,7 @@ int main()
 
 
 	//Taux de reussite des allers sur pmls avec 0 de marge
-	//allers_random_PMLS(8, 2500,20000, 1000, 20000,23000);
+	//allers_random_PMLS(8, 2500,20000, 10000, 20000,23000);
 	
 
 	/******

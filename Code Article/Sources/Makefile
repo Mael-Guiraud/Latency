@@ -17,8 +17,8 @@ all: create_folder run
 run : prog 
 	./prog
 
-prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o
-	$(CC) -fopenmp -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o
+prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o $(DIRbin)random_inters.o 
+	$(CC) -fopenmp -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o
 
 $(DIRbin)main.o: main.c
 	$(CC) $(CFLAGS) main.c -o $(DIRbin)main.o 
@@ -47,6 +47,8 @@ $(DIRbin)simulations.o: simulations.c
 $(DIRbin)random.o: random.c
 	$(CC) $(CFLAGS) random.c -o $(DIRbin)random.o
 
+$(DIRbin)random_inters.o: random_inters.c
+	$(CC) $(CFLAGS) random_inters.c -o $(DIRbin)random_inters.o
 
 create_folder:
 	mkdir -p $(DIRbin)

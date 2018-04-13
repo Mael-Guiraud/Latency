@@ -14,7 +14,7 @@
 #include "tests.h"
 #include "random.h"
 
-#define PARALLEL 0
+#define PARALLEL 1
 
 //Effectue une recherche linéaire pour les algos PAZL afin de trouver la plus petite periode moyenne
 void simuls_periode_PAZL(int nb_routes, int taille_message, int taille_routes,int nb_simuls)
@@ -339,8 +339,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 				}
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-
-					resfpt = FPT_PALL(g,taille_paquets, tmax, periode, 2);
+					resfpt = 1;
+					//resfpt = FPT_PALL(g,taille_paquets, tmax, periode, 2);
 					//printf("%d \n",resfpt);
 					if(resfpt != -2)
 					{	
