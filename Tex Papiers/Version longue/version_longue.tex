@@ -909,10 +909,15 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      
      We reduce \bra to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job,
      the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} the algorithm which transform \bra into the described scheduling problem to solve it in polynomial time.
-     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$, it always satisfies $PT(r) < d(r)$ for all $r$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work sometimes (as shown in Section~\ref{sec:resultsPALL}), but not for all instances.
+     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$, it always satisfies $PT(r) < d(r)$ for all $r$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work sometimes (as shown in Section~\ref{sec:resultsPALL}), but not for all instances. 
+     To improve the chances that  $m_{max} - m_{min} \leq P -\tau$, we modify the instance so that all release time are in the same period of size $P$. 
+     It can be done by replacing each release time $r$ by $r \mod P$ and by subtracting $r / P$ to the corresponding deadline. We assume in the rest of the article, that the instances always satisfy this property. 
      
      We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}
-     which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc at time $t$. Then we modify the deadline of each backward route to be the minimum of their previous deadline and $t + P - \tau$. Because of this choice of  deadlines, if MLS finds a solution for this instance, it is always a $(P,\tau)$ periodic assignment since all messages goes through $c_t$ between $t$ and $t+P-1$.  The algorithm PMLS is the execution of MLS for each possible first backward route with the presented modifications to the deadlines until we find a solution (otherwise PMLS fails). Since we run MLS at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that PMLS finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. We take the periodicity into account in PMLS but not completely and it may fail to find assignments. Indeed, in PMLS we restrict the assignments we look for by not allowing to choose an offset for a route after $t+P- \tau$.
+     which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc. 
+     We modify the instance so that this backward route has release time zero and all others routes have release time less than $P$ as explained previously.
+     
+     Then we set the deadline of each backward route to be the minimum of their deadline and $P - \tau$. Because of this choice of deadlines, if MLS finds a solution for this instance, it is always a $(P,\tau)$ periodic assignment since all messages goes through $c_t$ between $0$ and $P$.  The algorithm PMLS is the execution of MLS for each possible first backward route with the presented modifications to the deadlines until we find a solution (otherwise PMLS fails). Since we run MLS at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that PMLS finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. We take the periodicity into account in PMLS but not completely and it may fail to find assignments. Indeed, in PMLS we restrict the assignments we look for by not allowing to choose an offset for a route after $P - \tau$.
      
 %     \begin{algorithm}[H]
 %     \caption{ Minimized Scheduling Periodic (MSP)}
@@ -950,12 +955,21 @@ $\bra \in \FPT$ when parametrized by the number of routes.
 \begin{proof}
  Consider an instance of \bra, which can be characterized by a release time and a deadline for each route.
 W.l.o.g. say that the first message on a backward route is sent through the central arc at time $0$. Assume that 
-the delays and the waiting times of the solution are such that all messages on forwards routes go through $c_t$ before $P - \tau$. Then the periodicity does not come into play for this solution and the algorithm PMLS will find it as explained in Section~\ref{sec:braheuristic}. 
+the delays and the waiting times of the solution are such that all messages on forwards routes go through $c_t$ before $P - \tau$. Then the periodicity does not come into play for this solution and the algorithm MLS will find it as explained in Section~\ref{sec:braheuristic}. 
 
-Remind that because of Proposition~\ref{prop:canonical}, $2\lambda(r_i) < P$ and $\omega(s_i,c_s) = 0$. Hence the release times cannot be larger than  $P-\tau$ and the message on a backward route $r_i$ goes through $c_t$ before $P-\tau +2\lambda(r_i) < 2P - \tau$.
-If we subtract $P$ to the release time of the message and to its deadline it does not change the possible solutions, but the message goes through the central arc before $P - \tau$.
+Recall that we may assume that the release times are between $0$ and $P$. 
+Hence, in a periodic assignment the time at which a message goes through $c_t$ is always smaller than $2P$.
+Indeed, if it is sent after $m > 2P$, it can also be sent at $m -P$ since $m-P > P$ which is larger than its release time.
+We select all messages in the periodic assignment which go through $c_t$ between $P$ and $2P$. We define a new instance where the release time of these elements
+is zero and $P$ is subtracted to their deadline. Then the considered periodic assignment is a solution of the new instance such that .
+Conversely, any solution to the new instance is a solution to the original problem.   
+% 
+% offsets of the backward routes may be between $0$ and $12P$ but never larger. 
+% 
+% Remind that because of Proposition~\ref{prop:canonical}, $2\lambda(r_i) < P$ and $\omega(s_i,c_s) = 0$. Hence the release times cannot be larger than  $P-\tau$ and the message on a backward route $r_i$ goes through $c_t$ before $P-\tau +2\lambda(r_i) < 2P - \tau$.
+% If we subtract $P$ to the release time of the message and to its deadline it does not change the possible solutions, but the message goes through the central arc before $P - \tau$.
 
-The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run PMLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc before $P - \tau$, a solution that PMLS will find.
+The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
 \end{proof}
 
 The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases.
