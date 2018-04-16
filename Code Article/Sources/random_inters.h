@@ -1,0 +1,1 @@
+int * random_inters(int n, int k);

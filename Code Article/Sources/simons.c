@@ -1230,35 +1230,30 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
 	return maximum;
 }
 
-int* retourne_departs(Graphe g, int taille_paquet, int* permutation, int premier,int mode,int periode)
+int* retourne_offset(Graphe g, int taille_paquet, int* permutation,int mode,int periode)
 {
-
-	  int nbr_route = g.N / 2;
-	  int * m_i = (int*)malloc(sizeof(int)*nbr_route);
-
+	int nbr_route = g.N/2;
+	int * offsets;
+	assert(offsets=(int*)malloc(sizeof(int)*nbr_route));
 	int offset = 0;
-	
 	int budget = periode - (nbr_route*taille_paquet);
 	int inter_size = budget / nbr_route; 
 	int * random;
 
-	m_i[permutation[0]] = 0;
 	switch(mode)
 	{
 		case 0:
-			offset = taille_paquet+g.matrice[nbr_route][permutation[0]];
-			for(int i=1;i<nbr_route;i++)
+			for(int i=0;i<nbr_route;i++)
 			{
-					m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
+					offsets[permutation[i]]=offset;
 					offset+=taille_paquet;
 
 			}
 		break;
 		case 1:
-			offset = taille_paquet+g.matrice[nbr_route][permutation[0]]+inter_size;
-			for(int i=1;i<nbr_route;i++)
+			for(int i=0;i<nbr_route;i++)
 			{
-					m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
+					offsets[permutation[i]]=offset;
 					offset+=taille_paquet+inter_size;
 
 				
@@ -1266,11 +1261,10 @@ int* retourne_departs(Graphe g, int taille_paquet, int* permutation, int premier
 		break;
 		default:
 			random = random_inters(budget, nbr_route);
-			offset = taille_paquet+g.matrice[nbr_route][permutation[0]]+random[0];
-			for(int i=1;i<nbr_route;i++)
+			for(int i=0;i<nbr_route;i++)
 			{
 					
-					m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
+					offsets[permutation[i]]=offset;
 					offset+=taille_paquet+random[i];
 			}
 			free(random);
@@ -1278,6 +1272,23 @@ int* retourne_departs(Graphe g, int taille_paquet, int* permutation, int premier
 		break;
 	}
 	
+	return offsets;
+}
+int *retourne_departs(Graphe g, int * offsets)
+{
+	int nbr_route = g.N/2;
+	int* m_i = (int*)malloc(sizeof(int)*nbr_route);
+	int min = INT_MAX;
+	for(int i=0;i<nbr_route;i++)
+	{
+		m_i[i] = offsets[i] - g.matrice[nbr_route][i];
+		if(m_i[i]<min)
+			min = m_i[i];
+	}
+	for(int i=0;i<nbr_route;i++)
+	{
+		m_i[i] += (-min);
+	}
 	return m_i;
 }
 Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int date,int periode)
@@ -1286,7 +1297,7 @@ Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int da
 	Element *  elems2 = cpy_elems(elems);
 	Element * tmp = elems2;
 	
-	int a_scheduler = nbr_route-1;
+	int a_scheduler = nbr_route;
 	/////////////////////////////////////////////////////int a_scheduler = 11;
 	Ensemble * ens = NULL;
 	Ensemble * ensembletmp;
@@ -1389,6 +1400,44 @@ Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int da
 	
 
 }
+ 
+int* normaliser_instance(Graphe g, int periode)
+{
+	int nbr_route = g.N/2;
+	int * instance = (int *)malloc(sizeof(int)*nbr_route);
+	for(int i=0;i<nbr_route;i++)
+	{
+		instance[i] = g.matrice[nbr_route][i+nbr_route+1]; // juste le retour
+		while((2 * instance[i]) >= periode)
+		{
+			instance[i] -= periode/2;
+		}
+	}
+	return instance;
+
+}
+int decaler_release(int * release, int* deadline, int periode, int premier,int nbr_route,int taille_paquet)
+{
+	for(int i=0;i<nbr_route;i++)
+	{
+		release[i] -= release[premier];
+		deadline[i] -= release[premier];
+		if(deadline[i] < 0)
+			return -1;
+		if(release[i] < 0)
+		{
+			release[i] = 0;
+		}
+		if((deadline[i] - release[i])< taille_paquet )
+			return -1;
+		while(release[i] > periode)
+		{
+			release[i] -= periode;
+			deadline[i] -= periode;
+		} 
+	}
+	return 1;
+}
 
 //Algo naif
 int simons_per(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int premier)
@@ -1399,59 +1448,71 @@ int simons_per(Graphe g, int taille_paquet, int TMAX,int periode,int* m_i, int p
       printf ("G n'est peut être pas une étoile\n");
       exit (5);
     }
+    //printf("\n\n");
 
 	  int nbr_route = g.N / 2;
 	  int Dl[nbr_route];
 	  int w_i[nbr_route];
+	  int fin[nbr_route];
+	  int debut_periode_retour;
+
 	int i;
 
 	int arrivee[nbr_route];
-	
+	int release[nbr_route];
+	int deadline[nbr_route];
+
 	for(i=0;i<nbr_route;i++)
 	{
 		Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
-
+		release[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
 		arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
+		deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
 	}
+	debut_periode_retour = arrivee[premier];
+	if(decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet) == -1)
+		return -1;
 	
 
-	
+	int	date=arrivee[premier];
 
-	int	date=arrivee[premier]+taille_paquet;
 	//////////////////////////////////////////////////////////////////int date = 0;
 	int j;
 
 	//afficheTwoWayTrip(t);
 	Element * elems = init_element();
-	int deadline_route;
 	int deadline_periode = arrivee[premier] + periode;
 	//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
 	for(j=0;j<nbr_route;j++)
 	{
-		deadline_route = TMAX+m_i[j]- g.matrice[nbr_route][j]+taille_paquet;
 		if(j != premier)
 		{
-			elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_periode,deadline_route));
-			//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline_route,deadline_periode);
+			elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_periode,deadline[j]));
+			//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline[j],deadline_periode);
 		}
+		else
+			elems = ajoute_elemt(elems,j,arrivee[j],arrivee[j]+taille_paquet);
+
 
 	}
 	Ensemble * ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
 	if(ens == NULL)return -1;
-	ens->frereG = cree_ensemble(premier,arrivee[premier]);
+	/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
 	ens->frereG->frereD = ens;
-	ens = ens->frereG;
+	ens = ens->frereG;*/
 	Ensemble * a_free = ens;
 	
 	
 	//affiche_ensemble(ens);printf("\n");
-	transforme_waiting(ens,w_i);
+	transforme_waiting(ens,fin);
 
 	//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 	for(i=0;i<nbr_route;i++)
 	{
-		w_i[i] -= arrivee[i];
+		w_i[i] = fin[i] +debut_periode_retour - release[i] ; 
+		//printf("[%d]%d = %d - %d\n",i,w_i[i],fin[i],arrivee[i]);
 	}
+		
 
 	libereens(a_free);
 	freeelems(elems);
@@ -1493,6 +1554,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int mod
 	
 	int res;
 	int nbr_route = g.N/2;
+	int* offsets;
 	int* m_i;
 	int permutation[nbr_route];
 	for(int i=0;i<nbr_route;i++)
@@ -1500,13 +1562,14 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int mod
 		permutation[i] = i;
 	}
 	fisher_yates(permutation,nbr_route);
+	offsets = retourne_offset(g, taille_paquet, permutation,mode,periode);
+	m_i = retourne_departs(g,offsets);
 	for(int i=0;i<nbr_route;i++)
 	{
 		//printf("On fixe la route %d en premier\n",i);
 		//affiche_etoile(g);
 
-		m_i = retourne_departs( g, taille_paquet, permutation, i,mode,periode);
-
+		
 		res= simons_per(g,taille_paquet,TMAX,periode,m_i,i);
 		//printf("%d\n",res);
 
@@ -1529,9 +1592,11 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int mod
 				return res;
 			}
 		}
-		free(m_i);
-		
+				
 	}
+	free(m_i);
+	free(offsets);
+
 	return -1;
 }
 
