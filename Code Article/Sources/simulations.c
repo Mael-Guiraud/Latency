@@ -4,6 +4,8 @@
 #include <limits.h>
 #include <math.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "struct.h"
 #include "PAZL.h"
@@ -15,6 +17,11 @@
 #include "random.h"
 
 #define PARALLEL 0
+
+double time_diff(struct timeval tv1, struct timeval tv2)
+{
+    return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
+}
 
 //Effectue une recherche linéaire pour les algos PAZL afin de trouver la plus petite periode moyenne
 void simuls_periode_PAZL(int nb_routes, int taille_message, int taille_routes,int nb_simuls)
@@ -236,6 +243,7 @@ void sucess_aller_PALL(int nb_routes, int taille_paquets,int taille_route,int ma
 			}
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
+
 		}
 		
 	
@@ -254,13 +262,20 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 	char nom[64];
 	sprintf(nom,"../datas/compare_retour_%d.data",periode);
 	FILE * F = fopen(nom,"w");
+	FILE * F2 = fopen("../datas/exec_time.data","w");
 	Graphe g ;
 	int resgp,ress,ressp,resfpt;
 	float gp,s,sp,fpt;
 	int tmax;
 	int nb_rand = 1000;
-
+	struct timeval tv1, tv2;
+	double time_sp = 0.0;
+	double time_fpt = 0.0;
+	int *m_i;
+	int *offsets;
+	int permutation[nb_routes];
 	
+
 		
 	for(int marge=0;marge<= marge_max;marge += 150)
 	{
@@ -268,13 +283,24 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		s=0;
 		fpt = 0;
 		sp =0;
+		time_sp = 0.0;
+		time_fpt = 0.0;
+	
 
-		#pragma omp parallel for private(resgp,ress,ressp,resfpt,g,tmax) if (PARALLEL) schedule (dynamic)
+		#pragma omp parallel for private(resgp,ress,ressp,resfpt,g,tmax,tv1,tv2,offsets,m_i,permutation) if (PARALLEL) schedule (dynamic)
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
 			graphe_etoile(g,taille_route);
 			tmax = marge + longest_route(g);
+
+			for(int i=0;i<nb_routes;i++)
+			{
+				permutation[i] = i;
+			}
+			fisher_yates(permutation,nb_routes);
+			offsets = retourne_offset(g, taille_paquets, permutation,2,periode);
+			m_i = retourne_departs(g,offsets);
 			//affiche_etoile(g);
 			//printf("TMAX = %d\n",tmax);
 			//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
@@ -318,11 +344,11 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 					}
 				}
-
+				gettimeofday (&tv1, NULL);
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
 
-					ressp = simons_periodique(g,taille_paquets,tmax,periode,0);
+					ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
 					if(ressp != -2)
 					{	
 						if(ressp != -1)
@@ -337,10 +363,14 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 					}
 				}
+				gettimeofday (&tv2, NULL);
+				#pragma omp atomic
+		    	time_sp += time_diff(tv1,tv2);	
+				gettimeofday (&tv1, NULL);
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
-					resfpt = 1;
-					//resfpt = FPT_PALL(g,taille_paquets, tmax, periode, 2);
+					//resfpt = 1;
+					resfpt = FPT_PALL(g,taille_paquets, tmax, periode, m_i);
 					//printf("%d \n",resfpt);
 					if(resfpt != -2)
 					{	
@@ -356,20 +386,28 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						
 					}
 				}
+				gettimeofday (&tv2, NULL);
+				#pragma omp atomic
+		    	time_fpt+= time_diff(tv1,tv2);	
 
 
 		
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
+			free(m_i);
+			free(offsets);
 		}
 		
 	
    			      fprintf(F,"%d %f %f %f %f\n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
    		     fprintf(stdout,"%d %f %f %f %f\n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
-		
+   		         fprintf(F2,"%d %f %f\n",marge,time_sp/nb_simuls,time_fpt/nb_simuls);
+   		     fprintf(stdout,"%d %f %f\n",marge,time_sp/nb_simuls,time_fpt/nb_simuls);
+
 
 	}
 	fclose(F);
+	fclose(F2);
 }
 
 //Taux de reussite des diferents nombres d'instances générées
@@ -383,17 +421,28 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 	int res;
 	float a;
 	int tmax;
-	
+	int *m_i;
+	int *offsets;
+	int permutation[nb_routes];
+
 
 	for(int nb_rand=1;nb_rand<= 100000;nb_rand *= 10)
 	{
 		a=0;
-		#pragma omp parallel for private(res,g,tmax) if (PARALLEL) schedule (static)
+		#pragma omp parallel for private(res,g,tmax,m_i,offsets,permutation) if (PARALLEL) schedule (static)
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
 			graphe_etoile(g,taille_route);
 			tmax =  longest_route(g);
+
+			for(int i=0;i<nb_routes;i++)
+			{
+				permutation[i] = i;
+			}
+			fisher_yates(permutation,nb_routes);
+			offsets = retourne_offset(g, taille_paquets, permutation,2,periode);
+			m_i = retourne_departs(g,offsets);
 			//affiche_etoile(g);
 			//printf("TMAX = %d\n",tmax);
 			//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
@@ -401,7 +450,7 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 			for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
 					//res = longest_etoile_periodique(g,taille_paquets,periode,tmax,0);
-					res = simons_periodique(g,taille_paquets,tmax,periode,0);
+					res = simons_periodique(g,taille_paquets,tmax,periode,m_i);
 					if(res != -2)
 					{	
 						if(res != -1)
@@ -423,6 +472,8 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 		
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
+			free(m_i);
+			free(offsets);
 		}
 		
 	
@@ -525,10 +576,6 @@ void marge_PALL_stochastique(int nb_routes,int taille_paquets,int taille_route, 
 	fclose(F);
 	fclose(F2);
 }
-double time_diff(struct timeval tv1, struct timeval tv2)
-{
-    return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
-}
 
 
 double time_search(int nb_routes, int taille_message,int taille_routes)
@@ -574,164 +621,6 @@ void search_efficiency(int taille_message,int taille_routes, int nb_simuls)
 	fclose(f);
 }
 
-//Fichiers en 3D pour PALL
-void succes_PALL_3D(int nb_routes, int taille_paquets,int taille_route, int nb_simuls, int mode)
-{
-
-	char nom[64];
-	sprintf(nom,"../3d/gvsgp3D_%d.data",mode);
-
-	FILE * F = fopen(nom,"w");
-
-	Graphe g ;
-	int resa,resb,resc,resd;
-	float a,b,c,d;
-	int tmax;
-
-	int nb_rand = 100;
-
-
-	for(int marge=0;marge<=1000;marge+=100)
-	{
-		for(int j=taille_paquets*nb_routes;j<taille_paquets*nb_routes*1.5;j+=500)
-			{
-				a=0.0;
-				b=0.0;
-				c=0.0;
-				d=0.0;
-
-				for(int i = 0;i<nb_simuls;i++)
-				{
-					g = init_graphe(2*nb_routes+1);
-					graphe_etoile(g,taille_route);
-					tmax = marge + longest_route(g);
-					//affiche_etoile(g);
-					//printf("TMAX = %d\n",tmax);
-					//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
-					if(mode != 0)
-					{
-						
-						
-						resa = longest_etoile_periodique(g,taille_paquets,j, tmax,mode);
-						resb = longest_etoile_2(g,taille_paquets,j,tmax,mode);
-						resc = simons(g,taille_paquets,tmax,j,mode);
-						resd = simons_periodique(g,taille_paquets,tmax,j,mode);
-						//resd = 0;
-						//printf("%d %d \n",resa,resb);
-						if(resa != -2)
-						{	
-							if(resa != -1)
-							{
-
-								a++;
-							}
-							
-						}
-						if(resb != -2)
-						{
-							if(resb != -1)	
-							{
-								b++;
-							}
-						}
-						if(resc != -2)
-						{
-							if(resc != -1)
-							{
-
-								c++;
-								
-							}
-						}
-						if( ( (resc == -2)||(resc == -1) ) && ( (resb != -2)&&(resb !=-1) )  ) {printf("%d %d \n",resb,resc);exit(11);}
-						if(resd != -1)
-						{
-
-							d++;
-						}
-
-
-					}
-					else
-					{
-						for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
-						{
-							resa = longest_etoile_periodique(g,taille_paquets,j, tmax,mode);
-							if(resa != -2)
-							{	
-								if(resa != -1)
-								{
-
-									a++;
-									//printf("On a trouvé pour a au %d ieme tick (%d) \n",compteur_rand,resa);
-									break;
-								}
-								
-							}
-						}
-						for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
-						{
-							resb = longest_etoile_2(g,taille_paquets,j,tmax,mode);
-							if(resb != -2)
-							{	
-								if(resb != -1)
-								{
-
-									b++;
-									//printf("On a trouvé pour b au %d ieme tick (%d) \n",compteur_rand,resb);
-									break;
-								}
-								
-							}
-						}
-						for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
-						{
-							resc = simons(g,taille_paquets,tmax,j,mode);
-			
-							if(resc != -2)
-							{
-								if(resc != -1)
-								{
-
-									c++;
-									break;
-								}
-							}
-												
-							
-						}	
-						for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
-						{
-							resd = simons_periodique(g,taille_paquets,tmax,j,mode);
-							//resd = 0;
-			
-								if(resd != -1)
-								{
-
-									d++;
-									//printf("On a trouvé pour e au %d ieme tick\n",compteur_rand);
-									break;
-								}
-								
-							
-						}
-						//if(resc == -1){printf("ON NA PAS TROUVE POUR e (Tmax = %d)\n",tmax);exit(40);}
-					}
-					
-
-
-					//printf("-----------------------------------------\n");
-					libere_matrice(g);
-				}
-			
-		   		     fprintf(F,"%d %d %f %f %f %f\n",marge,j,a/nb_simuls*100,b/nb_simuls*100,c/nb_simuls*100,d/nb_simuls*100);
-				fprintf(stdout,"%d %d %f %f %f %f\n",marge,j,a/nb_simuls*100,b/nb_simuls*100,c/nb_simuls*100,d/nb_simuls*100);
-			//fprintf(stdout,"%d %d %f %f\n",j,k,c/nb_simuls*100,d/nb_simuls*100);
-		}
-		fprintf(F, "\n" );
-	}
-	fclose(F);
-}
 
 
 //Taux de reussite des allers sur pmls avec 0 de marge
@@ -745,9 +634,11 @@ void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int 
 	float sp;
 	int tmax;
 	int nb_rand = 1000;
+	int *m_i;
+	int *offsets;
+	int permutation[nb_routes];
 
-	
-		
+
 	for(int mode=0;mode< 3;mode ++)
 	{
 		sprintf(nom,"../datas/allers_random%d.data",mode);
@@ -759,12 +650,21 @@ void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int 
 		for(int periode=pmin;periode<pmax;periode+=100)
 		{		
 			sp =0;
-			#pragma omp parallel for private(ressp,g,tmax) if (PARALLEL) schedule (dynamic)
+			#pragma omp parallel for private(ressp,g,tmax,m_i,permutation,offsets) if (PARALLEL) schedule (dynamic)
 			for(int i = 0;i<nb_simuls;i++)
 			{
 				g = init_graphe(2*nb_routes+1);
 				graphe_etoile(g,taille_route);
 				tmax = longest_route(g);
+
+				for(int i=0;i<nb_routes;i++)
+				{
+					permutation[i] = i;
+				}
+				fisher_yates(permutation,nb_routes);
+				offsets = retourne_offset(g, taille_paquets, permutation,mode,periode);
+				m_i = retourne_departs(g,offsets);
+					
 				//affiche_etoile(g);
 				//printf("TMAX = %d\n",tmax);
 				//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
@@ -773,7 +673,7 @@ void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int 
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
 
-					ressp = simons_periodique(g,taille_paquets,tmax,periode,mode);
+					ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
 
 					if(ressp != -2)
 					{	
@@ -793,6 +693,8 @@ void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int 
 		
 				//printf("-----------------------------------------\n");
 				libere_matrice(g);
+				free(m_i);
+				free(offsets);
 			}
 			     fprintf(F,"%f %f \n",20000/(float)periode*100,sp/nb_simuls*100);
    		    fprintf(stdout,"%f %f \n",20000/(float)periode*100,sp/nb_simuls*100);
