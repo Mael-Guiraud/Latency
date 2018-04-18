@@ -1442,7 +1442,7 @@ int decaler_release(int * release, int* deadline, int periode, int premier,int n
 	return 1;
 }
 
-int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
+int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int mode)
 {	
 	
 
@@ -1454,7 +1454,9 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
     }
 
 	int nbr_route = g.N/2;
-	
+	int* offsets;
+	int* m_i;
+	int permutation[nbr_route];
 	int Dl[nbr_route];
 	int w_i[nbr_route];
 	int fin[nbr_route];
@@ -1468,7 +1470,14 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 	Ensemble * ens;
 	Ensemble * a_free;
 	int maximum;
-	
+	for(int i=0;i<nbr_route;i++)
+	{
+		permutation[i] = i;
+	}
+	fisher_yates(permutation,nbr_route);
+	offsets = retourne_offset(g, taille_paquet, permutation,mode,periode);
+	m_i = retourne_departs(g,offsets);
+
 	for(int premier=0;premier<nbr_route;premier++)
 	{
 		//printf("---------------\n");
@@ -1557,7 +1566,8 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 
 		if(maximum<=TMAX)
 		{
-
+			free(m_i);
+			free(offsets);
 			return maximum;
 		}
 		else
@@ -1569,6 +1579,8 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		
 
 	}
+	free(m_i);
+	free(offsets);
 
 	return -1;
 }
@@ -1741,7 +1753,7 @@ int rec_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int pr
 }
 
 
-int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
+int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int mode)
 {	
 	if (!(g.N % 2))
     {
@@ -1750,9 +1762,18 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
     }
 
 	int nbr_route = g.N/2;
+	int* offsets;
+	int* m_i;
+	int permutation[nbr_route];
 	int res;
+	for(int i=0;i<nbr_route;i++)
+	{
+		permutation[i] = i;
+	}
+	fisher_yates(permutation,nbr_route);
+	offsets = retourne_offset(g, taille_paquet, permutation,mode,periode);
+	m_i = retourne_departs(g,offsets);
 
-	
 
 	// On cherche le nombre de routes avec la deadline qui sort de p
 	int Dl[nbr_route];
@@ -1827,12 +1848,15 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 
 		if(res!= -1)
 		{
+			free(m_i);
+			free(offsets);
 			return res;
 		}
 		
 				
 	}
-
+	free(m_i);
+	free(offsets);
 
 	return -1;
 }
