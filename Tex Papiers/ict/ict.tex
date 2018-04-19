@@ -106,38 +106,40 @@ several additional algorithms, the proofs of all propositions and more experimen
   \subsection{Network modeling}
   
 
-The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
+The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u_i,u_{i+1})$ in $A$ is labeled by an integer weight $\Omega(u_i,u_{i+1})$ which represents the time taken by a message to go from $u_i$ to $u_{i+1}$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
 We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
 The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
 
-   In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
-      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. 
+   In the context of cloud-RAN applications, we need to send a message from an RRH $u_0$ to a BBU $u_k$ and then 
+      we must send the answer from $u_k$ back to $u_0$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u_0$ and last vertex $u_k$, the backward route $\rho(r) \in B$ has first vertex $u_k$ and last vertex $u_0$. 
        
 
    \subsection{Messages dynamic}
       
       In the process we study, a message is sent on each route at each period, denoted by $P$.
-      Let $r$ be a route, if a message is sent at time $m$ from $s$ the first vertex of $r$ then it will arrive at vertex $v$ in $r$ at time $m + \lambda(v,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [0,P-1]$, 
-      then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $v$ in $r$ is $t(v,r) = m + \lambda(v,r)\mod P$. 
+      Let $r$ be a route, if a message is sent at time $m$ from $u_0$ the first vertex of $r$ then it will arrive at vertex $u_i$ in $r$ at time $m + \lambda(u_i,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [0,P-1]$, 
+      then it goes through the same arc at time $t+jP$ for all positive integers $j$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $u_i$ in $r$ is $t(u_i,r) = m + \lambda(u_i,r)\mod P$. 
       
       A message usually cannot be transported in a single time slot. We denote by $\tau$ the number 
-      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(v,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $v$ in a period $P$, that is $[t(v,r)]_{P,\tau} = \{t(v,r) + k \mod P \mid 0 \leq k < \tau \}$. 
+      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(u_i,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $u_i$ in a period $P$, that is $[t(u_i,r)]_{P,\tau} = \{t(u_i,r) + j \mod P \mid 0 \leq j < \tau \}$. 
 %       Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
       Let $r_1$ and $r_2$ be two routes, on which messages are sent at time $m_1$ and $m_2$ in their first vertex.
-      We say that the two routes have a {\bf collision} if they share an arc $(v,w)$ and $[t(v,r_{1})]_{P,\tau} \cap [t(v,r_{2})]_{P,\tau} \neq \emptyset$.
+      We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(u,r_{1})]_{P,\tau} \cap [t(u,r_{2})]_{P,\tau} \neq \emptyset$.
       
          A {\bf $(P,\tau)$-periodic assignment} of a routed network $(G,\cal R)$ is a function that associates to each route 
          $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$.  In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
                      
                      Let us give an interpretation of a $(P,\tau)$-periodic assignment of $(G,{\cal R})$ a symmetric routed network, so that it represents the sending of a message and of its answer.
-	First a message is sent at $u$, through the route $r \in F$, at time $m_r$.
-      This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. It is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise.
+	First a message is sent at $u_0$, through the route $r \in F$, at time $m_r$.
+      This message is received by $u_k$, i.e., the last vertex of $r$ at time $t(u_k,r)$. The answer is then sent back to $u_0$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(u_k,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(u_k,r)$ if $m_{\rho(r)} > t(u_k,r)$ and $w_r = m_{\rho(r)} + P - t(u_k,r)$ otherwise. Fig~\ref{fig:assignment} illustrates the messages dynamic in both the BBU and the RRH.
  
      \begin{figure}[h]
+   
       \begin{center}
       \includegraphics[width=0.47\textwidth]{rrh.pdf}
-      \end{center}
-      \caption{The process defined by a $(P,\tau)$-periodic assignment}
+     
+      \caption{The process defined by a $(P,\tau)$-periodic assignment}  \label{fig:assignment}
+       \end{center}
       \end{figure}
       
 %          Note that, in the process we describe, we do not take into account time the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
@@ -194,13 +196,13 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
   \node[draw,circle] (ct) at (5, 2) {$c_t$}; 
 
   
-  \Edge[label = $\omega(s_1\,c_s)$](s1)(cs)
-  \Edge[label = $\omega(...)$](s2)(cs)
-  \Edge[label = $\omega(...)$](s3)(cs)
+  \Edge[label = $\Omega(s_1\,c_s)$](s1)(cs)
+  \Edge[label = $\Omega(...)$](s2)(cs)
+  \Edge[label = $\Omega(...)$](s3)(cs)
   
-  \Edge[label = $\omega(...)$](ct)(t1)
-  \Edge[label = $\omega(...)$](ct)(t2)
-  \Edge[label = $\omega(...)$](ct)(t3)
+  \Edge[label = $\Omega(...)$](ct)(t1)
+  \Edge[label = $\Omega(...)$](ct)(t2)
+  \Edge[label = $\Omega(...)$](ct)(t3)
   
   \Edge(cs)(ct)
 
@@ -208,12 +210,12 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
 \end{tikzpicture}
 }
 
-  \caption{A star routed network}
+  \caption{A star routed network}  \label{fig:star_routed_network}
 
   \end{center}
 
 
-  \label{fig:star_routed_network}
+
 
   \end{figure}
  	

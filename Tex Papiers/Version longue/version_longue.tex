@@ -110,29 +110,32 @@ Either the aim is to minimize the number of processors on which the periodic tas
 
 We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
+
   \subsection{Network modeling}
   
 
-The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
-We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network. The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
+The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u_i,u_{i+1})$ in $A$ is labeled by an integer weight $\Omega(u_i,u_{i+1})$ which represents the time taken by a message to go from $u_i$ to $u_{i+1}$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
+We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
+The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
+
 
    \subsection{Messages dynamic}
       
       In the process we study, a message is sent on each route at each period, denoted by $P$.
-      Let $r$ be a route, if a message is sent at time $m$ from $s$ the first vertex of $r$ then it will arrive at vertex $v$ in $r$ at time $m + \lambda(v,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [P]$, 
-      then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $v$ in $r$ is $t(v,r) = m + \lambda(v,r)\mod P$. 
+      Let $r$ be a route, if a message is sent at time $m$ from $u_0$ the first vertex of $r$ then it will arrive at vertex $u_k$ in $r$ at time $m + \lambda(u_k,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [P]$, 
+      then it goes through the same arc at time $t+jP$ for all positive integers $j$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $u_k$ in $r$ is $t(u_k,r) = m + \lambda(u_k,r)\mod P$. 
       
       A message usually cannot be transported in a single time slot. We denote by $\tau$ the number 
-      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(v,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $v$ in a period $P$, that is $[t(v,r)]_{P,\tau} = \{t(v,r) + k \mod P \mid 0 \leq k < \tau \}$.
+      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(u_i,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $u_i$ in a period $P$, that is $[t(u_i,r)]_{P,\tau} = \{t(u_i,r) + k \mod P \mid 0 \leq k < \tau \}$.
 %       Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
       Let $r_1$ and $r_2$ be two routes, on which messages are sent at time $m_1$ and $m_2$ in their first vertex.
-      We say that the two routes have a {\bf collision} if they share an arc $(v,w)$ and $[t(v,r_{1})]_{P,\tau} \cap [t(v,r_{2})]_{P,\tau} \neq \emptyset$.
+      We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(u,r_{1})]_{P,\tau} \cap [t(u,r_{2})]_{P,\tau} \neq \emptyset$.
       
          A {\bf $(P,\tau)$-periodic assignment} of a routed network $(G,\cal R)$ is a function that associates to each route 
          $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$. In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
 	 
       As an example of a $(2,1)$-periodic assignment, let us consider a routed network 
-      where all pairs of routes intersect at a different arc. It is easy to design such a network and an example is given in Figure~\ref{fig:example}. We set $\tau = 1$ and the weights are chosen so that if $r_{i}$ and $r_{j}$ have $v$ as first common vertex then we have $\lambda(v,r_{i}) - \lambda(v,r_{j})=1$. There is a $(2,1)$-periodic assignment by setting all $m_{i}$ to $0$.
+      where all pairs of routes intersect at a different arc. It is easy to design such a network and an example is given in Figure~\ref{fig:example}. We set $\tau = 1$ and the weights are chosen so that if $r_{i}$ and $r_{j}$ have $u$ as first common vertex then we have $\lambda(u,r_{i}) - \lambda(u,r_{j})=1$. There is a $(2,1)$-periodic assignment by setting all $m_{i}$ to $0$.
 
   
       \begin{figure}[ht]
@@ -227,14 +230,14 @@ We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf ro
       
       \subsection{Periodic assignment for low latency}
       
-      In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
-      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to \emph{bidirectional links} in the networks, but we need not to enforce this property.
+      In the context of cloud-RAN applications, we need to send a message from an RRH $u_0$ to a BBU $u_k$ and then 
+      we must send the answer from $u_k$ back to $u_0$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u_0$ and last vertex $u_k$, the backward route $\rho(r) \in B$ has first vertex $u_k$ and last vertex $u_0$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to \emph{bidirectional links} in the networks, but we need not to enforce this property.
          
       We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
-      This assignment represents the following process: first a message is sent at $u$, through the route $r \in F$, at time $m_r$.
+      This assignment represents the following process: first a message is sent at $u_0$, through the route $r \in F$, at time $m_r$.
        
  
-      This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. It is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise.
+      This message is received by $u_k$, i.e., the last vertex of $r$ at time $t(u_k,r)$. An answer is then sent back to $u_0$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(u_k,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(u_k,r)$ if $m_{\rho(r)} > t(u_k,r)$ and $w_r = m_{\rho(r)} + P - t(u_k,r)$ otherwise.
  
      \begin{figure}
       \begin{center}
@@ -269,7 +272,7 @@ We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf ro
     \hline
      $(G,\cal R)$ & Routed network \\
      \hline
-      $\omega(u,v)$ & Weight of the arc $(u,v) \in A$ \\
+      $\Omega(u,v)$ & Weight of the arc $(u_i,u_{i+1}) \in A$ \\
       \hline
       $\lambda(u_i,r)$ & Latency of the vertex $u_i$ in $r$\\
          \hline
@@ -476,13 +479,13 @@ In particular, this reduction shows that even with small maximal load, the minim
   \node[draw,circle] (ct) at (5, 2) {$c_t$}; 
 
   
-  \Edge[label = $\omega(s_1\,c_s)$](s1)(cs)
-  \Edge[label = $\omega(...)$](s2)(cs)
-  \Edge[label = $\omega(...)$](s3)(cs)
+  \Edge[label = $\Omega(s_1\,c_s)$](s1)(cs)
+  \Edge[label = $\Omega(...)$](s2)(cs)
+  \Edge[label = $\Omega(...)$](s3)(cs)
   
-  \Edge[label = $\omega(...)$](ct)(t1)
-  \Edge[label = $\omega(...)$](ct)(t2)
-  \Edge[label = $\omega(...)$](ct)(t3)
+  \Edge[label = $\Omega(...)$](ct)(t1)
+  \Edge[label = $\Omega(...)$](ct)(t2)
+  \Edge[label = $\Omega(...)$](ct)(t3)
   
   \Edge(cs)(ct)
 
@@ -503,9 +506,9 @@ In particular, this reduction shows that even with small maximal load, the minim
    $I' = ((G',{\cal R}), P, \tau , d')$ such that:
    \begin{itemize}
     \item $I \in \pall \Leftrightarrow I' \in \pall$
-    \item $\omega(c_s,c_t) = 0$
-    \item $\forall i<n, \, \omega(s_i,c_s) =0$
-    \item $\forall i<n, \, \omega(c_t,t_i) + \omega(t_i, c_t) < P$
+    \item $\Omega(c_s,c_t) = 0$
+    \item $\forall i<n, \, \Omega(s_i,c_s) =0$
+    \item $\forall i<n, \, \Omega(c_t,t_i) + \Omega(t_i, c_t) < P$
    \end{itemize}
   \end{proposition}
 
@@ -517,12 +520,12 @@ In particular, this reduction shows that even with small maximal load, the minim
   the satisfying assignments. If we subtract twice its weight to $d(r)$ for each $r$, and set its
   weight to zero in $G'$, then the constraints $PT(r) \leq d(r)$ will be the same in $I$ and $I'$.
       
-  In $G'$, the weights of the arcs $(s_i,c_s)$ is set to $0$ and $2\omega(s_i,c_s)$
+  In $G'$, the weights of the arcs $(s_i,c_s)$ is set to $0$ and $2\Omega(s_i,c_s)$
   is subtracted to $d(r_i)$. Hence the deadline constraints are the same in $I$ and $I'$.
-  There is a bijection between the assignments of $I$ and $I'$ by mapping $m_i$ to $m_i + \omega(s_i,c_s)$.
+  There is a bijection between the assignments of $I$ and $I'$ by mapping $m_i$ to $m_i + \Omega(s_i,c_s)$.
   
-  Finally, we can subtract $P/2$ to $\omega(c_t,t_i)$ and $\omega(t_i,c_t)$ if we subtract $P$ to $d(r_i)$.
-  The constraints on collisions of message are modulo $P$ ans thus do not change and the deadline constraints are left unchanged since the two modifications cancel out. Therefore to obtain $I'$, we remove $P/2$ enough time to each  $\omega(t_i,c_t)$ and $\omega(c_t,t_i)$ so that $\omega(c_t,t_i) + \omega(c_t,t_i)< P$. 
+  Finally, we can subtract $P/2$ to $\Omega(c_t,t_i)$ and $\Omega(t_i,c_t)$ if we subtract $P$ to $d(r_i)$.
+  The constraints on collisions of message are modulo $P$ ans thus do not change and the deadline constraints are left unchanged since the two modifications cancel out. Therefore to obtain $I'$, we remove $P/2$ enough time to each  $\Omega(t_i,c_t)$ and $\Omega(c_t,t_i)$ so that $\Omega(c_t,t_i) + \Omega(c_t,t_i)< P$. 
   \end{proof}
 
    From now on, we assume that all star routed networks have the properties given in Proposition~\ref{prop:canonical}.
@@ -728,7 +731,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
    
    In this section we compare the experimental results of the three presented algorithms.
       Notice that both Greedy algorithm and Shortest-Longest are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, exhaustive search finds a solution if it exists, but works in exponential time in $n$. We compare the performance of the algorithms in two different regimes: routes are either short with regard to $\tau$, or unrestricted.
-      From the C-RAN context we choose the following parameters: the number of routes is at most $n = 20$, $\tau$ is equal to $2,500$. It corresponds to slots of $64$ bits, messages of approximately $1$Mb and links of bandwidth $10$Gbps when $P$ is one millisecond.
+      From the C-RAN context we choose the following parameters: the number of routes is at most $n = 20$, $\tau$ is equal to $2,500$. It corresponds to slots of $64$ Bytes, messages of approximately $1$~Mbit and links of bandwidth $10$~Gb/s when $P$ is one millisecond.
        The code in C is available on the web page of one author\footnote{\url{http://www.prism.uvsq.fr/~ystr/textesmaths.html}} under a copyleft license. The code has been run on a standard $2016$ laptop, and most experiments run in a few dozen of seconds.
 
        In the experiments we try to understand how the algorithms work with regards to the load. To change the load, we fix the parameters $\tau$ and $n$ and modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
@@ -806,7 +809,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 	 \begin{theorem}\label{th:asym}
 	 Let $(G,{\cal R})$ be a star routed network with $n$ routes and let $P \geq n\tau$. Assume that the deadline function 
 	 satisfies for all $r\in {\cal R}$, $d(r) \leq \displaystyle{\max_{r' \in  {\cal R}} 2\lambda(r')}$. Then, there is a $(P,\tau)$-periodic assignment and it can be built in time $O(n)$.
-% 	 $d = \max_{i,j} |\omega(s_i,c_s) - \omega(s_j,c_s)$. There is a $(P,\tau)$-periodic assignment with process time $2\, \displaystyle{\max_{r\in {\cal R}} \lambda(r) + d}$ and it can be built in time $O(n)$.
+% 	 $d = \max_{i,j} |\Omega(s_i,c_s) - \Omega(s_j,c_s)$. There is a $(P,\tau)$-periodic assignment with process time $2\, \displaystyle{\max_{r\in {\cal R}} \lambda(r) + d}$ and it can be built in time $O(n)$.
 	 \end{theorem}
       \begin{proof}
       W.l.o.g. say that $r_0$ is the longest route. The idea is to set the waiting times of all routes so their messages behave exactly as the message of $r_0$.        
@@ -845,12 +848,12 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
    \subsection{Greedy scheduling of backward routes}
     
     Consider a forward route $r_i$, whose offset is $m_{r_i}$ and its backward route is $\rho(r_i)$.
-%     We define the {\bf deadline} of $\rho(r_i)$ as $m_{r_i} + T_{max} - \omega(s_i,c_s)$, that is the latest time at which the message can go out of $c_t$ such that $PT(r_i) \leq T_{max}$.
-    We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if $m_{i} +  \lambda(r_i) + \omega(c_t,t_i) \leq t$, that is the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ when $w_i = 0$.
+%     We define the {\bf deadline} of $\rho(r_i)$ as $m_{r_i} + T_{max} - \Omega(s_i,c_s)$, that is the latest time at which the message can go out of $c_t$ such that $PT(r_i) \leq T_{max}$.
+    We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if $m_{i} +  \lambda(r_i) + \Omega(c_t,t_i) \leq t$, that is the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ when $w_i = 0$.
     
     The first algorithm we propose to solve \bra is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
     backward routes. It prioritizes the routes with the earliest deadline to best satisfy the
-    constraint on the process time. Set $t=0$ and repeat the following: find $s \geq t$ the first time for which there is an eligible route with its offset not fixed. Then amongst all eligible routes at time $s$ choose the one with the smallest deadline, fix its offset to $s - \omega(c_t,t_i) $ and set $t = s + \tau$.
+    constraint on the process time. Set $t=0$ and repeat the following: find $s \geq t$ the first time for which there is an eligible route with its offset not fixed. Then amongst all eligible routes at time $s$ choose the one with the smallest deadline, fix its offset to $s - \Omega(c_t,t_i) $ and set $t = s + \tau$.
     
     This algorithm does not take into account the periodicity. Say that $t_0 = t(c_t,r)$ such that $r$ is the first backward route selected by the algorithm. Then if all backward routes $r$ are such that $t(c_t,r)$ is smaller than $t_0 + P - \tau$,
     by construction, there are no collisions on the central arc.
@@ -869,8 +872,8 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
         \STATE  free\_ intervals $\leftarrow$ [0,$P$] //{\em list of intervals of free slots}
    
      \FORALL{route $r_{i}$}
-%      \STATE  deadline[$r_i$]  $\leftarrow$  $m_{i} + T_{max} - \omega(s_i,c_s)$
-     \STATE  eligible\_time[$r_i$] $\leftarrow$ $m_{i} +  \lambda(r_i) + \omega(c_t,t_i)$
+%      \STATE  deadline[$r_i$]  $\leftarrow$  $m_{i} + T_{max} - \Omega(s_i,c_s)$
+     \STATE  eligible\_time[$r_i$] $\leftarrow$ $m_{i} +  \lambda(r_i) + \Omega(c_t,t_i)$
        \ENDFOR
        
        \WHILE{There is some non-assigned routes}
@@ -966,7 +969,7 @@ Conversely, any solution to the new instance is a solution to the original probl
 % 
 % offsets of the backward routes may be between $0$ and $12P$ but never larger. 
 % 
-% Remind that because of Proposition~\ref{prop:canonical}, $2\lambda(r_i) < P$ and $\omega(s_i,c_s) = 0$. Hence the release times cannot be larger than  $P-\tau$ and the message on a backward route $r_i$ goes through $c_t$ before $P-\tau +2\lambda(r_i) < 2P - \tau$.
+% Remind that because of Proposition~\ref{prop:canonical}, $2\lambda(r_i) < P$ and $\Omega(s_i,c_s) = 0$. Hence the release times cannot be larger than  $P-\tau$ and the message on a backward route $r_i$ goes through $c_t$ before $P-\tau +2\lambda(r_i) < 2P - \tau$.
 % If we subtract $P$ to the release time of the message and to its deadline it does not change the possible solutions, but the message goes through the central arc before $P - \tau$.
 
 The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
