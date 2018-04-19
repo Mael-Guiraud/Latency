@@ -1237,6 +1237,7 @@ int* retourne_offset(Graphe g, int taille_paquet, int* permutation,int mode,int 
 	assert(offsets=(int*)malloc(sizeof(int)*nbr_route));
 	int offset = 0;
 	int budget = periode - (nbr_route*taille_paquet);
+	
 	int inter_size = budget / nbr_route; 
 	int * random;
 
@@ -1516,6 +1517,10 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		{
 			w_i[i] = fin[i] +debut_periode_retour - release[i] ; 
 			//printf("[%d]%d = %d - %d\n",i,w_i[i],fin[i],arrivee[i]);
+			while(w_i[i]<0)
+			{
+				w_i[i] += periode;
+			}
 		}
 			
 
@@ -1666,11 +1671,15 @@ int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int
 	//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 	for(int i=0;i<nbr_route;i++)
 	{
-		//if(subset[i])
-		//	w_i[i] = fin[i] +debut_periode_retour - release[i] + periode ; 
+		if(subset[i])
+			w_i[i] = fin[i] +debut_periode_retour - release[i] + periode ; 
 		//else
 			w_i[i] = fin[i] +debut_periode_retour - release[i] ; 
 		//printf("[%d]%d = %d - %d\n",i,w_i[i],fin[i],arrivee[i]);
+		while(w_i[i]<0)
+		{
+			w_i[i] += periode;
+		}
 	}
 		
 

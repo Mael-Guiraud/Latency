@@ -56,7 +56,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	sucess_retour_PALL(8,2500,20000,3000,100,20000);
+	sucess_retour_PALL(20,2500,20000,3000,1000,50000,100);
 
 
 	/******************************************/
