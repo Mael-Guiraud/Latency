@@ -7,7 +7,7 @@
 
 
 
-void affiche_solution(Graphe g, int taille_paquet, int * mi, int * wi)
+void affiche_solution(Graphe g, int taille_paquet, int * mi, int * wi, int periode)
 {
 	int nbr_route = g.N /2;
 	int a,b;
@@ -29,8 +29,8 @@ void affiche_solution(Graphe g, int taille_paquet, int * mi, int * wi)
 	printf("\n----ALLER----\n");
 	for(int i=0;i<nbr_route;i++)
 	{
-		a= aller[ordrea[i]];
-		b= a+taille_paquet-1;
+		a= aller[ordrea[i]]%periode;
+		b= (a+taille_paquet-1)%periode;
 		printf("(%d[%d-%d]),",ordrea[i],a,b);
 	}
 	printf("\n------------\n");
@@ -39,8 +39,8 @@ void affiche_solution(Graphe g, int taille_paquet, int * mi, int * wi)
 	printf("\n----Retour----\n");
 	for(int i=0;i<nbr_route;i++)
 	{
-		a= retour[ordrer[i]];
-		b= a+taille_paquet-1;
+		a= retour[ordrer[i]]%periode;
+		b= (a+taille_paquet-1)%periode;
 		printf("(%d[%d-%d]),",ordrer[i],a,b);
 	}
 	printf("\n------------\n\n\n");

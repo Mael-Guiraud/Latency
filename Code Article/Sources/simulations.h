@@ -7,3 +7,4 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 void search_efficiency(int taille_message,int taille_routes, int nb_simuls);
 void marge_PALL_stochastique(int nb_routes,int taille_paquets,int taille_route, int nb_simuls, int periode_max);
 void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int nb_simuls, int pmin,int pmax);
+void stochastic_vs_PMLS(int nb_routes, int taille_paquets,int taille_route, int nb_simuls, int marge_max);

@@ -76,7 +76,7 @@ The experimental results show that even under full load, most of the time PMLS f
 
 \section{Introduction}
 
-Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU)\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any C-RAN architecture definition.} in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul} network between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
+Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU)\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any C-RAN architecture definition.} in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul} network between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
 Our aim is to operate a C-RAN on a low-cost shared switched network.
 The question we address is the following: is it possible to schedule messages such that there are no collisions to avoid latency caused by queuing delays? 
 Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
@@ -113,26 +113,26 @@ We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\
 
   \subsection{Network modeling}
   
-
-The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u_i,u_{i+1})$ in $A$ is labeled by an integer weight $\Omega(u_i,u_{i+1})$ which represents the time taken by a message to go from $u_i$ to $u_{i+1}$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{k}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_k,r)$.
+The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
 We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
 The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
 
-
    \subsection{Messages dynamic}
-      
-      In the process we study, a message is sent on each route at each period, denoted by $P$.
-      Let $r$ be a route, if a message is sent at time $m$ from $u_0$ the first vertex of $r$ then it will arrive at vertex $u_k$ in $r$ at time $m + \lambda(u_k,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [P]$, 
-      then it goes through the same arc at time $t+jP$ for all positive integers $j$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $u_k$ in $r$ is $t(u_k,r) = m + \lambda(u_k,r)\mod P$. 
+	 
+    Time is discretized, hence the unit of all time values is a slot, the time needed to transmit a minimal unit of data over the network. The weight of an arc is also expressed in slots, it is the time needed by a message to go through this arc.
+        In the process we study, a message is sent on each route at each period, denoted by $P$.
+      Let $r=(u_0,\dots,u_l)$ be a route, if a message is sent at time $m$ from $u_0$ the first vertex of $r$ then it will arrive at vertex $u_i$ in $r$ at time $m + \lambda(u_i,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [0,P-1]$, 
+      then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $u_i$ in $r$ is $t(u_i,r) = m + \lambda(u_i,r)\mod P$. 
       
       A message usually cannot be transported in a single time slot. We denote by $\tau$ the number 
-      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(u_i,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $u_i$ in a period $P$, that is $[t(u_i,r)]_{P,\tau} = \{t(u_i,r) + k \mod P \mid 0 \leq k < \tau \}$.
+      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(u,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $u$ in a period $P$, that is $[t(u,r)]_{P,\tau} = \{t(u,r) + i \mod P \mid 0 \leq i < \tau \}$. 
 %       Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
       Let $r_1$ and $r_2$ be two routes, on which messages are sent at time $m_1$ and $m_2$ in their first vertex.
       We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(u,r_{1})]_{P,\tau} \cap [t(u,r_{2})]_{P,\tau} \neq \emptyset$.
       
          A {\bf $(P,\tau)$-periodic assignment} of a routed network $(G,\cal R)$ is a function that associates to each route 
-         $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$. In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
+         $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$.  In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
+	 
 	 
       As an example of a $(2,1)$-periodic assignment, let us consider a routed network 
       where all pairs of routes intersect at a different arc. It is easy to design such a network and an example is given in Figure~\ref{fig:example}. We set $\tau = 1$ and the weights are chosen so that if $r_{i}$ and $r_{j}$ have $u$ as first common vertex then we have $\lambda(u,r_{i}) - \lambda(u,r_{j})=1$. There is a $(2,1)$-periodic assignment by setting all $m_{i}$ to $0$.
@@ -230,14 +230,12 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       
       \subsection{Periodic assignment for low latency}
       
-      In the context of cloud-RAN applications, we need to send a message from an RRH $u_0$ to a BBU $u_k$ and then 
-      we must send the answer from $u_k$ back to $u_0$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u_0$ and last vertex $u_k$, the backward route $\rho(r) \in B$ has first vertex $u_k$ and last vertex $u_0$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to \emph{bidirectional links} in the networks, but we need not to enforce this property.
+   In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
+      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to \emph{bidirectional links} in the networks, but we need not to enforce this property.
          
       We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
-      This assignment represents the following process: first a message is sent at $u_0$, through the route $r \in F$, at time $m_r$.
-       
- 
-      This message is received by $u_k$, i.e., the last vertex of $r$ at time $t(u_k,r)$. An answer is then sent back to $u_0$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(u_k,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(u_k,r)$ if $m_{\rho(r)} > t(u_k,r)$ and $w_r = m_{\rho(r)} + P - t(u_k,r)$ otherwise.
+      This assignment represents the following process: First a message is sent at $u$, through the route $r \in F$, at time $m_r$.
+      This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. The answer is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise. 
  
      \begin{figure}
       \begin{center}
@@ -246,7 +244,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       \caption{Periodic process}
       \end{figure}
       
-      Note that, in the process we decribe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
+      Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
       The whole process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(r)+ w_r+\lambda(r)$.      
       In the process time, we count the time between the time the first slot of the message is emitted and the first time at which the first slot of the message comes back. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time.
       We chose the first definition which is slightly simpler since the choice of definition does not change the problems we consider in the rest of the article, assuming all messages are of size $\tau$. 
@@ -272,7 +270,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
     \hline
      $(G,\cal R)$ & Routed network \\
      \hline
-      $\Omega(u,v)$ & Weight of the arc $(u_i,u_{i+1}) \in A$ \\
+      $\Omega(u,v)$ & Weight of the arc $(u,v) \in A$ \\
       \hline
       $\lambda(u_i,r)$ & Latency of the vertex $u_i$ in $r$\\
          \hline
@@ -731,7 +729,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
    
    In this section we compare the experimental results of the three presented algorithms.
       Notice that both Greedy algorithm and Shortest-Longest are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, exhaustive search finds a solution if it exists, but works in exponential time in $n$. We compare the performance of the algorithms in two different regimes: routes are either short with regard to $\tau$, or unrestricted.
-      From the C-RAN context we choose the following parameters: the number of routes is at most $n = 20$, $\tau$ is equal to $2,500$. It corresponds to slots of $64$ Bytes, messages of approximately $1$~Mbit and links of bandwidth $10$~Gb/s when $P$ is one millisecond.
+      From the C-RAN context we choose the following parameters: the number of routes is at most $n = 20$, $\tau$ is equal to $2,500$. It corresponds to slots of $64$ Bytes, messages of approximately $1$~Mbit and links of bandwidth $10$~Gbit/s when $P$ is one millisecond ($19531$ slots). 
        The code in C is available on the web page of one author\footnote{\url{http://www.prism.uvsq.fr/~ystr/textesmaths.html}} under a copyleft license. The code has been run on a standard $2016$ laptop, and most experiments run in a few dozen of seconds.
 
        In the experiments we try to understand how the algorithms work with regards to the load. To change the load, we fix the parameters $\tau$ and $n$ and modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
@@ -1056,7 +1054,7 @@ Now remark that the construction of $S$ depends on the choice of the order of th
 %      \todo{ajouter l'algo FPT qui ameliore PMLS}
 
      The MLS algorithm performs poorly, worst than GD and PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
-     The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS algorithm finds a solution in more than $97\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $1,000$, which corresponds to about $0.05$ms of additional delay with the chosen parameters, we always find a solution. 
+     The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS algorithm finds a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $1,000$, which corresponds to about $0.05$ms of additional delay with the chosen parameters, we always find a solution. 
      
     Recall that the random order corresponds to the best of $1,000$ orders drawn uniformly which means that a computation can be up to $1,000$ time slower than for a fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. Up to now, we have chosen the number of random orders to be $1000$ arbitrarily.
     
@@ -1086,7 +1084,7 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
      Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. Remark that the process is not periodic, therefore we must measure the process time of each route over several periods if we want to compute its maximum. We choose to simulate it for $1,000$ periods and we have observed that the process time usually stabilizes after $10$ periods. The margin is defined as the maximum process time, computed as explained, minus twice the size of the longest route. 
 	    
      In Figure~\ref{fig:sto}, we represent the probability of success for 
-     statistical multiplexing and PMLS for different margin. The distribution is computed from $1000$ star routed networks drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
+     statistical multiplexing and PMLS for different margin. The success rates are computed from $10,000$ star routed networks for each margin, drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
      
 
     \begin{figure}
@@ -1099,8 +1097,8 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
      \end{figure}    
      
      The experiment clearly shows that statistical multiplexing does not ensure a minimal latency. 
-     The latency is extremely high when the load is high, with a margin of about $10,000$ for the worst $10\%$ which corresponds to half the period, that is $0.5$ms. Even when the network is lightly loaded, $20\%$ of the instances have a margin of more than $2,000$. On the other hand, PMLS finds an assignment with margin $0$ in a highly loaded network $97\%$ of the time! 
-     For each $1000$ slots of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.     
+     The latency is extremely high when the load is high, with a margin of about $10,000$ for the worst $10\%$ which corresponds to half the period, that is $0.5$ms. Even when the network is lightly loaded, $20\%$ of the instances have a margin of more than $2,000$. On the other hand, PMLS finds an assignment with margin $0$ in a highly loaded network $99\%$ of the time! 
+     For each $1,000$ slots of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.     
      
  \section{Conclusion}
 In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in 

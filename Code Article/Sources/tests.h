@@ -1,6 +1,6 @@
 
 
-void affiche_solution(Graphe g, int taille_paquet, int * mi, int * wi);
+void affiche_solution(Graphe g, int taille_paquet, int * mi, int * wi,int periode);
 
 void affiche_etoile(Graphe g);
 void affiche_periode(int *p, int periode);

@@ -1237,7 +1237,7 @@ int* retourne_offset(Graphe g, int taille_paquet, int* permutation,int mode,int 
 	assert(offsets=(int*)malloc(sizeof(int)*nbr_route));
 	int offset = 0;
 	int budget = periode - (nbr_route*taille_paquet);
-	
+
 	int inter_size = budget / nbr_route; 
 	int * random;
 
@@ -1417,30 +1417,38 @@ int* normaliser_instance(Graphe g, int periode)
 	return instance;
 
 }
-int decaler_release(int * release, int* deadline, int periode, int premier,int nbr_route,int taille_paquet)
+int mod(int a, int b)
+{
+    int r = a % b;
+    return r < 0 ? r + b : r;
+}
+void decaler_release(int * release, int* deadline, int periode, int premier,int nbr_route,int taille_paquet)
 {
 	int releasepremier=release[premier];
 	
 
 	for(int i=0;i<nbr_route;i++)
 	{
+		//printf("Pour la route %d [%d;%d]\n",i,release[i],deadline[i]);
 		release[i] -= releasepremier;
 		deadline[i] -= releasepremier;
-		if(deadline[i] < 0)
-			return -1;
-		if(release[i] < 0)
+		//printf("apres : %d %d\n",release[i],deadline[i]);
+		while(release[i] < 0)
 		{
-			release[i] = 0;
+			//printf("Ajout de periode \n");
+			release[i] += periode;
+			deadline[i] += periode;
+			//printf(" %d %d\n",release[i],deadline[i]);
 		}
-		if((deadline[i] - release[i])< taille_paquet )
-			return -1;
-		while(release[i] > periode)
-		{
-			release[i] -= periode;
-			deadline[i] -= periode;
-		} 
+		//printf("Derniere modif \n");
+		deadline[i] = deadline[i] - periode*(release[i]/periode);
+		release[i] = mod(release[i],periode);
+		
+		//printf("apres2 : %d %d\n",release[i],deadline[i]);
+
+		
 	}
-	return 1;
+	
 }
 
 int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
@@ -1472,7 +1480,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 	
 	for(int premier=0;premier<nbr_route;premier++)
 	{
-		//printf("---------------\n");
+		//printf("Premier = %d \n",premier);
 		for(int i=0;i<nbr_route;i++)
 		{
 			Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
@@ -1481,11 +1489,18 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 			deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
 		}
 		debut_periode_retour = arrivee[premier];
-		if(decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet) == -1)
-			continue;
+		decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
+		for(int k=0;k<nbr_route;k++)
+		{
+			if(arrivee[k] > (periode -taille_paquet))
+			{
+				arrivee[k]=0;
+				deadline[k] -= periode;
+			}
+		}
 		date=arrivee[premier];
-
-
+	//	printf("Release \n");affiche_tab(arrivee,nbr_route);printf("\n");
+	//	printf("Deadline \n");affiche_tab(deadline,nbr_route);printf("\n");
 		elems = init_element();
 		deadline_periode = arrivee[premier] + periode;
 		//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
@@ -1501,6 +1516,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 
 
 		}
+
 		ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
 		if(ens == NULL)continue;
 		/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
@@ -1511,7 +1527,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		
 		//affiche_ensemble(ens);printf("\n");
 		transforme_waiting(ens,fin);
-
+		//affiche_tab(fin,nbr_route);
 		//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 		for(int i=0;i<nbr_route;i++)
 		{
@@ -1521,8 +1537,9 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 			{
 				w_i[i] += periode;
 			}
+			w_i[i] = w_i[i]%periode;
 		}
-			
+		//affiche_tab(w_i,nbr_route);
 
 		libereens(a_free);
 		freeelems(elems);
@@ -1537,7 +1554,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		printf("Debut%d\n",debut_periode_retour);
 */
 		//printf("simons wi\n");affiche_tab(w_i,nbr_route);
-		//affiche_solution(g,taille_paquet,m_i,w_i);
+		//affiche_solution(g,taille_paquet,m_i,w_i,periode);
 		/*
 			int retour[nbr_route];
 			for(int i=0;i<nbr_route;i++)
@@ -1615,8 +1632,8 @@ int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int
 		deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
 	}
 	debut_periode_retour = arrivee[premier];
-	if(decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet) == -1)
-		return -1;
+	decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
+		
 	
 	/*printf("____ \n");
 	affiche_tab(arrivee,nbr_route);
@@ -1671,22 +1688,21 @@ int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int
 	//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 	for(int i=0;i<nbr_route;i++)
 	{
-		if(subset[i])
-			w_i[i] = fin[i] +debut_periode_retour - release[i] + periode ; 
-		//else
+
 			w_i[i] = fin[i] +debut_periode_retour - release[i] ; 
 		//printf("[%d]%d = %d - %d\n",i,w_i[i],fin[i],arrivee[i]);
 		while(w_i[i]<0)
 		{
 			w_i[i] += periode;
 		}
+		w_i[i] = w_i[i]%periode;
 	}
 		
 
 	libereens(a_free);
 	freeelems(elems);
 
-	//affiche_tab(m_i,nbr_route);
+	//affiche_tab(w_i,nbr_route);
 	//printf("simons wi\n");affiche_tab(w_i,nbr_route);
 	//affiche_solution(g,taille_paquet,m_i,w_i);
 	/*
@@ -1783,10 +1799,8 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 			arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
 			deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
 		}
-		if(decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet) == -1)
-		{
-			continue;
-		}
+		decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
+	
 		
 		
 		
