@@ -294,7 +294,10 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
     The first algorithm we propose to solve \pall is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
     backward routes. It prioritizes the routes with the earliest deadline to best satisfy the
     constraint on the process time. We call it \textbf{Greedy Deadline (GD)}. We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ with $w_i = 0$. For each time $t$, amongst all eligible routes at $t$, we choose $r$ with the smallest deadline and fix its offset to $m_r = t - \lambda(r)$.
-    This algorithm can fail since it does not take into account the periodicity.
+       This algorithm does not take into account the periodicity. Say that $t_0 = t(c_t,r)$ such that $r$ is the first backward route selected by the algorithm. Then if all backward routes $r$ are such that $t(c_t,r)$ is smaller than $t_0 + P - \tau$,
+    by construction, there are no collisions on the central arc.
+    However, if a route $r$ has a larger $t(c_t,r)$, since we should consider everything modulo $P$, 
+    it may collide with another backward route. Therefore we must adapt the greedy algorithm of the previous paragraph by finding $s \geq t$ the first time for which there is an eligible route with its offset not fixed and \emph{such that there are no collisions if a message go through the central arc at time $s$}. 
     
      The problem \pall is very similar to the following scheduling problem. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. When the running time is the same on all jobs, this problem can be solved in polynomial time~\cite{simons1978fast}. We use the polynomial time scheduling algorithm to solve \pall and we make some adjustments to take the periodicity into account: we run it once for each forward route $r$ and we fix $m_r$ so that the waiting time for this route is zero and we change the deadline of each route $r'$ to be less than $m_{r} + P$. To improve the chance of finding a solution, we change the value of $m_{r'}$ and $d(r')$ by adding the same multiple of $P$ to both of them so that $m_{r'}$ is in $[m_{r},m_{r} + P]$. This transformation does not change the original problem but avoid the instance to be rejected by the scheduling algorithm for trivial reason. For the same reasons, when  $m_{r'}$ is in $[m_{r} + P - \tau,m_{r} + P]$, we set $m_{r'}$ to $m_r$ and $d(r')$ to $d(r') - P$. The algorithm we obtain, when it succeeds always finds a correct periodic assignment and we call it {\bf Periodic Minimal Latency Scheduling (PMLS)}. In all our experiments, its misses a solution to the problem of finding offsets for backward routes when there is one on $0.1\%$ of the instances, which makes it almost optimal in practice.
 
@@ -308,7 +311,7 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
   
    
    To set the offsets of the forward routes, we draw random orders on these routes, so that their messages goes through 
-   the central arc in this order. If we have $n$ routes and draw the order given by the permutation $\sigma$ then we set $m_{i} = \sigma(i)\tau$. In the experiments, we draw $1000$ random orders and consider that the algorithm fixing the offsets of the backward routes succeeds when it succeeds for one of the random orders. We also tried several other orders for the routes: ordered from the shortest to the longest route,  from the longest to the shortest route, from the shortest to the longest arc $(c_t,t_i)$,or  from the longest to the shortest $(c_t,t_i)$. After some simulations, it clearly appeared that drawing some random orders is gives by far some better results on the success rate of our algorithms. 
+   the central arc in this order. If we have $n$ routes and draw the order given by the permutation $\sigma$ then we set $m_{i} = \sigma(i)\tau$. In the experiments, we draw $1000$ random orders and consider that the algorithm fixing the offsets of the backward routes succeeds when it succeeds for one of the random orders. We also looked at the behavior of several other orders for the routes: ordered from the shortest to the longest route,  from the longest to the shortest route, from the shortest to the longest arc $(c_t,t_i)$,or  from the longest to the shortest $(c_t,t_i)$. After some simulations, it clearly appeared that drawing some random orders is gives by far some better results on the success rate of our algorithms. 
       
      
     \begin{figure} 
@@ -348,6 +351,12 @@ Fig.~\ref{fig:success21000} shows that PMLS is better than GD since it finds a s
 In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in 
 a star shaped fronthaul network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Longest-Shortest policy) or when the load is less than $80\%$ (Exhaustive search of compact assignments).  
 When the load is higher, buffering is allowed in the BBUs and we propose the algorithm PMLS which  finds a deterministic communication scheme with almost no additional latency. Our deterministic approach is vastly superior to the classical statistical multiplexing. This emphasizes that deterministic sources of traffic are always best dealt with in a deterministic manner.  
+
+  We plan to generalize our study of the \pall problem to other common fronthaul topologies,
+   such as caterpillar, trees, cycles or bounded treewidth graphs. The cycles in particular are 
+   different since their forward and backward routes are not symmetric. 
+   We would like to design an FPT algorithm for \pall which is as efficient as the one for \pazl 
+   and prove that both problems are $\NP$-hard.
 
  \paragraph*{Acknowledgments} The authors thank Christian Cad\'er\'e and David Auger for the friendly discussions
  they had on the subject and their insightful remarks. This work is partially supported by the french ANR project N-GREEN.
