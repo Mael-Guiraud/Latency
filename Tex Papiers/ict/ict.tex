@@ -246,7 +246,7 @@ The process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(
     There is a $(P,\tau)$-periodic assignment of a star routed network with waiting times $0$ if the load is less than $1/3$ and it can be found in time $O(n^2)$.
     \end{proposition}
     
-Finally, there is an algorithm which finds an assignment when it exists, in fixed parameter tractable time ($\FPT$) with parameter $n$ the number of routes, that is the algorithm is exponential in $n$ only and linear in the other parameters. This is justified since $n$ is small in practice (from $10$ to $20$) and the other parameters such as $P$, $\tau$ or the weights are large. We call this algorithm \textbf{Exhaustive Search of Compact Assignments}. The algorithm is based on a canonical form for assignments with waiting time zero, we call this assignments compact which roughly means that no message can be send before in a forward route without moving the others. The number of compact assignments is bounded by $n!$, hence we enumerate them in reasonable time when $n$ is small. To make it more efficient in practice, we make cuts in the search tree used to explore all compact assignments, see~\cite{versionlongue} for more details. 
+Finally, there is an algorithm which finds an assignment when it exists, in fixed parameter tractable time ($\FPT$) with parameter $n$ the number of routes, that is the algorithm is exponential in $n$ only and linear in the other parameters. This is justified since $n$ is small in practice (from $10$ to $20$) and the other parameters such as $P$, $\tau$ or the weights are large. We call this algorithm \textbf{Exhaustive Search of Compact Assignments}. The algorithm is based on a canonical form for assignments with waiting time zero. We call such an assignment compact which roughly means that no message can be sent a slot before in a forward route without collisions. The number of compact assignments is bounded by $n!$, hence we enumerate them in reasonable time when $n$ is small. To make it more efficient in practice, we make cuts in the search tree used to explore all compact assignments, see~\cite{versionlongue} for more details. 
 
    \subsection{Experimental evaluation}\label{sec:exp_PAZL}
    
@@ -258,7 +258,7 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
       \begin{center}
 	 \includegraphics[width=0.47\textwidth]{periode_petite.pdf}
       \end{center}
-      \caption{Maximal load (averaged over $1,000$ random instances) for which an assignment is found}\label{fig:short}
+      \caption{Maximal possible load (averaged over $1,000$ random instances) for which an assignment is found}\label{fig:short}
       \end{figure}
       
       
@@ -271,7 +271,7 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
       \includegraphics[width=0.47\textwidth]{echec_longues.pdf}
       \end{center}
        
-      \caption{Success rate for $8$ routes over $1,000$ random instances}\label{fig:long}
+      \caption{Average success rate of the three algorithms computed from $1,000$ random instances with $8$ routes}\label{fig:long}
      \end{figure}
      
      As shown in Fig.~\ref{fig:long}, on long routes, the performances of Shortest-Longest are abysmal since the difference between the length of the routes is large.
@@ -294,12 +294,10 @@ Finally, there is an algorithm which finds an assignment when it exists, in fixe
     The first algorithm we propose to solve \pall is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
     backward routes. It prioritizes the routes with the earliest deadline to best satisfy the
     constraint on the process time. We call it \textbf{Greedy Deadline (GD)}. We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ with $w_i = 0$. For each time $t$, amongst all eligible routes at $t$, we choose $r$ with the smallest deadline and fix its offset to $m_r = t - \lambda(r)$.
-       This algorithm does not take into account the periodicity. Say that $t_0 = t(c_t,r)$ such that $r$ is the first backward route selected by the algorithm. Then if all backward routes $r$ are such that $t(c_t,r)$ is smaller than $t_0 + P - \tau$,
-    by construction, there are no collisions on the central arc.
-    However, if a route $r$ has a larger $t(c_t,r)$, since we should consider everything modulo $P$, 
-    it may collide with another backward route. Therefore we must adapt the greedy algorithm of the previous paragraph by finding $s \geq t$ the first time for which there is an eligible route with its offset not fixed and \emph{such that there are no collisions if a message go through the central arc at time $s$}. 
+       
+       We must improve this algorithm since it does not take into account the periodicity. Say that $t_0 = t(c_t,r)$ such that $r$ is the first backward route selected by the algorithm. Then if all backward routes $r$ are such that $t(c_t,r)$ is smaller than $t_0 + P - \tau$,  by construction, there are no collisions on the central arc.  However, if a route $r$ has a larger $t(c_t,r)$, since we must consider everything modulo $P$, it may collide with another backward route. Therefore we must adapt the greedy algorithm of the previous paragraph by finding $s \geq t$ the first time for which there is an eligible route with its offset not fixed and \emph{such that there are no collisions if a message go through the central arc at time $s$}. 
     
-     The problem \pall is very similar to the following scheduling problem. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. When the running time is the same on all jobs, this problem can be solved in polynomial time~\cite{simons1978fast}. We use the polynomial time scheduling algorithm to solve \pall and we make some adjustments to take the periodicity into account: we run it once for each forward route $r$ and we fix $m_r$ so that the waiting time for this route is zero and we change the deadline of each route $r'$ to be less than $m_{r} + P$. To improve the chance of finding a solution, we change the value of $m_{r'}$ and $d(r')$ by adding the same multiple of $P$ to both of them so that $m_{r'}$ is in $[m_{r},m_{r} + P]$. This transformation does not change the original problem but avoid the instance to be rejected by the scheduling algorithm for trivial reason. For the same reasons, when  $m_{r'}$ is in $[m_{r} + P - \tau,m_{r} + P]$, we set $m_{r'}$ to $m_r$ and $d(r')$ to $d(r') - P$. The algorithm we obtain, when it succeeds always finds a correct periodic assignment and we call it {\bf Periodic Minimal Latency Scheduling (PMLS)}. In all our experiments, its misses a solution to the problem of finding offsets for backward routes when there is one on $0.1\%$ of the instances, which makes it almost optimal in practice.
+     The problem \pall (with offsets of forward routes already fixed) is very similar to the following scheduling problem: Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. When the running time is the same on all jobs, this problem can be solved in polynomial time~\cite{simons1978fast}. We use the polynomial time scheduling algorithm to solve \pall and we make some adjustments to take the periodicity into account: we run it once for each forward route $r$ and we fix $m_r$ so that the waiting time for this route is zero and we change the deadline of each route $r'$ to be less than $m_{r} + P$. To improve the chance of finding a solution, we change the value of $m_{r'}$ and $d(r')$ by adding the same multiple of $P$ to both of them so that $m_{r'}$ is in $[m_{r},m_{r} + P]$. This transformation does not change the original problem but avoid the instance to be rejected by the scheduling algorithm for trivial reason. For the same reasons, when  $m_{r'}$ is in $[m_{r} + P - \tau,m_{r} + P]$, we set $m_{r'}$ to $m_r$ and $d(r')$ to $d(r') - P$. The algorithm we obtain, when it succeeds always finds a correct periodic assignment and we call it {\bf Periodic Minimal Latency Scheduling (PMLS)}. In all our experiments, its misses a solution to the problem of finding offsets for backward routes when there is one on $0.1\%$ of the instances, which makes it almost optimal in practice.
 
      
     \subsection{Experimental evaluation}
@@ -353,7 +351,7 @@ a star shaped fronthaul network. The first method uses no buffering and has no l
 When the load is higher, buffering is allowed in the BBUs and we propose the algorithm PMLS which  finds a deterministic communication scheme with almost no additional latency. Our deterministic approach is vastly superior to the classical statistical multiplexing. This emphasizes that deterministic sources of traffic are always best dealt with in a deterministic manner.  
 
   We plan to generalize our study of the \pall problem to other common fronthaul topologies,
-   such as caterpillar, trees, cycles or bounded treewidth graphs. The cycles in particular are 
+   such as caterpillar, trees or cycles. The cycles in particular are 
    different since their forward and backward routes are not symmetric. 
    We would like to design an FPT algorithm for \pall which is as efficient as the one for \pazl 
    and prove that both problems are $\NP$-hard.
