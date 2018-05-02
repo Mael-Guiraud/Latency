@@ -193,7 +193,7 @@ int premier_libre(int *periode_retour, int i,int taille_paquets, int periode)
 	return i;
 }
 
-int longest_etoile_periodique(Graphe g,int taille_paquets,int periode, int Tmax,int mode)
+int longest_etoile_periodique(Graphe g,int taille_paquets,int periode, int Tmax,int mode,int * offsets)
 {
 	if(!(g.N%2)){printf("Nombre de sommets impair, G n'est peut être pas une étoile\n");exit(5);}
 	int nb_routes = g.N/2;
@@ -219,35 +219,41 @@ int longest_etoile_periodique(Graphe g,int taille_paquets,int periode, int Tmax,
 		routes_retour[i]=g.matrice[nb_routes][i+nb_routes+1];
 	}
 
-
-
-	switch(mode)
-	{
-		case 1:
-			tri_bulles(routes,ordre,nb_routes);
-		break;
-		case 2:
-			tri_bulles_inverse(routes,ordre,nb_routes);
-		break;
-		case 3:
-			tri_bulles(routes_retour,ordre,nb_routes);
-		break;
-		case 4:
-			tri_bulles_inverse(routes_retour,ordre,nb_routes);
-		break;
-		default:
-			fisher_yates(ordre,nb_routes);
-		break;
+	if(offsets){
+		for(int i=0;i<nb_routes;i++)
+		{
+			m_i[i] = offsets[i];
+		}
 	}
-
-	m_i[ordre[0]]=0;
-	offset = taille_paquets+g.matrice[nb_routes][ordre[0]];
-	for(int i=1;i<nb_routes;i++)
+	else
 	{
-		m_i[ordre[i]]=offset-g.matrice[nb_routes][ordre[i]];
-		offset+=taille_paquets;
-	}
+		switch(mode)
+		{
+			case 1:
+				tri_bulles(routes,ordre,nb_routes);
+			break;
+			case 2:
+				tri_bulles_inverse(routes,ordre,nb_routes);
+			break;
+			case 3:
+				tri_bulles(routes_retour,ordre,nb_routes);
+			break;
+			case 4:
+				tri_bulles_inverse(routes_retour,ordre,nb_routes);
+			break;
+			default:
+				fisher_yates(ordre,nb_routes);
+			break;
+		}
 
+		m_i[ordre[0]]=0;
+		offset = taille_paquets+g.matrice[nb_routes][ordre[0]];
+		for(int i=1;i<nb_routes;i++)
+		{
+			m_i[ordre[i]]=offset-g.matrice[nb_routes][ordre[i]];
+			offset+=taille_paquets;
+		}
+	}
 
 
 

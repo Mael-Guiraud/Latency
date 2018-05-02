@@ -50,7 +50,7 @@
  
 
 \author[1]{Dominique Barth}
-\author[1]{Ma\"el Guiraud}
+\author[1,2]{Ma\"el Guiraud}
 % \author[1]{Christian Cad\'er\'e}
 % \author[2]{Brice Leclerc}
 % \author[2]{Olivier Marc\'e}
@@ -801,7 +801,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 		
 	Often in real networks, the length of the routes are not arbitrary and we may exploit that to solve \pall easily. For instance if all the weights on the arcs $(c_t,t_i)$ are the same, we can replace them all by $0$ and subtract this weight to the deadlines. It corresponds to a situation where all the BBUs are in the same data-center and have the same processing power. The assignment in that case is trivial, just send all messages so that they follow each other without gaps in the central arc. Since the arcs $(c_t,t_i)$ are of weight $0$, all messages will go through $(c_t,c_s)$ on their way back in the same order and thus do not collide. 
 	
-	Another possible assumption would be that all deadlines are sufficiently large, larger that the longest route.
+	Another possible assumption would be that all deadlines are sufficiently large, larger than the longest route.
 	It happens when all the arcs $(s_i,c_s)$ of the original star routed network are the same or almost the same.
 		
 	 \begin{theorem}\label{th:asym}
@@ -823,7 +823,9 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      
      We can decompose any algorithm solving \pall in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.   
      
-     In the following policies, the offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots between the end of a message on the central arc and the beginning of the next one. It is done to minimize the period needed to send the messages of the forward route.
+     \todo{j'ai un peu changé la phrase, (l'ancienne est en commentaire}
+     First, in order to minimize the period needed to send the messages of the forward route, we set the offsets of the forward routes so that all messages have no collisions on the central arc and such that there are no free slots between the end of a message on the central arc and the beginning of the next one.
+    % In the following policies, the offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots between the end of a message on the central arc and the beginning of the next one. It is done to minimize the period needed to send the messages of the forward route.
      The offsets of the forward routes are then defined by the order of the messages through the central arc. We propose to study the following orders. 
 	\begin{itemize}
 	 
@@ -831,14 +833,14 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 	 \item Shortest-Longest on Routes (SLR): Increasing order on the length of the routes. 
 	 \item Longest-Shortest on last Arc (LSA): Decreasing order on the length of the arcs $(c_t,t_i)$.
 	 \item Shortest-Longest on last Arc (SLA): Increasing order on the length of the arcs $(c_t,t_i)$. This sending order yields a $(P,\tau)$ periodic assignment in which all the $w_i = 0$, if the period is large enough (see proposition \ref{prop:SL}).
-	 \item Random: A random order of the routes.
+	 \item Random: A random order of the routes (RO).
 	\end{itemize}
 
 %    \todo{On peut commenter la partie suivante si on a pas fini}
-%    We also study another way to fix the offsets of the forward routes. Instead of packing all messages so that they follow each other
-%    in the central arc, we allow time between them. The order of the message is random and we consider two variations. 
-%    Either the time between two messages on the central arc is random and we call this policy Random Order and Random Spacing (RORS) or the space between two consecutive messages is always the same and we call this policy Random Order and Balanced Spacing (ROBS).
-% 	
+    We also study another way to fix the offsets of the forward routes. Instead of packing all messages so that they follow each other
+    in the central arc, we allow time between them. The order of the message is random and we consider two variations. 
+    Either the time between two messages on the central arc is random and we call this policy Random Order and Random Spacing (RORS) or the space between two consecutive messages is always the same and we call this policy Random Order and Balanced Spacing (ROBS).
+ 	
     We denote by \bra (backward routes assignment) the problem \pall where the offsets of the forward routes are also given as input.
     In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. The method to solve \bra are then combined with the proposed policies for fixing the offsets of the forward routes
     to solve \pall.  
@@ -973,7 +975,7 @@ Conversely, any solution to the new instance is a solution to the original probl
 The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
 \end{proof}
 
-The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases.
+The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases. Let us call this algorithm {\bf FPT-PMLS} for the rest of the article.
 
 
 \begin{theorem}\label{th:pallFPT}
@@ -1019,7 +1021,7 @@ Now remark that the construction of $S$ depends on the choice of the order of th
    We look at two different regimes, a medium load of $80\%$ and a high load of $95\%$.
    Considering smaller load is not relevant since we can solve the problem without waiting times as shown in Section~\ref{sec:exp_PAZL}. 
    
-   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the five kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks.  Note that for the random order, we compute $1000$ random orders and count it as a success as soon as there is a solution for one order. 
+   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the seven kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks.  Note that for RO, RORS and ROBS, we compute $1000$ random orders and count it as a success as soon as there is a solution for one order. Each random order drawn is tested on the three policies with random orders, if a solution has not been found yet.
 
 \begin{figure}[h] 
   \centering
@@ -1039,26 +1041,40 @@ Now remark that the construction of $S$ depends on the choice of the order of th
      
      According to our experiments, sending the messages from the shortest to the longest route or arc does not work well. It corresponds to the policy of Proposition~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending from the longest to the shortest route or arc works better and it seems that sorting the routes according to the length of the last arc rather than the route is better, at least in a loaded network. 
      
-     The random order is the best by far: with a load of $95\%$, there is a solution with margin $0$ most of the time. Note that, when disallowing waiting times, there were no instances with an assignment for these parameters (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying \pall rather than \pazl.
+     The random order is the best by far: with a load of $95\%$, there is a solution with margin $0$ most of the time. Also, the three random order policies seems to have similar performances, but the RO policy gives a bit more solutions than the two others ones, under high load and low margins. This is the reason why the following experiment on the performances of our algorithms to solve \bra will be computed with the RO policy.
+     \todo{Trouver une explications pour ca.}
+     Note that, when disallowing waiting times, there were no instances with an assignment for these parameters (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying \pall rather than \pazl.
      
-      We now want to compare the performances of the three different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms on high load. Moreover, we will use $1,000$ random orders for the first stage as it gives the best results. In Figure~\ref{fig:success21000}, we represent the success rate of the three algorithms with regards to the margin,  computed over $10,000$ random star routed networks and the same parameters as previously.
+      We now want to compare the performances of the four different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms on high load. Moreover, we will use $1,000$ random orders for the first stage as it gives the best results. In Figure~\ref{fig:success21000}, we represent the success rate of the three algorithms with regards to the margin,  computed over $10,000$ random star routed networks and the same parameters as previously.
      
     \begin{figure} [h] 
        \begin{center}
       \includegraphics[width=0.5\textwidth]{retour_21000.pdf}
       \end{center}
-      \caption{Success rate of GD, MLS and PMLS, $95\%$ load}
+      \caption{Success rate of GD, MLS, PMLS and FPT-PMLS, $95\%$ load}
      \label{fig:success21000}
      \end{figure}
      
 %      \todo{ajouter l'algo FPT qui ameliore PMLS}
 
-     The MLS algorithm performs poorly, worst than GD and PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
-     The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS algorithm finds a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $1,000$, which corresponds to about $0.05$ms of additional delay with the chosen parameters, we always find a solution. 
+     The MLS algorithm performs poorly, worst than GD, PMLS and FPT-PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
+     The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $600$, which corresponds to about $0.03$ms of additional delay with the chosen parameters, we always find a solution. 
+     Note that the PMLS and FPT-PMLS algorithm have the same success rate in our experiment. In facts, it appears that the FPT-PMLS algorithm have, most of the time, the same success rate than the PMLS algorithm, even with a load of $100\%$ and a margin of $0$. Since the improvement of FPT-PMLS is insignificant beside the PMLS performances, we investigate the computation time of the two algorithms.
+     Figure~\ref{fig:exec_time} shows the average computation time of the two algorithms during the previous experiment.
+     
+        \begin{figure} [h] 
+       \begin{center}
+      \includegraphics[width=0.5\textwidth]{time_exec.pdf}
+      \end{center}
+      \caption{Computation time of PMLS and FPT-PMLS}
+     \label{fig:exec_time}
+     \end{figure}
+
+	First, remark that the computation time of the two algorithm decrease until a margin of approximately  $1,000$ slots. Indeed, the more the algorithm fails, the higher the computation time is because the $1,000$ random orders have to be drawn before failing. Moreover, even when both of the two algorithms always succeed, the computation time of FPT-PMLS is about $10$ time higher that the computation time of the PMLS algorithm. Furthermore, when the FPT-PMLS algorithm could be able to find a solution that the PMLS algorithm would not find, i.e. on low margins, the computation time is $14$ time higher for the first algorithm. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm.
      
     Recall that the random order corresponds to the best of $1,000$ orders drawn uniformly which means that a computation can be up to $1,000$ time slower than for a fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. Up to now, we have chosen the number of random orders to be $1000$ arbitrarily.
     
-    We investigate the success rate of our algorithm with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The table of Figure~\ref{fig:randomdrawing} presents the average success rate for each number of sending orders, on $10,000$ instances, for GD and PMLS.
+    We investigate the success rate of our algorithm with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The table of Figure~\ref{fig:randomdrawing} presents the average success rate for each number of sending orders, on $10,000$ instances, for GD and PMLS. Since this experiment is already long on PMLS for $10^{4}$ and $10^{5}$ routes, we do not run it on FPT-PMLS.
          \begin{figure}[h] 
        \begin{center}
    \begin{tabularx}{0.5\textwidth}{|c|X|X|X|X|X|X|}
