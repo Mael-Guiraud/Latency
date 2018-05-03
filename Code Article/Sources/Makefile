@@ -11,14 +11,15 @@ CFLAGS = -fopenmp -c -g -std=c99 -Wall -O3
 
 DIRbin = bin/
 DIRdata = ../datas/
+DIRgraphes = ../datas/graphes/
 
-all: create_folder run
+all: create_folder run neato
 
 run : prog 
 	./prog
 
-prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o $(DIRbin)random_inters.o 
-	$(CC) -fopenmp -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o
+prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o $(DIRbin)random_inters.o $(DIRbin)graphes.o
+	$(CC) -fopenmp -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o $(DIRbin)graphes.o
 
 $(DIRbin)main.o: main.c
 	$(CC) $(CFLAGS) main.c -o $(DIRbin)main.o 
@@ -50,9 +51,16 @@ $(DIRbin)random.o: random.c
 $(DIRbin)random_inters.o: random_inters.c
 	$(CC) $(CFLAGS) random_inters.c -o $(DIRbin)random_inters.o
 
+$(DIRbin)graphes.o: graphes.c
+	$(CC) $(CFLAGS) graphes.c -o $(DIRbin)graphes.o
+
 create_folder:
 	mkdir -p $(DIRbin)
 	mkdir -p $(DIRdata)
+	mkdir -p $(DIRgraphes)
+	rm -f $(DIRgraphes)*
 
+neato:
+	./script_neato.sh
 clean:
 	rm -f $(DIRbin)*

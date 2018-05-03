@@ -15,6 +15,7 @@
 #include "operations.h"
 #include "tests.h"
 #include "random.h"
+#include "graphes.h"
 
 #define PARALLEL 1
 
@@ -314,7 +315,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 	int * m_i;
 	int * offsets;
 	int permutation[nb_routes];
-	int sp_found,fpt_found;
+	int sp_found,fpt_found,gp_found,s_found;
 	struct timeval tv1, tv2;
 	double timesp = 0.0;
 	double timefpt=0.0;
@@ -331,7 +332,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		timefpt=0.0;
 		
 
-		#pragma omp parallel for private(resgp,ress,ressp,resfpt,g,tmax,m_i,offsets,permutation,sp_found,fpt_found,tv1,tv2) if (PARALLEL) schedule (dynamic)
+		#pragma omp parallel for private(resgp,ress,ressp,resfpt,g,tmax,m_i,offsets,permutation,gp_found,s_found,sp_found,fpt_found,tv1,tv2) if (PARALLEL) schedule (dynamic)
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
@@ -343,45 +344,10 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 			//printf("TMAX = %d\n",tmax);
 			//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
 			
-			for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
-				{
-					resgp = longest_etoile_periodique(g,taille_paquets,periode,tmax,0,NULL);
-					//resgp = 1;
-					if(resgp != -2)
-					{	
-						if(resgp != -1)
-						{
-							
-							#pragma omp atomic
-								gp++;
 
-
-							break;
-						}
-						
-					}
-				}
 				
-						
-				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
-				{
-					
-					ress = simons(g,taille_paquets,tmax,periode,0);
-					//ress = 1;
-					if(ress != -2)
-					{	
-						if(ress != -1)
-						{
-							
-							#pragma omp atomic
-								s++;
-
-
-							break;
-						}
-						
-					}
-				}
+				gp_found = 0;
+				s_found = 0;
 				sp_found = 0;
 				fpt_found = 0;
 				
@@ -395,8 +361,37 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 					fisher_yates(permutation, nb_routes);
 					offsets= retourne_offset(g, taille_paquets, permutation,0,periode);
 					m_i = retourne_departs( g, offsets);
-					
+					if(!gp_found)
+					{
+						resgp = longest_etoile_periodique(g,taille_paquets,periode,tmax,0,m_i);
+						//resgp = 1;
+						if(resgp != -2)
+						{	
+							if(resgp != -1)
+							{
+								gp_found = 1;
+								#pragma omp atomic
+									gp++;
 
+							}
+							
+						}
+					}
+					if(!s_found)
+					{
+						ress = simons(g,taille_paquets,tmax,periode,0,m_i);
+						//ress = 1;
+						if(ress != -2)
+						{	
+							if(ress != -1)
+							{	
+								s_found = 1;				
+								#pragma omp atomic
+									s++;
+							}
+							
+						}
+					}
 					if(!sp_found)
 					{
 						gettimeofday (&tv1, NULL);
@@ -426,13 +421,14 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 					}
 					free(m_i);
 					free(offsets);
-					if((sp_found)&&(fpt_found))
+					if((sp_found)&&(fpt_found)&&(s_found)&&(gp_found))
 						break;
 					
 				}
 				if(fpt_found && (!sp_found))
 				{
 					affiche_etoile(g);
+					print_dot(g);
 				}
 				//exit(55);
 				

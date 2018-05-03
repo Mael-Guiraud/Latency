@@ -28,7 +28,7 @@ Ensemble * crisis(Ensemble * ens,Element * crisise, Element * elemspere,Element 
 Ensemble * init_ensemble(){return NULL;}
 Element * init_element(){return NULL;}
 
-
+void decaler_release(int * release, int* deadline, int periode, int premier,int nbr_route,int taille_paquet);
 
 /** Fonctions d'affichage pour simons *
 
@@ -971,7 +971,7 @@ void transforme_waiting(Ensemble * ens, int * wi)
 
 
 //Algo naif
-int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
+int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * offsets)
 {
 	
 	///////////////////////////////////////////////////////taille_paquet = 6;
@@ -985,6 +985,7 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
 	  int Dl[nbr_route];
 	  int m_i[nbr_route];
 	  int w_i[nbr_route];
+	  int deadline[nbr_route];
 	int i;
 
 	int permutation[nbr_route];
@@ -1004,32 +1005,42 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
 
 	int offset = 0;
 	
-
-	switch(mode)
+	if(offsets)
 	{
-		case 1:
-			tri_bulles(Dl,permutation,nbr_route);
-		break;
-		case 2:
-			tri_bulles_inverse(Dl,permutation,nbr_route);
-		break;
-		case 3:
-			tri_bulles(routes_retour,permutation,nbr_route);
-		break;
-		case 4:
-			tri_bulles_inverse(routes_retour,permutation,nbr_route);
-		break;
-		default:
-			fisher_yates(permutation,nbr_route);
-		break;
+		for(int i=0;i<nbr_route;i++)
+		{
+			m_i[i] = offsets[i];
+		}
 	}
-
-	m_i[permutation[0]]=0;
-	offset = taille_paquet+g.matrice[nbr_route][permutation[0]];
-	for(int i=1;i<nbr_route;i++)
+	else
 	{
-		m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
-		offset+=taille_paquet;
+
+		switch(mode)
+		{
+			case 1:
+				tri_bulles(Dl,permutation,nbr_route);
+			break;
+			case 2:
+				tri_bulles_inverse(Dl,permutation,nbr_route);
+			break;
+			case 3:
+				tri_bulles(routes_retour,permutation,nbr_route);
+			break;
+			case 4:
+				tri_bulles_inverse(routes_retour,permutation,nbr_route);
+			break;
+			default:
+				fisher_yates(permutation,nbr_route);
+			break;
+		}
+
+		m_i[permutation[0]]=0;
+		offset = taille_paquet+g.matrice[nbr_route][permutation[0]];
+		for(int i=1;i<nbr_route;i++)
+		{
+			m_i[permutation[i]]=offset-g.matrice[nbr_route][permutation[i]];
+			offset+=taille_paquet;
+		}
 	}
 
 
@@ -1047,11 +1058,24 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
 		Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
 
 		arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
+		deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
 	}
 	
-
 	i=lower(arrivee,nbr_route);
 	
+
+	/*decaler_release(arrivee,deadline, periode, i,nbr_route,taille_paquet);
+	for(int k=0;k<nbr_route;k++)
+	{
+		if(arrivee[k] > (periode -taille_paquet))
+		{
+			arrivee[k]=0;
+			deadline[k] -= periode;
+		}
+	}*/
+
+
+
 
 	int	date=arrivee[i];
 	//////////////////////////////////////////////////////////////////int date = 0;
@@ -1059,12 +1083,12 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode)
 
 	//afficheTwoWayTrip(t);
 	Element * elems = init_element();
-	int deadline_route;
+	//int deadline_route;
 	//int deadline_periode = date + periode;
 	for(j=0;j<nbr_route;j++)
 	{
-		deadline_route = TMAX+m_i[j]- g.matrice[nbr_route][j]+taille_paquet;
-		elems = ajoute_elemt(elems,j,arrivee[j],deadline_route);
+		//deadline_route = TMAX+m_i[j]- g.matrice[nbr_route][j]+taille_paquet;
+		elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
 
 	}
 /*
