@@ -92,8 +92,7 @@ Our main contributions are the following.
 In Section~\ref{sec:complexity}, we prove that the problem \pra and \pall are $\NP$-hard and cannot be approximated even for very
 restricted classes of graphs. 
 
-Therefore in the next two sections, we study a simple but very common topology, that we call the
-star routed network, where all messages can collide on a single arc.
+We introduce in Section~\ref{sec:star_routed_network} a simple but very common topology, called the star routed network, that is studied in the rest of the article.
 In Section \ref{sec:PAZL}, we study a variant of \pall called \pazl  where the waiting times must all be zero. We provide  polynomial time algorithms which works when the load or the routes are small, and an FPT algorithm with parameter the number of routes.
 We give experimental evidences that they find periodic assignments when the network is not too loaded. Finally in Section \ref{sec:PALL}, we propose polynomial time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work extremely well even in loaded networks. In particular, the deterministic communication schemes we design largely outperform the traditional stochastic multiplexing with regard to latency. 
  \subsection*{Related works}
@@ -218,7 +217,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
 	\begin{lemma} \label{lemma:monotonic}
-	 For any odd $P$, there is a routed network such that there is $(2,1)$-periodic assignment but no $(P,1)$-periodic assignment.
+	 For any odd $P$, there is a routed network such that there is a $(2,1)$-periodic assignment but no $(P,1)$-periodic assignment.
 	\end{lemma}
 \begin{proof}
 
@@ -231,7 +230,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       \subsection{Periodic assignment for low latency}
       
    In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
-      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to \emph{bidirectional links} in the networks, but we need not to enforce this property.
+      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in \emph{full-duplex} networks, but we need not to enforce this property.
          
       We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
       This assignment represents the following process: First a message is sent at $u$, through the route $r \in F$, at time $m_r$.
@@ -246,8 +245,7 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
       
       Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
       The whole process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(r)+ w_r+\lambda(r)$.      
-      In the process time, we count the time between the time the first slot of the message is emitted and the first time at which the first slot of the message comes back. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time.
-      We chose the first definition which is slightly simpler since the choice of definition does not change the problems we consider in the rest of the article, assuming all messages are of size $\tau$. 
+      In the process time, we count the time between the time the first slot of the message is emitted and the first time at which the first slot of the message comes back. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time. Both definitions are equivalent in our context where all messages are of size $\tau$, hence we chose the first definition which is slightly simpler. 
       Each route must respect a time limit that we call \emph{deadline}. To represent these deadlines, 
       we use a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
       
@@ -304,7 +302,7 @@ Consider an instance of the problem \pra, i.e., a routed network $(G,\cal{R})$ a
 The {\bf conflict depth} of a route is the number of arcs of the route which also belong to other routes.
 The conflict depth of a routed network $(G,\cal{R})$ is the maximum of the conflict depth of its routes.
 The {\bf conflict width} of a routed network is the maximal number of routes sharing the same arc.
-Remark that a $(P,1)$-periodic assignment must satisfy that $P$ is larger or equal to the load.
+Remark that a $(P,1)$-periodic assignment must satisfy that $P$ is larger or equal to its conflict width.
 
 
 We give two alternate proofs that \pra is $\NP$-complete.
@@ -445,17 +443,15 @@ In particular, this reduction shows that even with small maximal load, the minim
     \label{fig:reduction}
     \end{figure}
     
-\section{The Star Routed Network: No Waiting Time} \label{sec:PAZL}
+\section{The Star Routed Network} \label{sec:star_routed_network}
   
    
-    
-    \subsection{The star routed network}
     
        Let us define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. 
       The graph $G$ has two sets of vertices, $S=\{s_0,...,s_{n-1}\}$ and $T=\{t_0,...,t_{n-1}\}$ of cardinality $n$ and two special nodes: the central source node {\bf $c_s$} and the central target node {\bf $c_t$}.
       There is an arc between {\bf $c_s$} and {\bf $c_t$} and for all $i$, there is an arc between $s_i$ and $c_s$ and between $t_i$ and $c_t$. All the symmetric arcs are also in the graph with the same weights.
       The forward routes are the directed paths $r_i = (s_i,c_s,c_t,t_i)$ and $\rho(r_i) = (t_i,c_t,c_s,s_i)$ which define a symmetric routed network. 
-      The symmetric routed networks $(G, \{r_i,\rho(r_i)\}_{i<n})$ is called a \textbf{star routed network}. This topology may seem simplistic, but every network in which all routes share an arc can be reduced to a star routed network. It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_t,t_i)$ either as all equals (in that case, the problem is trivial, see Section \ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for different BBUs. 
+      The symmetric routed networks $(G, \{r_i,\rho(r_i)\}_{i<n})$ is called a \textbf{star routed network}. This topology may seem simplistic, but every network in which all routes share an arc can be reduced to a star routed network. It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_t,t_i)$ either as all equals (in that case, the problem is trivial, see Section \ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for different BBUs. This topology has conflict depth one (but a maximal conflict width), hence \pra can be solved in polynomial time.
       \begin{figure}
        \begin{center}
 	 \scalebox{0.8}{
@@ -530,8 +526,7 @@ In particular, this reduction shows that even with small maximal load, the minim
   Collisions between messages can only appear on the arc $(c_s,c_t)$ between forward routes or on the arc $(c_t,c_s)$
   between backward routes. The flow of messages in a star routed network is completely described by their repartition in two time windows of size $P$, the {\bf forward period} which contains all $[t(c_s,r)]_{P,\tau}$ with $r$ a forward route and the {\bf backward period} which contains all $[t(c_t,r)]_{P,\tau}$ with $r$ a backward route.
 
-
-  \subsection{\pall without waiting times: \pazl}
+\section{Assignments with waiting times zero} \label{sec:PAZL}
   
   In this subsection, we deal with a simpler version of the problem \pall.
   We ask for a $(P,\tau)$-periodic assignment {\bf with all waiting times equal to $0$}, that is $d(r) = 2\lambda(r)$ and we call this restriction {\bf Periodic Assignment for Zero Latency} or \pazl. We study \pazl since it is simpler, in particular 
@@ -1101,7 +1096,7 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
      Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. Remark that the process is not periodic, therefore we must measure the process time of each route over several periods if we want to compute its maximum. We choose to simulate it for $1,000$ periods and we have observed that the process time usually stabilizes after $10$ periods. The margin is defined as the maximum process time, computed as explained, minus twice the size of the longest route. 
 	    
      In Figure~\ref{fig:sto}, we represent the probability of success for 
-     statistical multiplexing and PMLS for different margin. The success rates are computed from $10,000$ star routed networks for each margin, drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
+     statistical multiplexing and PMLS for different margins. The success rates are computed from $10,000$ star routed networks for each margin, drawn with the same parameters as before. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
      
 
     \begin{figure}
