@@ -912,12 +912,14 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      We reduce \bra to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job,
      the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} the algorithm which transform \bra into the described scheduling problem to solve it in polynomial time.
      Remark that we do not deal with the periodicity. When MLS finds an assignment $m$, it always satisfies $PT(r) < d(r)$ for all $r$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work sometimes (as shown in Section~\ref{sec:resultsPALL}), but not for all instances. 
-     To improve the chances that  $m_{max} - m_{min} \leq P -\tau$, we modify the instance so that all release time are in the same period of size $P$. 
-     It can be done by replacing each release time $r$ by $r \mod P$ and by subtracting $r / P$ to the corresponding deadline. We assume in the rest of the article, that the instances always satisfy this property. 
      
      We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}
      which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc. 
-     We modify the instance so that this backward route has release time zero and all others routes have release time less than $P$ as explained previously.
+    To improve the chances that  $m_{max} - m_{min} \leq P -\tau$, we modify the instance so that all release time are in the same period of size $P$. 
+    Since we set the first backward route, we take $m_{min} = 0$, and we then want all release times $r \leq P-\tau$.
+     It can be done by replacing each release time by $r \mod P$ and by subtracting/Adding $r / P$ to the corresponding deadline. 
+     Furthermore, if a release time of a route $i$ is between $  P-\tau$ and $P$, we set $r_i = 0$, and $d(i) = d(i) - P$.
+     We assume in the rest of the article, that the instances always satisfy this property. 
      
      Then we set the deadline of each backward route to be the minimum of their deadline and $P - \tau$. Because of this choice of deadlines, if MLS finds a solution for this instance, it is always a $(P,\tau)$ periodic assignment since all messages goes through $c_t$ between $0$ and $P$.  The algorithm PMLS is the execution of MLS for each possible first backward route with the presented modifications to the deadlines until we find a solution (otherwise PMLS fails). Since we run MLS at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that PMLS finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. We take the periodicity into account in PMLS but not completely and it may fail to find assignments. Indeed, in PMLS we restrict the assignments we look for by not allowing to choose an offset for a route after $P - \tau$.
      
@@ -1020,7 +1022,7 @@ Now remark that the construction of $S$ depends on the choice of the order of th
    We look at two different regimes, a medium load of $80\%$ and a high load of $95\%$.
    Considering smaller load is not relevant since we can solve the problem without waiting times as shown in Section~\ref{sec:exp_PAZL}. 
    
-   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the seven kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks.  Note that for RO, RORS and ROBS, we compute $1000$ random orders and count it as a success as soon as there is a solution for one order. Each random order drawn is tested on the three policies with random orders, if a solution has not been found yet.
+   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the seven kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks.  Note that for RO, RORS and ROBS, we compute $1000$ random orders and count it as a success as soon as there is a solution for one order. Each random order drawn is tested on the three policies with random orders, if a solution has not been found yet with this policy.
 
 \begin{figure}[h] 
   \centering
@@ -1058,7 +1060,7 @@ Now remark that the construction of $S$ depends on the choice of the order of th
 
      The MLS algorithm performs poorly, worst than GD, PMLS and FPT-PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
      The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $600$, which corresponds to about $0.03$ms of additional delay with the chosen parameters, we always find a solution. 
-     Note that the PMLS and FPT-PMLS algorithm have the same success rate in our experiment. In facts, it appears that the FPT-PMLS algorithm have, most of the time, the same success rate than the PMLS algorithm, even with a load of $100\%$ and a margin of $0$. Since the improvement of FPT-PMLS is insignificant beside the PMLS performances, we investigate the computation time of the two algorithms.
+     Note that the PMLS and FPT-PMLS algorithm have some very similar performances. In fact, it appears that the FPT-PMLS algorithm have, most of the time, the same success rate than the PMLS algorithm, even with a load of $100\%$ and a margin of $0$ (only $2$ instances of $100,000$ have been found by FPT-PMLS and not by PMLS). Since the improvement of FPT-PMLS is insignificant beside the PMLS performances, we investigate the computation time of the two algorithms.
      Figure~\ref{fig:exec_time} shows the average computation time of the two algorithms during the previous experiment.
      
         \begin{figure} [h] 
