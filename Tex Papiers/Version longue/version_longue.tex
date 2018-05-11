@@ -903,19 +903,21 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      The problem \bra is the same as the following scheduling problem if we forget the periodicity. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be finished before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution which minimizes the time at which the last job is scheduled. On the other hand if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
      The  polynomial time algorithm  which solves this scheduling problem is similar to the greedy algorithm presented in the previous section. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there are no solutions, which proves that the algorithm is in polynomial time.
      
-     We reduce \bra to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job,
-     the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} the algorithm which transform \bra into the described scheduling problem to solve it in polynomial time.
-     Remark that we do not deal with the periodicity. When MLS finds an assignment $m$, it always satisfies $PT(r) < d(r)$ for all $r$. On the other hand, it is a $(P,\tau)$ periodic assignment only if $m_{max} - m_{min} \leq P -\tau$ where $m_{max}$ is the largest offset and $m_{min}$ the smallest one. The algorithm we use minimize this quantity, so it may work sometimes (as shown in Section~\ref{sec:resultsPALL}), but not for all instances. 
+     The problem \bra is reduced to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job, the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} the algorithm which transform \bra into the described scheduling problem to solve it in polynomial time.
      
-     We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}
-     which takes into account the periodicity. We set arbitrarily a backward route so that its message is the first to go through the central arc. 
-    To improve the chances that  $m_{max} - m_{min} \leq P -\tau$, we modify the instance so that all release time are in the same period of size $P$. 
-    Since we set the first backward route, we take $m_{min} = 0$, and we then want all release times $r \leq P-\tau$.
-     It can be done by replacing each release time by $r \mod P$ and by subtracting $r / P$ to the corresponding deadline. 
-     Furthermore, if a release time of a route $i$ is between $  P-\tau$ and $P$, we set $r_i = 0$, and $d(i) = d(i) - P$.
-     We assume in the rest of this section, that the instances always satisfy this property. 
+     Let us denote by $y_i$ the time at which the message of the route $r_{\rho(i)}$ cross the node $c_t$,
+     that is $y_i = m_{\rho(i)} + \lambda(i)$. Let us denote by $y_{min}$ and $y_{max}$ the smallest and largest value of the $y_i$s. When MLS finds an assignment $m$, it always satisfies $PT(r) < d(r)$ for all $r$. If $y_{max}- y_{min} \leq P -\tau $, then all messages cross $c_t$ in the same period and 
+     the scheduling algorithm guarantes that there are no collision. However, if $y_{max}- y_{min} > P -\tau $, then we must take into account the periodicity by computing the $y_i$ modulo $P$ and the solution we obtain by PMLS may have a collision. Since the scheduling algorithm minimizes $y_{max}- y_{min}$, it may work sometimes (as shown in Section~\ref{sec:resultsPALL}), but not for all instances. 
      
-     Then we set the deadline of each backward route to be the minimum of their deadline and $P - \tau$. Because of this choice of deadlines, if MLS finds a solution for this instance, it is always a $(P,\tau)$ periodic assignment since all messages goes through $c_t$ between $0$ and $P$.  The algorithm PMLS is the execution of MLS for each possible first backward route with the presented modifications to the deadlines until we find a solution (otherwise PMLS fails). Since we run MLS at most $n$ times, the complexity is in $O(n^3\log(n))$. Remark that PMLS finds an assignment more often than MLS, because if MLS finds a solution with first route $r$ and such that $m_{max} - m_{min} \leq P -\tau$, then this solution will be found by PMLS when it selects $r$ as the first route. We take the periodicity into account in PMLS but not completely and it may fail to find assignments. Indeed, in PMLS we restrict the assignments we look for by not allowing to choose an offset for a route after $P - \tau$.
+     
+     We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}. The aim is to deal with the periodicity, by modifiying the instance (without changing the assignments) so that the chance of finding a solution with $y_{max}- y_{min} \leq P -\tau $ are larger.  Remark that if an instance has a satisfying assignment, we can always guarantee that one route has a waiting time zero in a satisfying assignment. Hence, w.l.o.g., we will fix a route as the first one and assume it has waiting zero.
+     
+     Algorithm PMLS runs, for each route $r$, the algorithm MLS on an instance defined as follows. 
+     Let $rt$ be the release time of $r$, we subtract it to all release time and deadline.
+     Therefore the release time of $r$ is zero and the time at which the message of $r$ crosses $c_t$ is also set to zero, hence its waiting time is zero.  We then modify the instance so that all release times are in $[0,P-\tau]$: Each release time $rt$ is replaced by $rt \mod P$ and $rt - (rt \mod P)$ is subtracted to the corresponding deadline. 
+     Furthermore, if a release time of a route $r_i$ is between $  P-\tau$ and $P$, we set it to $0$ and $d(i) = d(i) - P$. 
+     
+     The deadline of each backward route is set to the minimum of their deadline and $P - \tau$. Because of this modification of deadlines, if MLS finds a solution for an instance, we have $y_{max}- y_{min} \leq P -\tau $, hence it is a $(P,\tau)$ periodic assignment.  The algorithm PMLS finds periodic assignments more often than MLS, because if MLS finds a solution with first route $r$ and such that $y_{max} - y_{min} \leq P -\tau$, then this solution is found by PMLS when it selects $r$ as the first route. Since MLS is used at most $n$ times, the complexity of PMLS is in $O(n^3\log(n))$. Note that PMLS is a heuristic and may fail to find assignments when they have some $y_i$ larger than $P - \tau$.
      
 %     \begin{algorithm}[H]
 %     \caption{ Minimized Scheduling Periodic (MSP)}
@@ -944,18 +946,22 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 \subsection{FPT algorithms for \bra and \pall}
 
 As a warm-up, we give a simple FPT algorithm for \bra which is practical,
-and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes
-in the second algorithm is yet too large to be useful in practice. 
+and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes in the second algorithm is yet too large to be useful in practice. 
 
 \begin{theorem}\label{th:braFPT}
 $\bra \in \FPT$ when parametrized by the number of routes.
 \end{theorem}
 \begin{proof}
- Consider an instance of \bra, which can be characterized by a release time and a deadline for each route. W.l.o.g. say that the first backward route has release time $0$ and $\Omega(c_t,t_0) = 0$. As for PMLS, we can change the releases time and deadlines such that all release times are less than $P - \tau$. If there is an assignment such that the messages of all routes goes through $c_t$ before $P-\tau$, then the periodicity does not come into play for this assignment and the algorithm MLS will find it as explained in Section~\ref{sec:braheuristic}.
+ Consider an instance of \bra, which can be characterized by a release time and a deadline for each route. W.l.o.g. say that the first backward route has release time $0$. 
+As for PMLS, we change the release times and deadlines such that all release times are less than $P - \tau$. If there is an assignment such that the messages of all routes goes through $c_t$ before $P-\tau$, then the periodicity does not come into play for this assignment and the algorithm MLS will find it as explained in Section~\ref{sec:braheuristic}.
 
-We show how to modify the instance so that its periodic assignments are a subset of the periodic assignments of the original instance and such that one of its assignments satisfy the previous condition.
- Because of Proposition~\ref{prop:canonical}, for all $i$, $\Omega(c_t,t_i) + \Omega(t_i,c_t) < P$. Hence, in a periodic assignment the time at which a message goes through $c_t$ is always smaller than $2P-\tau$. We select all messages in the periodic assignment which go through $c_t$ between $P-\tau$ and $2P-\tau$. We define a new instance where the release time of these messages
-is zero and $P$ is subtracted to their deadline. Then the considered periodic assignment is a solution of the new instance with all messages going through $c_t$ before $P-\tau$. Moreover any solution of the new instance is a solution of the original problem, since we have made the constraints harder.   
+ Now, remark that if there is a periodic assignment for an instance, then there is a periodic assignment satisfying for all $i$, $y_i \leq 2P - \tau$. Indeed, if there is a $i$ such that $y_i > 2P - \tau$ in
+a periodic assignment, then setting $y_i = y_i - P$ cannot create a collision and improve the 
+process time of $r_i$ by $P$. Moreover $y_i - P > P- \tau$, hence the it is a valid assignment, that is the route $r_i$ sends its message after its release time. 
+
+From a periodic assignment satisfying that for all $i$, $y_i \leq 2P - \tau$, we define 
+a new instance whose periodic assignments are a subset of the periodic assignments of the original instance. Moreover, one of the periodic assignments of the new instance satisfies for all $i$, $y_i \leq P - \tau$ and will thus be found by MLS.
+Let $S$ be the set of routes $r_i$ such that  $y_i \in[P-\tau, 2P - \tau]$. The new instance is defined by setting the release time of the routes in $S$ to $0$ and by subtracting $P$ to their deadlines. Then the considered periodic assignment is a solution of the new instance with all $y_i \leq P -\tau$. Moreover any solution of the new instance is a solution of the original one, since we have made the constraints harder.   
 
 The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
 \end{proof}
@@ -968,16 +974,14 @@ $\pall \in \FPT$ when parameterized by the number of routes.
 \end{theorem}
 \begin{proof}
  Consider an instance of \pall which has a solution. We now characterize such a solution by a set of necessary and sufficient linear equations and inequations it must satisfy. 
- For simplicity, we consider $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ 
- and $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
- Note that choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
+ For simplicity, we consider $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ and $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
+ Choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
  
- The values $x_i$ and $y_i$
-satisfies the following inequation: $y_i \geq x_i + 2\lambda(r_i)$.
-We may assume that the first route has delay and waiting time zero, 
+ The values $x_i$ and $y_i$ satisfies the following inequation: $y_i \geq x_i + 2\lambda(r_i)$.
+We may assume that the first route has release time and waiting time zero, 
 that is $x_0 = y_0 = 0$. We can also guarantee that all $x_i$ are less than $P-\tau$ if we modify
-the delays and deadlines without changing the possible assignments. As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
-and  when $y_i \geq P - \tau$ we replace $y_i \geq x_i + 2\lambda_(r_i) $ by $y_i \geq x_i + 2\lambda_(r_i) - P$ and we replace the deadline $d(r_i)$ by $d(r_i) -P$. In that way we guarantee that all $y_i$ are less than $P-\tau$.  
+the release times and deadlines without changing the possible assignments. As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
+and  when $y_i \geq P - \tau$ we replace $y_i \geq x_i + 2\lambda(r_i) $ by $y_i \geq x_i + 2\lambda(r_i) - P$ and we replace the deadline $d(r_i)$ by $d(r_i) -P$. In that way we guarantee that all $y_i$ are less than $P-\tau$.  
  
  Since all $x_i$ and $y_i$ are in $[P-\tau]$, taking the values of $x_i$ and $y_i$ modulo $P$
  does not change anything, which makes easy to express the absence of collisions between routes.
@@ -1035,8 +1039,6 @@ Now remark that the construction of $S$ depends on the choice of the order of th
       \caption{Success rate of GD, MLS, PMLS and FPT-PMLS, $95\%$ load}
      \label{fig:success21000}
      \end{figure}
-     
-%      \todo{ajouter l'algo FPT qui ameliore PMLS}
 
      The MLS algorithm performs poorly, worst than GD, PMLS and FPT-PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
      The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $600$, which corresponds to about $0.03$ms of additional delay with the chosen parameters, we always find a solution. 
@@ -1098,8 +1100,7 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
      For each $1,000$ slots of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.     
      
  \section{Conclusion}
-In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in 
-a star shaped fronthaul network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Longest-Shortest policy) or when the load is less than $80\%$ (Exhaustive search of compact assignments).  
+In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in a star shaped fronthaul network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Longest-Shortest policy) or when the load is less than $80\%$ (Exhaustive search of compact assignments).  
 When the load is higher, buffering is allowed in the BBUs and we propose the algorithm PMLS which  finds a deterministic communication scheme with almost no additional latency.
 % 
 % We plan to study other commons fronthaul topologies such as caterpillars, trees or ring; the latter being different since 
