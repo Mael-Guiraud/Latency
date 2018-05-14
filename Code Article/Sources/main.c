@@ -56,7 +56,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	sucess_retour_PALL(8,2500,20000,300,100000,21052,1000);
+	sucess_retour_PALL(8,2500,20000,1000,10000,20000,1000);
 
 
 	/******************************************/
@@ -87,6 +87,11 @@ int main()
 
 	//Test stochastique vs pmls
 	//stochastic_vs_PMLS(8,2500,20000,10000, 12000);
+
+
+
+	//Test distrib routes departs
+	//distrib_margins_departs(8, 2500,20000,5000, 1000, 21052,1000);
 
 	//Bout de code pour tester la stabilisation de la marge necessaire quand on simule plusieurs periodes en stochastique
 

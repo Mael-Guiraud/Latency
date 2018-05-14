@@ -75,6 +75,7 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 	int pivot = g.N/2;
 	int alea;
 
+	//for(int i=0;i<pivot/2;i++)
 	for(int i=0;i<pivot/2;i++)
 	{
 		alea = (taille_liens/2)-rand()%(diff);
@@ -96,4 +97,20 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 	g.matrice[pivot][pivot] = 0;
 }
 
+void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff, int P)
+{
+	if(!(g.N%2)){printf("Impossible de générer une étoile avec un nombre pair de sommets\n");exit(5);}
+	int pivot = g.N/2;
+	int alea;
+
+	for(int i=0;i<g.N;i++)
+	{
+		alea = P/2+diff-rand()%(2*diff);
+
+		g.matrice[pivot][i] = alea;
+		g.matrice[i][pivot] = alea;
+	}
+	
+	g.matrice[pivot][pivot] = 0;
+}
 

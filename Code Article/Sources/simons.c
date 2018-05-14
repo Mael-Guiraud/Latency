@@ -1831,7 +1831,7 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 		for(int i=0;i<nbr_route;i++)
 		{
 			if(i!= premier)
-				if(deadline[i]>(periode+2*taille_paquet))
+				if(deadline[i]>(2*periode-taille_paquet))
 					nbr_candidats++;
 		}
 		int subset[nbr_candidats];
@@ -1839,7 +1839,7 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 		for(int i=0;i<nbr_route;i++)
 		{
 			if(i!= premier)
-				if(deadline[i]>(periode+2*taille_paquet))
+				if(deadline[i]>(2*periode-taille_paquet))
 				{
 					//printf(" i %d j %d\n",i,j);
 					candidats[j] = i;
