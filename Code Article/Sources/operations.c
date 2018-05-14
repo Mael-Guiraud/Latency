@@ -2,6 +2,8 @@
 #include <stdlib.h>
 
 #include "struct.h"
+
+#define DEBUG 0
 //trie le tableau "odre"
 //Ordre contient les indices de routes, mais il est trié en fonction des tailles de "tab"
 // De la plus longue a la plus courte
@@ -87,7 +89,8 @@ int is_ok(Graphe g, int taille_paquet, int * mi, int * wi,int p)
 			d= (c+taille_paquet-1)%p;
 			if( ( (c>=a)&&(c<=b) ) || ( (d>=a)&&(d<=b) ) )
 			{
-				printf("PB(aller ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
+				if(DEBUG)
+					printf("PB(aller ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
 				return 0;
 			}
 		}
@@ -105,7 +108,8 @@ int is_ok(Graphe g, int taille_paquet, int * mi, int * wi,int p)
 			d= (c+taille_paquet-1)%p;
 			if( ( (c>=a)&&(c<=b) ) || ( (d>=a)&&(d<=b) ) )
 			{
-				printf("PB(retour ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
+				if(DEBUG)
+					printf("PB(retour ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
 				return 0;
 			}	
 		}

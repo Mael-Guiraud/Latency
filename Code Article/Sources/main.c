@@ -56,7 +56,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	sucess_retour_PALL(8,2500,20000,1000,10000,20000,1000);
+	sucess_retour_PALL(8,2500,20000,1000,1000,21052,1000);
 
 
 	/******************************************/
@@ -70,7 +70,6 @@ int main()
 	/*****
 	Tmax moyen pour sto vs sp
 	*******/
-
 	//marge_PALL_stochastique(8,2500,20000,1000,50000);
 
 
@@ -91,7 +90,7 @@ int main()
 
 
 	//Test distrib routes departs
-	//distrib_margins_departs(8, 2500,20000,5000, 1000, 21052,1000);
+	//distrib_margins_departs(8, 2500,20000,5000, 10000, 21052,1000);
 
 	//Bout de code pour tester la stabilisation de la marge necessaire quand on simule plusieurs periodes en stochastique
 

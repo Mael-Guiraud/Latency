@@ -337,9 +337,9 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
-			graphe_etoile(g,taille_route);
+			//graphe_etoile(g,taille_route);
 			//graphe_etoile_dur( g,taille_route,1000);
-			//graphe_etoile_Psur2( g, taille_route,1000, 4*periode);
+			graphe_etoile_Psur2( g, taille_route,1000, 4*periode);
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -430,7 +430,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 				}
 				if(fpt_found && (!sp_found))
 				{
-					affiche_etoile(g);
+					//affiche_etoile(g);
 					print_dot(g);
 				}
 				//exit(55);
@@ -926,7 +926,7 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 			g = init_graphe(2*nb_routes+1);
 			//graphe_etoile(g,taille_route);
 			//graphe_etoile_dur( g,taille_route,1000);
-			//graphe_etoile_Psur2( g, taille_route,margin, periode);
+			graphe_etoile_Psur2( g, taille_route,margin, periode);
 			
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -954,7 +954,7 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 					
 
 					//printf("%d %d %d %d\n",taille_paquets,tmax,periode,longest_route(g));
-					ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
+					ressp = FPT_PALL(g,taille_paquets,tmax,periode,m_i);
 					
 					if(ressp != -1)
 					{
