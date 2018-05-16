@@ -395,19 +395,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 							
 						}
 					}
-					if(!sp_found)
-					{
-						gettimeofday (&tv1, NULL);
-						ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
-						gettimeofday (&tv2, NULL);
-						timesp += time_diff(tv1,tv2);
-						if(ressp != -1)
-						{
-							sp_found = 1;
-							#pragma omp atomic
-								sp++;
-						}
-					}
+					
 					
 					if(!fpt_found)
 					{
@@ -422,6 +410,19 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 								fpt++;
 						}
 					}
+					if(!sp_found)
+					{
+						gettimeofday (&tv1, NULL);
+						ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
+						gettimeofday (&tv2, NULL);
+						timesp += time_diff(tv1,tv2);
+						if(ressp != -1)
+						{
+							sp_found = 1;
+							#pragma omp atomic
+								sp++;
+						}
+					}
 					free(m_i);
 					free(offsets);
 					if((sp_found)&&(fpt_found)&&(s_found)&&(gp_found))
@@ -430,7 +431,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 				}
 				if(fpt_found && (!sp_found))
 				{
-					//affiche_etoile(g);
+					affiche_etoile(g);
 					print_dot(g);
 				}
 				if( (!fpt_found) && (sp_found))
