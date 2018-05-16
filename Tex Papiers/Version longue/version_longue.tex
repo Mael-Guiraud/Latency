@@ -966,7 +966,7 @@ Let $S$ be the set of routes $r_i$ such that  $y_i \in[P-\tau, 2P - \tau]$. The 
 The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
 \end{proof}
 
-The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^2\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases. Let us call this algorithm {\bf FPT-PMLS} for the rest of the article.
+The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^2\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases. Let us call this algorithm {\bf FPT-MLS} for the rest of the article.
 
 
 \begin{theorem}\label{th:pallFPT}
@@ -1030,31 +1030,53 @@ Now remark that the construction of $S$ depends on the choice of the order of th
      Trying random orders is much better than our naive choice of order.
      With a load of $95\%$, there is a solution with margin $0$ most of the time. Also, the three random order policies seems to have similar performances, but the RO policy gives a bit more solutions than the two others ones, under high load and low margins. This is the reason why in the following experiments on the performances of our algorithms to solve \bra, we will always use the RO policy.  Note that, when disallowing waiting times, there were no instances with an assignment for $95\%$ of load and long routes (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying \pall rather than \pazl.
      
-      We now want to compare the performances of the four different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms on high load. Moreover, we will use $1,000$ random orders for the first stage as it gives the best results. In Figure~\ref{fig:success21000}, we represent the success rate of the three algorithms with regards to the margin,  computed over $10,000$ random star routed networks and the same parameters as previously.
+      We now want to compare the performances of the four different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms on high load. Moreover, we will use $1,000$ random orders for the first stage as it gives the best results. In Figure~\ref{fig:success21000}, we represent the success rate of the three algorithms with regards to the margin,  computed over $10,000$ random star routed networks generated with the same parameters as previously. In order to show some interesting results, we chose a load of $97\%$.
      
     \begin{figure} [h] 
        \begin{center}
       \includegraphics[width=0.5\textwidth]{retour_21000.pdf}
       \end{center}
-      \caption{Success rate of GD, MLS, PMLS and FPT-PMLS, $95\%$ load}
+      \caption{Success rate of GD, MLS, PMLS and FPT-MLS, $95\%$ load}
      \label{fig:success21000}
      \end{figure}
 
-     The MLS algorithm performs poorly, worst than GD, PMLS and FPT-PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
-     The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $600$, which corresponds to about $0.03$ms of additional delay with the chosen parameters, we always find a solution. 
-     Note that the PMLS and FPT-PMLS algorithm have some very similar performances. In fact, it appears that the FPT-PMLS algorithm have, most of the time, the same success rate than the PMLS algorithm, even with a load of $100\%$ and a margin of $0$ (only $2$ instances of $100,000$ have been found by FPT-PMLS and not by PMLS). Since the improvement of FPT-PMLS is insignificant beside the PMLS performances, we investigate the computation time of the two algorithms.
-     Figure~\ref{fig:exec_time} shows the average computation time of the two algorithms during the previous experiment.
+     The MLS algorithm performs poorly, worst than GD, PMLS and FPT-MLS, which shows that \emph{taking into account the periodicity} is fundamental.
+     The GD algorithms is close to $100\%$ success rate for margins larger than $2,500$ while the PMLS and FPT-MLS algorithms find a solution in more than $97\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $600$, which corresponds to about $0.03$ms of additional delay with the chosen parameters, we always find a solution. 
+     Even if the PMLS and FPT-MLS algorithms have some close performances, it appears that the FPT-MLS performs better when the margin is low. Indeed, with a load of $100\%$ and for $0$. margin, the PMLS algorithm have a success rate of $89\%$ while the FPT-MLS have a success rate of $99\%$. This also means that the performances of FPT-MLS are excellent, even in the most stressful scenario, which does not seems to be realistic.
      
-        \begin{figure} [h] 
+     Moreover, by studying the computation time of the FPT-MLS and the PMLS algorithm during the experience of Figure~\ref{fig:success21000}, we remark that the average computation time to find a solution is often $10$ times higher with FPT-MLS than with PMLS ($\sim300\mu s$ for FPT-MLS versus $\sim30\mu s$ for PMLS). Nevertheless this remark is true when PMLS finds a solution at $100\%$. On the other hand, when PMLS can not find a solution that FPT-MLS finds, because the algorithm needs to draw the $1000$ random orders before failing, the computation time of an instance by PMLS is, in average, in the same range as the one with FPT-MLS ($\sim 1ms)$.
+     
+     We study the scalability of the FPT-MLS algorithm when the number of routes grows. In the following experiment, we fix the margin to $0$ and we take the same parameters as previously: we draw uniformly the weights of the arcs between $0$ and $20,000$ and the period is chosen so that the load is always $97\%$, and we vary the number of routes. The table on Figure~\ref{fig:tps_fpt} shows the time taken by the FPT-MLS algorithm, averaged on $1,000$ instances.
+     
+          \begin{figure}[h] 
        \begin{center}
-      \includegraphics[width=0.5\textwidth]{time_exec.pdf}
+   \begin{tabularx}{0.5\textwidth}{|c|X|X|X|X|X|X|}
+    \hline
+    \# routes& $8$ & $12$ & $16$& $20$\\
+    \hline
+    Time (ms) & $1.04$ &$10.02$&$47.60$&$99.28$\\
+    \hline
+      \end{tabularx}
       \end{center}
-      \caption{Computation time of PMLS and FPT-PMLS}
-     \label{fig:exec_time}
+   \caption{Scalability of FPT-MLS algorithm}
+        \label{fig:tps_fpt}
      \end{figure}
 
-	First, remark that the computation time of the two algorithm decrease until a margin of approximately  $1,000$ slots. Indeed, the more the algorithm fails, the higher the computation time is because the $1,000$ random orders have to be drawn before failing. Moreover, even when both of the two algorithms always succeed, the computation time of FPT-PMLS is about $10$ time higher that the computation time of the PMLS algorithm. Furthermore, when the FPT-PMLS algorithm could be able to find a solution that the PMLS algorithm would not find, i.e. on low margins, the computation time is $14$ time higher for the first algorithm. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm.
-     
+
+%     In fact, it appears that the FPT-MLS algorithm have, most of the time, the same success rate than the PMLS algorithm, even with a load of $100\%$ and a margin of $0$ (only $2$ instances of $100,000$ have been found by FPT-PMLS and not by PMLS). Since the improvement of FPT-PMLS is insignificant beside the PMLS performances, we investigate the computation time of the two algorithms.
+%     Figure~\ref{fig:exec_time} shows the average computation time of the two algorithms during the previous experiment.
+%     
+%        \begin{figure} [h] 
+%       \begin{center}
+%      \includegraphics[width=0.5\textwidth]{time_exec.pdf}
+%      \end{center}
+%      \caption{Computation time of PMLS and FPT-MLS}
+%     \label{fig:exec_time}
+%     \end{figure}
+%
+%	First, remark that the computation time of the two algorithm decrease until a margin of approximately  $1,000$ slots. Indeed, the more the algorithm fails, the higher the computation time is because the $1,000$ random orders have to be drawn before failing. Moreover, even when both of the two algorithms always succeed, the computation time of FPT-PMLS is about $10$ time higher that the computation time of the PMLS algorithm. Furthermore, when the FPT-PMLS algorithm could be able to find a solution that the PMLS algorithm would not find, i.e. on low margins, the computation time is $14$ time higher for the first algorithm. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm.
+%     
+
     Recall that the random order corresponds to the best of $1,000$ orders drawn uniformly which means that a computation can be up to $1,000$ time slower than for a fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. Up to now, we have chosen the number of random orders to be $1000$ arbitrarily.
     
     We investigate the success rate of our algorithm with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The table of Figure~\ref{fig:randomdrawing} presents the average success rate for each number of sending orders, on $10,000$ instances, for GD and PMLS. Since this experiment is already long on PMLS for $10^{4}$ and $10^{5}$ routes, we do not run it on FPT-PMLS.
