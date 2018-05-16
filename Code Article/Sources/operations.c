@@ -106,12 +106,23 @@ int is_ok(Graphe g, int taille_paquet, int * mi, int * wi,int p)
 		{
 			c= (mi[j]+g.matrice[nbr_route][j]+2*g.matrice[nbr_route][nbr_route+1+j]+wi[j])%p;
 			d= (c+taille_paquet-1)%p;
-			if( ( (c>=a)&&(c<=b) ) || ( (d>=a)&&(d<=b) ) )
+			//printf("i = %d j = %d ,a = %d b = %d c = %d d = %d\n",i,j,a,b,c,d);
+			if(b< a) // c'est periodique
 			{
-				if(DEBUG)
-					printf("PB(retour ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
-				return 0;
-			}	
+				if((c > a) || (d>a) || (c<b) || (d<b))
+				{
+					if(DEBUG)
+						printf("PB(retour ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
+					return 0;
+				}
+			}
+			else
+				if( ( (c>=a)&&(c<=b) ) || ( (d>=a)&&(d<=b) ) )
+				{
+					if(DEBUG)
+						printf("PB(retour ) entre %d(%d-%d) et %d(%d-%d)\n",i,a,b,j,c,d);
+					return 0;
+				}	
 		}
 	}
 	return 1;

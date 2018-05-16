@@ -9,3 +9,4 @@ void marge_PALL_stochastique(int nb_routes,int taille_paquets,int taille_route, 
 void allers_random_PMLS(int nb_routes, int taille_paquets,int taille_route, int nb_simuls, int pmin,int pmax);
 void stochastic_vs_PMLS(int nb_routes, int taille_paquets,int taille_route, int nb_simuls, int marge_max);
 void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,int margin_max, int nb_simuls, int periode,int nb_rand);
+void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int marge, int nb_simuls,int nb_rand,float load);
