@@ -17,7 +17,7 @@
 #include "random.h"
 #include "graphes.h"
 
-#define PARALLEL 0
+#define PARALLEL 1
 
 double time_diff(struct timeval tv1, struct timeval tv2)
 {
@@ -505,6 +505,7 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 					m_i = retourne_departs( g, offsets);
 					//res = longest_etoile_periodique(g,taille_paquets,periode,tmax,0,m_i);
 					res = simons_periodique(g,taille_paquets,tmax,periode,m_i);
+					res = FPT_PALL(g,taille_paquets,tmax,periode,m_i);
 				
 					if((res != -1)&&(res!=-2))
 					{
@@ -934,8 +935,8 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 
 			g = init_graphe(2*nb_routes+1);
 			//graphe_etoile(g,taille_route);
-			//graphe_etoile_dur( g,taille_route,1000);
-			graphe_etoile_Psur2( g, taille_route,margin, periode);
+			graphe_etoile_dur( g,taille_route,margin);
+			//graphe_etoile_Psur2( g, taille_route,margin, periode);
 			
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);

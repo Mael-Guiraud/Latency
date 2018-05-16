@@ -1878,7 +1878,7 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 			
 		}*/
 
-		res = rec_FPT(g,taille_paquet,TMAX,periode,m_i,premier,subset,candidats,0,0);
+		res = rec_FPT(g,taille_paquet,TMAX,periode,m_i,premier,subset,candidats,0,nbr_candidats);
 		
 
 
