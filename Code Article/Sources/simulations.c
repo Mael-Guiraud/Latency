@@ -918,12 +918,14 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 	int permutation[nb_routes];
 	int sp_found;
 	float sp;
-
+	float sum;
+	int step = 100;
 			
-		
+	int res[margin_max/step];
+	printf("%d %d %d\n",margin_max,step,margin_max/step);
 	for(int margin=100;margin<= margin_max;margin *= 2)
 	{
-
+		for(int i=0;i*step<margin_max;i++){res[i]=0;}
 		sp = 0;
 		sprintf(nom,"../datas/distrib_departs%d.data",margin);
 		F = fopen(nom,"w");
@@ -964,13 +966,14 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 					
 
 					//printf("%d %d %d %d\n",taille_paquets,tmax,periode,longest_route(g));
-					ressp = FPT_PALL(g,taille_paquets,tmax,periode,m_i);
+					ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
 					
 					if(ressp != -1)
 					{
 						
-						
-						fprintf(F,"%d %d \n",marge,1);
+						#pragma omp atomic
+							res[marge/step]++;
+						//fprintf(F,"%d %d \n",marge,1);
 						//fprintf(stdout,"%d %d \n",ressp,1);
 						#pragma omp atomic
 							sp++;
@@ -999,6 +1002,12 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 			
 
 		}
+		sum = 0.0;
+		for(int i=0;i*step<margin_max;i++)
+		{
+			sum += (float)res[i]/nb_simuls;
+			fprintf(F,"%d %f \n",i*step,sum);
+		}
 		fprintf(stdout,"%d %f\n",margin,sp/nb_simuls);
 		fclose(F);
 	
@@ -1013,27 +1022,32 @@ void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int mar
 {
 
 	Graphe g ;
-	int resfpt;
-	float fpt;
+	int resfpt,ressp;
+	float fpt,sp;
 	int tmax;
 
 	int * m_i;
 	int * offsets;
+	double time_fisher;
 	
-	int fpt_found;
+	int fpt_found,sp_found;
 	struct timeval tv1, tv2;
 	int periode;
 	double timefpt=0.0;
+	double timesp=0.0;
 	
 			
 		
 	for(int nb_routes=8;nb_routes<= nb_routes_max;nb_routes += 4)
 	{
 		timefpt=0.0;
+		timesp=0.0;
 		periode= (int)nb_routes*taille_paquets / load;
+		taille_route = periode;
 		int permutation[nb_routes];
-
-		#pragma omp parallel for private(resfpt,g,tmax,m_i,offsets,permutation,fpt_found,tv1,tv2) if (PARALLEL) schedule (dynamic)
+		fpt = 0.0;
+		sp = 0.0;
+		#pragma omp parallel for private(resfpt,ressp,g,tmax,m_i,offsets,permutation,fpt_found,sp_found,tv1,tv2,time_fisher) if (PARALLEL) schedule (dynamic)
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
@@ -1048,10 +1062,12 @@ void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int mar
 			//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
 			
 				fpt_found = 0;
-				gettimeofday (&tv1, NULL);
+				sp_found = 0;
+				
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
 
+					gettimeofday (&tv1, NULL);
 					for(int k=0;k<nb_routes;k++)
 					{
 						permutation[k]=k;
@@ -1059,11 +1075,13 @@ void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int mar
 					fisher_yates(permutation, nb_routes);
 					offsets= retourne_offset(g, taille_paquets, permutation,0,periode);
 					m_i = retourne_departs( g, offsets);
+					gettimeofday (&tv2, NULL);
+					time_fisher = time_diff(tv1,tv2);
 					
 					
 					if(!fpt_found)
 					{
-						
+						gettimeofday (&tv1, NULL);
 						resfpt = FPT_PALL(g,taille_paquets, tmax, periode, m_i);
 						
 						if(resfpt != -1)
@@ -1072,22 +1090,45 @@ void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int mar
 							#pragma omp atomic
 								fpt++;
 						}
+						gettimeofday (&tv2, NULL);
+						#pragma omp atomic
+							timefpt += (time_diff(tv1,tv2)+time_fisher);
 					}
+					
+					
+					if(!sp_found)
+					{
+						gettimeofday (&tv1, NULL);
+						
+						ressp = simons_periodique(g,taille_paquets, tmax, periode, m_i);
+						
+						if(ressp != -1)
+						{
+							sp_found = 1;
+							#pragma omp atomic
+								sp++;
+						}
+						gettimeofday (&tv2, NULL);
+						#pragma omp atomic
+							timesp += (time_diff(tv1,tv2)+time_fisher);
+					}
+					
+
 					free(m_i);
 					free(offsets);
-					if(fpt_found)
+					if(fpt_found && sp_found)
 						break;
 					
 				}
-				gettimeofday (&tv2, NULL);
-				timefpt += time_diff(tv1,tv2);
+				
+				
 
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
 
 		}
 
-   	 fprintf(stdout,"%d %f \n",nb_routes,timefpt/nb_simuls);
+   	 fprintf(stdout,"nb routes : %d\n FPT : %f %f \n SP : %f %f \n rapport = %f \n\n",nb_routes,timefpt/nb_simuls,fpt/nb_simuls,timesp/nb_simuls,sp/nb_simuls,timefpt/timesp);
 
 
 	}

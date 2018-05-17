@@ -770,7 +770,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
       
       The computation time of the exhaustive search is bounded by $O(n!)$ as shown in Theorem~\ref{th:FPT}, 
       but it can be much better in practice, either because it finds a solutions quickly or because a large part of the tree of 
-      compact assignments is pruned during the algorithm. We study the scalability  of the algorithm when $n$ grows in the following experiment. The weights of the arcs $(c_t,t_i)$ are drawn following a uniform distribution between $0$ and $20,000$ slots. We chose  $95\%$ of load.  The table of Figure~\ref{fig:table} shows the time before the exhaustive search ends, for $8$ to $16$ routes, averaged on $100$ random star routed networks. This shows that for less than $16$ routes, which corresponds to all current topologies, the algorithm is efficient enough, but we should improve it further to work on more routes.
+      compact assignments is pruned during the algorithm. We study the evolution of the running time  of the algorithm when $n$ grows in the following experiment. The weights of the arcs $(c_t,t_i)$ are drawn following a uniform distribution between $0$ and $20,000$ slots. We chose  $95\%$ of load.  The table of Figure~\ref{fig:table} shows the time\footnote{Those measures are made on a $2.2$ Ghz Intel Core i7. The sources are compiled with gcc version 7.3.0.}  before the exhaustive search ends, for $8$ to $16$ routes, averaged on $100$ random star routed networks. This shows that for less than $16$ routes, which corresponds to all current topologies, the algorithm is efficient enough, but we should improve it further to work on more routes.
       
       \begin{figure}[h]
          \begin{center}
@@ -1048,7 +1048,7 @@ Now remark that the construction of $S$ depends on the choice of the order of th
 %     
 %     
   %   Moreover, by studying the computation time of the FPT-MLS and the PMLS algorithm during the experience of Figure~\ref{fig:success21000}, we remark that the average computation time to find a solution is often $10$ times higher with FPT-MLS than with PMLS ($\sim300\mu s$ for FPT-MLS versus $\sim30\mu s$ for PMLS). Nevertheless this remark is true when PMLS finds a solution at $100\%$. On the other hand, when PMLS can not find a solution that FPT-MLS finds, because the algorithm needs to draw the $1000$ random orders before failing, the computation time of an instance by PMLS is, in average, in the same range as the one with FPT-MLS ($\sim 1ms)$.
-      Then, we study the scalability of the PMLS and the FPT-PMLS algorithms when the number of routes grows. In the following experiment, we fix the margin to $0$ and we take the same parameters as previously: we draw uniformly the weights of the arcs between $0$ and $20,000$, the period is chosen so that the load is always $95\%$, and we vary the number of routes. The table on Figure~\ref{fig:tps_fpt} shows the computation times\footnote{Those measures are made on a $2.2$ Ghz Intel Core i7, running under macOS high sierra, version $10.13.1$.} of the PMLS and the FPT-PMLS algorithms, averaged on $1,000$ instances. 
+      Then, we study the evolution of the computing time of the PMLS and the FPT-PMLS algorithms when the number of routes grows. In the following experiment, we fix the margin to $0$. In order to stress the algorithms, the period is chosen so that the load is always $95\%$, and we draw uniformly the weights of the arcs between $0$ and $P$. Since we only want to measure the computing time of the algorithms of the \bra problem, we draw $1$ random order for each instances. The table on Figure~\ref{fig:tps_fpt} shows the computation times of the PMLS and the FPT-PMLS algorithms, averaged on $1,000$ instances. 
      
           \begin{figure}[h] 
        \begin{center}
@@ -1056,9 +1056,11 @@ Now remark that the construction of $S$ depends on the choice of the order of th
     \hline
     \# routes& $8$ & $12$ & $16$& $20$ & $24$\\
     \hline
-    FPT-PMLS (ms) & $0.45$ &$5.75$&$29.18$&$198.1$&$3279$\\
+    FPT-PMLS (ms) & $0.45$ &$6.02$&$39.73$&$170.9$&$3297$\\
     \hline
-     PMLS ($\mu$s) & $84$ &$43$&$55$&$66$&$90$\\
+     PMLS (ms) & $0.04$ &$0.06$&$0.07$&$0.09$&$0.13$\\
+    \hline
+$ \frac{\text{FPT-PMLS}}{\text{PMLS}}$& $11$ &$57$&$538$&$1902$&$24881$\\
     \hline
       \end{tabularx}
       \end{center}
@@ -1066,7 +1068,9 @@ Now remark that the construction of $S$ depends on the choice of the order of th
         \label{fig:tps_fpt}
      \end{figure}
      
- The complexity of both of those algorithm depends on the number of routes. However, while PMLS have a polynomial complexity, FPT-PMLS scales exponentially with the number of routes. As we measured on Figure~\ref{fig:tps_fpt}, the time taken to compute an instance with more than $20$ routes with FPT-PMLS is too long to be acceptable. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm, which runs in few microseconds, even with a large number of routes.
+
+
+ The complexity of both of those algorithm depends on the number of routes. However, PMLS have a polynomial complexity, while FPT-PMLS scales exponentially with the number of routes. As we measured on Figure~\ref{fig:tps_fpt}, the time taken to compute an instance with more than $20$ routes with FPT-PMLS is too long to be acceptable. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm, which runs in few microseconds, even with a large number of routes.
 
 %     Figure~\ref{fig:exec_time} shows the average computation time of the two algorithms during the previous experiment.
 %     
@@ -1109,6 +1113,26 @@ First, we observe that the FPT-PMLS gives some better results than PMLS for less
 Also, remark that we can improve our previous results by taking $10,000$ random orders,
 instead of $1,000$. The number of different orders is $7!= 5,040$ since we have $8$ routes and the solutions are invariant up to a circular permutation of the order. Therefore instead of doing $10,000$ random draws we could test every possible order in less time. However the computation time of this method would scale badly with $n$. On the other hand, remark that the success rate of PMLS is already high for $100$ random orders, which means it will work even better than the other methods when $n$ is larger and that the number of random orders drawn becomes critical.
      \subsubsection{Some harder topologies to stress PMLS}
+     The previous results are computed on instances in which the size of the arcs in the network are uniformly drawn. We now want to study the impact of the topology of the network on the performances of PMLS. We remarked that the performances of PMLS are the worst if we draw all the routes in the same range of values. This observation contradict the remarks of the beginning of the section~\ref{sec:PALL}. Indeed, in this remark, we explain that if all the routes are the same or almost the same, the problem \pall is easy to solve in time $O(n)$. Nevertheless, if the routes are drawn in the same range of values, by increasing this range, we move out from the instances which are easy to solve. Figures~\ref{fig:1grp}~and~\ref{fig:2grp} show the impact of the difference between the size of the routes on the efficiency of PMLS. On figure~\ref{fig:1grp}, we draw the all arcs of the network between $P-{\text range}$ and $P$, varying the range from $0$ to $3200$. On figure~\ref{fig:2grp}, we draw half of the arcs between $P-{\text range}$ and $P$, and half of the arcs between $\frac{P}{2}-\text{range}$ and $\frac{P}{2}$. The figures shows the cumulative distribution of the margin needed by PMLS to find a solution, computed on $10,000$ instances.
+          
+              \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.5\textwidth]{departs_distrib1Grp.pdf}
+      \end{center}
+      \caption{Cumulative distribution of the margin needed to find a solution with 1 group of routes}
+      \label{fig:1grp}   
+     \end{figure}    
+     
+                \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.5\textwidth]{departs_distrib2Grp.pdf}
+      \end{center}
+    \caption{Cumulative distribution of the margin needed to find a solution with 2 group of routes}
+      \label{fig:2grp}   
+     \end{figure}    
+     
+     First, remark that, when we have one group of routes, it is harder to find some solutions than when we have two groups of routes. Also, as we can observe, the closer the size of the routes are from each others, the easier it is to find a solution for \pall. Moreover, when the range is large enough, the conflict between the routes is less critical and PMLS finds most of the time a solution. The most difficult instances to solves are then when all the routes are drawn in the same range of value, between $P-1,600$ and $P$. Indeed, in this case, only $87\%$ of the instances can be solved with margin $0$, and we need a margin of $1,600$ to ensure that PMLS finds a solution.
+     This observation gives us some details on the network topologies which cannot be solved with PMLS. In practice, it can thus be interesting to artificially lengthen the size of some routes to avoid having several routes with similar lengths, and thus, increases the chance to find a solution to \pall.
      
      \subsubsection{Performances of PMLS compared to Statistical multiplexing}
      Now that we have found the best amongst the algorithms solving \pall, we need to compare its performances against the actual way to manage the messages in a network:  statistical multiplexing, with a FIFO buffer in each node of the network to resolve collisions. The time at which the messages are sent in the network is not computed as in our approach, thus we fix the offsets of each route to some random value.
