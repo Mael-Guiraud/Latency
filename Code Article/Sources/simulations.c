@@ -566,7 +566,7 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 								id ++;
 						//	printf ("%d %f %d\n",id,did,compteur_rand);
 							#pragma omp atomic
-								resufpt[id]++;
+								resusp[id]++;
 						}
 					}
 					free(m_i);
@@ -591,7 +591,7 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 		float sumfpt = 0;
 		for(int i=0;i<5;i++)
 		{
-			printf("%d %f %f %f\n",i,resugp[i],resusp[i],resufpt[i]);
+			//printf("%d %f %f %f\n",i,resugp[i],resusp[i],resufpt[i]);
 			sumgp += resugp[i];
 			sumsp += resusp[i];
 			sumfpt += resufpt[i];
