@@ -7,7 +7,7 @@ else
 endif
 
 
-CFLAGS = -fopenmp -c -g -std=c99 -Wall -O3
+CFLAGS = -fopenmp -c -g -std=c99 -Wall -O3 -lm
 
 DIRbin = bin/
 DIRdata = ../datas/

@@ -472,18 +472,24 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 	FILE * F = fopen(nom,"w");
 	Graphe g ;
 	int ressp,resgp,resfpt;
-	float sp,gp,fpt;
+	//float sp,gp,fpt;
 	int tmax;
 	
 	int * m_i;
 	int * offsets;
 	int permutation[nb_routes];
 	int sp_found,fpt_found,gp_found;
-	for(int nb_rand=1;nb_rand<= 100000;nb_rand *= 10)
+	float resugp[5];
+	float resusp[5];
+	float resufpt[5];
+	for(int i=0;i<5;i++)
 	{
-		sp=0;
-		gp=0;
-		fpt = 0;
+		resugp[i]=0;
+		resusp[i]=0;
+		resufpt[i]=0;
+	}
+	
+		
 		#pragma omp parallel for private(ressp,resgp,resfpt,sp_found,gp_found,fpt_found,g,tmax,m_i,offsets,permutation) if (PARALLEL) schedule (static)
 		for(int i = 0;i<nb_simuls;i++)
 		{
@@ -497,7 +503,9 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 			sp_found = 0;
 			fpt_found=0;
 			gp_found=0;
-			for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
+			double did;
+			int id;
+			for(int compteur_rand = 1;compteur_rand<=100000;compteur_rand++)
 				{
 
 					for(int k=0;k<nb_routes;k++)
@@ -516,8 +524,12 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 							if(resgp != -1)
 							{
 								gp_found = 1;
+								did = log10(compteur_rand);
+								id = (int)did;
+								if(did != id)
+									id ++;
 								#pragma omp atomic
-									gp++;
+									resugp[id]++;
 
 							}
 							
@@ -532,8 +544,12 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 						if(resfpt != -1)
 						{
 							fpt_found = 1;
+							did = log10(compteur_rand);
+							id = (int)did;
+							if(did != id)
+								id ++;
 							#pragma omp atomic
-								fpt++;
+								resufpt[id]++;
 						}
 					}
 					if(!sp_found)
@@ -544,8 +560,13 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 						if(ressp != -1)
 						{
 							sp_found = 1;
+							did = log10(compteur_rand);
+							id = (int)did;
+							if(did != id)
+								id ++;
+						//	printf ("%d %f %d\n",id,did,compteur_rand);
 							#pragma omp atomic
-								sp++;
+								resufpt[id]++;
 						}
 					}
 					free(m_i);
@@ -561,17 +582,28 @@ void nombre_random_PALL(int nb_routes, int taille_paquets,int taille_route, int 
 		
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
+			fprintf(stdout,"\r %d  per cent of experiments done", ((i+1)*100)/(nb_simuls));
+			fflush(stdout); 
 			
 		}
-		
-	
-   			      fprintf(F,"%d %f %f %f\n",nb_rand,gp/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
-   			      fprintf(stdout,"%d %f %f %f\n",nb_rand,gp/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
+		float sumgp = 0;
+		float sumsp = 0;
+		float sumfpt = 0;
+		for(int i=0;i<5;i++)
+		{
+			printf("%d %f %f %f\n",i,resugp[i],resusp[i],resufpt[i]);
+			sumgp += resugp[i];
+			sumsp += resusp[i];
+			sumfpt += resufpt[i];
+			 fprintf(F,"%f %f %f %f\n",pow(10,i),sumgp/nb_simuls*100,sumsp/nb_simuls*100,sumfpt/nb_simuls*100);     
+			 fprintf(stdout,"%f %f %f %f\n",pow(10,i),sumgp/nb_simuls*100,sumsp/nb_simuls*100,sumfpt/nb_simuls*100);     
+		}		
+   			     
    			      
  
 		
 
-	}
+	
 	fclose(F);
 }
 
@@ -1169,4 +1201,3 @@ void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int mar
 	}
 
 }
-

@@ -59,14 +59,14 @@ int main()
 	//sucess_retour_PALL(8,2500,20000,3000,1000,(8*2500)/(0.95),1000);
 
 
-	tps_FPT_PALL(32, 2500,80000,0,1000,1000,0.95);
+	//tps_FPT_PALL(32, 2500,80000,0,1000,1000,0.95);
 	/******************************************/
 
 	/*****
 	//Taux de reussite des diferents nombres d'instances générées
 	*****/
 
-    //nombre_random_PALL(8,2500,20000,10000, 21052);
+    nombre_random_PALL(8,2500,20000,10000, 21052);
 
 	/*****
 	Tmax moyen pour sto vs sp
