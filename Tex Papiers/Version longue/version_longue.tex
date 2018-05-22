@@ -800,7 +800,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
 		
 	 \begin{theorem}\label{th:asym}
 	 Let $(G,{\cal R})$ be a star routed network with $n$ routes and let $P \geq n\tau$. Assume that the deadline function 
-	 satisfies for all $r\in {\cal R}$, $d(r) \leq \displaystyle{\max_{r' \in  {\cal R}} 2\lambda(r')}$. Then, there is a $(P,\tau)$-periodic assignment and it can be built in time $O(n)$.
+	 satisfies for all $r\in {\cal R}$, $d(r) \geq \displaystyle{\max_{r' \in  {\cal R}} 2\lambda(r')}$. Then, there is a $(P,\tau)$-periodic assignment and it can be built in time $O(n)$.
 % 	 $d = \max_{i,j} |\Omega(s_i,c_s) - \Omega(s_j,c_s)$. There is a $(P,\tau)$-periodic assignment with process time $2\, \displaystyle{\max_{r\in {\cal R}} \lambda(r) + d}$ and it can be built in time $O(n)$.
 	 \end{theorem}
       \begin{proof}
@@ -835,7 +835,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
     Either the time between two messages on the central arc is random and we call this policy Random Order and Random Spacing (RORS) or the space between two consecutive messages is always the same and we call this policy Random Order and Balanced Spacing (ROBS).
  	
     We denote by \bra (backward routes assignment) the problem \pall where the offsets of the forward routes are also given as input.
-    In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. The method to solve \bra are then combined with the proposed policies for fixing the offsets of the forward routes
+    In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. The methods to solve \bra are then combined with the proposed policies for fixing the offsets of the forward routes
     to solve \pall.  
    
    \subsection{Greedy scheduling of backward routes}
@@ -914,9 +914,9 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
      
      Algorithm PMLS runs, for each route $r$, the algorithm MLS on an instance defined as follows. 
      Let $RT(r)$ be the release time of $r$, we subtract it to all release time and deadline.
-     Therefore $RT(r)$ is zero in this instance and the time at which the message of $r$ crosses $c_t$ is also set to zero, hence its waiting time is zero.  We then modify the instance so that all release times are in $[0,P-\tau]$: Each release time $RT(r_i)$ is replaced by $RT(r_i) \mod P$ and $RT(r_i) - (RT(r_i) \mod P)$ is subtracted to the deadline $d(r_i)$. Furthermore, if a release time of a route $r_i$ is between $ P-\tau$ and $P$, we set it to $0$ and $d(i) = d(i) - P$. 
+     Therefore $RT(r)$ is zero in this instance and the time at which the message of $r$ crosses $c_t$ is also set to zero, hence its waiting time is zero.  We then modify the instance so that all release times are in $[P-\tau]$: Each release time $RT(r_i)$ is replaced by $RT(r_i) \mod P$ and $RT(r_i) - (RT(r_i) \mod P)$ is subtracted to the deadline $d(r_i)$. Furthermore, if a release time of a route $r_i$ is between $ P-\tau$ and $P$, we set it to $0$ and $d(i) = d(i) - P$. 
      
-     The deadline of each backward route is set to the minimum of their deadline and $P - \tau$. Because of this modification of deadlines, if MLS finds a solution for an instance, we have $y_{max}- y_{min} \leq P -\tau $, hence it is a $(P,\tau)$ periodic assignment.  The algorithm PMLS finds periodic assignments more often than MLS, because if MLS finds a solution with first route $r$ and such that $y_{max} - y_{min} \leq P -\tau$, then this solution is found by PMLS when it selects $r$ as the first route. Since MLS is used at most $n$ times, the complexity of PMLS is in $O(n^3\log(n))$. Note that PMLS is a heuristic and may fail to find assignments when they have some $y_i$ larger than $P - \tau$.
+     The deadline of each backward route is set to the minimum of their deadline and $P - \tau$. Because of this modification of deadlines, if MLS finds a solution for an instance, we have $y_{max}- y_{min} \leq P -\tau $, hence it is a $(P,\tau)$ periodic assignment.  The algorithm PMLS finds periodic assignments more often than MLS, because if MLS finds a solution with $r_i$ the route such that $y_i = y_{min}$, then this solution is found by PMLS when it selects $r_i$ as the first route. Since MLS is used at most $n$ times, the complexity of PMLS is in $O(n^3\log(n))$. Note that PMLS is a heuristic and may fail if all assignments have some $y_i$ larger than $P - \tau$.
      
 %     \begin{algorithm}[H]
 %     \caption{ Minimized Scheduling Periodic (MSP)}
@@ -956,12 +956,11 @@ $\bra \in \FPT$ when parametrized by the number of routes.
 
  Now, remark that if there is a periodic assignment for an instance, then there is a periodic assignment satisfying for all $i$, $y_i \leq 2P - \tau$.  Indeed, if there is a $i$ such that $y_i > 2P$ in
 a periodic assignment, then setting $y_i = y_i - P$ cannot create a collision and improve the 
-process time of $r_i$ by $P$. Since $y_i - P > P$, it is a valid assignment, that is the route $r_i$ sends its message after its release time. Moreover, there are no $y_i \in ]2P-\tau, 2P]$ for all $k$ and $i \neq j$, since by construction
-$y_j = 0$.
+process time of $r_i$ by $P$. Since $y_i - P > P$, it is a valid assignment, that is the route $r_i$ sends its message after its release time. Moreover, for all $i \neq j$, it is not possible that $2P-\tau < y_i \leq 2P$, since by construction $y_j = 0$ and it would induce a collision.
  
 
 From a periodic assignment satisfying that for all $i$, $y_i \leq 2P - \tau$, we define 
-a new instance whose periodic assignments are a subset of the periodic assignments of the original instance. Moreover, one of the periodic assignments of the new instance satisfies for all $i$, $y_i \leq P - \tau$ and will thus be found by MLS. Let $S$ be the set of routes $r_i$ such that  $y_i \in]P - \tau, 2P - \tau]$. The new instance is defined by setting the release time of the routes in $S$ to $0$ and by subtracting $P$ to their deadlines. Then the considered periodic assignment is a solution of the new instance with all $y_i \leq P -\tau$. Moreover any solution of the new instance is a solution of the original one, since we have made the constraints harder.   
+a new instance whose periodic assignments are a subset of the periodic assignments of the original instance. Moreover, one of the periodic assignments of the new instance satisfies for all $i$, $y_i \leq P - \tau$ and will thus be found by MLS. Let $S$ be the set of routes $r_i$ such that  $P - \tau < y_i \leq 2P - \tau$. The new instance is defined by setting the release time of the routes in $S$ to $0$ and by subtracting $P$ to their deadlines. Then the considered periodic assignment is a solution of the new instance with all $y_i \leq P -\tau$. Moreover any solution of the new instance is a solution of the original one, since we have made the constraints harder.   
 
 The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
 \end{proof}
@@ -1007,7 +1006,8 @@ Now remark that the construction of $S$ depends on the choice of the order of th
    We look at two different regimes, a medium load of $80\%$ and a high load of $95\%$.
    Considering smaller load is not relevant since we can solve the problem without waiting times as shown in Section~\ref{sec:exp_PAZL}. 
    
-   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the seven kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks. For RO, RORS and ROBS, we draw $1000$ random orders and count it as a success as soon as there is a solution for one order. Each random order drawn is tested on the three policies with random orders, if a solution has not been found yet with this policy.
+   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the seven kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks. For RO, RORS and ROBS, we draw $1000$ random orders and count it as a success as soon as there is a solution for one order. Each random order drawn is used with RO, RORS and ROBS to make the comparison fairer.
+   
 
 \begin{figure}[h] 
   \centering
@@ -1025,10 +1025,9 @@ Now remark that the construction of $S$ depends on the choice of the order of th
 
      According to our experiments, sending the messages from the shortest to the longest route or arc does not work well. It corresponds to the policy of Proposition~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending from the longest to the shortest route or arc works better and it seems that sorting the routes according to the length of the last arc rather than the route is better, at least in a loaded network. 
      
-     Trying random orders is much better than our naive choice of order.
-     With a load of $95\%$, there is a solution with margin $0$ most of the time. Also, the three random order policies seems to have similar performances, but the RO policy gives a bit more solutions than the two others ones, under high load and low margins. This is the reason why in the following experiments on the performances of our algorithms to solve \bra, we will always use the RO policy.  Note that, when disallowing waiting times, there were no instances with an assignment for $95\%$ of load and long routes (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying \pall rather than \pazl.
+     Using many random orders is much better than our arbitrary choices of order. With a load of $95\%$, a solution is found with margin $0$ most of the time. The three random order policies have similar performances, but RO gives slightly more solutions than the two others ones, under high load and small margin. This is the reason why in the following experiments on the performances of our algorithms to solve \bra, we will always use  RO to fix the offsets of the forward routes.  Note that, when disallowing waiting times, there were no instances with an assignment for $95\%$ of load and long routes (see Section~\ref{sec:exp_PAZL}), which justifies the interest of studying \pall rather than \pazl.
      
-      We now want to compare the performances of the four different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms on high load. Moreover, we will use $1,000$ random orders for the first stage as it gives the best results. In Figure~\ref{fig:success21000}, we represent the success rate of the three algorithms with regards to the margin,  computed over $10,000$ random star routed networks generated with the same parameters as previously. In order to show some interesting results, we chose a load of $95\%$.
+      We now want to compare the performances of the four different algorithms used in the second stage. Since GD already showed excellent results on mild loads, it is more interesting to focus on the behavior of the algorithms with high load. We will draw $1,000$ random orders using the policy RO to set the offsets of the forward routes since it gives the best results. In Figure~\ref{fig:success21000}, we represent the success rate of the four algorithms with regards to the margin,  computed over $10,000$ random star routed networks generated with the same parameters as previously. 
      
     \begin{figure} [h] 
        \begin{center}
@@ -1039,16 +1038,10 @@ Now remark that the construction of $S$ depends on the choice of the order of th
      \end{figure}
      
       The MLS algorithm performs poorly, worst than GD, PMLS and FPT-PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
-     The GD algorithms is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution in more than $99\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $300$, which corresponds to about $15\mu$s of additional delay with the chosen parameters, we always find a solution. 
-     Note that the PMLS and FPT-PMLS algorithm have some very similar performances. In fact, it appears that the FPT-PMLS algorithm have, most of the time, the same success rate than the PMLS algorithm, even with a load of $100\%$ and a margin of $0$ (only $2$ instances of $100,000$ have been found by FPT-PMLS and not by PMLS). 
-
-%     The MLS algorithm performs poorly, worst than GD, PMLS and FPT-MLS, which shows that \emph{taking into account the periodicity} is fundamental.
-%     The GD algorithms is close to $100\%$ success rate for margins larger than $2,500$ while the PMLS and FPT-MLS algorithms find a solution in more than $97\%$ of the experiments, even with a margin $0$. Therefore, for the worst possible constraints on load and margin, there are only a few instances for which we do not find a solution. With a margin of $600$, which corresponds to about $0.03$ms of additional delay with the chosen parameters, we always find a solution. 
-%     Even if the PMLS and FPT-MLS algorithms have some close performances, it appears that the FPT-MLS performs better when the margin is low. Indeed, with a load of $100\%$ and for $0$. margin, the PMLS algorithm have a success rate of $89\%$ while the FPT-MLS have a success rate of $99\%$. This also means that the performances of FPT-MLS are excellent, even in the most stressful scenario, which does not seems to be realistic.
-%     
-%     
-  %   Moreover, by studying the computation time of the FPT-MLS and the PMLS algorithm during the experience of Figure~\ref{fig:success21000}, we remark that the average computation time to find a solution is often $10$ times higher with FPT-MLS than with PMLS ($\sim300\mu s$ for FPT-MLS versus $\sim30\mu s$ for PMLS). Nevertheless this remark is true when PMLS finds a solution at $100\%$. On the other hand, when PMLS can not find a solution that FPT-MLS finds, because the algorithm needs to draw the $1000$ random orders before failing, the computation time of an instance by PMLS is, in average, in the same range as the one with FPT-MLS ($\sim 1ms)$.
-      Then, we study the evolution of the computing time of the PMLS and the FPT-PMLS algorithms when the number of routes grows. In the following experiment, we fix the margin to $0$. In order to stress the algorithms, the period is chosen so that the load is always $95\%$, and we draw uniformly the weights of the arcs between $0$ and $P$. Since we only want to measure the computing time of the algorithms of the \bra problem, we draw $1$ random order for each instances. The table on Figure~\ref{fig:tps_fpt} shows the computation times of the PMLS and the FPT-PMLS algorithms, averaged on $1,000$ instances. 
+     The GD algorithm is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution in more than $99\%$ of the experiments, even \emph{with a margin $0$}. In other words, for very high load and no margin, there are only a few instances for which we do not find an assignment. With a margin of $300$, which corresponds to about $15\mu$s of additional delay with the chosen parameters, we always find a solution. 
+     
+     It turns out that the performances of PMLS and FPT-PMLS 
+     are almost identical. Even with a load of $100\%$ and a margin of $0$, we needed to draw $100,000$ random instances before finding one which can be solved by FPT-PMLS and not by PMLS. Since FPT-PMLS is of exponential complexity in $n$, it does not seem relevant to use it. We now present the computing time of PMLS and FPT-PMLS to understand the size of instances which can be solved. To stress the algorithms, we fix the margin to $0$ and the load to $95\%$. The table on Figure~\ref{fig:tps_fpt} shows the computation times of PMLS and  FPT-PMLS, averaged on $1,000$ instances. 
      
           \begin{figure}[h] 
        \begin{center}
@@ -1064,16 +1057,12 @@ $ \frac{\text{FPT-PMLS}}{\text{PMLS}}$& $27$ &$78$&$523$&$2122$&$14882$\\
     \hline
       \end{tabularx}
       \end{center}
-   \caption{Scalability of PMLS and FPT-PMLS computing time with the number of routes}
+   \caption{Computing time of PMLS and FPT-PMLS with regard to the number of routes}
         \label{fig:tps_fpt}
      \end{figure}
-     
-
-
-
-
- The complexity of both of those algorithm depends on the number of routes. However, PMLS have a polynomial complexity, while FPT-PMLS scales exponentially with the number of routes. As we measured on Figure~\ref{fig:tps_fpt}, the time taken to compute an instance with more than $20$ routes with FPT-PMLS is too long to be acceptable. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm, which runs in few microseconds, even with a large number of routes.
-
+    
+  The complexity of both of those algorithm depends on the number of routes. As shown in Figure~\ref{fig:tps_fpt}, PMLS scales linearly with the number of routes, while  cubic in theory and FPT-PMLS scales exponentially as expected. Both algorithms are usable for instances of $20$ routes, but for $40$ routes or more,  FPT-PMLS becomes too slow. Since FPT-PMLS almost never finds a solution when PMLS does not and is much slower, one should always prefer to use PMLS. 
+  
 %     Figure~\ref{fig:exec_time} shows the average computation time of the two algorithms during the previous experiment.
 %     
 %        \begin{figure} [h] 
@@ -1087,9 +1076,9 @@ $ \frac{\text{FPT-PMLS}}{\text{PMLS}}$& $27$ &$78$&$523$&$2122$&$14882$\\
 %	First, remark that the computation time of the two algorithm decrease until a margin of approximately  $1,000$ slots. Indeed, the more the algorithm fails, the higher the computation time is because the $1,000$ random orders have to be drawn before failing. Moreover, even when both of the two algorithms always succeed, the computation time of FPT-PMLS is about $10$ time higher that the computation time of the PMLS algorithm. Furthermore, when the FPT-PMLS algorithm could be able to find a solution that the PMLS algorithm would not find, i.e. on low margins, the computation time is $14$ time higher for the first algorithm. It is not really worth it since, most of the time, the FPT-PMLS algorithm do not have a better success rate than the PMLS algorithm.
 %     
 
-    Recall that the random order corresponds to the best of $1,000$ orders drawn uniformly which means that a computation can be up to $1,000$ time slower than for a fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. Up to now, we have chosen the number of random orders to be $1000$ arbitrarily.
-    
-    We investigate the success rate of our algorithm with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The table of Figure~\ref{fig:randomdrawing} presents the average success rate for each number of sending orders, on $10,000$ instances, for GD, PMLS and FPT-PMLS.
+    When evaluating the computing time of our method, we should take into account how many random orders are drawn. In our experiment, we chose to draw $1,000$ orders which may be 
+    $1,000$ time slower than using fixed order. The choice of the number of random orders drawn yields a trade-off between the computation time and the success rate. 
+    We investigate the success rate of our algorithms with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The table of Figure~\ref{fig:randomdrawing} presents the average success rate for each number of sending orders, on $10,000$ instances, for GD, PMLS and FPT-PMLS.
          \begin{figure}[h] 
        \begin{center}
    \begin{tabularx}{0.5\textwidth}{|c|X|X|X|X|X|X|}
@@ -1107,16 +1096,36 @@ $ \frac{\text{FPT-PMLS}}{\text{PMLS}}$& $27$ &$78$&$523$&$2122$&$14882$\\
    \caption{Impact of the number of random sending orders}
         \label{fig:randomdrawing}
      \end{figure}
-%      \todo{ajouter l'algo FPT qui ameliore PMLS et dire quelque chose sur le temps de calcul pour voir jusqu'a quand c'est faisable}
+
+First, observe that the better the algorithm to solve $\bra$, the less random order it needs in stage one to achieve its best performances. In particular, FPT-PMLS has better results than PMLS for less than $1,000$ random orders, but not beyond. This justify our choice to draw $1,000$ random orders, to obtain the best success rate with the best time complexity.
+
+Also, remark that the number of different orders is $7!= 5,040$ since we have $8$ routes and the solutions are invariant up to a circular permutation of the order. Hence for $8$ routes, itis possible to test every possible order. However the computation time of this method scales badly with $n$. The fact that PMLS and FPT-PMLS have already high success rates for $10$ random orders hints that even for larger $n$, drawing $1000$ random order is sufficient.
+
+%
+%
+%First, we observe that the FPT-PMLS gives some better results than PMLS for less than $1,000$ random orders, but not beyond. This enforce our choice to draw $1,000$ random orders, to have the same performances with PMLS, which have a better complexity.
+%Also, remark that we can improve our previous results by taking $10,000$ random orders,
+%instead of $1,000$. The number of different orders is $7!= 5,040$ since we have $8$ routes and the solutions are invariant up to a circular permutation of the order. Therefore instead of doing $10,000$ random draws we could test every possible order in less time. However the computation time of this method would scale badly with $n$. On the other hand, remark that the success rate of PMLS is already high for $100$ random orders, which means it will work even better than the other methods when $n$ is larger and that the number of random orders drawn becomes critical.
+%     \subsubsection{Some harder topologies to stress PMLS}
+%     The previous results are computed on instances in which the size of the arcs in the network are uniformly drawn. We now want to study the impact of the topology of the network on the performances of PMLS. We remarked that the performances of PMLS are the worst if we draw all the routes in the same range of values. This observation contradict the remarks of the beginning of the section~\ref{sec:PALL}. Indeed, in this remark, we explain that if all the routes are the same or almost the same, the problem \pall is easy to solve in time $O(n)$. Nevertheless, if the routes are drawn in the same range of values, by increasing this range, we move out from the instances which are easy to solve. Figures~\ref{fig:1grp}~and~\ref{fig:2grp} show the impact of the difference between the size of the routes on the efficiency of PMLS. On figure~\ref{fig:1grp}, we draw the all arcs of the network between $P-{\text range}$ and $P$, varying the range from $0$ to $3200$. On figure~\ref{fig:2grp}, we draw half of the arcs between $P-{\text range}$ and $P$, and half of the arcs between $\frac{P}{2}-\text{range}$ and $\frac{P}{2}$. The figures shows the cumulative distribution of the margin needed by PMLS to find a solution, computed on $10,000$ instances.
+
+
+     \subsubsection{Harder random topologies}
      
+     The previous experiments use instances where the weights of the arcs in the network are uniformly drawn in a large interval. However, it is quite natural to consider that most routes are of the same length or can be arranged in two groups of similar lengths if the network involves two data-centers.
+     
+     Using Theorem~\ref{th:asym}, we can bound the minimum margin by the difference
+     between the size of the routes. Hence if the routes have all almost the same size, the needed margin is small. If the routes are drawn in a large interval, then the expected difference between the longest route and the second longest is large. This difference can be seen as a free latency for all routes, hence we expect to need little margin in this regime. As a consequence, the harder instances should be for routes with length 
+     drawn in an interval of a moderate size compared to the period.
+     
+     The figures~\ref{fig:1grp} and~\ref{fig:2grp} show the cumulative distribution of the margin needed by PMLS to find an assignment computed on $10,000$ instances.
+     Figure~\ref{fig:1grp} represents the success rate of PMLS for instances where length of routes are drawn in $[0,I]$, where $I$ goes from $0$ to $3200$. As expected the success rate decreases for a given margin until some point ($I = 800$) and then increases again.   
+     In the the most difficult settings only $87\%$ of the instances can be solved with margin $0$, and we need a margin of $1,900$ to ensure that PMLS finds a solution.
+    
+    
+    
+     In Figure~\ref{fig:2grp}, we do the same experiment, except that the weight of half of the routes is drawn in $[0,I]$ and the length of the other half is drawn in $[P/2,P/2 + I]$. The situation is the same as for the previous experiment but with better success rates. 
 
-
-
-First, we observe that the FPT-PMLS gives some better results than PMLS for less than $1,000$ random orders, but not beyond. This enforce our choice to draw $1,000$ random orders, to have the same performances with PMLS, which have a better complexity.
-Also, remark that we can improve our previous results by taking $10,000$ random orders,
-instead of $1,000$. The number of different orders is $7!= 5,040$ since we have $8$ routes and the solutions are invariant up to a circular permutation of the order. Therefore instead of doing $10,000$ random draws we could test every possible order in less time. However the computation time of this method would scale badly with $n$. On the other hand, remark that the success rate of PMLS is already high for $100$ random orders, which means it will work even better than the other methods when $n$ is larger and that the number of random orders drawn becomes critical.
-     \subsubsection{Some harder topologies to stress PMLS}
-     The previous results are computed on instances in which the size of the arcs in the network are uniformly drawn. We now want to study the impact of the topology of the network on the performances of PMLS. We remarked that the performances of PMLS are the worst if we draw all the routes in the same range of values. This observation contradict the remarks of the beginning of the section~\ref{sec:PALL}. Indeed, in this remark, we explain that if all the routes are the same or almost the same, the problem \pall is easy to solve in time $O(n)$. Nevertheless, if the routes are drawn in the same range of values, by increasing this range, we move out from the instances which are easy to solve. Figures~\ref{fig:1grp}~and~\ref{fig:2grp} show the impact of the difference between the size of the routes on the efficiency of PMLS. On figure~\ref{fig:1grp}, we draw the all arcs of the network between $P-{\text range}$ and $P$, varying the range from $0$ to $3200$. On figure~\ref{fig:2grp}, we draw half of the arcs between $P-{\text range}$ and $P$, and half of the arcs between $\frac{P}{2}-\text{range}$ and $\frac{P}{2}$. The figures shows the cumulative distribution of the margin needed by PMLS to find a solution, computed on $10,000$ instances.
           
               \begin{figure}
        \begin{center}
@@ -1134,8 +1143,6 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
       \label{fig:2grp}   
      \end{figure}    
      
-     First, remark that, when we have one group of routes, it is harder to find some solutions than when we have two groups of routes. Also, as we can observe, the closer the size of the routes are from each others, the easier it is to find a solution for \pall. Moreover, when the range is large enough, the conflict between the routes is less critical and PMLS finds most of the time a solution. The most difficult instances to solves are then when all the routes are drawn in the same range of value, between $P-1,600$ and $P$. Indeed, in this case, only $87\%$ of the instances can be solved with margin $0$, and we need a margin of $1,600$ to ensure that PMLS finds a solution.
-     This observation gives us some details on the network topologies which cannot be solved with PMLS. In practice, it can thus be interesting to artificially lengthen the size of some routes to avoid having several routes with similar lengths, and thus, increases the chance to find a solution to \pall.
      
      \subsubsection{Performances of PMLS compared to Statistical multiplexing}
      Now that we have found the best amongst the algorithms solving \pall, we need to compare its performances against the actual way to manage the messages in a network:  statistical multiplexing, with a FIFO buffer in each node of the network to resolve collisions. The time at which the messages are sent in the network is not computed as in our approach, thus we fix the offsets of each route to some random value.
@@ -1161,19 +1168,17 @@ instead of $1,000$. The number of different orders is $7!= 5,040$ since we have 
  \section{Conclusion}
 In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in a star shaped fronthaul network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Longest-Shortest policy) or when the load is less than $80\%$ (Exhaustive search of compact assignments).  
 When the load is higher, buffering is allowed in the BBUs and we propose the algorithm PMLS which  finds a deterministic communication scheme with almost no additional latency.
-% 
+ Our deterministic approach is vastly superior to the classical statistical multiplexing. This emphasizes that deterministic sources of traffic are always best dealt with in a deterministic manner.  
+ % 
 % We plan to study other commons fronthaul topologies such as caterpillars, trees or ring; the latter being different since 
 % the forward and backward routes are not symmetric. For other applications, it could be interesting to optimize the average latency of the routes rather than the worst latency, a problem which may be solved using linear optimization.   
 
    
    We plan to generalize our study of the \pall problem to other common fronthaul topologies,
-   such as caterpillar, trees, cycles or bounded treewidth graphs. The cycles in particular are 
-   different since their forward and backward routes are not symmetric. 
-   We would like to design an FPT algorithm for \pall which is as efficient as the one for \pazl 
-   and prove that both problems are $\NP$-hard.
+   such as caterpillars, trees, cycles or bounded treewidth graphs. The cycles in particular are different since their forward and backward routes are not symmetric. 
+   We would like to design a better FPT algorithm for \pall which is as efficient as the one for \pazl and prove that \pazl and \pall are $\NP$-hard.
 
-   We could also study variations of our problem. Instead of minimizing the maximum process time, we could try to minimize the average process time, a linear objective which could make linear programming useful. We could allow preemption, that is the messages are allowed to be cut into pieces, which would certainly change the complexity of the problem.  Instead of periodic communication we could try to organize communications with pseudo-periodic schemes or even a temporal law. Moreover we could allow a bounded message loss.
-   Finally, the routes may not be fixed but chosen in the graph to minimize the maximum process time, which would make the problem even more difficult (maybe $\Pi_2$-complete instead of $\NP$-complete). 
+   Several variations of our model are relevant. Instead of minimizing the maximum process time, we may want to minimize the average process time, a linear objective which could make linear programming useful. We could allow preemption, that is the messages are allowed to be cut into pieces, which would certainly change the complexity of the problem and help with the latency.  Instead of periodic communication we could try to organize communications with pseudo-periodic schemes or even a temporal law. Moreover we could allow a bounded message loss. Finally, the routes may not be fixed but chosen in the graph to minimize the maximum process time, which would make the problem even more difficult ($\Pi_2$-complete instead of $\NP$-complete). 
 
   
  \paragraph*{Acknowledgments} 
