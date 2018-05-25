@@ -1,3 +1,8 @@
+/***
+Copyright (c) 2018 Guiraud Maël
+All rights reserved.
+*///
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -46,9 +51,6 @@ int main()
 	//sucess_aller_PALL(8,2500,20000,3000,10000,25000);
 
 
-
-
-
 	/******************************************/
 
 
@@ -66,7 +68,7 @@ int main()
 	//Taux de reussite des diferents nombres d'instances générées
 	*****/
 
-    nombre_random_PALL(8,2500,20000,10000, 21052);
+    //nombre_random_PALL(8,2500,20000,10000, 21052);
 
 	/*****
 	Tmax moyen pour sto vs sp
@@ -86,7 +88,7 @@ int main()
 	
 
 	//Test stochastique vs pmls
-	//stochastic_vs_PMLS(8,2500,20000,10000, 12000);
+	stochastic_vs_PMLS(8,2500,20000,10000, 12000);
 
 
 

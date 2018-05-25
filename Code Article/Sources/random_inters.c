@@ -1,4 +1,7 @@
-
+/***
+Copyright (c) 2018 Guiraud Maël
+All rights reserved.
+*///
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -143,55 +146,7 @@ lint random_lint_max(lint max)
 	//reject if not legal (with the right probability to respect uniformity)
 	return lrandom;
 }
-/*
-lint random_lint_max(lint max)
-{
-	uint64_t x;
-	lint new;
-	int i;
-	int begin;
-	int critical= 1;
-	for(i=NB_COMP-1;i>=0;i--)
-	{
-		if(!max.number[i])
-			new.number[i]=0;
-		else 
-			break;
-	}
-	begin = i;
-	if(i==0)
-	{
-		new.number[i] = ( (random() << 32) | random()) % max.number[i];
-	}
 
-
-	while(i >= 0)
-	{
-		if(i == begin)
-		{
-			x = ( (random() << 32) | random()) % max.number[i];
-			critical = (x==max.number[i]);
-		}
-		else
-		{
-			x = ( (random() << 32) | random());
-			if(critical)
-			{
-				if(x > max.number[i])
-				{
-					i++;
-					continue;
-				}
-			}
-			critical = (x == max.number[i]);
-		}
-		new.number[i] = x;
-		i--;
-	}
-	
-	return new;
-	
-}*/
 
 int transfo(lint a, lint ** table, int n, int k)
 {

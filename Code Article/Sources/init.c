@@ -1,4 +1,9 @@
 
+/***
+Copyright (c) 2018 Guiraud Maël
+All rights reserved.
+*///
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -78,26 +83,26 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 	//for(int i=0;i<pivot/2;i++)
 	for(int i=0;i<pivot/2;i++)
 	{
-		alea = (taille_liens/2)-rand()%(diff);
+		alea = (taille_liens/2)+diff-rand()%(2*diff);
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
-		alea = (taille_liens/2)-rand()%(diff);
+		alea = (taille_liens/2)+diff-rand()%(2*diff);
 		g.matrice[pivot][1+pivot+i] = alea;
 		g.matrice[1+pivot+i][pivot] = alea;
 	}
 	for(int i=pivot/2;i<pivot;i++)
 	{
-		alea = taille_liens-rand()%(diff);
+		alea = taille_liens+diff-rand()%(2*diff);
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
-		alea = taille_liens-rand()%(diff);
+		alea = taille_liens+diff-rand()%(2*diff);
 		g.matrice[pivot][1+pivot+i] = alea;
 		g.matrice[1+pivot+i][pivot] = alea;
 	}
 	g.matrice[pivot][pivot] = 0;
 }
 
-void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff, int P)
+void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff)
 {
 	if(!(g.N%2)){printf("Impossible de générer une étoile avec un nombre pair de sommets\n");exit(5);}
 	int pivot = g.N/2;
@@ -105,7 +110,7 @@ void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff, int P)
 
 	for(int i=0;i<g.N;i++)
 	{
-		alea = P/2+diff-rand()%(2*diff);
+		alea = taille_liens/2+diff-rand()%(2*diff);
 
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;

@@ -1,3 +1,8 @@
+/***
+Copyright (c) 2018 Guiraud Maël
+All rights reserved.
+*///
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
@@ -339,7 +344,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 			g = init_graphe(2*nb_routes+1);
 			graphe_etoile(g,taille_route);
 			//graphe_etoile_dur( g,taille_route,1000);
-			//graphe_etoile_Psur2( g, taille_route,1000, 4*periode);
+			//graphe_etoile_Psur2( g, 4*periode,1000 );
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -894,7 +899,8 @@ char nom[64];
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
-			graphe_etoile(g,taille_route);
+			//graphe_etoile_(g,taille_route);
+			graphe_etoile_Psur2( g, taille_route,800 );
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -1003,8 +1009,8 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 
 			g = init_graphe(2*nb_routes+1);
 			//graphe_etoile(g,taille_route);
-			graphe_etoile_dur( g,taille_route,margin);
-			//graphe_etoile_Psur2( g, taille_route,margin, periode);
+			graphe_etoile_dur( g,periode,margin);
+			//graphe_etoile_Psur2( g, periode,margin);
 			
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -1063,8 +1069,7 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
 
-			if(i%100 == 0)
-				fprintf(stdout,"%d/%d \n",i,nb_simuls);
+			if(i%(nb_simuls/100) == 0){fprintf(stdout,"\r%3d%%",i);fflush(stdout);}
 			
 
 		}
@@ -1081,6 +1086,7 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 
 
 }
+
 
 
 
@@ -1118,8 +1124,7 @@ void tps_FPT_PALL(int nb_routes_max, int taille_paquets,int taille_route,int mar
 		{
 			g = init_graphe(2*nb_routes+1);
 			graphe_etoile(g,taille_route);
-			//graphe_etoile_dur( g,taille_route,1000);
-			//graphe_etoile_Psur2( g, taille_route,1000, 4*periode);
+
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);

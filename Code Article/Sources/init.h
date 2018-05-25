@@ -12,4 +12,4 @@ void graphe_etoile(Graphe g,int taille_liens);
 
 void graphe_etoile_opti(Graphe g,int taille_liens);
 void graphe_etoile_dur(Graphe g,int taille_liens,int diff);
-void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff, int P);
+void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff);
