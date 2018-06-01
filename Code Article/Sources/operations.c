@@ -1,3 +1,7 @@
+/***
+Copyright (c) 2018 Guiraud Maël
+All rights reserved.
+*///
 #include <stdio.h>
 #include <stdlib.h>
 

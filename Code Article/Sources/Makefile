@@ -13,7 +13,7 @@ DIRbin = bin/
 DIRdata = ../datas/
 DIRgraphes = ../datas/graphes/
 
-all: create_folder run neato
+all: create_folder run
 
 run : prog 
 	./prog
