@@ -88,12 +88,12 @@ int main()
 	
 
 	//Test stochastique vs pmls
-	stochastic_vs_PMLS(8,2500,20000,10000, 12000);
+	//stochastic_vs_PMLS(8,2500,20000,10000, 12000);
 
 
 
 	//Test distrib routes departs
-	//distrib_margins_departs(8, 2500,20000,5000, 10000, 21052,1000);
+	distrib_margins_departs(8, 2500,20000,5000, 10000, 21052,1000);
 
 	//Bout de code pour tester la stabilisation de la marge necessaire quand on simule plusieurs periodes en stochastique
 

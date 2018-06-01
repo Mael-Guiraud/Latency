@@ -1009,8 +1009,8 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 
 			g = init_graphe(2*nb_routes+1);
 			//graphe_etoile(g,taille_route);
-			graphe_etoile_dur( g,periode,margin);
-			//graphe_etoile_Psur2( g, periode,margin);
+			//graphe_etoile_dur( g,periode,margin);
+			graphe_etoile_Psur2( g, periode,margin);
 			
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
