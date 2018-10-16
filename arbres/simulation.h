@@ -1,0 +1,2 @@
+void simul();
+void test();

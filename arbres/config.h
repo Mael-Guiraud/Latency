@@ -1,0 +1,12 @@
+#define NB_ARCS 3
+#define MAX_LENGTH 300
+#define PERIOD_MIN 20000
+#define PERIOD_MAX 30000
+#define PERIOD_GAP 1000
+#define MESSAGE_SIZE 2500
+#define NB_SIMULS 100
+#define NB_ROUTES 12
+
+#define NB_BBU 2
+#define NB_COLLISIONS 3
+

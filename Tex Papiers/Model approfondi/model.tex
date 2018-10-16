@@ -65,10 +65,26 @@
 We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
   \subsection{Discrete time model}
-  In the model presented here, the time is discrete. The unit of time is called  {\bf tic}. It is the time needed to transmit a minimal unit of data over the fastest link of the network.
+  In the model presented here, the time is discrete. The unit of time  is called a {\bf tic}. This is the time needed to transmit an atomic data of size $Q$ over the fastest link of the network. Since the speed of the links on the network can be different, the number of tics needed to transmit an atomic data through a link can be different depending on the link. In order to consider only integers, the fastest link of the network can be virtual if there is no link of speed equal to the least common multiple of the speeds of all links in the network. We denote by ${\cal S} = \{s_0,s_1,\ldots,s_n\}$ the set of speed of the links. The number of tics needed to send an atomic data of size $Q$ on a link $i$ is thus equal to $\frac{LCM({\cal S})}{s_i}$ tics, where $LCM({\cal S})$ is the Least Common Multiple of the set {\cal S}. Figure~\ref{fig:datagram} illustrates this phenomenon.
+  
+  \begin{center}
+  
+  \begin{figure}
+  \begin{minipage}[b]{0.50\linewidth}
+  \includegraphics[width=0.8\textwidth]{links.pdf}
+  \end{minipage}
+\hfill
+  \begin{minipage}[b]{0.50\linewidth}
+    \includegraphics[width=0.8\textwidth]{chronotics.pdf}
+  \end{minipage} 
+  \caption{Different number of tics used to carry an atomic data of size $Q$}
+  \label{fig:datagram}
+ \end{figure}
+ 
+    \end{center}
   \subsection{Network modeling}
   
-The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc, expressed in tics. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. It is the time needed by a message to go from the first vertex of the route to $u_i$. We also define $\lambda(u_0,r)=0$. The weight of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
+The network is modeled as a directed graph $G=(V,A)$. The \textbf{sending tic} of a message in a vertex $u$ is the tic at which the beginning of this message is sent from $u$. Also, the \textbf{reception tic} of a message in a vertex $v$ is the tic at which the beginning of the message arrives in $v$.  Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. It is the number of tics needed between the sending tic of a message in the first vertex of the route and the reception tic of this message at $u_i$. We also define $\lambda(u_0,r)=0$. The weight of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
 We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
 The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which computes an answer to the messages sent by the antenna.
 
@@ -76,197 +92,59 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
 	 
     %Time is discretized, hence the unit of all time values is a, the time needed to transmit a minimal unit of data over the network. \todo{parler des différents débits et de ce que ça change}. The weight of an arc is also expressed in tics, that is the time needed by a message to go through this arc.
     
-        In the process we study, some {\bf datagrams} are sent on each route. The size $|d|$ of a datagram $d$ is an integer, expressed in tics. It is the time needed by a node to emit the datagram. Once a datagram have been emitted, it cannot be fragmented during its travel in the network. \\
-          Let $r=(u_0,\dots,u_l)$ be a route, a datagram $d_j$ sent on the route $r$ can be buffered in a node $u_i$. The network follows the {\em store and forward} policy, i.e., a datagram is buffered in a node during at least $|d_j|$ tics. The node waits to completely receive the datagram before re-sending it in the network. To each datagram $d_j$ is thus associated to a set of integers $\{b_j^0,\ldots,b_j^l\}$. Those integers, represent the time waited in some \textbf{buffers}, corresponding to the buffering time of this datagram in each nodes of the route. Because of the previous remark, $b_j^i \in \{0\} \cup \{|d_j|, \ldots,\infty\}$\\
-          We call \textbf{offset} of a datagram on a route  $r$, denoted by $o_r(d)$, the time at which a datagram $d_j$ is sent from $u_0$, the first vertex of $r$. We say that the tic at which a datagram $d_j$ sent at time $o_r(d_j)$ on $r$ reaches a vertex $u_i$ in $r$ is $t(d_j,u_i,r) = o_r(d_j) + \lambda(u_i,r) + \sum_{k=0}^{i-1}b_j^k $.
+        In the process we study, some {\bf datagrams} are sent on each route. The size $|d|$ of a datagram $d$ is an integer, correspond to the number of atomic data needed to carry the information contained by the datagram. The number of tics needed by a node $u$ to emit the datagram through the link $(u,v)$ of speed $s_i = {\cal S}(u,v)$ is denoted $|d|_{(u,v)}$ and has for value $ |d| \times \frac{LCM({\cal S})}{s_i}$ . Once a datagram have been emitted, it cannot be fragmented during its travel in the network. Thus, due to the different speed of the links, when the beginning of a datagram $d$ arrives in a node $u$ of a route $r$, it might be delayed in the node to avoid the fragmentation of the datagram. The number of tics lost in the node is given by the function $l(d,u,r)$.\\
+        \begin{lemma}
+        If a datagram $d$ arrives at a node $v$ through the link $(u,v)$ of speed $s_i$, and must be sent back in the link $(v,w)$ of speed $s_j$, then l(d,v,r) is equal to $ \max( 0, |d|_{(u,v)} - |d|_{(v,w)} )$ tics.
+        \end{lemma}
+        \begin{proof}
+        We consider a buffer in the node $v$. If $t$ is the reception tic of the datagram $d$ in $v$, it has fully reach the buffer in $|d|_{(u,v)}$ tics that is, at date $t+|d|_{(u,v)}$. If the datagram is fully contained in the buffer, the node can send it in $|d|_{(v,w)}$ tics. We want to choose the sending tic such that the datagram will not be fragmented.\\
+        If $s_i \geq s_j$, the buffer fills as fast or faster as it empties, thus, the datagram crosses the node without additional delay.\\
    
-        A {\bf Slice} $S$ is a sequence of several datagrams. There is one slice for each route of the routed network. The cardinal of a slice, denoted $\overline S$ is the number of datagrams in the frame. Let us consider a slice $S_i$ on the route $r_i$, the datagrams $\{d_0,\ldots,d_{\overline S_i-1}\}$ are sent in sequence from the first node of the route, that is $o_{r_i}(d_0) < o_{r_i}(d_1) < \ldots < o_{r_i}(d_{\overline S_i-1})$ . \\
-       For each route, the size of a slice is $\sum_{i=0}^{{\overline S-1}} |d_i|$ . The amount of data sent by an RRH to its BBU is the same, regardless of the route. Hence, we assume that this size is the same for all route, and we denote it by $\tau$. 
+        If $s_i < s_j$, we want to wait the time at which the datagram can be re-sent without fragmentation. The last tic time at which the node receive some data is $t+|d|_{(u,v)}$. Thus, the next tic ($t+|d|_{(u,v)}+1$), is the minimum date at which the node can send the end of the datagram on the link $(v,w)$. Since the node needs $|d|_{(v,w)}$ to completely send the message, it can start to emit at date $t+|d|_{(u,v)}+ 1 - |d|_{(v,w)}$. 
+        \end{proof}
         
-       
-     % Since the process is periodic, if the datagram from $r$ goes through an arc at time $t\in [0,P-1]$,  then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the tic at which a datagram $d_j$ sent at time $o_r(d_j)$ on $r$ reaches a vertex $u_i$ in $r$ is $t(d_j,u_i,r) = o_r(d_j) + \lambda(u_i,r) + \sum_{k=0}^{i-1}b_j^k \mod P$. 
-      
-    %  A frame is thus defined as follow on the route $i$ : $$F_i = \{ (m_i(d_0),\{b_0^{0,i},\ldots,b_0^{l,i}\}),\ldots,(m_i(d_{|F_i|-1}),\{b_{|F_i|-1}^{0,i},\ldots,b_{|F_i|-1}^{l,i}\}) \}$$, where $|F|$ is the number of datagrams in the frame, and $l$ the number of nodes in the routes.
-     
-       Let us call $[t(S,u,r)]$ the set of tics used by a slice $S$ on a route $r$ at vertex $u$, that is $[t(S,u,r)] =  \bigcup_{i=0}^{\overline S -1} \{t(d_i,u,r) + i \mid 0 \leq i < |d_i|\}$.
-%       Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
-      Let $r_1$ and $r_2$ be two routes, on which two slices $S_1$ and $S_2$ are sent.
+          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, one can choose to buffer a datagram $d$ in any node $u_i$ of the route. The function $b(d,u_i), i \in \{0,\ldots,l\}$ associate to each couple datagram-node an integer. Those integers represent the buffering time of the datagram in each nodes of the route. For all $i$, $b(d,u_i) \in \mathbb{N}$.
+              
+The \textbf{departure time} of a datagram $d$ on a route $r$, denoted by $\theta_r(d)$, is the sending tic of $d$ at node $u_0$, the first vertex of $r$. 
+  Then, the reception time of this datagram $d$ at a vertex $u_i$ in $r$, i.e. the first tic at which the datagram sent at time $\theta_r(d)$ on $r$ reaches $u_i$, is $t(d,u_i,r) = \theta_r(d) + \lambda(u_i,r) + \sum_{k=0}^{i-1}( b(d,u_k) + l(d,u_k,r))$. In other words, the date at which a datagram to reach a vertex $u_i$ correspond to the date of the emission of this datagram in the RRH, plus the physical delay of the links, plus the buffers induced by the physical constraints of the network, or determined by the logical solutions proposed.
+   
+        A {\bf stream} $S$ is a sequence of several datagrams. To each route of the routed network is associated a stream. The cardinal of a stream, denoted $\#S$ is the number of datagrams in the stream. Let us consider a stream $S_i$ on the route $r_i$, the datagrams $\{d_0,\ldots,d_{\#S_i-1}\}$ are sent in sequence from the first node of the route, that is : $\theta_{r_i}(d_0) < \theta_{r_i}(d_1) < \ldots < \theta_{r_i}(d_{\#S_i-1})$ .  \\
+       For each route, the size of a stream is $\sum_{i=0}^{{\#S-1}} |d_i|$ . The amount of data sent by an RRH to its BBU is the same, regardless of the route. Hence, we assume that this size is the same for all route, and we denote it by $\tau$. 
+        
+          
+       Let us call $[t(S,u,r)]$ the set of tics used by a stream $S$ on a route $r$ in the arc $(u,v)$, that is $[t(S,u,r)] =  \bigcup_{i=0}^{\#S -1} \{t(d_i,u,r) + i \mid 0 \leq i < |d_i|_{(u,v)}\}$.
+      Let $r_1$ and $r_2$ be two routes, on which two streams $S_1$ and $S_2$ are sent.
       We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(S_1,u,r_{1})] \cap [t(S_2,u,r_{2})] \neq \emptyset$.
-      
-       %  A {\bf $(P)$-periodic assignment} of a routed network $(G,\cal R)$ is a function that associates to each datagram of each route  its offset and its buffers. In a $(P)$-periodic assignment, \emph{no pair of routes has a collision}.
-	 
-	 
-%      As an example of a $(2,1)$-periodic assignment, let us consider a routed network 
-%      where all pairs of routes intersect at a different arc. It is easy to design such a network and an example is given in Figure~\ref{fig:example}. We set $\tau = 1$, thus each frames have only one datagram of size $1$, and the weights are chosen so that if $r_{i}$ and $r_{j}$ have $u$ as first common vertex then we have $\lambda(u,r_{i}) - \lambda(u,r_{j})=1$. There is a $(2,1)$-periodic assignment by setting all $m_{i}(d)$ to $0$.
-%
-%  
-%      \begin{figure}[ht]
-%      \begin{center}
-%          \scalebox{0.47}{
-%          
-%\begin{tikzpicture}
-%
-%
-%\tikzset{
-%  LabelStyle/.style = { rectangle, rounded corners, draw,
-%                       font = \bfseries },
-%  EdgeStyle/.append style = {->} }
-%  \SetGraphUnit{5}
-%  \node[draw,circle] (s3) at (4, 2) {$s_2$}; 
-%  \node[draw,circle] (s2) at (0, 4) {$s_1$}; 
-%  \node[draw,circle] (s1) at (0, 6) {$s_0$}; 
-%
-%  \node[draw,circle] (t3) at (14, 7) {$t_2$}; 
-%  \node[draw,circle] (t2) at (14, 4) {$t_1$}; 
-%  \node[draw,circle] (t1) at (10, 2) {$t_0$}; 
-%
-%  
-%  \SetVertexNoLabel
-%  \Vertex[x=2,y=5]{A}
-%  \Vertex[x=4,y=5]{B}
-%  \Vertex[x=10,y=5]{C}
-%  \Vertex[x=12,y=5]{D}
-%  \Vertex[x=6,y=3]{E}
-%  \Vertex[x=8,y=3]{F}
-%  \tikzset{
-%  EdgeStyle/.append style = {green} }
-%  \Edge[label = 2](s2)(A)
-%  \Edge[label = 1](A)(B)
-%  \Edge[label = 2](B)(C)
-%  \Edge[label = 1](C)(D)
-%  \Edge[label = 1](D)(t2)
-%
-%  
-%   \tikzset{
-%  EdgeStyle/.append style = {red} }
-%  \Edge[label = 2](s3)(E)
-%  \Edge[label = 1](E)(F)
-%  \Edge[label = 1](F)(C)
-%  \Edge[label = 1](C)(D)
-%  \Edge[label = 1](D)(t3) 
-%     \tikzset{
-%  EdgeStyle/.append style = {blue} }
-%  \Edge[label = 1](s1)(A)
-%  \Edge[label = 1](A)(B)
-%  \Edge[label = 1](B)(E)
-%  \Edge[label = 1](E)(F)
-%  \Edge[label = 1](F)(t1)
-%
-%\end{tikzpicture}
-%
-%}
-%     \end{center}
-%       \caption{A routed network with $(0,0,0)$ as a $(2,1)$-periodic assignment}
-%       \label{fig:example}
-%      \end{figure}
-
-    %  \noindent {\bf  Periodic Routes Assignment (\pra)} 
-
- %     \noindent {\bf Input:} a routed network $(G,\cal R)$, and an integer $P$
-
- %     \noindent {\bf Question:} does there exist a $(P)$-periodic assignment of $(G,\cal R)$ ?
-
-%
-%      We will prove in Section~\ref{sec:complexity} that the problem \pra is $\NP$-complete, even in restricted settings.
-%      In fact, approximating the smallest value of $P$ for which there is a $(P,\tau)$-periodic assignment is already hard.
-%      
-%      An unusual property of assignment is that given a routed network, we may have a $(P,\tau)$-periodic assignment but no
-%      $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
-%
-%	\begin{lemma} \label{lemma:monotonic}
-%	 For any odd $P$, there is a routed network such that there is a $(2,1)$-periodic assignment but no $(P,1)$-periodic assignment.
-%	\end{lemma}
-%\begin{proof}
-%
-%      We consider a generalization of the routed network $(G,{\cal R})$ given in Figure~\ref{fig:example}. 
-%      There are $n$ routes in the routed network and each pair of routes $(r_i,r_j)$ share a single arc, which is not in any other route. The weights are chosen so that for $v$, the first vertex which belongs to $r_i$ and $r_j$, we have $\lambda(v,r_i) - \lambda(v,r_j)= P$, where $P$ is an odd number smaller than $n$. In such a graph, there is no $(P,\tau)$-periodic assignment, since the problem reduces to finding a $P$-coloring in a complete graph with $n > P$ vertices, the colors being the offsets of the routes.\\
-%      If we consider a period of $2$, for all $i \neq j$, $\lambda(v,r_i) - \lambda(v,r_j) \mod 2 = 1$ . Therefore $(0,\dots,0)$ is a $(2,1)$-periodic assignment of ${\cal R}$.      
-%\end{proof}
-      
-      
-   In the context of cloud-RAN applications, we need to send a slice from an RRH $u$ to a BBU $v$ and then 
+            
+   In the context of cloud-RAN applications, we need to send a stream from an RRH $u$ to a BBU $v$ and then 
       we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in \emph{full-duplex} networks, but we do not need to enforce this property.
-         
-      %We now give a new interpretation of a $(P)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a frame and of its answer.
+
      
-     We now describe the process of the sending of a slice and of its answer. First, the datagrams of a slice $S_r$ are sent at $u$, through the route $r \in A$, at times $\{o_r(d_0),\ldots,o_r(d_{\overline S_r-1}) \}$.
-      Those datagrams are received by $v$, i.e., the last vertex of $r$ at times $\{t(d_0,v,r),\ldots,t(d_{\overline S_r-1},v,r)\}$. 
-     Once $v$ has received all the datagrams of a slice, the answer is computed and sent back in a slice $S_{\rho_r}$. Note that $\overline S_{\rho_r}$ may be not equal to $\overline S_r$, i.e. the answer is not necessarily under the same form as the initial slice. Thus the node $v$ send $S_{\rho_r}$ to  $u$ on the route $\rho(r)$.\\
+     We now describe the process of the sending of a stream and of its answer. First, the datagrams of a stream $S_r$ are sent at $u$, through the route $r \in A$, at times $\{\theta_r(d_0),\ldots,\theta_r(d_{\#S_r-1}) \}$.
+      Those datagrams are received by $v$, i.e., the last vertex of $r$ at times $\{t(d_0,v,r),\ldots,t(d_{\#S_r-1},v,r)\}$. 
+     Once $v$ has received all the datagrams of a stream, the answer is computed and sent back in a stream $S_{\rho_r}$. Note that $\#S_{\rho_r}$ may be not equal to $\#S_r$, i.e. the answer is not necessarily under the same form as the initial stream. Then, the node $v$ send $S_{\rho_r}$ to  $u$ on the route $\rho_r$ at times $\{\theta_{\rho_r}(d_0),\ldots,\theta_{\rho_r}(d_{\#S_{\rho_r}-1}) \}$.
+
      Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
-      
-      % in the same period at times $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. 
-      
- 
-      We define the {\bf reception time} of a slice $S_r$ on a node $v$ by $r(S_r,v) =  \displaystyle \max_{i \in \{0,\ldots,\overline S_r-1\}} t(d_i,v,r)$. This is the time at which the last datagram of the slice has reach the vertex $v$.
-      
-      The time between the arrival of the last datagram of a frame in the BBU and the time the answer is sent back is called the \textbf{waiting time} and is defined by $w_r = o_{\rho(r)}(d_0) - r(S_r,v)$.
-      
-       %Figure~\ref{fig:assignment} illustrates this process in an RRH and its corresponding BBU.
- 
-%     \begin{figure}[h]
-%      \begin{center}
-%      \includegraphics[width=0.90\textwidth]{rrh.pdf}
-%      \end{center}
-%      \caption{Periodic process}\label{fig:assignment}
-%      \end{figure}
-%      
+
+      We define the {\bf full reception time} of a stream $S_r$ on a node $v$ through the link $(u,v)$ by $rt(S_r,v) =  \displaystyle \max_{i \in \{0,\ldots,\#S_r-1\}} ( t(d_i,v,r) + |d_i|_{(u,v)} )$. This is the time at which the end of the last datagram of the stream has reach the vertex $v$. Recall that a BBU needs to completely receive a message before sending of the answer, that is $rt(S_r,v)  < \theta_{\rho_r}(d_0)$
       
 
-      The whole process time for a frame $r$ is equal to $PT(r)= rt(S_{\rho_r},u) - o_r{d_0} $, where $u$ is the RRH.      
-      In the process time, we count the time between the time the first tic of the frame is emitted and the time at which the last tic of the message comes back. %. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time. Both definitions are equivalent in our context where all messages are of size $\tau$, hence we chose the first definition which is slightly simpler. 
+      The whole process time for a route $r$ is equal to $PT(r)= rt(S_{\rho_r},u) - \theta_r{d_0} $, where $u$ is the RRH.      
+      In the process time, we count the time between the time the first tic of the stream is emitted and the time at which the last tic of the answer comes back. 
       Each route must respect a time limit that we call \emph{deadline}. To represent these deadlines, 
      we use a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
-      
-%     The {\bf maximum process time} of the assignment $m$ of $(G,{\cal R})$ is defined by $MPT(m)=\max\limits_{r \in {\cal R}} PT(r)$.
+  
 
-  \subsection{Periodic assignment for low latency}
-  
-  In our context of C-RAN, the process described above is periodic. The period $P$ is and integer representing a number of tics. During each period, the same slcie is emited by each RRH/BBU on each route.  A $(P)$-periodic assignment $m$ is a choice of the offsets, and buffers of the datagrams of each slices such that each slice sent on the routed network satisfies its deadline, and does not collide with the others slices.
-  
+        An {\bf assignment} of a routed network $(G,\cal R)$ is a function that associates to each datagram of each route its departure time and its buffers. In an assignment, \emph{no pair of routes has a collision}.
+	 
       We consider the following decision problem.
 
       \noindent {\bf Periodic Assignment for Low Latency (\pall)} 
 
-      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the integers $P$ and a deadline function $d$.
+      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the integers $P$, a deadline function $d$ and a set of streams.
       
-      \noindent {\bf Question:} does there exist a $(P)$-periodic assignment $m$ of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $PT(r) \leq d(r)$?
+      \noindent {\bf Question:} does there exist an assignment $m$ of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $PT(r) \leq d(r)$?
 
-%      As a consequence of the $\NP$-hardness of \pra, we show in the next subsection that this problem is $\NP$-hard. 
-%      In Section~\ref{sec:PALL} we will study heuristics used to solve the search version of \pall (computing an assignment), also denoted by \pall for simplicity. In \pall, we have chosen to bound the process time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraint on the latency. It would be interesting to study the case of a constraint on the \emph{average} of process times (or equivalently waiting times) of routes, which may be more relevant in other contexts.
-
-     
-        % We define by {\bf jitter} of a frame the greatest buffering time of a datagram in the network. The jitter of a frame $F_r$ is thus defined by $ J_r =  \displaystyle \max_{i \in \{0,\ldots,|F_r|-1\}}  t(d_i,v,r) - m_r(d_i) - |d_i| $, where $v$ is the last vertex of the route. 
-     % \todo{pas tres utile pour l'instant}
-%   
-%      The following table summarize the main notations used in the paper.
-%      \begin{center}
-%   \begin{tabularx}{0.5\textwidth}{|c|X|}
-%    \hline
-%     $(G,\cal R)$ & Routed network \\
-%     \hline
-%      $\Omega(u,v)$ & Weight of the arc $(u,v) \in A$ \\
-%      \hline
-%      $\lambda(u_i,r)$ & Latency of the vertex $u_i$ in $r$\\
-%         \hline
-%         $\lambda(r)$ & Length of the route $r$\\
-%         \hline
-%         $P$ & Period\\
-%         \hline
-%         $\tau$ & Size of a message\\
-%         \hline
-%         $ [t(v,r)]$& Set of time slots used by route $r$ at vertex $v$ in a period $P$\\
-%         \hline 
-%         $m=(m_0, \ldots ,m_{n-1})$& Assignment: an offset for each route\\
-%              \hline 
-%         $w_r$& Waiting time of the route $r$\\
-%            \hline 
-%         $PT(r)$& Process time of the route $r$\\
-%           \hline 
-%       $d(r)$ & Deadline of the route $r$\\
-%    \hline
-%
-%      \end{tabularx}
-%      \end{center}
 
 \bibliographystyle{ieeetr}
 \bibliography{Sources}
