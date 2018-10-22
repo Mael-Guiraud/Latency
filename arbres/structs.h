@@ -12,6 +12,7 @@ typedef Arc** Route;
 typedef struct graph{
 	int nb_routes;
 	Arc * arc_pool;
+	int arc_pool_size;
 	Route * routes;
 	int * size_routes;
 } Graph;

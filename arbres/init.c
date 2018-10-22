@@ -232,7 +232,7 @@ Graph init_graph_random_tree(int P)
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
 	g.routes = malloc(sizeof(Route*)*nb_routes);
 	g.size_routes = malloc(sizeof(int)*nb_routes);
-
+	g.arc_pool_size = nb_total_arcs;
 	for(int i=0;i<nb_total_arcs;i++)
 	{
 		init_arc(&g.arc_pool[i]);	

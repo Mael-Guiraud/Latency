@@ -78,6 +78,8 @@ int route_length(Graph g,int route)
 	return length;
 }
 
+
+
 void free_assignment(Assignment a)
 {
 	free(a->offset_forward);
