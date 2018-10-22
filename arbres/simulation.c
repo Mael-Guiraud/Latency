@@ -13,6 +13,8 @@ void test()
 	int message_size = MESSAGE_SIZE;
 	Graph g = init_graph_random_tree(P);
 	affiche_graph(g,P);
+	printf("Liens load : ");
+	affiche_tab(load_links(g),g.arc_pool_size);
 
 	Assignment a = greedy( g, P, message_size);
 	if(a)

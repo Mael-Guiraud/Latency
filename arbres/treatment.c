@@ -141,3 +141,16 @@ void tri_bulles(int* tab,int* ordre,int taille)
 	}
 
 }
+
+int * load_links(Graph g)
+{
+	int load[g.arc_pool_size];
+	int * id = malloc(sizeof(int)*g.arc_pool_size);
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		load[i] = g.arc_pool[i].nb_routes;
+		id[i] = i;
+	}
+	tri_bulles(load,id,g.arc_pool_size);
+	return id;
+}

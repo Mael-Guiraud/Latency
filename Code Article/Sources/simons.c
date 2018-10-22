@@ -1427,7 +1427,6 @@ Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int da
 	freeelems(elems2);
 	return ens;
 	
-	
 
 }
  

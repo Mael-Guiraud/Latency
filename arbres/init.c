@@ -226,7 +226,7 @@ Graph init_graph_random_tree(int P)
 	int nb_fake_collisions;
 	int index_middle_arc;
 	 affiche_biparti(graph,nb_bbu,nb_collisions);
-	printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
+	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
 	g.nb_routes = nb_routes;
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
@@ -257,7 +257,7 @@ Graph init_graph_random_tree(int P)
 			index_route++;
 		}
 	}
-	printf("1 %d \n",nb_real_collisions+nb_bbu);
+	//printf("1 %d \n",nb_real_collisions+nb_bbu);
 	index_arc = nb_bbu+nb_real_collisions;
 	nb_fake_collisions = 0;
 	index_middle_arc = nb_bbu;
@@ -271,7 +271,7 @@ Graph init_graph_random_tree(int P)
 			{
 				for(int k=0;k<nb_routes_per_flow[index_middle_arc];k++)
 				{
-					printf("%d %d %d %d \n",nb_bbu+j-nb_fake_collisions,index_arc,i,index_route);
+					//printf("%d %d %d %d \n",nb_bbu+j-nb_fake_collisions,index_arc,i,index_route);
 					g.routes[index_route]=malloc(sizeof(Route)*3);
 					g.size_routes[index_route] = 3;
 					g.routes[index_route][0] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
@@ -284,7 +284,6 @@ Graph init_graph_random_tree(int P)
 					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 					g.arc_pool[i].nb_routes++;
 					index_route++;
-					
 					
 				}
 				index_arc++;

@@ -3,6 +3,15 @@
 #include "treatment.h"
 #include <stdio.h>
 
+void affiche_tab(int * tab, int taille)
+{
+	printf("\n");
+	for(int i=0;i<taille;i++)
+	{
+		printf("%d,",tab[i]);
+	}
+	printf("\n");
+}
 void affiche_periode(int * p, int size)
 {
 	int old, current;
