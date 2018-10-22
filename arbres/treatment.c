@@ -102,6 +102,7 @@ void free_assignment(Assignment a)
 {
 	free(a->offset_forward);
 	free(a->offset_backward);
+	free(a->waiting_time);
 	free(a);
 }
 void free_graph(Graph g)
@@ -159,6 +160,17 @@ void tri_bulles(int* tab,int* ordre,int taille)
 	}
 
 }
+int travel_time_max(Graph g, int tmax, Assignment a)
+{
+
+	for(int i=0;i<g.nb_routes;i++)
+	{
+
+		if( (2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+			return 0;
+	}
+	return 1;
+}
 
 int * load_links(Graph g)
 {
@@ -171,4 +183,17 @@ int * load_links(Graph g)
 	}
 	tri_bulles(load,id,g.arc_pool_size);
 	return id;
+}
+
+int  load_max(Graph g)
+{
+	int loadmax;
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		if(g.arc_pool[i].nb_routes > loadmax)
+		loadmax = g.arc_pool[i].nb_routes;
+
+	}
+	
+	return loadmax;
 }

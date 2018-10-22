@@ -20,6 +20,7 @@ typedef struct graph{
 struct assignment{
 	int * offset_forward;
 	int * offset_backward;
+	int * waiting_time;
 };
 typedef struct assignment * Assignment;
 

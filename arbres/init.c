@@ -225,7 +225,7 @@ Graph init_graph_random_tree(int P)
 	int index_arc,index_route;
 	int nb_fake_collisions;
 	int index_middle_arc;
-	 affiche_biparti(graph,nb_bbu,nb_collisions);
+	// affiche_biparti(graph,nb_bbu,nb_collisions);
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
 	g.nb_routes = nb_routes;

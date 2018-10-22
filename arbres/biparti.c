@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include "config.h"
+
 float rand01()
 {
 	return (float)rand() / (float)RAND_MAX;
@@ -12,7 +14,7 @@ int ** random_biparti(int nb_datacenters, int nb_switches)
 		graph[i] = calloc(nb_switches,sizeof(int));
 		for(int j=0;j<nb_switches;j++)
 		{
-			graph[i][j] = (rand01() > 0.5);
+			graph[i][j] = (rand01() < PROBA);
 		}
 	}
 	return graph;
