@@ -9,4 +9,5 @@
 
 #define NB_BBU 2
 #define NB_COLLISIONS 3
+#define NB_ROUTES_PER_FLOW 1
 

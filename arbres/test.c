@@ -28,7 +28,13 @@ void affiche_graph(Graph g,int p)
 		for(int j=0 ; j< g.size_routes[i];j++)
 		{
 			printf("[%d], partagé avec %d routes\n",g.routes[i][j]->length,g.routes[i][j]->nb_routes);
-			if( g.routes[i][j]->nb_routes > 1)
+			printf("Routes sur l'arc : ");
+			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			{
+				printf("%d ",g.routes[i][j]->routes_id[k]);
+			}
+			printf("\n");
+			if( g.routes[i][j]->period_f != NULL)
 			{
 				printf(" Forward  \n");
 				affiche_periode(g.routes[i][j]->period_f,p);

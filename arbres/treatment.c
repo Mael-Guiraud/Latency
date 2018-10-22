@@ -11,7 +11,7 @@ int message_collisions(Graph g,int route,int offset,int message_size,Period_kind
 		{
 			offset += g.routes[route][i]->length; 
 			//This is a contention point
-			if(g.routes[route][i]->nb_routes > 1)
+			if(g.routes[route][i]->period_f != NULL)
 			{
 				
 				if(g.routes[route][i]->period_f[offset%P] || g.routes[route][i]->period_f[(offset+message_size-1)%P] )
@@ -29,7 +29,7 @@ int message_collisions(Graph g,int route,int offset,int message_size,Period_kind
 		{
 			offset += g.routes[route][i]->length; 
 			//This is a contention point
-			if(g.routes[route][i]->nb_routes > 1)
+			if(g.routes[route][i]->period_b != NULL)
 			{
 				if(g.routes[route][i]->period_b[offset%P] || g.routes[route][i]->period_b[(offset+message_size-1)%P] )
 				{
@@ -52,7 +52,7 @@ void fill_period(Graph g,int route,int offset,int message_size,Period_kind kind,
 	{
 		offset += g.routes[route][i]->length;
 		//This is a contention point
-		if(g.routes[route][i]->nb_routes > 1)
+		if(g.routes[route][i]->period_f != NULL)
 		{
 			for(int j=0;j<message_size;j++)
 			{

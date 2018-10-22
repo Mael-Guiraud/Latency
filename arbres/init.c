@@ -184,16 +184,47 @@ int count_routes(int ** graph, int nb_bbu, int nb_collisions)
 	return nb_routes;
 }
 
+int* random_number_routes(int nb_bbu,int nb_arcs_in_biparti)
+{
+
+	int * tab = malloc(sizeof(int)*(nb_bbu+nb_arcs_in_biparti));
+	for(int i=0;i<(nb_bbu+nb_arcs_in_biparti);i++)
+	{
+		if(NB_ROUTES_PER_FLOW == 1)
+		{
+			tab[i] = 1;
+		}
+		else
+			tab[i] = rand()%(NB_ROUTES_PER_FLOW-1) +1;
+	}
+	return tab;
+}
+int sum(int * tab, int l)
+{
+
+	int tmp=0;
+	for(int i=0;i<l;i++)
+	{
+		tmp+= tab[i];
+	}
+	return tmp;
+}
 Graph init_graph_random_tree(int P)
 {
 	int nb_bbu = NB_BBU;
 	int nb_collisions = NB_COLLISIONS;
 	int ** graph = random_biparti(nb_bbu,nb_collisions);
 	int nb_real_collisions = count_real_collisions(graph,nb_bbu,nb_collisions);
-	int nb_routes = nb_bbu + count_routes(graph,nb_bbu,nb_collisions);
-	int nb_total_arcs = nb_bbu + nb_real_collisions + count_routes(graph,nb_bbu,nb_collisions);
+	int nb_arcs_in_biparti = count_routes(graph,nb_bbu,nb_collisions);
+	int * nb_routes_per_flow = random_number_routes(nb_bbu,nb_arcs_in_biparti);
+	
+	
+	int nb_routes = sum(nb_routes_per_flow,nb_arcs_in_biparti+nb_bbu);
+	
+	int nb_total_arcs = nb_bbu + nb_real_collisions + nb_arcs_in_biparti;
 	int index_arc,index_route;
 	int nb_fake_collisions;
+	int index_middle_arc;
 	 affiche_biparti(graph,nb_bbu,nb_collisions);
 	printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
@@ -212,18 +243,24 @@ Graph init_graph_random_tree(int P)
 		g.arc_pool[i].period_f = calloc(P,sizeof(int));
 		g.arc_pool[i].period_b = calloc(P,sizeof(int));
 	}
+	index_route = 0;
 	//The antennas directly connected to the datacenters
 	for(int i=0;i<nb_bbu;i++)
 	{
-		g.routes[i]=malloc(sizeof(Route));
-		g.size_routes[i] = 1;
-		g.routes[i][0] =  &g.arc_pool[i];
-		g.arc_pool[i].nb_routes++;
-
+		for(int j=0;j<nb_routes_per_flow[i];j++)
+		{
+			g.routes[index_route]=malloc(sizeof(Route));
+			g.size_routes[index_route] = 1;
+			g.routes[index_route][0] =  &g.arc_pool[i];
+			g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
+			g.arc_pool[i].nb_routes++;
+			index_route++;
+		}
 	}
-	index_route = nb_bbu;
+	printf("1 %d \n",nb_real_collisions+nb_bbu);
 	index_arc = nb_bbu+nb_real_collisions;
 	nb_fake_collisions = 0;
+	index_middle_arc = nb_bbu;
 	for(int i=0;i<nb_bbu;i++)
 	{
 		nb_fake_collisions = 0;
@@ -232,17 +269,27 @@ Graph init_graph_random_tree(int P)
 			nb_fake_collisions += detect_fake(graph,nb_bbu,j);
 			if(graph[i][j])//If there is an arc
 			{
-				g.routes[index_route]=malloc(sizeof(Route)*3);
-				g.size_routes[index_route] = 3;
-				printf("%d nbbbu+j \n",nb_bbu+j);
-				g.routes[index_route][0] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
-				g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
-				g.routes[index_route][1] = &g.arc_pool[index_arc];
-				g.arc_pool[index_arc].nb_routes++;
-				g.routes[index_route][2] = &g.arc_pool[i];
-				g.arc_pool[i].nb_routes++;
-				index_route++;
+				for(int k=0;k<nb_routes_per_flow[index_middle_arc];k++)
+				{
+					printf("%d %d %d %d \n",nb_bbu+j-nb_fake_collisions,index_arc,i,index_route);
+					g.routes[index_route]=malloc(sizeof(Route)*3);
+					g.size_routes[index_route] = 3;
+					g.routes[index_route][0] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].routes_id[g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes] = index_route;
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
+					g.routes[index_route][1] = &g.arc_pool[index_arc];
+					g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
+					g.arc_pool[index_arc].nb_routes++;
+					g.routes[index_route][2] = &g.arc_pool[i];
+					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
+					g.arc_pool[i].nb_routes++;
+					index_route++;
+					
+					
+				}
 				index_arc++;
+				index_middle_arc++;
+
 			}
 		}
 	}	

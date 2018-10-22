@@ -1,6 +1,7 @@
 typedef struct arc{
 	int length;
 	int nb_routes;
+	int routes_id[124];
 	int * period_f;
 	int * period_b;
 } Arc;
