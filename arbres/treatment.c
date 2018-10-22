@@ -47,22 +47,40 @@ int message_collisions(Graph g,int route,int offset,int message_size,Period_kind
 void fill_period(Graph g,int route,int offset,int message_size,Period_kind kind,int P)
 {
 
-	//For each arcs
-	for(int i=0;i<g.size_routes[route];i++)
+	if(kind == FORWARD)
 	{
-		offset += g.routes[route][i]->length;
-		//This is a contention point
-		if(g.routes[route][i]->period_f != NULL)
+		//For each arcs
+		for(int i=0;i<g.size_routes[route];i++)
 		{
-			for(int j=0;j<message_size;j++)
+			offset += g.routes[route][i]->length;
+			//This is a contention point
+			if(g.routes[route][i]->period_f != NULL)
 			{
-				if(kind == FORWARD)
-					g.routes[route][i]->period_f[(offset+j)%P]=1;
-				else
-					g.routes[route][i]->period_b[(offset+j)%P]=1;
-			}
+				for(int j=0;j<message_size;j++)
+				{
+						g.routes[route][i]->period_f[(offset+j)%P]=1;
+				}
+					
 				
-			
+			}
+		}
+	}
+	else
+	{
+		//For each arcs
+		for(int i=g.size_routes[route]-1;i>=0;i--)
+		{
+			offset += g.routes[route][i]->length;
+			//This is a contention point
+			if(g.routes[route][i]->period_f != NULL)
+			{
+				for(int j=0;j<message_size;j++)
+				{
+						g.routes[route][i]->period_b[(offset+j)%P]=1;
+				}
+					
+				
+			}
 		}
 	}
 }
