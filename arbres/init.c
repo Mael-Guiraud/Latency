@@ -252,6 +252,7 @@ Graph init_graph_random_tree(int P)
 			g.routes[index_route]=malloc(sizeof(Route));
 			g.size_routes[index_route] = 1;
 			g.routes[index_route][0] =  &g.arc_pool[i];
+			g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 			g.arc_pool[i].nb_routes++;
 			index_route++;
 		}
@@ -274,10 +275,13 @@ Graph init_graph_random_tree(int P)
 					g.routes[index_route]=malloc(sizeof(Route)*3);
 					g.size_routes[index_route] = 3;
 					g.routes[index_route][0] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].routes_id[g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes] = index_route;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
 					g.routes[index_route][1] = &g.arc_pool[index_arc];
+					g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 					g.arc_pool[index_arc].nb_routes++;
 					g.routes[index_route][2] = &g.arc_pool[i];
+					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 					g.arc_pool[i].nb_routes++;
 					index_route++;
 					
