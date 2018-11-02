@@ -76,6 +76,47 @@ Assignment greedy(Graph g, int P, int message_size)
 
 }
 
+Assignment greedy_PRIME(Graph g, int P, int message_size)
+{
+	if(P < message_size)
+		return NULL;
+	Assignment a = malloc(sizeof(struct assignment));
+	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	int offset;
+	
+
+	//printf("Forward \n");
+	//for each route
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		//printf("Route %d : \n",i);
+		offset=0;
+		
+		while((!message_collisions( g, i, offset,message_size,FORWARD,P))||(!message_collisions( g, i, offset+route_length(g,i),message_size,BACKWARD,P)) )
+		{
+			//fprintf(stdout,"\roffset %d",offset);fflush(stdout);
+			offset++;
+			if(offset == P)
+			{
+				free_assignment(a);
+				//printf("\nNot possbile\n");
+				return NULL;
+			}
+		}
+		//printf("\nOffset %d for route %d\n",offset,i);
+		fill_period(g,i,offset,message_size,FORWARD,P);
+		a->offset_forward[i]=offset;
+		fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
+		a->offset_backward[i]=offset+route_length(g,i);
+		a->waiting_time[i]=0;
+	}
+
+	return a;
+
+}
+
 Assignment loaded_greedy(Graph g, int P, int message_size)
 {
 	Assignment a = malloc(sizeof(struct assignment));
