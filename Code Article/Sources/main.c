@@ -58,7 +58,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 
-	//sucess_retour_PALL(8,2500,20000,3000,1000,(8*2500)/(0.95),1000);
+	sucess_retour_PALL(8,2500,20000,3000,10000,(8*2500)/(0.95),1000);
 
 
 	//tps_FPT_PALL(32, 2500,80000,0,1000,1000,0.95);
@@ -93,7 +93,7 @@ int main()
 
 
 	//Test distrib routes departs
-	distrib_margins_departs(8, 2500,20000,5000, 10000, 21052,1000);
+	//distrib_margins_departs(8, 2500,20000,5000, 10000, 21052,1000);
 
 	//Bout de code pour tester la stabilisation de la marge necessaire quand on simule plusieurs periodes en stochastique
 
