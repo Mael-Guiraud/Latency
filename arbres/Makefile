@@ -9,7 +9,7 @@ total: clean compil run
 run: 
 	./compil
 
-compil: treatment.o main.o test.o init.o greedy.o simulation.o biparti.o loaded_simons.o data_treatment.o greedy_min.o
+compil: treatment.o main.o test.o init.o greedy.o simulation.o biparti.o loaded_simons.o data_treatment.o greedy_min.o simons.o
 	$(CC) -o $@ $^ 
 
 %.o: %.c

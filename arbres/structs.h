@@ -27,3 +27,9 @@ typedef struct assignment * Assignment;
 typedef enum periode_kind{
 	FORWARD, BACKWARD
 } Period_kind;
+
+typedef struct preElems{
+	int nb_elems;
+	int *release;
+	int *deadline;
+} PreElems;

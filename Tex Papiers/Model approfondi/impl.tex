@@ -62,8 +62,8 @@
 
 \begin{section}{Implementation details}
 \begin{subsection}{Model of the generated graphs}
-The graphs we study in are some two levels trees. First of all, two parameters set up the number of each node (contention point) at each level of the tree. The first level of the tree models the datacenters, and the second level of the trees models the switches in the core of the network.
-Here is an example of a tree generated with 2  nodes of level 1 and 4  node of level 2.
+The graphs we study here are some two levels trees. First of all, two parameters set up the number of each node (contention point) at each level of the tree. The first level of the tree models the datacenters, and the second level of the trees models the switches in the core of the network.
+Here is an example of a tree generated with 2  nodes of level 1 and 3  node of level 2.
 
 \begin{center}
 \includegraphics[width=0.5\textwidth]{random23}
@@ -72,17 +72,167 @@ Here is an example of a tree generated with 2  nodes of level 1 and 4  node of l
 This architecture models a real topology which can correspond to the following figure, in which we add some links directly connected to somme RRHs.
 
 \begin{center}
+
 \includegraphics[width=0.5\textwidth]{example23}
 \end{center}
   
-  Thus, the first challenge is to generate some bipartite graphs. \todo{ajouter citations et en parler}. We chose to randomly draw a link between each couple of node $(u,v)$, where $u$ is a node of level 1 and $v$ a node of level 2, with a given probability (the same for each couple).
-  There is a {\bf flow} for each arc previously drawn, and for each datacenter. A flow is thus a group of antennas, connected to a datacenter. For each flow, we randomly draw between $1$ and $N$ antennas. 
+  Thus, the first challenge is to generate some bipartite graphs which seems to be a good model for the internet topology as mentioned in \cite{tarissan_towards_2013}. This papers also gives us some background to generate some good random bipartite graphs. In a first time, we chose a simple model to generate our random bipartite graphs. Thus, we first randomly draw a link between each couple of node $(u,v)$, where $u$ is a node of level 1 and $v$ a node of level 2, with a given probability (the same for each couple).
+ A {\bf flow} is a group of antennas, which communicate with a same datacenter.   There is a flow corresponding to each arc previously drawn. This means that there is a group of antennas all connected to a same switch (node of level 2). Also, we generate a flow directly connected to each datacenter. For each flow, we randomly draw between $1$ and $N$ antennas.
+  We say there is a {\bf route} for each antenna generated. The routing of the routes in a same flow is the same. 
+  Note that we chose to generate several antenna per flows. \todo{Je ne me souviens plus de la justification}
   
-  Note that one antenna is not enough because \todo{préciser}
+  \end{subsection}
   
-  \todo{tous les algos, + les courbes}
+  \begin{subsection}{Different implemented algorithms}
+  Consider that the size $\tau$ of the messages is the same for all routes. Also, the messages are sent in one packet, which can not be fragmented in the network.
   
+  We first introduce a basic routine that helps us to test if the messages sent on a route at a given departure time can pass through the entire route without collisions.
+  
+    	\begin{algorithm}[H]
+ 	\caption{MessageCollisions}
+ 	\begin{algorithmic}
+ 	\REQUIRE A route $r$, a departure time, and a way of the message (FORWARD/BACKWARD).
+	\ENSURE 1 if the messages can use the route with the given departure time, $0$ otherwise.
 
+ 	\FORALL{Arcs in the route}
+ 	\IF{ There is a collision with the previous scheduled messages}
+ 	\STATE return $0$
+ 	\ENDIF
+ 	\ENDFOR
+	\STATE return $1$
+ 	\end{algorithmic}
+ 	\end{algorithm}
+  \begin{subsection}{Algorithms without waiting times}
+  \begin{subsubsection}{Greedy Prime}
+  The idea here is to send the messages as soon as possible on each route. This is a greedy algorithm that does not try to optimize anything.
+
+   	\begin{algorithm}[H]
+ 	\caption{Greedy Prime}
+ 	\begin{algorithmic}
+ 	\REQUIRE A graph, a set of routes, a period $P$
+	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
+
+ 	\FORALL{routes $i$ }
+	\STATE tmp = $0$
+	
+ 	\WHILE{!MessageCollisions($i$,tmp,FORWARD) $||$ !MessageCollisions($i$,tmp+routeLength($i$),BACKWARD) }
+ 	
+ 	\STATE tmp++;
+ 	\IF{tmp$ > P$}
+	\STATE return FAILURE
+	\ENDIF
+ 	\ENDWHILE
+	\STATE DepartureTime($i$) = tmp;
+ 	\ENDFOR
+	\STATE return departureTime
+ 	\end{algorithmic}
+ 	\end{algorithm}
+	This algorithm treats the routes one by one by id (arbitrarily chosen), and set the departure time of the messages on the route as soon as possible.
+  \end{subsubsection}
+    \begin{subsubsection}{Greedy Min}
+  
+  We now try a smarter greedy algorithm. We start for the greedy algorithm proposed in \cite{Guir1806:Deterministic}.
+  This algorithm works on one forward and one backward period. The idea is to cut the forward period in meta intervals of size $\tau$. Then, for each routes, we try each free meta interval in the forward period until the message can pass in the backward period without collisions. Here, the principle is the same, but instead of looking at only one backward period, we take into consideration all the contention points of the route in the same time. Since we did not study this topology enough for now, we do not have the theoretical result that ensure us to find a solution under a given load, but we use the idea of the algorithm and try to adapt it in order to optimize the chances of success. Indeed, instead of trying the meta intervals one by one and scheduling the route on the first meta interval that gives not collisions, we try to minimize the size lost in all the collisions points of the route.
+ 	The size lost is the number of tics between the end of the previous message and the beginning of the message scheduled.
+	The goal is then to choose, for a route $i$ the meta interval that allow the message to pass though all the arc of its route without collisions, but also that minimise the sum of the size lost in every contention point of the route.
+	
+    	\begin{algorithm}[H]
+ 	\caption{sizeLost}
+ 	\begin{algorithmic}
+ 	\REQUIRE A route $r$, a departure time $t$
+	\ENSURE $-1$ if the message can not pass without collisions, the size lost otherwise
+	\STATE tmp  $\leftarrow$ $0$
+ 	\FORALL{Arcs $j$ in the route (forward AND backward)}
+ 	\IF{ There is a collision with the previous scheduled messages}
+ 	\STATE return $-1$
+	\ELSE
+	\STATE tmp += numberOfTicsLost(t,j)
+ 	\ENDIF
+ 	\ENDFOR
+	\STATE return tmp
+ 	\end{algorithmic}
+ 	\end{algorithm}
+
+	
+   	\begin{algorithm}[H]
+ 	\caption{Greedy Min}
+ 	\begin{algorithmic}
+ 	\REQUIRE A graph, a set of routes, a period $P$
+	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
+
+ 	\FORALL{routes $i$ }
+	\STATE minTicLost $\leftarrow$ INT MAX
+	\STATE minId = $-1$
+	\FORALL{ meta interval $j$ }
+	\STATE tmp = sizeLost($r$,$j\times\tau$)
+	\IF{ (tmp != $-1$)  AND (tmp < minTicLost)}
+	\STATE minTicLost  $\leftarrow$ tmp
+	\STATE minId  $\leftarrow$ $j$
+	\ENDIF
+ 	\ENDFOR
+	\IF{minId = $-1$}
+	\STATE return FAILURE
+	\ENDIF
+	\STATE departureTime($i$) = $j\time\tau$
+ 	\ENDFOR
+	\STATE return departureTime
+
+ 	\end{algorithmic}
+ 	\end{algorithm}
+
+  \end{subsubsection}
+  \end{subsection}
+    \begin{subsection}{Algorithms with waiting times}
+     We now allow the messages to be buffered in the BBUs. Thus we can manage the messages in both the RRH and the BBU.
+    \begin{subsubsection}{Greedy Loaded}
+
+In this algorithm, we choose to first take care of the more critical contention points first. Thus, we sort the arcs of the graph for the one in which there is the most of routes, to the one in which there is the less of routes. Then we take first the more loaded link and we schedule the routes on it in two steps.
+First, we search the lowest departure time such that there is no collisions in the way forward, then we do it again on the way backward. Then, we can have some waiting times but it gives us a greater degrees of freedom to find an assignment.
+
+   	\begin{algorithm}[H]
+ 	\caption{Greedy Loaded}
+ 	\begin{algorithmic}
+ 	\REQUIRE A graph, a set of routes, a period $P$
+	\ENSURE A P-periodic assignment
+
+ 	\FORALL{arcs $i$ sorted by decreasing number of routes using $i$}
+	
+ 	\FORALL{ route $j$ on $i$}
+	\IF{$j$ has not been scheduled yet}
+	\STATE tmp = $0$
+	
+ 	\WHILE{!MessageCollisions($j$,tmp,FORWARD) }
+ 	
+ 	\STATE tmp++;
+ 	\IF{tmp$ > P$}
+	\STATE return FAILURE
+	\ENDIF
+ 	\ENDWHILE
+	\STATE DepartureTime($j$) = tmp;
+	\STATE tmp2 = tmp + routeLength($j$);
+	\STATE tmp = tmp2;
+	
+ 	\WHILE{!MessageCollisions($j$,tmp,BACKWARD) }
+ 	
+ 	\STATE tmp++;
+ 	\IF{tmp$ > P+tmp2$}
+	\STATE return FAILURE
+	\ENDIF
+ 	\ENDWHILE
+	\STATE waitingTime($j$) = tmp-tmp2;
+	\ENDIF
+ 	\ENDFOR
+
+ 	\ENDFOR
+	\STATE return departureTime, waitingTime
+
+ 	\end{algorithmic}
+ 	\end{algorithm}
+
+    \end{subsubsection}
+  \end{subsection}
 \end{subsection}
 \end{section}
+\bibliographystyle{ieeetr}
+\bibliography{srcs}
 \end{document}

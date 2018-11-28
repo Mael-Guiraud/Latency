@@ -17,8 +17,8 @@
 #define TMAX_MIN 1000
 #define TMAX_MAX 10000
 #define TMAX_GAP 1000
-#define STANDARD_LOAD 0.1
+#define STANDARD_LOAD 0.7
 
 
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 500

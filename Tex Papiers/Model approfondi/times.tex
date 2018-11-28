@@ -29,7 +29,7 @@
 \newcommand\matchedgraph{{\bf matched graph}}
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
-
+\DeclareMathOperator{\pdv}{pdv}
 \setlength{\parskip}{1ex} % Espace entre les paragraphes
 
 \newtheorem{fact}{Fact}
@@ -63,21 +63,22 @@ We define by {\bf delay} of a datagram $d$ in a node $u_i$ of a route $r$, the t
  Thus, the delay of a datagram in the node $u_i$ is equal to $DL(d,u_i,r) =  t(d,u_i,r) - t(d,u_0,r) = \lambda(u_i,r) + \sum_{k=0}^{i-1}( b(d,u_k) + l(d,u_k,r))$.
 This delay is composed of three factors:
 \begin{enumerate}
-\item $\lambda(u_i,r)$ : it is the {\bf physical delay} of the route. This time is not reducible. 
+\item $\lambda(u_i,r)$ : it is the {\bf physical delay} of the route. This time is not alterable. 
 \item  $\sum_{k=0}^{i-1} b(d,u_k)$ : those values correspond to some {\bf physical buffers } induced by the potential speedup or slowdown of the different links of the route used.
-\item $\sum_{k=0}^{i-1} l(d,u_k,r)$: are the {\bf logical buffers}, chosen by the solution proposed to solve the problem. Those buffers allows us to control the traffic in every node, and thus, ensure a better QoS of the network.
+\item $\sum_{k=0}^{i-1} l(d,u_k,r)$: are the {\bf logical buffers}, chosen by the solution proposed to solve the problem. Those buffers are chosen by some algorithmic solutions in order to control the traffic in every node, and thus avoid collisions.
 \end{enumerate}
 
-As a reminder, a stream is a sequence of datagram. Each period, the same sequence of datagrams is sent on a route, in the same order. Let us call $d_0^1$ and $d_1^1$ the two firsts datagram of a stream sent during the first period, and $d_0^2$ and $d_1^2$ the same pair of datagram, sent during the next period. We say that two datagrams $d_i^j$ and $d_i^k$ are associated. Indeed, it correspond to the same datagram but in another period.
+As a reminder, a stream is a sequence of datagram. Each period, the sequence of datagrams $\{d_0,\ldots,d_{k-1}\}$, is sent on a route. The sequence of datagram is the same in every period: the same number of datagram which are of the same size are sent at the same tic in the period. For instance if the sequence $\{d_0,\ldots,d_{k-1}\}$ is sent at the first period P on the route r at times $\{\theta_r(d_0),\ldots,\theta_r(d_{k-1})\}$ then the datagrams $\{d_k,\ldots,d_{2k-1}\}$ will be send in the second period at times $\{\theta_r(d_k),\ldots,\theta_r(d_{2k-1})\}$, with $\theta_r(d_i) = \theta_r(d_i+k) \mod P, \forall i \in [0,\ldots,k-1]$. We say that two datagrams $d_i$ and $d_{i+k}$ are associated. The size in tics of two associated datagrams is always the same
 
-The {\bf IP packet delay variation (ipdv) }\cite{demichelis_ip_nodate} is the variation of the delay between two datagram. In our study, we allow some datagrams to be buffered in some nodes of the route, thus, the ipdv between $d_0^1$ and $d_1^1$ can be greater than $0$. Formally, we denote the packet delay variation between two datagrams $d_0^1$ and $d_1^1$ in a node $u$ on a route $r$ by $ipdv(d_0^1,d_1^1,u,r) = |DL(d_0^1,u,r) - DL(d_1^1,u,r) | \ge 0$. 
+The {\bf packet delay variation ($\pdv$) }\cite{demichelis_ip_nodate} is the variation of the delay between two datagram. In our study, we allow some datagrams to be buffered in some nodes of the route, thus, the $\pdv$ between $d_0$ and $d_i$ (with $i<k$) can be greater than $0$. Formally, we denote the packet delay variation between two datagrams $d_i$ and $d_j$ in a node $u$ on a route $r$ by $\pdv(d_i,d_j,u,r) = |DL(d_i,u,r) - DL(d_j,u,r) | \ge 0$. 
 
-Note that the ipdv between two associated datagrams is always equal to zero, since the logical delays are deterministic, computed on a period and then applied to all the next periods.
+Note that the $\pdv$ between two associated datagrams is always equal to zero, since the logical delays are deterministic, computed on a period and then applied to all the next periods.
 
-\centering
+\begin{center}
 \includegraphics[width=0.8\textwidth]{ipdv}
+  \end{center}
   
-Let us introduce the notion of {\bf jitter} \cite{guillemin_peak_1992} , which commonly correspond to the difference between the minimal and maximal packet delay variation of a datagram in a node. In our case, we introduce some jitters with the logical buffers, that helps to control the network traffic, but since the goal is to reduce the delay of the messages, one can imagine that good deterministic solution will have some low jitters values.
+Let us introduce the notion of {\bf jitter} \cite{guillemin_peak_1992} , which is commonly the variance of the packet delay variations in a node. In our case, the additional $\pdv$ is only due to the logical buffers, that helps to control the network traffic. Thus, a good definition for the jitter could be the maximum of the $\pdv$. Also, since the goal is to reduce the delay of the messages, which correspond to reduce the logical buffers, we will not talk about reducing the jitter but the $\pdv$, to avoid confusion with the terminology.
 
 \bibliographystyle{ieeetr}
 \bibliography{srcs}

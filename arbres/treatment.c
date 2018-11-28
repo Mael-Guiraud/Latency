@@ -95,6 +95,35 @@ int route_length(Graph g,int route)
 	}
 	return length;
 }
+int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
+{
+	int length = 0;
+	
+	if(kind == FORWARD)
+	{
+		for(int i=0;i<g.size_routes[route];i++)
+		{
+
+			length += g.routes[route][i]->length;
+			if(a == g.routes[route][i])
+				return length;
+		}
+		
+	}
+	else
+	{
+		for(int i=g.size_routes[route]-1;i>=0;i--)
+		{
+
+			length += g.routes[route][i]->length;
+			if(a == g.routes[route][i])
+				return length;
+		}
+		
+	}	
+	return length;		
+	
+}
 
 
 
@@ -127,8 +156,8 @@ void free_graph(Graph g)
 }
 
 //trie le tableau "odre"
-//Ordre contient les indices de routes, mais il est trié en fonction des tailles de "tab"
-// De la plus longue a la plus courte
+//Ordre contient les indices des elements, mais il est trié en fonction des valeurs de "tab"
+// Du plus grand au plus petit
 
 void tri_bulles(int* tab,int* ordre,int taille)
 {
@@ -160,6 +189,41 @@ void tri_bulles(int* tab,int* ordre,int taille)
 	}
 
 }
+
+
+//Pareil mais trié du plus petit au plus grand
+void tri_bulles_inverse(int* tab,int* ordre,int taille)
+{
+	int sorted;
+	int tmp;
+	int tmp_ordre;
+
+	int tabcpy[taille];
+	for(int i=0;i<taille;i++)tabcpy[i]=tab[i];
+
+	for(int i=taille-1;i>=1;i--)
+	{
+		sorted = 1;
+		for(int j = 0;j<=i-1;j++)
+		{
+
+			if(tabcpy[j+1]<tabcpy[j])
+			{
+				tmp_ordre = ordre[j+1];
+				ordre[j+1]=ordre[j];
+				ordre[j]=tmp_ordre;
+				tmp = tabcpy[j+1];
+				tabcpy[j+1]= tabcpy[j];
+				tabcpy[j]= tmp;
+				sorted = 0;
+			}
+		}
+		if(sorted){return;}
+	}
+
+}
+
+
 int travel_time_max(Graph g, int tmax, Assignment a)
 {
 

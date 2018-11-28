@@ -32,7 +32,7 @@ void test()
 
 }
 
-void simul(Assignment (*ptrfonction)(Graph,int,int),char * nom)
+void simul(Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 {
 
 	int message_size = MESSAGE_SIZE;
@@ -49,17 +49,18 @@ void simul(Assignment (*ptrfonction)(Graph,int,int),char * nom)
 		loadmax = 0;
 		for(int i=0;i<NB_SIMULS;i++)
 		{
+
 			g= init_graph_random_tree(STANDARD_LOAD);
 			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-			Assignment a = ptrfonction( g, P, message_size);
+			Assignment a = ptrfonction( g, P, message_size,tmax);
 			if(a)
 			{
-				//if(travel_time_max( g, tmax, a))
-				//{
+				if(travel_time_max( g, tmax, a))
+				{
 
 					nb_success++;
 					free_assignment(a);
-				//}
+				}
 			}
 			tmpl= (load_max(g)*MESSAGE_SIZE)/(float)P;
 			if(loadmax < tmpl)loadmax = tmpl;

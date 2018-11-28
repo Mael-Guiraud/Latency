@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <stdio.h>
 
-int tic_lost(int * period, int offset, int P)
+int tic_lost(int * period, int offset, int P,int message_size)
 {
 	int lost = 0;
 	for(int i=0;i<P;i++)
@@ -13,7 +13,7 @@ int tic_lost(int * period, int offset, int P)
 		if(period[(offset-i+P)%P]==0)
 			lost++;
 		else
-			return lost;
+			return lost % message_size;
 	}
 	return 0;// If the period is empty, no tics losts
 }
@@ -33,7 +33,7 @@ int sum_tics_lost(Graph g,int route,int offset,int message_size,int P)
 				{
 					return -1;
 				}
-				sum +=tic_lost(g.routes[route][i]->period_f,offset,P);
+				sum +=tic_lost(g.routes[route][i]->period_f,offset,P,message_size);
 			}
 			
 		}
@@ -48,7 +48,7 @@ int sum_tics_lost(Graph g,int route,int offset,int message_size,int P)
 				{
 					return -1;
 				}
-				sum +=tic_lost(g.routes[route][i]->period_b,offset,P);
+				sum +=tic_lost(g.routes[route][i]->period_b,offset,P,message_size);
 			}
 			
 		}
