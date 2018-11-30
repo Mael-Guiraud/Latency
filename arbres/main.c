@@ -1,22 +1,20 @@
 
 #include "structs.h"
-#include "greedy.h"
+#include "greedy_waiting.h"
 #include "data_treatment.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include "simulation.h"
-#include "greedy_min.h"
-#include "loaded_simons.h"
+#include "greedy_without_waiting.h"
 int main()
 {
 	srand(time(NULL));
 
 
 	//simul(&greedy,"greedy");
-	simul(&loaded_greedy,"loaded_greedy");
-	//simul(&loaded_simons,"loaded_simons");
-	//simul_period(&greedy_PRIME,"greedy_prime");
+	//simul(&loaded_greedy,"loaded_greedy");
+	simul_period(&greedy_PRIME,"greedy_prime");
 	simul_period(&greedy_min_lost,"greedy_min");
 
 	char * noms[] = {"greedy","loaded_greedy"};

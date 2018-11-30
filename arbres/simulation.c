@@ -3,9 +3,8 @@
 #include "init.h"
 #include "treatment.h"
 #include "config.h"
-#include "greedy.h"
-#include "loaded_simons.h"
-#include "greedy_min.h"
+#include "greedy_without_waiting.h"
+#include "greedy_waiting.h"
 
 #include <stdio.h>
 void test()

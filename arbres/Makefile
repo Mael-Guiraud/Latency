@@ -1,6 +1,6 @@
 
 CC=gcc
-CFLAGS=-W -Wall -g
+CFLAGS=-W -Wall -g -O2
 
 all: compil run
 
@@ -9,7 +9,8 @@ total: clean compil run
 run: 
 	./compil
 
-compil: treatment.o main.o test.o init.o greedy.o simulation.o biparti.o loaded_simons.o data_treatment.o greedy_min.o simons.o
+
+compil: treatment.o main.o test.o init.o greedy_waiting.o greedy_without_waiting.o simulation.o biparti.o data_treatment.o simons.o
 	$(CC) -o $@ $^ 
 
 %.o: %.c

@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
+
+
+
 Assignment greedy(Graph g, int P, int message_size, int tmax)
 {
 	Assignment a = malloc(sizeof(struct assignment));
@@ -77,46 +80,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 
 }
 
-Assignment greedy_PRIME(Graph g, int P, int message_size)
-{
-	if(P < message_size)
-		return NULL;
-	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
-	int offset;
-	
 
-	//printf("Forward \n");
-	//for each route
-	for(int i=0;i<g.nb_routes;i++)
-	{
-		//printf("Route %d : \n",i);
-		offset=0;
-		
-		while((!message_collisions( g, i, offset,message_size,FORWARD,P))||(!message_collisions( g, i, offset+route_length(g,i),message_size,BACKWARD,P)) )
-		{
-			//fprintf(stdout,"\roffset %d",offset);fflush(stdout);
-			offset++;
-			if(offset == P)
-			{
-				free_assignment(a);
-				//printf("\nNot possbile\n");
-				return NULL;
-			}
-		}
-		//printf("\nOffset %d for route %d\n",offset,i);
-		fill_period(g,i,offset,message_size,FORWARD,P);
-		a->offset_forward[i]=offset;
-		fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
-		a->offset_backward[i]=offset+route_length(g,i);
-		a->waiting_time[i]=0;
-	}
-
-	return a;
-
-}
 
 Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 {
@@ -148,20 +112,34 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 				{
 					if(message_collisions( g, g.arc_pool[load_order[i]].routes_id[j], offset,message_size,FORWARD,P))
 					{
-						begin_offset = route_length(g,g.arc_pool[load_order[i]].routes_id[j]) + a->offset_forward[g.arc_pool[load_order[i]].routes_id[j]];
+						//printf("%d offset \n",offset);
+						begin_offset = route_length(g,g.arc_pool[load_order[i]].routes_id[j]) + offset;
 						offset_back = begin_offset;
 						back_found = 1;
+						best_begin = 0;
+						best_back = INT_MAX;
 						while( !message_collisions( g, g.arc_pool[load_order[i]].routes_id[j], offset_back,message_size,BACKWARD,P) )
 						{
+							//printf("%d offset_back %d P %d begin  %d offset %d route  \n",offset_back, P ,begin_offset,offset,route_length(g,g.arc_pool[load_order[i]].routes_id[j]));
 							//fprintf(stdout,"\roffset %d",offset);fflush(stdout);
 							offset_back++;
-							if(offset == (P+begin_offset))
+							if(offset_back == (P+begin_offset))
 							{
 								back_found = 0;
+								break;
 							}
+							//fprintf(stdout,"\r%d",offset_back);
+							fflush(stdout);
 						}
 						if(back_found)
 						{
+							if((offset_back - begin_offset) == 0)
+							{
+								best_offset = offset;
+								best_begin = begin_offset;
+								best_back = offset_back;
+								break;
+							}
 							if((offset_back - begin_offset) < (best_back-best_begin))
 							{
 								best_offset = offset;
@@ -188,8 +166,7 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 				fill_period(g,g.arc_pool[load_order[i]].routes_id[j],best_back,message_size,BACKWARD,P);
 				a->offset_backward[g.arc_pool[load_order[i]].routes_id[j]]=best_back;
 				a->waiting_time[g.arc_pool[load_order[i]].routes_id[j]]=best_back-best_begin;
-				routes[g.arc_pool[load_order[i]].routes_id[j]] = 1;
-				
+				routes[g.arc_pool[load_order[i]].routes_id[j]] = 1;	
 			}
 		}
 		
@@ -199,3 +176,4 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 	
 
 }
+
