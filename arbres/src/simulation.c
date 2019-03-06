@@ -39,6 +39,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
 	int nb_success;
+	int tmax;
 	double moy_routes_scheduled ;
 	Graph g;
 	int P ;
@@ -46,7 +47,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
 	if(!f)perror("Error while opening file\n");
-	for(int tmax=TMAX_MIN;tmax<=TMAX_MAX;tmax+=TMAX_GAP)
+	for(int margin=MARGIN_MIN;margin<=MARGIN_MAX;margin+=MARGIN_GAP)
 	{
 		nb_success=0;
 	
@@ -56,6 +57,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		{
 			g= init_graph_random_tree(STANDARD_LOAD);
 			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+			tmax = longest_route(g) + margin;
 			Assignment a = ptrfonction( g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
 			{
@@ -74,8 +76,8 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 			fflush(stdout);
 		}	
-		printf("\n TMAX : %d success : %d/%d .\n",tmax,nb_success,NB_SIMULS);
-		fprintf(f,"%d %f %f\n",tmax,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
+		printf("\n margin : %d success : %d/%d .\n",margin,nb_success,NB_SIMULS);
+		fprintf(f,"%d %f %f\n",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
 	}
 	fclose(f);
 	

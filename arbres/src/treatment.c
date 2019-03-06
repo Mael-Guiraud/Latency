@@ -105,6 +105,18 @@ int route_length(Graph g,int route)
 	}
 	return length;
 }
+
+int longest_route(Graph g)
+{
+	int max = 0;
+	int tmp;
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		tmp = route_length(g,i);
+		max = (max>tmp)?max:tmp;
+	}
+	return max;
+}
 int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 {
 	int length = 0;
