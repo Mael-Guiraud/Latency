@@ -1,1 +1,0 @@
-int * FPT_PALL(PreElems E, int taille_paquet, int periode);
