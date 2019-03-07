@@ -9,11 +9,11 @@
 #include "greedy_without_waiting.h"
 int main()
 {
-	int seed = time(NULL);
+	
+	/*int seed = time(NULL);
 	
 
 
-	
 	simul(seed,&greedy,"greedy");
 	simul(seed,&loaded_greedy,"loaded greedy");
 	simul_period(seed,&greedy_PRIME,"greedy prime");
@@ -26,7 +26,7 @@ int main()
 	char * noms2[] = {"greedy prime","greedy min"};
 	char * ylabels2[] = {"greedy prime","greedy min"};
 	print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels2);
-	
-	//test();
+	*/
+	test();
 	return 0;
 }
