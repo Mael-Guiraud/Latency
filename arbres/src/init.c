@@ -12,6 +12,10 @@ void init_arc(Arc * a)
 	a->nb_routes = 0;
 	a->period_f = NULL;
 	a->period_b = NULL;
+
+	a->first = -1;
+	a->last = -1;
+	a->seen = 0;
 }
 
 int count_real_collisions(int ** graph, int nb_bbu, int nb_collisions)
@@ -108,6 +112,8 @@ Graph init_graph_random_tree(double load)
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
 	g.nb_routes = nb_routes;
+	g.nb_bbu = nb_bbu;
+	g.nb_collisions = nb_collisions;
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
 	g.routes = malloc(sizeof(Route*)*nb_routes);
 	g.size_routes = malloc(sizeof(int)*nb_routes);

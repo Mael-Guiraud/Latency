@@ -5,6 +5,7 @@
 #include "config.h"
 #include "greedy_without_waiting.h"
 #include "greedy_waiting.h"
+#include "data_treatment.h"
 
 #include <time.h>
 #include <omp.h>
@@ -30,6 +31,7 @@ void test()
 	else
 		printf("No assignment found\n");
 	affiche_graph(g,P);
+	print_graphvitz(g);
 	free_graph(g);
 
 }

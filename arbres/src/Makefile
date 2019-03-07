@@ -6,6 +6,7 @@ DIRbin = bin/
 DIRgnu = ../gnuplot/
 DIRdat = ../data/
 DIRres = ../pdfs/
+DIRview = ../view/
 all: dirs compil run gnuplot
 
 dirs:
@@ -13,6 +14,7 @@ dirs:
 	mkdir -p $(DIRgnu)
 	mkdir -p $(DIRdat)
 	mkdir -p $(DIRres)
+	mkdir -p $(DIRview)
 
 total: clean compil run
 
