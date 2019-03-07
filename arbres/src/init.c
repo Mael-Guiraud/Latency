@@ -143,14 +143,21 @@ Graph init_graph_random_tree(double load)
 				for(int k=0;k<nb_routes_per_flow[index_middle_arc];k++)
 				{
 					//printf("%d %d %d %d \n",nb_bbu+j-nb_fake_collisions,index_arc,i,index_route);
+
 					g.routes[index_route]=malloc(sizeof(Route)*3);
 					g.size_routes[index_route] = 3;
+
+					//ARcs des points de collisions
 					g.routes[index_route][0] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].routes_id[g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes] = index_route;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
+
+					//ARcs du graph biparti
 					g.routes[index_route][1] = &g.arc_pool[index_arc];
 					g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 					g.arc_pool[index_arc].nb_routes++;
+
+					//Arcs vers la BBU
 					g.routes[index_route][2] = &g.arc_pool[i];
 					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 					g.arc_pool[i].nb_routes++;
