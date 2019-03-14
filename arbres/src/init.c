@@ -97,7 +97,7 @@ Graph init_graph_random_tree(double load)
 	do
 	{
 		graph = random_biparti(nb_bbu,nb_collisions);
-		printf("dans init %d\n",is_connexe(graph, nb_bbu, nb_collisions) );
+		
 	}while(!is_connexe(graph, nb_bbu, nb_collisions));
 	int nb_real_collisions = count_real_collisions(graph,nb_bbu,nb_collisions);
 	int nb_arcs_in_biparti = count_routes(graph,nb_bbu,nb_collisions);

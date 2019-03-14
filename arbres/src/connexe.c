@@ -115,7 +115,7 @@ int is_connexe(int ** tab, int nb_bbu, int nb_collisions)
 			}
 		}
 	}
-	printf("%d parcours\n",parcours_graphe(G));
+	
 	return (parcours_graphe(G)>1)?0:1;
 
 }
