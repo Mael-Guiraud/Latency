@@ -4,8 +4,6 @@ typedef struct arc{
 	int routes_id[124];
 	int * period_f;
 	int * period_b;
-
-	//for graphic view
 	int first;
 	int last;
 	int seen;
@@ -20,9 +18,6 @@ typedef struct graph{
 	int arc_pool_size;
 	Route * routes;
 	int * size_routes;
-
-
-	//for graphic view
 	int nb_bbu;
 	int nb_collisions;
 } Graph;

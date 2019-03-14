@@ -7,7 +7,7 @@ DIRgnu = ../gnuplot/
 DIRdat = ../data/
 DIRres = ../pdfs/
 DIRview = ../view/
-all: dirs compil run gnuplot
+all: dirs compil run gnuplot dot
 
 dirs:
 	mkdir -p $(DIRbin)
@@ -16,13 +16,18 @@ dirs:
 	mkdir -p $(DIRres)
 	mkdir -p $(DIRview)
 
-total: clean compil run
 
+test: dirs compil runtest dot
+	
+runtest: 
+	./compil test
 run: 
-	./compil
+	./compil simul
 
+dot:
+	dot -Tpdf $(DIRview)view.dot -o $(DIRview)view.pdf
 
-compil: $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o
+compil: $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
 	$(CC) -fopenmp  -o $@ $^ 
 
 $(DIRbin)%.o: %.c config.h
@@ -35,6 +40,7 @@ clean:
 	rm -rf *.o
 	rm -rf $(EXEC)
 	rm -rf bin/*
+
 
 gnuplot:
 	gnuplot $(DIRgnu)*

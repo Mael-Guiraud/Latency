@@ -54,7 +54,7 @@ void print_graphvitz(Graph g){
 	int vertex_id ;
 	int previous_end ;
 	int next_begin ;
-	if( (f = fopen("../view/view.dot","w")) )
+	if( !(f = fopen("../view/view.dot","w")) )
 	{
 		perror("Opening dot file failure\n");exit(2);
 	}
@@ -64,9 +64,14 @@ void print_graphvitz(Graph g){
 
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
 	{
+
 		g.arc_pool[i].first = vertex_id;
 		g.arc_pool[i].last = vertex_id+1;
 		g.arc_pool[i].seen = 1;
+		if(i<g.nb_bbu)
+		{
+			fprintf(f,"%d [shape = \"box\",label=\"\"]\n",vertex_id+1);	
+		}
 		fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
 		vertex_id+=2;
 	}
@@ -88,15 +93,17 @@ void print_graphvitz(Graph g){
 				if(previous_end == -1)
 				{
 					previous_end = vertex_id;
+					fprintf(f,"%d [shape = \"circle\",label=\"\"]\n",vertex_id);
 					vertex_id++;
 
 				}
-				
+				g.routes[i][j]->first = previous_end;
 				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g.routes[i][j]->length);
-
 				
+				g.routes[i][j]->last = next_begin;
 				g.routes[i][j]->seen = 1;
 			}
+			previous_end = g.routes[i][j]->last;
 		}
 	}
 

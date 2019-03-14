@@ -1,10 +1,7 @@
 #include <stdlib.h>
 #include "config.h"
+#include "connexe.h"
 
-float rand01()
-{
-	return (float)rand() / (float)RAND_MAX;
-}
 
 int ** random_biparti(int nb_datacenters, int nb_switches)
 {

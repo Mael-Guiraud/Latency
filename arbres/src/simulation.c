@@ -18,6 +18,7 @@ void test()
 	int message_size = MESSAGE_SIZE;
 	Graph g = init_graph_random_tree(STANDARD_LOAD);
 	P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+	printf("%d \n",load_max(g));
 	affiche_graph(g,P);
 	printf("Liens load : ");
 	affiche_tab(load_links(g),g.arc_pool_size);

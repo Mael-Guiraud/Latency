@@ -3,6 +3,7 @@
 #include "biparti.h"
 #include "test.h"
 #include "treatment.h"
+#include "connexe.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -92,7 +93,12 @@ Graph init_graph_random_tree(double load)
 {
 	int nb_bbu = NB_BBU;
 	int nb_collisions = NB_COLLISIONS;
-	int ** graph = random_biparti(nb_bbu,nb_collisions);
+	int ** graph;
+	do
+	{
+		graph = random_biparti(nb_bbu,nb_collisions);
+		printf("dans init %d\n",is_connexe(graph, nb_bbu, nb_collisions) );
+	}while(!is_connexe(graph, nb_bbu, nb_collisions));
 	int nb_real_collisions = count_real_collisions(graph,nb_bbu,nb_collisions);
 	int nb_arcs_in_biparti = count_routes(graph,nb_bbu,nb_collisions);
 	int * nb_routes_per_flow_bbu = random_number_routes(nb_bbu);
@@ -113,7 +119,7 @@ Graph init_graph_random_tree(double load)
 	Graph g;
 	g.nb_routes = nb_routes;
 	g.nb_bbu = nb_bbu;
-	g.nb_collisions = nb_collisions;
+	g.nb_collisions = nb_real_collisions;
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
 	g.routes = malloc(sizeof(Route*)*nb_routes);
 	g.size_routes = malloc(sizeof(int)*nb_routes);
