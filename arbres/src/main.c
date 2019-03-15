@@ -19,6 +19,8 @@ int main (int argc, char *argv[])
 	{
 		test();
 	}
+
+	
 	else
 	{
 		int seed = time(NULL);
