@@ -16,7 +16,6 @@ dirs:
 	mkdir -p $(DIRres)
 	mkdir -p $(DIRview)
 
-
 test: dirs compil runtest dot
 	
 runtest: 
