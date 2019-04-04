@@ -18,6 +18,8 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 	int offset;
 	int begin_offset;
 
+	
+
 	//printf("Forward \n");
 	//for each route
 	for(int i=0;i<g.nb_routes;i++)

@@ -49,6 +49,7 @@ void print_gnuplot(char * outputname,char ** files, int nb_files, char* title, c
 
 }
 
+
 void print_graphvitz(Graph g){
 	FILE* f;
 	int vertex_id ;
@@ -70,7 +71,7 @@ void print_graphvitz(Graph g){
 		g.arc_pool[i].seen = 1;
 		if(i<g.nb_bbu)
 		{
-			fprintf(f,"%d [shape = \"box\",label=\"\"]\n",vertex_id+1);	
+			fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
 		}
 		fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
 		vertex_id+=2;
@@ -93,7 +94,7 @@ void print_graphvitz(Graph g){
 				if(previous_end == -1)
 				{
 					previous_end = vertex_id;
-					fprintf(f,"%d [shape = \"circle\",label=\"\"]\n",vertex_id);
+					fprintf(f,"%d [shape = \"circle\",label=\"%d\"]\n",vertex_id,g.routes[i][j]->bbu_dest);
 					vertex_id++;
 
 				}
