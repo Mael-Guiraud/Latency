@@ -16,6 +16,7 @@ void init_arc(Arc * a)
 
 	a->first = -1;
 	a->last = -1;
+	a->bbu_dest = -1;
 	a->seen = 0;
 }
 
@@ -143,12 +144,14 @@ Graph init_graph_random_tree(double load)
 			g.routes[index_route][0] =  &g.arc_pool[index_arc];
 			g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 			g.arc_pool[index_arc].nb_routes++;
+			g.arc_pool[index_arc].bbu_dest = i;
 
 
 			index_arc++;
 			g.routes[index_route][1] =  &g.arc_pool[i];
 			g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 			g.arc_pool[i].nb_routes++;
+			g.arc_pool[i].bbu_dest = i;
 			index_route++;
 
 		}
@@ -178,23 +181,27 @@ Graph init_graph_random_tree(double load)
 					g.routes[index_route][0] = &g.arc_pool[index_arc];
 					g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 					g.arc_pool[index_arc].nb_routes++;
+					g.arc_pool[index_arc].bbu_dest = i;
 					index_arc++;
 
 					//ARcs des points de collisions
 					g.routes[index_route][1] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].routes_id[g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes] = index_route;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].bbu_dest = i;
 
 					//ARcs du graph biparti
 					g.routes[index_route][2] = &g.arc_pool[index_middle_arc];
 					g.arc_pool[index_middle_arc].routes_id[g.arc_pool[index_middle_arc].nb_routes] = index_route;
 					g.arc_pool[index_middle_arc].nb_routes++;
+					g.arc_pool[index_middle_arc].bbu_dest = i;
 					
 
 					//Arcs vers la BBU
 					g.routes[index_route][3] = &g.arc_pool[i];
 					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 					g.arc_pool[i].nb_routes++;
+					g.arc_pool[i].bbu_dest = i;
 					index_route++;
 					
 				}

@@ -7,6 +7,7 @@ typedef struct arc{
 	int first;
 	int last;
 	int seen;
+	int bbu_dest;
 } Arc;
 
 typedef Arc** Route;

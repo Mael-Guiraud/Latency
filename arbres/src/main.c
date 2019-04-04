@@ -20,15 +20,14 @@ int main (int argc, char *argv[])
 		test();
 	}
 
-	
 	else
 	{
 		int seed = time(NULL);
 
 		simul(seed,&greedy,"greedy");
 		simul(seed,&loaded_greedy,"loaded greedy");
-		simul_period(seed,&greedy_PRIME,"greedy prime");
-		simul_period(seed,&greedy_min_lost,"greedy min");
+		//simul_period(seed,&greedy_PRIME,"greedy prime");
+		//simul_period(seed,&greedy_min_lost,"greedy min");
 
 		char * noms[] = {"greedy","loaded greedy"};
 		char * ylabels[] = {"greedy","loaded greedy"};
