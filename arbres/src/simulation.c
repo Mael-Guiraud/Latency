@@ -33,6 +33,7 @@ void test()
 		printf("No assignment found\n");
 	affiche_graph(g,P);
 	print_graphvitz(g);
+	print_python(g);
 	free_graph(g);
 
 }
