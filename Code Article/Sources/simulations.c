@@ -899,8 +899,8 @@ char nom[64];
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
-			//graphe_etoile(g,taille_route);
-			graphe_etoile_Psur2( g, taille_route,800 );
+			graphe_etoile(g,taille_route);
+			//graphe_etoile_Psur2( g, taille_route,800 );
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
