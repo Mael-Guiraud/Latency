@@ -88,7 +88,7 @@ int main()
 	
 
 	//Test stochastique vs pmls
-	stochastic_vs_PMLS(8,2500,20000,100, 12000);
+	stochastic_vs_PMLS(8,2500,20000,1000, 12000);
 
 
 

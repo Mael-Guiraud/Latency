@@ -1,1 +1,1 @@
-int stochastic(Graphe g, int taille_paquets, int periode, int nombre_periodes, int mode);
+int stochastic(Graphe g, int taille_paquets, int periode, int nombre_periodes, int mode_res,int mode_gestion);

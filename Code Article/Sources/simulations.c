@@ -665,7 +665,7 @@ void marge_PALL_stochastique(int nb_routes,int taille_paquets,int taille_route, 
 					distribsp[ressp/150+100]++;
 				}
 			}
-			ressto=stochastic(g,taille_paquets,periode,1000,1);
+			ressto=stochastic(g,taille_paquets,periode,1000,1,1);
 			ressto -=  longest_route(g);
 			if(ressto<15000)
 			{
@@ -941,13 +941,13 @@ char nom[64];
 					break;
 				
 			}
-			ressto=stochastic(g,taille_paquets,periode95,100,1);
+			ressto=stochastic(g,taille_paquets,periode95,100,1,0);
 			if(ressto <= tmax)
 			{
 				#pragma omp atomic
 					sto1++;
 			}
-			ressto=stochastic(g,taille_paquets,periode40,100,1);
+			ressto=stochastic(g,taille_paquets,periode40,100,1,0);
 			if(ressto <= tmax)
 			{
 				#pragma omp atomic
