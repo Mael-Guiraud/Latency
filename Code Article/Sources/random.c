@@ -195,7 +195,10 @@ int stochastic(Graphe g, int taille_paquets, int periode, int nombre_periodes, i
 	//tableau qui contiens le tick de départs des messages dans les sources
 	int departs[nb_routes];
 	int deadline[nb_routes];
-	for(int i=0;i<nb_routes;i++)departs[i]=rand()%periode;
+	if(!SYCNH)
+		for(int i=0;i<nb_routes;i++)departs[i]=rand()%periode;
+	else
+		for(int i=0;i<nb_routes;i++)departs[i]=0;
 	for(int i=0;i<nb_routes;i++)deadline[i]= 2* (g.matrice[nb_routes][i] + g.matrice[nb_routes][1+i+nb_routes]);
 	
 
