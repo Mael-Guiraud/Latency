@@ -357,7 +357,10 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 				gp_found = 0;
 				s_found = 0;
 				sp_found = 0;
-				fpt_found = 0;
+				if(!SYNCH)
+					fpt_found = 0;
+				else
+					fpt_found = 1;
 				
 				for(int compteur_rand = 0;compteur_rand<nb_rand;compteur_rand++)
 				{
@@ -434,11 +437,12 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						break;
 					
 				}
-				if(fpt_found && (!sp_found))
-				{
-					affiche_etoile(g);
-					print_dot(g);
-				}
+				if(!SYNCH)
+					if(fpt_found && (!sp_found))
+					{
+						affiche_etoile(g);
+						print_dot(g);
+					}
 				if( (!fpt_found) && (sp_found))
 				{
 					printf("IMPOSSIBLE\n");
