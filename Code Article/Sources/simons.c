@@ -1058,12 +1058,29 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 	//release times
 	int arrivee[nbr_route];
 	offset = 0;
+
+
+	//Only usefull for synch
+	int mini = m_i[0];
+	if(SYNCH)
+	for(int i=0;i<nbr_route;i++)
+	{
+		if(m_i[i]<mini)
+			mini = m_i[i];
+	}
+
+	
+
+
 	for(i=0;i<nbr_route;i++)
 	{
 		Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
 
 		arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
-		deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+		if(!SYNCH)
+			deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+		else
+			deadline[i] =  TMAX+mini- g.matrice[nbr_route][i]+taille_paquet;
 	}
 	
 	i=lower(arrivee,nbr_route);
@@ -1237,11 +1254,23 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 
 
 	//CALCUL TMAX
-	maximum= w_i[0]+2*Dl[0];
-	for(int i=0;i<nbr_route;i++)
+	if(!SYNCH)
 	{
-		if(w_i[i]+2*Dl[i] > maximum)
-			maximum= w_i[i]+2*Dl[i];
+		maximum= w_i[0]+2*Dl[0];
+		for(int i=0;i<nbr_route;i++)
+		{
+			if(w_i[i]+2*Dl[i] > maximum)
+				maximum= w_i[i]+2*Dl[i];
+		}
+	}
+	else
+	{
+		maximum= m_i[0]+w_i[0]+2*Dl[0];
+		for(int i=0;i<nbr_route;i++)
+		{
+			if(m_i[i]+w_i[i]+2*Dl[i] > maximum)
+				maximum= m_i[i]+w_i[i]+2*Dl[i];
+		}
 	}
 	
 
@@ -1484,7 +1513,15 @@ void decaler_release(int * release, int* deadline, int periode, int premier,int 
 	}
 	
 }
-
+int check_Deadlines(int*tab,int size)
+{
+	for(int i=0;i<size;i++)
+		{
+			if(tab[i]<0)
+				return 0;
+		}
+		return 1;
+}
 int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 {	
 	
@@ -1513,7 +1550,14 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 	int maximum;
 
 	//printf("SIMONS PER \n");
-	
+	int mini = m_i[0];
+	if(SYNCH)
+		for(int i=0;i<nbr_route;i++)
+		{
+			if(m_i[i]<mini)
+				mini = m_i[i];
+		}
+
 	for(int premier=0;premier<nbr_route;premier++)
 	{
 		//printf("Premier = %d \n",premier);
@@ -1522,17 +1566,27 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 			Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
 			release[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
 			arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
-			deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+			if(!SYNCH)
+				deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+			else
+				deadline[i] =  TMAX+mini-g.matrice[nbr_route][i]+taille_paquet;
 		}
 		//printf("Release \n");affiche_tab(arrivee,nbr_route);printf("\n");
 		debut_periode_retour = arrivee[premier];
 		decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
 		
+		if(!check_Deadlines(deadline,nbr_route))continue;
+
 		date=arrivee[premier];
 		//printf("Release \n");affiche_tab(arrivee,nbr_route);printf("\n");
 		//printf("Deadline \n");affiche_tab(deadline,nbr_route);printf("\n");
 		elems = init_element();
 		deadline_periode = arrivee[premier] + periode;
+		
+		//Test pour eviter que si le premier est trop petit en latence, ca lance simons quand même
+		if(deadline[premier] < taille_paquet)
+			continue;
+
 		//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
 		for(int j=0;j<nbr_route;j++)
 		{
@@ -1543,7 +1597,9 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 				//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline[j],deadline_periode);
 			}
 			else
+			{
 				elems = ajoute_elemt(elems,j,arrivee[j],arrivee[j]+taille_paquet);
+			}
 
 
 		}
@@ -1599,16 +1655,30 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		*/
 
 		if(!is_ok(g,taille_paquet,m_i,w_i,periode)){continue;}
-
-		maximum= w_i[0]+2*Dl[0];
-		for(int i=0;i<nbr_route;i++)
+		if(!SYNCH)
 		{
-			if(w_i[i]+2*Dl[i] > maximum)
+			maximum= w_i[0]+2*Dl[0];
+			for(int i=0;i<nbr_route;i++)
 			{
-				maximum= w_i[i]+2*Dl[i];
-				//printf("%d i\n",i);
+				if(w_i[i]+2*Dl[i] > maximum)
+				{
+					maximum= w_i[i]+2*Dl[i];
+					//printf("%d i\n",i);
+				}
 			}
 		}
+		else
+		{
+			maximum= m_i[0]+w_i[0]+2*Dl[0];
+			for(int i=0;i<nbr_route;i++)
+			{
+				if(m_i[i]+w_i[i]+2*Dl[i] > maximum)
+				{
+					maximum= m_i[i]+w_i[i]+2*Dl[i];
+					//printf("i = %d newmax = %d\n",i,maximum);
+				}
+			}
+		}	
 
 		if(maximum<=TMAX)
 		{
