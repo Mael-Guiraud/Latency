@@ -270,10 +270,15 @@ int longest_etoile_periodique(Graphe g,int taille_paquets,int periode, int Tmax,
 	}
 
 	//affiche_tab(noeud_retour,nb_routes);
+	if(SYNCH)
+		for(int i=0;i<nb_routes;i++){
+			date_limite[i] = m_i[i]+Tmax-g.matrice[nb_routes][i];
+		}
+	else
+		for(int i=0;i<nb_routes;i++){
+			date_limite[i] = Tmax-g.matrice[nb_routes][i];
+		}
 
-	for(int i=0;i<nb_routes;i++){
-		date_limite[i] = m_i[i]+Tmax-g.matrice[nb_routes][i];
-	}
 
 	//Le premier a arriver passe direct
 	int eligible = first_back(noeud_retour,date_limite,nb_routes);
@@ -391,19 +396,39 @@ int longest_etoile_periodique(Graphe g,int taille_paquets,int periode, int Tmax,
 
 	if(!is_ok(g,taille_paquets,m_i,w_i,periode)){printf("ERROR 2!!\n");exit(16);}
 	//printf("-------------------------\n\n");
-	int max = w_i[0]+2*routes[0];
-	for(int i=0;i<nb_routes;i++)
+	if(SYNCH)
 	{
-		if(w_i[i]+2*routes[i] > Tmax)
+		int max = w_i[0]+2*routes[0];
+		for(int i=0;i<nb_routes;i++)
 		{
-			/*affiche_matrice(g);
-			
+			if(w_i[i]+2*routes[i] > Tmax)
+			{
+				/*affiche_matrice(g);
+				
 
-			printf("Tmax depassé (%d = %d + %d + %d)\n\n",w_i[i]+2*routes[i]+taille_paquets,w_i[i],2*routes[i],taille_paquets);*/
-			return -1;
+				printf("Tmax depassé (%d = %d + %d + %d)\n\n",w_i[i]+2*routes[i]+taille_paquets,w_i[i],2*routes[i],taille_paquets);*/
+				return -1;
+			}
+			if(w_i[i]+2*routes[i] > max)
+				max= w_i[i]+2*routes[i];
 		}
-		if(w_i[i]+2*routes[i] > max)
-			max= w_i[i]+2*routes[i];
+	}
+	else
+	{
+		int max = m_i[0]+w_i[0]+2*routes[0];
+		for(int i=0;i<nb_routes;i++)
+		{
+			if(m_i[i]+w_i[i]+2*routes[i] > Tmax)
+			{
+				/*affiche_matrice(g);
+				
+
+				printf("Tmax depassé (%d = %d + %d + %d)\n\n",w_i[i]+2*routes[i]+taille_paquets,w_i[i],2*routes[i],taille_paquets);*/
+				return -1;
+			}
+			if(m_i[i]+w_i[i]+2*routes[i] > max)
+				max= m_i[i]+w_i[i]+2*routes[i];
+		}
 	}
 	//printf("Tmax = %d \n",max);
 	//affiche_etoile(g);

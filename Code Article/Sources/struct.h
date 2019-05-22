@@ -4,6 +4,4 @@ typedef struct graphe{
 	int ** matrice;//matrice d'adjacence pondérée
 }Graphe ;
 
-
-
-
+#define SYNCH 0
