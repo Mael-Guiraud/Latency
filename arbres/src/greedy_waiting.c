@@ -91,8 +91,13 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 }
 
 
+/*
+ARG mode :
+	- 0 : sort the routes on arcs by id
+	- 1 : uses the longest route first
 
-Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
+*/
+Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 {
 	Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
@@ -110,15 +115,28 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 		routes[i]=0;
 
 	int * load_order = load_links(g);
-
+	int * id_routes;
 
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		
+		switch (mode) {
+
+		case 0 :
+			id_routes = routes_by_id(g.arc_pool[load_order[i]]);
+		break;
+
+		case 1 :
+			id_routes = sort_longest_routes_on_arc(g, g.arc_pool[load_order[i]]);
+		break;
+
+		default:
+			printf("Mode non connu(greedy by arcs).\n");exit(97);
+		break;
+		}
 		for(int j=0;j<g.arc_pool[load_order[i]].nb_routes;j++)
 		{
 
-			if(!routes[g.arc_pool[load_order[i]].routes_id[j]])
+			if(!routes[id_routes[j]])
 			{
 				for(offset = 0;offset<P;offset++)
 				{
@@ -169,10 +187,12 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 				if(best_back == INT_MAX)
 				{
 					//free_assignment(a);
+					free(load_order);
 					return a;
 				}
 				if( (2*route_length( g,g.arc_pool[load_order[i]].routes_id[j]) + offset-begin_offset ) > tmax )
 				{
+					free(load_order);
 					return a;
 				}
 				fill_period(g,g.arc_pool[load_order[i]].routes_id[j],best_offset,message_size,FORWARD,P);
@@ -186,7 +206,7 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 				a->nb_routes_scheduled++;
 			}
 		}
-		
+		free(id_routes);
 	}
 	free(load_order);
 	a->all_routes_scheduled =1;
@@ -195,3 +215,12 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 
 }
 
+Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
+{
+	return greedy_by_arcs(g,P,message_size,tmax,0);
+}
+
+Assignment loaded_greedy_longest(Graph g, int P, int message_size, int tmax)
+{
+	return greedy_by_arcs(g,P,message_size,tmax,1);
+}

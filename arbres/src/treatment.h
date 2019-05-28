@@ -10,3 +10,5 @@ int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind);
 int travel_time_max(Graph g, int tmax, Assignment a);
 int * load_links(Graph g);
 int  load_max(Graph g);
+int * sort_longest_routes_on_arc(Graph g, Arc a);
+int * routes_by_id(Arc a);

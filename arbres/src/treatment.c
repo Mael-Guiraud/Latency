@@ -1,4 +1,5 @@
 #include "structs.h"
+#include "treatment.h"
 #include <stdio.h>
 #include <stdlib.h>
 //return 1 if the message can reach the destination without collision, 0 otherwise
@@ -105,6 +106,27 @@ int route_length(Graph g,int route)
 	}
 	return length;
 }
+int * routes_by_id(Arc a)
+{
+	int * id = (int*)malloc(sizeof(int)*a.nb_routes);
+	for(int i=0;i<a.nb_routes;i++)
+	{
+		id[i]=a.routes_id[i];
+	}
+	return id;
+}
+int * sort_longest_routes_on_arc(Graph g, Arc a)
+{
+	int * id = (int*)malloc(sizeof(int)*a.nb_routes);
+	int routes_length[a.nb_routes];
+	for(int i=0;i<a.nb_routes;i++)
+	{
+		id[i]=a.routes_id[i];
+		routes_length[i]=route_length(g,a.routes_id[i]);
+	}
+	tri_bulles(routes_length,id,a.nb_routes);
+	return id;
+}
 
 int longest_route(Graph g)
 {
@@ -159,18 +181,21 @@ void free_assignment(Assignment a)
 }
 void free_graph(Graph g)
 {
+	
 	for(int i=0;i<g.nb_routes;i++)
 	{
 		for(int j=0;j<g.size_routes[i];j++)
 		{
-			if(g.routes[i][j]->nb_routes > 1)
+			if(g.routes[i][j]->nb_routes >= 1)
 			{
 				free(g.routes[i][j]->period_f);
 				free(g.routes[i][j]->period_b);
 				g.routes[i][j]->nb_routes = 0;
+				
 			}
 		}
 	}
+
 	free(g.arc_pool);
 	for(int i=0;i<g.nb_routes;i++)
 		free(g.routes[i]);

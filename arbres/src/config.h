@@ -21,4 +21,4 @@
 
 
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 100
