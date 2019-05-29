@@ -106,6 +106,35 @@ int route_length(Graph g,int route)
 	}
 	return length;
 }
+int insert_if_not_seen(int * tab, int sizetab, int e)
+{
+	int i;
+	for(i=0;(i<sizetab && tab[i] != -1);i++)
+	{
+		if(tab[i] == e)
+			return 0; 
+	}
+	if(i== sizetab){printf("Error, tab too short (insert_if_not_seen() )\n");exit(96);}
+	tab[i] = e;
+	return 1;
+}
+int nb_collisions_route(Graph g, int route)
+{
+	int seen[128];
+	int cols = 0;
+	for(int i= 0;i<128;i++)
+	{
+		seen[i] = -1;
+	}
+	for(int i=0;i<g.size_routes[route];i++)
+	{
+		for(int j=0;j<g.routes[route][i]->nb_routes;j++)
+		{
+			cols += insert_if_not_seen(seen,128,g.routes[route][i]->routes_id[j]);
+		}
+	}
+	return cols-1; //-1 bcause we dont count the route itself
+}
 int * routes_by_id(Arc a)
 {
 	int * id = (int*)malloc(sizeof(int)*a.nb_routes);
@@ -127,7 +156,18 @@ int * sort_longest_routes_on_arc(Graph g, Arc a)
 	tri_bulles(routes_length,id,a.nb_routes);
 	return id;
 }
-
+int * sort_routes_by_collisions(Graph g, Arc a)
+{
+	int * id = (int*)malloc(sizeof(int)*a.nb_routes);
+	int routes_colls[a.nb_routes];
+	for(int i=0;i<a.nb_routes;i++)
+	{
+		id[i]=a.routes_id[i];
+		routes_colls[i]=nb_collisions_route(g,a.routes_id[i]);
+	}
+	tri_bulles(routes_colls,id,a.nb_routes);
+	return id;
+}
 int longest_route(Graph g)
 {
 	int max = 0;

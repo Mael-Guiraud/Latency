@@ -24,15 +24,16 @@ int main (int argc, char *argv[])
 	{
 		int seed = time(NULL);
 
-		simul(seed,&greedy,"greedy");
-		simul(seed,&loaded_greedy,"loaded greedy");
-		simul(seed,&loaded_greedy_longest,"loaded greedy longest");
+		//simul(seed,&greedy,"greedy");
+		//simul(seed,&loaded_greedy,"loaded greedy");
+		//simul(seed,&loaded_greedy_longest,"loaded greedy longest");
+		simul(seed,&loaded_greedy_longest,"loaded greedy collisions");
 		//simul_period(seed,&greedy_PRIME,"greedy prime");
 		//simul_period(seed,&greedy_min_lost,"greedy min");
 
-		char * noms[] = {"greedy","loaded greedy","loaded greedy longest"};
-		char * ylabels[] = {"greedy","loaded greedy","loaded greedy longest"};
-		print_gnuplot("waiting",noms, 3, "performance of greedys with waiting times", "tmax", ylabels);
+		char * noms[] = {"greedy","loaded greedy","loaded greedy longest","loaded greedy collisions"};
+		char * ylabels[] = {"greedy","loaded greedy","loaded greedy longest","loaded greedy collisions"};
+		print_gnuplot("waiting",noms, 4, "performance of greedys with waiting times", "tmax", ylabels);
 
 		/*char * noms2[] = {"greedy prime","greedy min"};
 		char * ylabels2[] = {"greedy prime","greedy min"};

@@ -128,7 +128,9 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 		case 1 :
 			id_routes = sort_longest_routes_on_arc(g, g.arc_pool[load_order[i]]);
 		break;
-
+		case 2:
+			id_routes = sort_routes_by_collisions(g,g.arc_pool[load_order[i]]);
+		break;
 		default:
 			printf("Mode non connu(greedy by arcs).\n");exit(97);
 		break;
@@ -223,4 +225,9 @@ Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
 Assignment loaded_greedy_longest(Graph g, int P, int message_size, int tmax)
 {
 	return greedy_by_arcs(g,P,message_size,tmax,1);
+}
+
+Assignment loaded_greedy_collisions(Graph g, int P, int message_size, int tmax)
+{
+	return greedy_by_arcs(g,P,message_size,tmax,2);
 }
