@@ -44,6 +44,6 @@ clean:
 gnuplot:
 	gnuplot $(DIRgnu)*
 
-debug:
-	valgrind ./compil
+debug: compil 
+	valgrind ./compil --leak-check=full
 
