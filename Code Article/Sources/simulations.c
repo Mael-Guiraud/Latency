@@ -958,6 +958,12 @@ char nom[64];
 					sto2++;
 			}
 				//exit(55);
+			if(sp_found && (ressto > tmax ))
+			{
+				print_dot(g);
+				exit(91);
+
+			}
 
 			libere_matrice(g);
 
