@@ -7,7 +7,7 @@ DIRgnu = ../gnuplot/
 DIRdat = ../data/
 DIRres = ../pdfs/
 DIRview = ../view/
-all: dirs compil run gnuplot dot
+all: dirs compil run gnuplot
 
 dirs:
 	mkdir -p $(DIRbin)
@@ -21,6 +21,7 @@ test: dirs compil runtest dot
 runtest: 
 	./compil test
 run: 
+	rm -f $(DIRgnu)*
 	./compil simul
 
 dot:
@@ -41,9 +42,12 @@ clean:
 	rm -rf bin/*
 
 
-gnuplot:
-	gnuplot $(DIRgnu)*
+gnuplot: 
+	./launch.bash
 
-debug: compil 
-	valgrind ./compil --leak-check=full
 
+debug: compil
+	valgrind --leak-check=full -v ./compil simul
+
+debug2: compil
+	valgrind --tool=callgrind -v ./compil simul

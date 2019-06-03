@@ -1679,7 +1679,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 				}
 			}
 		}	
-
+		affiche_solution(g,taille_paquet,m_i,w_i,periode);
 		if(maximum<=TMAX)
 		{
 			

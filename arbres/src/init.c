@@ -94,9 +94,11 @@ Graph init_graph_random_tree(double load)
 {
 	int nb_bbu = NB_BBU;
 	int nb_collisions = NB_COLLISIONS;
-	int ** graph;
+	int ** graph = NULL;
 	do
 	{
+		if(graph)
+			free_biparti(graph,nb_bbu);
 		graph = random_biparti(nb_bbu,nb_collisions);
 		
 	}while(!is_connexe(graph, nb_bbu, nb_collisions));
@@ -221,6 +223,9 @@ Graph init_graph_random_tree(double load)
 		g.arc_pool[i].period_f = calloc(real_period,sizeof(int));
 		g.arc_pool[i].period_b = calloc(real_period,sizeof(int));
 	}
+	
 	free_biparti(graph,nb_bbu);	
+	free(nb_routes_per_flow_bbu);
+	free(nb_routes_per_flow_collisions);
 	return g;
 }

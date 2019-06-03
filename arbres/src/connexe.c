@@ -116,8 +116,9 @@ int is_connexe(int ** tab, int nb_bbu, int nb_collisions)
 		}
 	}
 	
-	return (parcours_graphe(G)>1)?0:1;
-
+	int return_value = (parcours_graphe(G)>1)?0:1;
+	libere_graphe(G);
+	return return_value;
 }
 
 
