@@ -117,6 +117,7 @@ Graph init_graph_random_tree(double load)
 	int nb_fake_collisions;
 	int index_middle_arc;
 	int index_bip;
+	int real_period;
 	// affiche_biparti(graph,nb_bbu,nb_collisions);
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
@@ -153,10 +154,12 @@ Graph init_graph_random_tree(double load)
 			g.routes[index_route][1] =  &g.arc_pool[i];
 			g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 			g.arc_pool[i].nb_routes++;
-			g.arc_pool[i].bbu_dest = i;
-			index_route++;
+			
 
+			index_route++;
 		}
+		g.arc_pool[i].contention_level_forward = 2;
+		g.arc_pool[i].contention_level_backward = 2;
 	}
 	//printf("1 %d \n",nb_real_collisions+nb_bbu);
 	
@@ -191,6 +194,8 @@ Graph init_graph_random_tree(double load)
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].routes_id[g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes] = index_route;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].bbu_dest = i;
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].contention_level_forward = 1;
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].contention_level_backward = 3;
 
 					//ARcs du graph biparti
 					g.routes[index_route][2] = &g.arc_pool[index_middle_arc];
@@ -204,6 +209,8 @@ Graph init_graph_random_tree(double load)
 					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 					g.arc_pool[i].nb_routes++;
 					g.arc_pool[i].bbu_dest = i;
+					g.arc_pool[i].contention_level_forward = 1;
+					g.arc_pool[i].contention_level_backward = 3;
 					index_route++;
 					
 				}
@@ -215,7 +222,10 @@ Graph init_graph_random_tree(double load)
 		}
 	}	
 	
-	int real_period = (load_max(g) * MESSAGE_SIZE) / load;
+	if(FIXED_PERIOD_MOD)
+		real_period = PERIOD;
+	else
+		real_period = (load_max(g) * MESSAGE_SIZE) / load;
 
 
 	for(int i=0;i<nb_real_collisions+nb_bbu;i++)

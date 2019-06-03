@@ -95,7 +95,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 ARG mode :
 	- 0 : sort the routes on arcs by id
 	- 1 : uses the longest route first
-
+	- 2 : use the route with the most collisions first
 */
 Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 {

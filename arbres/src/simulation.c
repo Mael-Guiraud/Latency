@@ -50,7 +50,12 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	char buf[64];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
+	Assignment a;
 	if(!f)perror("Error while opening file\n");
+	if(TMAX_MOD)
+	{
+		printf("\n The margin displayed on screen are not used in source code, tmax is %d .\n",TMAX);
+	}
 	for(int margin=MARGIN_MIN;margin<=MARGIN_MAX;margin+=MARGIN_GAP)
 	{
 		nb_success=0;
@@ -60,13 +65,23 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			g= init_graph_random_tree(STANDARD_LOAD);
-			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-			tmax = longest_route(g) + margin;
-			Assignment a = ptrfonction( g, P, message_size,tmax);
+			if(FIXED_PERIOD_MOD)
+				P = PERIOD;
+			else
+				P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+			if(TMAX_MOD)
+				tmax = TMAX;
+			else
+				tmax = longest_route(g) + margin;
+			a = ptrfonction( g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
 			{
 				if(travel_time_max( g, tmax, a))
 				{
+					if(GENERATE_INSTANCE)
+					{
+						
+					}
 					nb_success++;
 				}
 				

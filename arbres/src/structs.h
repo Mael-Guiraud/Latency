@@ -8,6 +8,9 @@ typedef struct arc{
 	int last;
 	int seen;
 	int bbu_dest;
+	//for stochastic
+	int contention_level_forward;
+	int contention_level_backward;
 } Arc;
 
 typedef Arc** Route;

@@ -1,5 +1,6 @@
 #include "structs.h"
 #include "treatment.h"
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 //return 1 if the message can reach the destination without collision, 0 otherwise
@@ -317,9 +318,16 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 
 	for(int i=0;i<g.nb_routes;i++)
 	{
-
-		if( (2*route_length( g,i) + a->waiting_time[i] ) > tmax )
-			return 0;
+		if(SYNCH)
+		{
+			if( (a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+				return 0;
+		}
+		else
+		{
+			if( (2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+				return 0;
+		}
 	}
 	return 1;
 }
