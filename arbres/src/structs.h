@@ -1,10 +1,16 @@
 
+typedef enum periode_kind{
+	FORWARD, BACKWARD, NONE
+} Period_kind;
+
 
 //for lists in multiplexing simulations
 typedef struct elem{
 	int numero_route;
 	int arrival_in_queue;
 	int deadline;
+	int arc_id;
+	Period_kind kind_p;
 	struct elem *suiv;
 } Elem;
 
@@ -33,9 +39,10 @@ typedef enum event_kind{
 
 typedef struct event{
 	int date;
-	int Event_kind kind;
+	Event_kind kind;
 	int route;
-	int deadline;
+	int deadline;//might be called time ellapsed
+	Period_kind kind_p;
 	int arc_id;
 
 	struct event * suiv;
@@ -62,8 +69,4 @@ struct assignment{
 	int all_routes_scheduled;
 };
 typedef struct assignment * Assignment;
-
-typedef enum periode_kind{
-	FORWARD, BACKWARD
-} Period_kind;
 
