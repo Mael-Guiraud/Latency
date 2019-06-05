@@ -26,11 +26,16 @@ typedef struct arc{
 	int state; //0 free, 1 used
 } Arc;
 
+typedef enum event_kind{
+	MESSAGE, ARC
+} Event_kind;
+
+
 typedef struct event{
 	int date;
-	//even a route arrives in the buffer of an arc
-	//or an arc is available, in this case, route is set to -1
+	int Event_kind kind;
 	int route;
+	int deadline;
 	int arc_id;
 
 	struct event * suiv;

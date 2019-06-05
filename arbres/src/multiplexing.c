@@ -18,12 +18,14 @@ int est_vide(void * l)
 	return 0;
 }
 
-Event * ajoute_event_trie(Event * l,int date,int route,int arc_id)
+Event * ajoute_event_trie(Event * l,Event_kind kind, int date,int route,int arc_id,int deadline)
 {
 	Event * new = (Event *)malloc(sizeof(Event));
+	new->kind = kind;
 	new->date = date;
 	new->route = route;
 	new->arc_id = arc_id;
+	new->deadline = deadline;
 	if(est_vide(l))//la liste est vide
 	{
 		new->suiv = NULL;
@@ -131,13 +133,16 @@ void init_events(Graph g, Event * liste_evt,int period, int nb_periods)
 	for(int i=0;i<g.nb_routes;i++)
 	{
 		if(SYNCH)
-				date =0;
-			else
-				date = rand()%period;
-
+		{
+			date =0;
+		}
+		else
+		{
+			date = rand()%period;
+		}
 		for(int j=0;j<nb_periods;j++)
 		{
-			ajoute_event_trie(liste_evt,date,i,0);
+			ajoute_event_trie(liste_evt,MESSAGE,date,i,0,tmax);
 		}
 	}
 }
