@@ -73,6 +73,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 				tmax = TMAX;
 			else
 				tmax = longest_route(g) + margin;
+			
 			a = ptrfonction( g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
 			{
@@ -80,7 +81,8 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 				{
 					if(GENERATE_INSTANCE)
 					{
-						
+						printf("Non fini");
+						exit(33);
 					}
 					nb_success++;
 				}

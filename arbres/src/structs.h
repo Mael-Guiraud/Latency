@@ -1,3 +1,16 @@
+
+
+//for lists in multiplexing simulations
+typedef struct elem{
+	int numero_route;
+	int arrival_in_queue;
+	int deadline;
+	struct elem *suiv;
+} Elem;
+
+
+
+
 typedef struct arc{
 	int length;
 	int nb_routes;
@@ -8,10 +21,20 @@ typedef struct arc{
 	int last;
 	int seen;
 	int bbu_dest;
-	//for stochastic
-	int contention_level_forward;
-	int contention_level_backward;
+	//for multiplexing
+	Elem * elems;
+	int state; //0 free, 1 used
 } Arc;
+
+typedef struct event{
+	int date;
+	//even a route arrives in the buffer of an arc
+	//or an arc is available, in this case, route is set to -1
+	int route;
+	int arc_id;
+
+	struct event * suiv;
+} Event;
 
 typedef Arc** Route;
 
@@ -39,8 +62,3 @@ typedef enum periode_kind{
 	FORWARD, BACKWARD
 } Period_kind;
 
-typedef struct preElems{
-	int nb_elems;
-	int *release;
-	int *deadline;
-} PreElems;

@@ -24,10 +24,10 @@ int main (int argc, char *argv[])
 	{
 		int seed = time(NULL);
 
-		//simul(seed,&greedy,"greedy");
-		//simul(seed,&loaded_greedy,"loaded greedy");
-		//simul(seed,&loaded_greedy_longest,"loaded greedy longest");
-		simul(seed,&loaded_greedy_longest,"loaded greedy collisions");
+		simul(seed,&greedy,"greedy");
+		simul(seed,&loaded_greedy,"loaded greedy");
+		simul(seed,&loaded_greedy_longest,"loaded greedy longest");
+		simul(seed,&loaded_greedy_collisions,"loaded greedy collisions");
 		//simul_period(seed,&greedy_PRIME,"greedy prime");
 		//simul_period(seed,&greedy_min_lost,"greedy min");
 
