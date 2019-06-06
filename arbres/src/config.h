@@ -22,11 +22,8 @@
 #define MARGIN_GAP 1000
 #define STANDARD_LOAD 0.7
 
-//POLICY of multiplexing
-#define POLICY 1 //0 FIFO, 1 DEADLINE
 
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
-#define GENERATE_INSTANCE 0
 #define TMAX_MOD 0 //1 activated, 0 dislabed
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 0	
@@ -34,4 +31,3 @@
 
 
 #define NB_SIMULS 100
-

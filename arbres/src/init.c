@@ -1,11 +1,12 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "structs.h"
 #include "config.h"
 #include "biparti.h"
 #include "test.h"
 #include "treatment.h"
 #include "connexe.h"
-#include <stdlib.h>
-#include <stdio.h>
+
 
 void init_arc(Arc * a)
 {
@@ -118,7 +119,7 @@ Graph init_graph_random_tree(double load)
 	int index_middle_arc;
 	int index_bip;
 	int real_period;
-	// affiche_biparti(graph,nb_bbu,nb_collisions);
+
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
 	g.nb_routes = nb_routes;

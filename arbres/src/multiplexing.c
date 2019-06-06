@@ -133,7 +133,7 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 	return debut;
 }
 
-Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods, int tmax)
+Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods)
 {
 	int date;
 	for(int i=0;i<g.nb_routes;i++)
@@ -148,15 +148,17 @@ Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods, int t
 		}
 		for(int j=0;j<nb_periods;j++)
 		{
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date,i,0,tmax,FORWARD);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date,i,0,0,FORWARD);
 		}
 	}
 	return liste_evt;
 }
 
-void update_time_elapsed()
+void update_time_elapsed(Graph g, Event* liste_evt,int * p_time)
 {
-
+	if(*p_time < liste_evt->deadline+g.routes[liste_evt->route][liste_evt->arc_id]->length)
+		*p_time = liste_evt->deadline+g.routes[liste_evt->route][liste_evt->arc_id]->length;
+	return;
 }
 Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int * p_time)
 {
@@ -181,7 +183,7 @@ Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int 
 		{
 			if(liste_evt->arc_id == 0)
 			{
-				//ON TRAITE LE MESSAGE qui arrive
+				update_time_elapsed(g,liste_evt,p_time);
 			}
 			else
 			{
@@ -225,7 +227,7 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 		{
 			if(liste_evt->arc_id == 0)
 			{
-				//ON TRAITE LE MESSAGE qui arrive
+				update_time_elapsed(g,liste_evt,p_time);
 			}
 			else
 			{
@@ -242,20 +244,21 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 	free(first_elem);
 	return liste_evt;
 }
-int multiplexing(Graph g, int period, int message_size, int nb_periods,int tmax)
+int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy pol)
 {
 	Event * current;
 	Event * liste_evt = NULL;
-	liste_evt = init_events(g,liste_evt,period,nb_periods,tmax);
+	liste_evt = init_events(g,liste_evt,period,nb_periods);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
 	while(liste_evt)
 	{
+		current = liste_evt;
 		if(liste_evt->kind == MESSAGE)
 		{
 			if(g.routes[liste_evt->route][liste_evt->arc_id]->state) // arc used
 			{
-				if(POLICY == 0)
+				if(pol == 0)
 				{
 					g.routes[liste_evt->route][liste_evt->arc_id]->elems = ajoute_elem_fifo(g.routes[liste_evt->route][liste_evt->arc_id]->elems,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->deadline,liste_evt->kind_p);
 				}
@@ -266,13 +269,7 @@ int multiplexing(Graph g, int period, int message_size, int nb_periods,int tmax)
 			}
 			else // arc free
 			{
-				current = liste_evt;
 				liste_evt = message_on_arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed);
-				if(liste_evt != current){
-				printf("Error, this is not possible (multiplexing.c)\n");exit(73);
-				}
-				liste_evt = liste_evt->suiv;
-				free(current);
 			}
 		}
 		else // arc
@@ -286,12 +283,14 @@ int multiplexing(Graph g, int period, int message_size, int nb_periods,int tmax)
 			{
 				g.routes[liste_evt->route][liste_evt->arc_id]->state = 0;
 			}
-			if(liste_evt != current){
-				printf("Error, this is not possible (multiplexing.c)\n");exit(74);
-			}
-			liste_evt = liste_evt->suiv;
-			free(current);
+
 		}
+		if(liste_evt != current){
+			printf("Error, this is not possible (multiplexing.c)\n");exit(73);
+		}
+		liste_evt = liste_evt->suiv;
+		free(current);
+	
 	}
 
 	return longest_time_elapsed;

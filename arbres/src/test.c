@@ -3,75 +3,75 @@
 #include "treatment.h"
 #include <stdio.h>
 
-void affiche_tab(int * tab, int taille)
+void affiche_tab(int * tab, int taille, FILE * f)
 {
-	printf("\n");
+	fprintf(f,"\n");
 	for(int i=0;i<taille;i++)
 	{
-		printf("%d,",tab[i]);
+		fprintf(f,"%d,",tab[i]);
 	}
-	printf("\n");
+	fprintf(f,"\n");
 }
-void affiche_periode(int * p, int size)
+void affiche_periode(int * p, int size, FILE * f)
 {
 	int old, current;
 	old = p[0];
-	printf("%d[%d-",old,0);
+	fprintf(f,"%d[%d-",old,0);
 	for(int i=1;i<size;i++)
 	{
 		current = p[i];
 		if(old != current)
 		{
-			printf("%d]  %d[%d-",i-1,current,i);
+			fprintf(f,"%d]  %d[%d-",i-1,current,i);
 		}
 		old = current;
 	}
-	printf("%d]\n",size);
+	fprintf(f,"%d]\n",size);
 }
 
-void affiche_graph(Graph g,int p)
+void affiche_graph(Graph g,int p, FILE * f)
 {
 	for(int i=0;i<g.nb_routes; i++)
 	{
-		printf("Route %d total length = %d : \n",i,route_length( g,i));
+		fprintf(f,"Route %d total length = %d : \n",i,route_length( g,i));
 		for(int j=0 ; j< g.size_routes[i];j++)
 		{
-			printf("[%d], partagé avec %d routes\n",g.routes[i][j]->length,g.routes[i][j]->nb_routes);
-			printf("Routes sur l'arc : ");
+			fprintf(f,"[%d], partagé avec %d routes\n",g.routes[i][j]->length,g.routes[i][j]->nb_routes);
+			fprintf(f,"Routes sur l'arc : ");
 			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
 			{
-				printf("%d ",g.routes[i][j]->routes_id[k]);
+				fprintf(f,"%d ",g.routes[i][j]->routes_id[k]);
 			}
-			printf("\n");
+			fprintf(f,"\n");
 			if( g.routes[i][j]->period_f != NULL)
 			{
-				printf(" Forward  \n");
-				affiche_periode(g.routes[i][j]->period_f,p);
-				printf("Backward \n");
-				affiche_periode(g.routes[i][j]->period_b,p);
+				fprintf(f," Forward  \n");
+				affiche_periode(g.routes[i][j]->period_f,p,f);
+				fprintf(f,"Backward \n");
+				affiche_periode(g.routes[i][j]->period_b,p,f);
 			}
 		}
-		printf("\n");
+		fprintf(f,"\n");
 	}
-	printf("Fin\n");
+	fprintf(f,"Fin\n");
 	return;
 }
-void affiche_biparti(int ** g, int a, int b)
+void affiche_biparti(int ** g, int a, int b, FILE * f)
 {
 	for(int i=0;i<a;i++)
 	{
 		for(int j=0;j<b;j++)
 		{
-			printf("(%d)",g[i][j]);
+			fprintf(f,"(%d)",g[i][j]);
 		}
-		printf("\n");
+		fprintf(f,"\n");
 	}
 }
-void affiche_assignment(Assignment a,int nb_routes)
+void affiche_assignment(Assignment a,int nb_routes, FILE * f)
 {
 
 	for( int i=0;i<nb_routes;i++)
 	{
-		printf("Route %d : f :%d- b :%d\n",i,a->offset_forward[i],a->offset_backward[i]);
+		fprintf(f,"Route %d : f :%d- b :%d\n",i,a->offset_forward[i],a->offset_backward[i]);
 	}
 }

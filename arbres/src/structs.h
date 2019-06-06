@@ -15,6 +15,10 @@ typedef struct elem{
 } Elem;
 
 
+typedef enum policy{
+	FIFO, DEADLINE
+} Policy;
+
 
 
 typedef struct arc{

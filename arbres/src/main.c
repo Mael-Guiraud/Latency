@@ -1,10 +1,10 @@
-
-#include "structs.h"
-#include "greedy_waiting.h"
-#include "data_treatment.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include "structs.h"
+#include "greedy_waiting.h"
+#include "data_treatment.h"
+
 #include "simulation.h"
 #include "string.h"
 #include "greedy_without_waiting.h"

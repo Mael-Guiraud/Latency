@@ -180,6 +180,20 @@ int longest_route(Graph g)
 	}
 	return max;
 }
+void reset_periods(Graph g, int P)
+{
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		if(g.arc_pool[i].period_f)
+		{
+			for(int j=0;j<P;j++)
+			{
+				g.arc_pool[i].period_f[j]=0;
+				g.arc_pool[i].period_b[j]=0;
+			}
+		}
+	}
+}
 int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 {
 	int length = 0;
@@ -315,21 +329,38 @@ void tri_bulles_inverse(int* tab,int* ordre,int taille)
 
 int travel_time_max(Graph g, int tmax, Assignment a)
 {
-
+	int max;
+	if(SYNCH)
+	{
+		max = a->offset_forward[0] + 2*route_length( g,0) + a->waiting_time[0];
+	}
+	else
+	{
+		max = 2*route_length( g,0) + a->waiting_time[0];
+	}
 	for(int i=0;i<g.nb_routes;i++)
 	{
 		if(SYNCH)
 		{
 			if( (a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
-				return 0;
+				return -1;
+			if((a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ) > max )
+			{
+				max = a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ;
+			}
+
 		}
 		else
 		{
 			if( (2*route_length( g,i) + a->waiting_time[i] ) > tmax )
-				return 0;
+				return -1;
+			if((2*route_length( g,i) + a->waiting_time[i] ) > max )
+			{
+				max = + 2*route_length( g,i) + a->waiting_time[i] ;
+			}
 		}
 	}
-	return 1;
+	return max;
 }
 
 int * load_links(Graph g)
