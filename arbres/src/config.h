@@ -1,6 +1,6 @@
 // CONFIG OF THE TOPOLOGY
 
-#define MAX_LENGTH 500
+#define MAX_LENGTH 700
 #define MESSAGE_SIZE 2500
 #define NB_BBU 2
 #define NB_COLLISIONS 3
@@ -24,9 +24,9 @@
 
 
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
-#define TMAX_MOD 0 //1 activated, 0 dislabed
+#define TMAX_MOD 1 //1 activated, 0 dislabed
 #define TMAX 7812
-#define FIXED_PERIOD_MOD 0	
+#define FIXED_PERIOD_MOD 1
 #define PERIOD 19531	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 

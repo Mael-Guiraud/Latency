@@ -11,14 +11,23 @@
 #include "greedy_waiting.h"
 #include "data_treatment.h"
 #include "multiplexing.h"
+#include "color.h"
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define RESET "\x1B[0m"
 
 
 void test()
 {
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
-	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n\n");
-	fprintf(f,"\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n\n");
+	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
+	fprintf(f,"\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
 	srand(time(NULL));
 	int P ;
 	int message_size = MESSAGE_SIZE;
@@ -39,17 +48,17 @@ void test()
 			
 	printf("Parameters : \n");
 	printf("	Fixed period   : ");if(FIXED_PERIOD_MOD){printf("ON ");}else{printf("OFF ");}printf("| P = %d .\n",P);
-	printf("	Fixed tmax     : ");if(TMAX_MOD){printf("ON\n");}else{printf("OFF");}printf("| TMAX = %d .\n",tmax);
+	printf("	Fixed tmax     : ");if(TMAX_MOD){printf("ON ");}else{printf("OFF");}printf("| TMAX = %d .\n",tmax);
 	printf("	Message size   : %d .\n",message_size);
 	printf("	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
 	fprintf(f,"Parameters : \n");
 	fprintf(f,"	Fixed period   : ");if(FIXED_PERIOD_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"| P = %d .\n",P);
-	fprintf(f,"	Fixed tmax     : ");if(TMAX_MOD){fprintf(f,"ON\n");}else{fprintf(f,"OFF");}fprintf(f,"| TMAX = %d .\n",tmax);
+	fprintf(f,"	Fixed tmax     : ");if(TMAX_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF");}fprintf(f,"| TMAX = %d .\n",tmax);
 	fprintf(f,"	Message size   : %d .\n",message_size);
 	fprintf(f,"	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
 
 
-	printf("\n ---- \n Graph Generated ...\n");
+	printf(" ---- \n Graph Generated ...\n");
 	fprintf(f,"\n ---- \n Graph Generated ...\n");
 	affiche_graph(g,P,f);
 	printf("Number of routes on the loadest arc : %d .\n",load_max(g));
@@ -57,61 +66,59 @@ void test()
 	fprintf(f,"Load of each links : ");
 	affiche_tab(load_links(g),g.arc_pool_size,f);
 
-	printf("\n ------- \n Policies : \n");
-	fprintf(f,"\n ------- \n Policies : \n");
+	printf("------- \n TESTING ALGORITHMS : \n");
+	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
-	printf(" WITHOUT WAITING TIME : \n\n");
+	printf("- WITHOUT WAITING TIME : \n");
 	fprintf(f," WITHOUT WAITING TIME : \n\n");
-	printf("\n Greedy min lost : \n");
+	printf(" Greedy min lost : ");
 	fprintf(f,"\n Greedy min lost : \n");
 	a = greedy_min_lost( g, P, message_size);
-	if(a)
+	if(a->all_routes_scheduled)
 	{
-		printf("Assignment found ! \n");
+		printf(GRN "OK |\n" RESET);
 		fprintf(f,"Assignment found ! \n");
 		affiche_assignment( a,g.nb_routes,f);
 		free_assignment(a);
 	}
 	else
 	{
-		printf("No assignment found\n");
+		printf(RED "Not OK --\n" RESET);
 		fprintf(f,"No assignment found\n");
 	}
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	printf("Reseting periods ...\n");
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 
-	printf("\n Greedy prime: \n");
+	printf(" Greedy prime: ");
 	fprintf(f,"\n Greedy prime: \n");
 	a = greedy_PRIME( g, P, message_size);
-	if(a)
+	if(a->all_routes_scheduled)
 	{
-		printf("Assignment found ! \n");
+		printf(GRN "OK |\n" RESET);
 		fprintf(f,"Assignment found ! \n");
 		affiche_assignment( a,g.nb_routes,f);
 		free_assignment(a);
 	}
 	else
 	{
-		printf("No assignment found\n");
+		printf(RED "Not OK --\n" RESET);
 		fprintf(f,"No assignment found\n");
 	}
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	printf("Reseting periods ...\n");
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 	
 
-	printf("\n\n --------- \n\n WITH WAITING TIME \n");
-	fprintf(f,"\n\n --------- \n\n WITH WAITING TIME \n");
+	printf("\n --------- \n- WITH WAITING TIME : \n");
+	fprintf(f,"\n --------- \n WITH WAITING TIME \n");
 	
-	printf("\n  Greedy : \n");
+	printf(" Greedy : ");
 	fprintf(f,"\n  Greedy : \n");
 	a = greedy( g, P, message_size,tmax);
-	if(a)
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf("Assignment found !\n");
+		printf(GRN "OK |\n" RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -120,20 +127,19 @@ void test()
 	}
 	else
 	{
-		printf("No assignment found\n");
+		printf(RED "Not OK --\n" RESET);
 		fprintf(f,"No assignment found\n");
 	}
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	printf("Reseting periods ...\n");
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 	
-	printf("\n Loaded Greedy: \n");
+	printf(" Loaded Greedy: ");
 	fprintf(f,"\n Loaded Greedy: \n");
 	a = loaded_greedy( g, P, message_size,tmax);
-	if(a)
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf("Assignment found !\n");
+		printf(GRN "OK |\n" RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -142,20 +148,19 @@ void test()
 	}
 	else
 	{
-		printf("No assignment found\n");
+		printf(RED "Not OK --\n" RESET);
 		fprintf(f,"No assignment found\n");
 	}
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	printf("Reseting periods ...\n");
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 	
-	printf("\n Loaded Greedy longest: \n");
+	printf(" Loaded Greedy longest: ");
 	fprintf(f,"\n Loaded Greedy longest: \n");
 	a = loaded_greedy_longest( g, P, message_size,tmax);
-	if(a)
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf("Assignment found !\n");
+		printf(GRN "OK |\n" RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -164,20 +169,19 @@ void test()
 	}
 	else
 	{
-		printf("No assignment found\n");
+		printf(RED "Not OK --\n" RESET);
 		fprintf(f,"No assignment found\n");
 	}
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	printf("Reseting periods ...\n");
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 	
-	printf("\n Loaded Greedy collisions: \n");
+	printf(" Loaded Greedy collisions: ");
 	fprintf(f,"\n Loaded Greedy collisions: \n");
 	a = loaded_greedy_collisions( g, P, message_size,tmax);
-	if(a)
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf("Assignment found !\n");
+		printf(GRN "OK |\n" RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -186,18 +190,17 @@ void test()
 	}
 	else
 	{
-		printf("No assignment found\n");
+		printf(RED "Not OK --\n" RESET);
 		fprintf(f,"No assignment found\n");
 	}
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	printf("Reseting periods ...\n");
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 
-	fprintf(f,"\n --------- \n Statistical Multiplexing . \n\n");
-	printf("\n --------- \n Statistical Multiplexing . \n\n");
-	fprintf(f,"Fifo \n Testing the chain reaction of multiplexing ... \n");
-	printf("Fifo \n Testing the chain reaction of multiplexing ... \n");
+	fprintf(f,"\n --------- \n Statistical Multiplexing .Testing the chain reaction of multiplexing ...   \n \n");
+	printf("\n --------- \n Statistical Multiplexing. Testing the chain reaction of multiplexing ...  \n");
+	printf("Fifo : \n");
+	fprintf(f,"Fifo \n");
 	int last_time_ellapsed =0;
 	int time_ellapsed = 0;
 	int nb_periods=1;
@@ -216,9 +219,18 @@ void test()
 		else
 			break;
 	}
+	if(time_ellapsed < tmax)
+	{
+		printf(GRN "OK\n" RESET);
+	}
+	else
+	{
+		printf(RED "Not OK --\n" RESET);
+	}
 
-	printf("\n ------- \nTime ellapsed first \n Testing the chain reaction of multiplexing ... \n");
-	fprintf(f,"\n ------- \nTime ellapsed first \n Testing the chain reaction of multiplexing ... \n");
+
+	printf("\n ------- \nTime ellapsed first . Testing the chain reaction of multiplexing ... \n");
+	fprintf(f,"\n ------- \nTime ellapsed first . Testing the chain reaction of multiplexing ... \n");
 	last_time_ellapsed =0;
 	time_ellapsed = 0;
 	nb_periods=1;
@@ -236,6 +248,14 @@ void test()
 		}
 		else
 			break;
+	}
+	if(time_ellapsed < tmax)
+	{
+		printf(GRN "OK\n" RESET);
+	}
+	else
+	{
+		printf(RED "Not OK --\n" RESET);
 	}
 
 
