@@ -228,7 +228,7 @@ void test()
 		printf(RED "Not OK --\n" RESET);
 	}
 
-
+	
 	printf("\n ------- \nTime ellapsed first . Testing the chain reaction of multiplexing ... \n");
 	fprintf(f,"\n ------- \nTime ellapsed first . Testing the chain reaction of multiplexing ... \n");
 	last_time_ellapsed =0;
@@ -258,7 +258,7 @@ void test()
 		printf(RED "Not OK --\n" RESET);
 	}
 
-
+	
 
 	printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
 	printf("\n printing python ...");print_python(g);printf("Ok.\n");

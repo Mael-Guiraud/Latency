@@ -32,8 +32,10 @@ typedef struct arc{
 	int seen;
 	int bbu_dest;
 	//for multiplexing
-	Elem * elems;
-	int state; //0 free, 1 used
+	Elem * elems_f;
+	Elem * elems_b;
+	int state_f; //0 free, 1 used
+	int state_b; //0 free, 1 used
 } Arc;
 
 typedef enum event_kind{
