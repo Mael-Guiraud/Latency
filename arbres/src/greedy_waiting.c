@@ -34,7 +34,9 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 			if(offset == P)
 			{
 				//free_assignment(a);
-				//printf("\nNot possbile\n");
+				perror("The period is too short. exit greedy. greedy_waiting.c\n");
+				printf("offset = %d, P = %d\n ",offset,P);
+				exit(9);
 				return a;
 			}
 		}
@@ -71,7 +73,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 			if(offset == (P+begin_offset))
 			{
 				//free_assignment(a);
-				//printf("\nNot possbile\n");
+				printf("\nNot possbile\n");
 				return a;
 			}
 		}

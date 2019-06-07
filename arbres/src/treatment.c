@@ -337,6 +337,7 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 			first_forward = a->offset_forward[i];
 		}
 	}
+	
 	int max;
 	if(SYNCH)
 	{
