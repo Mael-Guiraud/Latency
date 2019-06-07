@@ -329,10 +329,18 @@ void tri_bulles_inverse(int* tab,int* ordre,int taille)
 
 int travel_time_max(Graph g, int tmax, Assignment a)
 {
+	int first_forward =  a->offset_forward[0];
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		if(a->offset_forward[i] < first_forward)
+		{
+			first_forward = a->offset_forward[i];
+		}
+	}
 	int max;
 	if(SYNCH)
 	{
-		max = a->offset_forward[0] + 2*route_length( g,0) + a->waiting_time[0];
+		max = a->offset_forward[0]-first_forward + 2*route_length( g,0) + a->waiting_time[0];
 	}
 	else
 	{
@@ -342,11 +350,11 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 	{
 		if(SYNCH)
 		{
-			if( (a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+			if( (a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
 				return -1;
-			if((a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ) > max )
+			if((a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > max )
 			{
-				max = a->offset_forward[i] + 2*route_length( g,i) + a->waiting_time[i] ;
+				max = a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ;
 			}
 
 		}

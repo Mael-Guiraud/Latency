@@ -161,7 +161,7 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 								break;
 							}
 							//fprintf(stdout,"\r%d",offset_back);
-							fflush(stdout);
+							
 						}
 						if(back_found)
 						{

@@ -24,6 +24,7 @@
 
 void test()
 {
+	int seed;
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -38,30 +39,48 @@ void test()
 
 	Graph g = init_graph_random_tree(STANDARD_LOAD);
 	if(FIXED_PERIOD_MOD)
-			P = PERIOD;
-		else
-			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-		if(TMAX_MOD)
-			tmax = TMAX;
-		else
-			tmax = longest_route(g) + margin;
+	{
+		P = PERIOD;
+	}
+	else
+		P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+	if(TMAX_MOD)
+	{
+		tmax = TMAX;
+	}
+	else
+		tmax = longest_route(g)*2 + margin;
+
 			
 	printf("Parameters : \n");
 	printf("	Fixed period   : ");if(FIXED_PERIOD_MOD){printf("ON ");}else{printf("OFF ");}printf("| P = %d .\n",P);
-	printf("	Fixed tmax     : ");if(TMAX_MOD){printf("ON ");}else{printf("OFF");}printf("| TMAX = %d .\n",tmax);
-	printf("	Message size   : %d .\n",message_size);
+	if(PERIOD < load_max(g)*MESSAGE_SIZE)
+			printf(YEL "WARDNING: not enought space to schedule all the messages on the loadest link.\n" RESET);
 	printf("	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
+	printf("	Fixed tmax     : ");if(TMAX_MOD){printf("ON ");}else{printf("OFF");}printf("| TMAX = %d .\n",tmax);
+	if(longest_route(g)*2 > TMAX)
+			printf(YEL "WARNING! TMAX is higher than the longest route. \n" RESET);
+	printf("	Message size   : %d .\n",message_size);
+	printf("	Routes Synch   : ");if(SYNCH){printf("ON ");}else{printf("OFF ");}printf("\n");
+
 	fprintf(f,"Parameters : \n");
 	fprintf(f,"	Fixed period   : ");if(FIXED_PERIOD_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"| P = %d .\n",P);
-	fprintf(f,"	Fixed tmax     : ");if(TMAX_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF");}fprintf(f,"| TMAX = %d .\n",tmax);
-	fprintf(f,"	Message size   : %d .\n",message_size);
+	if(PERIOD < load_max(g)*MESSAGE_SIZE)
+			fprintf(f,YEL "WARDNING: not enought space to schedule all the messages on the loadest link.\n" RESET);
 	fprintf(f,"	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
+	fprintf(f,"	Fixed tmax     : ");if(TMAX_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF");}fprintf(f,"| TMAX = %d .\n",tmax);
+	if(longest_route(g)*2 > TMAX)
+			fprintf(f,YEL "WARNING! TMAX is higher than the longest route. \n" RESET);
+	fprintf(f,"	Message size   : %d .\n",message_size);
+	fprintf(f,"	Routes Synch   : ");if(SYNCH){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"\n");
 
 
 	printf(" ---- \n Graph Generated ...\n");
 	fprintf(f,"\n ---- \n Graph Generated ...\n");
 	affiche_graph(g,P,f);
 	printf("Number of routes on the loadest arc : %d .\n",load_max(g));
+	printf("Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(g),longest_route(g)*2);
+	fprintf(f,"Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(g),longest_route(g)*2);
 	fprintf(f,"Number of routes on the loadest arc : %d .\n",load_max(g));
 	fprintf(f,"Load of each links : ");
 	affiche_tab(load_links(g),g.arc_pool_size,f);
@@ -74,11 +93,13 @@ void test()
 	printf(" Greedy min lost : ");
 	fprintf(f,"\n Greedy min lost : \n");
 	a = greedy_min_lost( g, P, message_size);
-	if(a->all_routes_scheduled)
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf(GRN "OK |\n" RESET);
-		fprintf(f,"Assignment found ! \n");
+		printf(GRN "OK | " RESET);
+		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
+		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
+		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
 		free_assignment(a);
 	}
 	else
@@ -93,11 +114,13 @@ void test()
 	printf(" Greedy prime: ");
 	fprintf(f,"\n Greedy prime: \n");
 	a = greedy_PRIME( g, P, message_size);
-	if(a->all_routes_scheduled)
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf(GRN "OK |\n" RESET);
-		fprintf(f,"Assignment found ! \n");
+		printf(GRN "OK | " RESET);
+		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
+		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
+		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
 		free_assignment(a);
 	}
 	else
@@ -118,7 +141,7 @@ void test()
 	a = greedy( g, P, message_size,tmax);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf(GRN "OK |\n" RESET);
+		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -139,7 +162,7 @@ void test()
 	a = loaded_greedy( g, P, message_size,tmax);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf(GRN "OK |\n" RESET);
+		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -160,7 +183,7 @@ void test()
 	a = loaded_greedy_longest( g, P, message_size,tmax);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf(GRN "OK |\n" RESET);
+		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -181,7 +204,7 @@ void test()
 	a = loaded_greedy_collisions( g, P, message_size,tmax);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
-		printf(GRN "OK |\n" RESET);
+		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
 		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
@@ -197,6 +220,9 @@ void test()
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 
+	seed = time(NULL);
+
+
 	fprintf(f,"\n --------- \n Statistical Multiplexing .Testing the chain reaction of multiplexing ...   \n \n");
 	printf("\n --------- \n Statistical Multiplexing. Testing the chain reaction of multiplexing ...  \n");
 	printf("Fifo : \n");
@@ -206,7 +232,8 @@ void test()
 	int nb_periods=1;
 	while(1)
 	{
-		time_ellapsed = multiplexing(g, P, message_size, nb_periods, FIFO);
+		srand(seed);
+		time_ellapsed = multiplexing(g, P, message_size, nb_periods, FIFO,tmax);
 		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		fprintf(f,"For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
@@ -236,7 +263,8 @@ void test()
 	nb_periods=1;
 	while(1)
 	{
-		time_ellapsed = multiplexing(g, P, message_size, nb_periods, DEADLINE);
+		srand(seed);
+		time_ellapsed = multiplexing(g, P, message_size, nb_periods, DEADLINE,tmax);
 		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		fprintf(f,"For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
@@ -297,7 +325,11 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		{
 			g= init_graph_random_tree(STANDARD_LOAD);
 			if(FIXED_PERIOD_MOD)
+			{
+				if(PERIOD < load_max(g)*MESSAGE_SIZE)
+					printf("WARDNING, not enought space to schedule all the message on the loadest link");
 				P = PERIOD;
+			}
 			else
 				P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
 			if(TMAX_MOD)
@@ -307,7 +339,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 				tmax = TMAX;
 			}
 			else
-				tmax = longest_route(g) + margin;
+				tmax = longest_route(g)*2 + margin;
 			
 			a = ptrfonction( g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
@@ -344,7 +376,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 	Graph g;
 	int P;
 	double moy_routes_scheduled ;
-
+	int tmax;
 	Assignment a;
 	char buf[64];
 	sprintf(buf,"../data/%s",nom);
@@ -362,17 +394,29 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 			//printf("%f %d\n",load, P);
 
 			g= init_graph_random_tree(load);
-			P= (load_max(g)*MESSAGE_SIZE)/load;
 
+			P= (load_max(g)*MESSAGE_SIZE)/load;
+			
+			if(TMAX_MOD)
+			{
+				if(longest_route(g)*2 > TMAX)
+					printf("WARNING! TMAX is higher than the longest route. \n");
+				tmax = TMAX;
+			}
+			else
+				tmax = longest_route(g)*2;
+			
 			
 			a = ptrfonction( g, P, message_size);
 			if(a->all_routes_scheduled)
 			{
-				
-				#pragma omp atomic update
-				nb_success++;
 					
-				
+				if(travel_time_max( g, tmax, a) != -1)
+				{
+					#pragma omp atomic update
+						nb_success++;
+				}
+						
 			}
 
 			#pragma omp atomic update
