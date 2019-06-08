@@ -5,6 +5,7 @@
 \usepackage{url}
 \usepackage{graphicx,graphics} 
 \usepackage{color}
+\usepackage{caption}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
@@ -67,24 +68,46 @@
 The star topology has a conflict depth one. We now look at the topologies with a conflict depth two.
   
 In order to generate some random digraphs $G=(V,A)$ of conflict depth two, we first generate some random bipartite graphs $G'=(V',E')$, which represent the core of the network. Indeed, it seems to be a good idea to model the internet topology as mentioned in \cite{tarissan_towards_2013}. This papers also gives us some background to generate some good random bipartite graphs. 
-$V'$ is composed of two sets: The first set, of size $a$, models the data-centers, and the second set, of size $b$, models the switches. We fix $a$ and $b$ and we uniformly draw the edges of $V'$ with a given probability. Note that $|V'|= a \times b$. If the generated graph  $G'$ is not connected, we generate another bipartite graph.
-Figure~\ref{fig:random23} is an example of a random bipartite graph generated, with $a = 2$, $b=3$ and $|V'|=4$.
+$V'$ is composed of two sets: The first set $S_1$, of size $a$, models the last switch before the data-centers, and the second set $S_2$, of size $b$, models some distant switches, reparted on the filed. We fix $a$ and $b$ and we uniformly draw the edges of $E'$ with a given probability. Note that $|E'|= a \times b$. If the generated graph  $G'$ is not connected, we generate another bipartite graph.
+Figure~\ref{fig:random23} is an example of a random bipartite graph generated, with $a = 2$, $b=3$ and $|E'|=4$.
 
+\begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.5\textwidth]{random23}
 \caption{A random bipartite graph $G'$.}\label{fig:random23}
 \end{center}
+\end{figure}
+
 
 We now use $G'$ to build our routed network $G$
-In order to create some arcs with conflict, the vertices of $G'$ are extended to become some arcs in $G$. The egdes in 
- 
- A {\bf flow} is a group of antennas, which communicate with a same datacenter. There exaclty $|V'|+a$ flows; One for each arc of $V'$, and one flow directly connected to each datacenter. For each flow, we randomly draw between $1$ and $k$ antennas.
-  Since the collisions on our models 
-  We say there is a {\bf route} for each antenna generated. The routing of the routes in a same flow is the same. 
-  \begin{center}
+In order to create some arcs with conflict, the vertices of $G'$ are extended to become some arcs in $G$. Let us call \textbf{conflict arcs} those arcs. The egdes of $E'$ becomes some arcs of $A$, that we will call \textbf{core arcs}.
 
-\includegraphics[width=0.3\textwidth]{extendnode}
+Figure~\ref{fig:extendnode} and figure~\ref{fig:extendendgraph} show how the first part of $G$ is build from $G'$.
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{extendnode}
+\captionof{figure}{A node of $G'$ represent an arc in $G$.}\label{fig:extendnode}
 \end{center}
+
+\end{minipage}
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{extendendgraph}
+\captionof{figure}{A node of $G'$ represent an arc in $G$.}\label{fig:extendendgraph}
+\end{center}
+
+\end{minipage}
+
+ We now want to create some \textbf{final arcs}, that will model the last link before the antennas.
+We generate $1\leq k\leq K$ final arcs before each contention arc $(u,v)$. We add $k$ new vertices $\{w_1,\ldots,w_k\}$ of indegree $0$ and outdegree $1$ to the set of vertices $V$. The new arcs $\{(w_1,u),\ldots,(w_k,u)\}$ are then added to $A$. 
+
+Each route of the set of routes $\cal{R}$ of the routed network (G,$\cal{R}$) is composed either of one final arc and one contention arc (obtained from the set $S_1$ of arcs in $G'$), or one final arc, two contention arcs (one from $S_1$, one frome $S_2)$) and the core arc between those two contention arcs.
+Note that one final arc belongs to one and only one route, while the core and contention arcs can be shared by several routes.
+
+Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how the final arcs are generated and define the routes of the routed network (G,$\cal{R}$). The routes of the same color share the same arcs after the final arc.
+
 
   The goal is to generate some graph which represent a real network architecture which can correspond to the following figure, in which there is two level of contention. The antennas are either directly connected to the datacenter or are connected to a switch which regroup further antennas and is connected to a datacenter. The contention on the routes can occurs at those two points : the distributed switches or the entrance of the datacenter.
 
