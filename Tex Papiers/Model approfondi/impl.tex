@@ -138,17 +138,16 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
   \end{section}
   \begin{section}{Implemented algorithms}
   
-  \begin{subsection}
-   Here, we simplify the model.
-   The steams are composed of one datagram. For simplicity in the notations, the datagram of the stream on the route $r$ is then denoted $d_r$. All the datagrams have the same size, and all links have the same speed, so $|d_r| =\tau$, on each arc of the network.
-   Also, we do not allow the messages to be buffered in the nodes of the network, exept the last node of the routes, which correspond to the datacenter.
+  \begin{subsection}{Simplification of the model}
+ 
+   The steams are composed of one datagram. For simplicity in the notations, the datagram of the stream on the route $r$ is then denoted $d_r$. All links have the same speed, so $l(d,u,r)=0$, for all vertex $u$ and route $r$ of the network. All the datagrams have the same size $|d_r| = \tau$.
+   Also, we do not allow the messages to be buffered in the nodes of the network so $l(d,u,r)=0$ , exept the last node of the routes, which correspond to the datacenter.
    The \textbf{waiting time} of a datagram $d_r$ on a route $r$ is defined by $w_r = \{\theta_{\rho_r}(d_r) - t(d_r,v,r)$. This is the time it waits in $v$, the last node of the route before beeing sent back.
    
   \end{subsection}
 
-  The presented algorithm are designed to solve the problem PAZL and PALL. Nevertheless, we look at the performance in the problem SPAZL and SPALL too.
-  Here, we consider that all  links have the same speed, and the message cannot be bufferd in the nodes of the network. 
-  A \textbf{partial assignment}, is a set of departure time $\{(m_0,w_0),\ldots,(m_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
+  The presented algorithm are designed to solve the problem PAZL and PALL.
+  A \textbf{partial assignment}, is a set of departure times and waiting times $\{(m_0,w_0),\ldots,(m_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
   
    
    
@@ -174,7 +173,7 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
    
   \begin{subsubsection}{Greedy Prime}
-  The idea here is to send the messages as soon as possible on each route. This is a greedy algorithm that does not try to optimize anything.
+  The basic idea is to try to schedule the routes one by one. Here, given a route, we try all the departure time for the datagram at the begining of the route, and we assign to the route the first departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
 
    	\begin{algorithm}[H]
  	\caption{Greedy Prime}
@@ -183,21 +182,21 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
 
  	\FORALL{routes $i$ }
-	\STATE tmp = $0$
+	\STATE date = $0$
 	
- 	\WHILE{!MessageCollisions($i$,tmp,FORWARD) $||$ !MessageCollisions($i$,tmp+routeLength($i$),BACKWARD) }
+ 	\WHILE{!MessageCollisions($i$,date,FORWARD) $||$ !MessageCollisions($i$,date+routeLength($i$),BACKWARD) }
  	
- 	\STATE tmp++;
- 	\IF{tmp$ > P$}
+ 	\STATE date++;
+ 	\IF{date$ > P$}
 	\STATE return FAILURE
 	\ENDIF
  	\ENDWHILE
-	\STATE DepartureTime($i$) = tmp;
+	\STATE DepartureDate($i$) = date;
  	\ENDFOR
-	\STATE return departureTime
+	\STATE return departureDate
  	\end{algorithmic}
  	\end{algorithm}
-	This algorithm treats the routes one by one by id (arbitrarily chosen), and set the departure time of the messages on the route as soon as possible.
+ 	The complexity of this algorithm is $\mathcal{O}(n\times P)$, with $n$ the number of routes and $P$ the period. It is very bad, since it depends of the period.
   \end{subsubsection}
     \begin{subsubsection}{Greedy Min}
   
