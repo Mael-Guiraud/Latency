@@ -52,7 +52,6 @@
 
 \author[1]{Dominique Barth}
 \author[1,2]{Ma\"el Guiraud}
-% \author[1]{Christian Cad\'er\'e}
  \author[2]{Brice Leclerc}
  \author[2]{Olivier Marc\'e}
 \author[1]{Yann Strozecki}
@@ -61,8 +60,8 @@
 
 \begin{document}
 
-\begin{section}{Topology, generation and problem}
-\begin{subsection}{Model of the generated graphs}
+\begin{section}{Graphs of conflic depth two}
+
 
 
 The star topology has a conflict depth one. We now look at the topologies with a conflict depth two.
@@ -105,7 +104,7 @@ Figure~\ref{fig:extendnode} and figure~\ref{fig:extendendgraph} show how the fir
 We generate $1\leq k\leq K$ final arcs before each contention arc $(u,v)$. We add $k$ new vertices $\{w_1,\ldots,w_k\}$ of indegree $0$ and outdegree $1$ to the set of vertices $V$. The new arcs $\{(w_1,u),\ldots,(w_k,u)\}$ are then added to $A$. 
 
 Each route of the set of routes $\cal{R}$ of the routed network (G,$\cal{R}$) is composed either of one final arc and one contention arc (obtained from the set $S_1$ of arcs in $G'$), or one final arc, two contention arcs (one from $S_1$, one frome $S_2)$) and the core arc between those two contention arcs.
-Note that one final arc belongs to one and only one route, while the core and contention arcs can be shared by several routes.
+Note that one final arc belongs to one and only one route, while the core and contention arcs can be shared by several routes. 
 
 Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how the final arcs are generated and define the routes of the routed network (G,$\cal{R}$). The routes of the same color share the same arcs after the final arc.
 
@@ -136,18 +135,29 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
 
   
+  \end{section}
+  \begin{section}{Implemented algorithms}
+  
+  \begin{subsection}
+   Here, we simplify the model.
+   The steams are composed of one datagram. For simplicity in the notations, the datagram of the stream on the route $r$ is then denoted $d_r$. All the datagrams have the same size, and all links have the same speed, so $|d_r| =\tau$, on each arc of the network.
+   Also, we do not allow the messages to be buffered in the nodes of the network, exept the last node of the routes, which correspond to the datacenter.
+   The \textbf{waiting time} of a datagram $d_r$ on a route $r$ is defined by $w_r = \{\theta_{\rho_r}(d_r) - t(d_r,v,r)$. This is the time it waits in $v$, the last node of the route before beeing sent back.
+   
   \end{subsection}
+
+  The presented algorithm are designed to solve the problem PAZL and PALL. Nevertheless, we look at the performance in the problem SPAZL and SPALL too.
+  Here, we consider that all  links have the same speed, and the message cannot be bufferd in the nodes of the network. 
+  A \textbf{partial assignment}, is a set of departure time $\{(m_0,w_0),\ldots,(m_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
   
-  \begin{subsection}{Different implemented algorithms}
-  Consider that the size $\tau$ of the messages is the same for all routes. Also, the messages are sent in one packet, which can not be fragmented in the network.
-  
-  We first introduce a basic routine that helps us to test if the messages sent on a route at a given departure time can pass through the entire route without collisions.
-  
-    	\begin{algorithm}[H]
- 	\caption{MessageCollisions}
+   
+   
+  In most of the presented algorithm, the following subroutine is used. Given a route $r$, an offset $m_r$, a partial assignment of the routed network, and a way of the message, it returns $1$ if the message sent at time $m_r$ (if the way is forward) or $w_r$ (if the way is backward)  does not collide with the other messages. 
+   	\begin{algorithm}[H]
+ 	\caption{MessageNoCollisions}
  	\begin{algorithmic}
  	\REQUIRE A route $r$, a departure time, and a way of the message (FORWARD/BACKWARD).
-	\ENSURE 1 if the messages can use the route with the given departure time, $0$ otherwise.
+	\ENSURE $1$ if the messages can use the route with the given departure time and without collisions, $0$ otherwise.
 
  	\FORALL{Arcs in the route}
  	\IF{ There is a collision with the previous scheduled messages}
@@ -157,7 +167,12 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 	\STATE return $1$
  	\end{algorithmic}
  	\end{algorithm}
-  \begin{subsection}{Algorithms without waiting times}
+ 	
+  \begin{subsection}{Algorithm to solve PAZL }
+
+  
+
+   
   \begin{subsubsection}{Greedy Prime}
   The idea here is to send the messages as soon as possible on each route. This is a greedy algorithm that does not try to optimize anything.
 
@@ -234,10 +249,9 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
  	\end{algorithmic}
  	\end{algorithm}
-
-  \end{subsubsection}
+\end{subsubsection}
   \end{subsection}
-    \begin{subsection}{Algorithms with waiting times}
+    \begin{subsection}{Algorithms to solve PALL}
      We now allow the messages to be buffered in the BBUs. Thus we can manage the messages in both the RRH and the BBU.
     \begin{subsubsection}{Greedy Loaded}
 
@@ -286,7 +300,7 @@ First, we search the lowest departure time such that there is no collisions in t
 
     \end{subsubsection}
   \end{subsection}
-\end{subsection}
+
 \end{section}
 \bibliographystyle{ieeetr}
 \bibliography{srcs}
