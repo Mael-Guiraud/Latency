@@ -173,7 +173,7 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
    
   \begin{subsubsection}{Greedy Prime}
-  The basic idea is to try to schedule the routes one by one. Here, given a route, we try all the departure time for the datagram at the begining of the route, and we assign to the route the first departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
+  The basic idea is to try to schedule the routes one by one. The routes are selected by id. Considering the generation of our graph described ahead, this means we select first the routes close from the datacenters.  Then, given a route, we set the departure time for the datagram at the beginning of the route to $0$. If there is no collisions with the other routes, we give this departure time to the route. Otherwise, we increase the departure time of $1$ and call the fuction MessageCollisions again, until we get a departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
 
    	\begin{algorithm}[H]
  	\caption{Greedy Prime}
@@ -200,8 +200,10 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
   \end{subsubsection}
     \begin{subsubsection}{Greedy Min}
   
-  We now try a smarter greedy algorithm. We start for the greedy algorithm proposed in \cite{Guir1806:Deterministic}.
-  This algorithm works on one forward and one backward period. The idea is to cut the forward period in meta intervals of size $\tau$. Then, for each routes, we try each free meta interval in the forward period until the message can pass in the backward period without collisions. Here, the principle is the same, but instead of looking at only one backward period, we take into consideration all the contention points of the route in the same time. Since we did not study this topology enough for now, we do not have the theoretical result that ensure us to find a solution under a given load, but we use the idea of the algorithm and try to adapt it in order to optimize the chances of success. Indeed, instead of trying the meta intervals one by one and scheduling the route on the first meta interval that gives not collisions, we try to minimize the size lost in all the collisions points of the route.
+  We now try a smarter greedy algorithm. We stil take the routes one by one, sorted by id. Then, we try all departure times in the period. To each departure time is associated a "tic win" score, computed by the following : Considering a departure time that allow the datagram to pass the network without collisions, for each arc, we count evaluate how much the new message is close to the other ones. We look $\tau$ tics before (and after) the message, and if there is another message scheduled at tic $i$ in the period, we increase the tic win score to $\tau -i$.
+  The sum of the tic won score on each arc correspond to the tic won score of the departure time. We then assign to the route the departure time with the maximal tic won score.
+  This algorithm helps us to pack the message in the arcs, indeed, if two message are spaced of a size which is less than $\tau$ this size will be lost, since it is not possible, 
+  
  	The size lost is the number of tics between the end of the previous message and the beginning of the message scheduled.
 	The goal is then to choose, for a route $i$ the meta interval that allow the message to pass though all the arc of its route without collisions, but also that minimise the sum of the size lost in every contention point of the route.
 	
