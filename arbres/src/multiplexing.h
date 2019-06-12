@@ -1,1 +1,1 @@
-int multiplexing(Graph g, int period, int message_size, int nb_periods, Policy pol);
+int multiplexing(Graph g, int period, int message_size, int nb_periods, Policy pol, int tmax);

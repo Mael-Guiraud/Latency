@@ -8,6 +8,7 @@ typedef enum periode_kind{
 typedef struct elem{
 	int numero_route;
 	int arrival_in_queue;
+	int time_elapsed;
 	int deadline;
 	int arc_id;
 	Period_kind kind_p;
@@ -47,7 +48,8 @@ typedef struct event{
 	int date;
 	Event_kind kind;
 	int route;
-	int deadline;//might be called time ellapsed
+	int deadline;
+	int time_elapsed;
 	Period_kind kind_p;
 	int arc_id;
 

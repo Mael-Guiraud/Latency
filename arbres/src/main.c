@@ -28,6 +28,7 @@ int main (int argc, char *argv[])
 		simul(seed,&loaded_greedy,"loaded greedy");
 		simul(seed,&loaded_greedy_longest,"loaded greedy longest");
 		simul(seed,&loaded_greedy_collisions,"loaded greedy collisions");
+
 		//simul_period(seed,&greedy_PRIME,"greedy prime");
 		//simul_period(seed,&greedy_tics_won,"greedy tics won");
 
@@ -37,8 +38,9 @@ int main (int argc, char *argv[])
 
 		/*char * noms2[] = {"greedy prime","greedy tics won"};
 		char * ylabels2[] = {"greedy prime","greedy tics won"};
+
 		print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels2);
-		*/
+		
 	}
 	
 	return 0;

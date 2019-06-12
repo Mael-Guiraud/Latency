@@ -23,7 +23,7 @@ int est_vide(void * l)
 	return 0;
 }
 
-Event * ajoute_event_trie(Event * l,Event_kind kind, int date,int route,int arc_id,int deadline,Period_kind kind_p)
+Event * ajoute_event_trie(Event * l,Event_kind kind, int date,int route,int arc_id,int time_elapsed,int deadline,Period_kind kind_p)
 {
 	Event * new = (Event *)malloc(sizeof(Event));
 	new->kind = kind;
@@ -31,6 +31,7 @@ Event * ajoute_event_trie(Event * l,Event_kind kind, int date,int route,int arc_
 	new->route = route;
 	new->arc_id = arc_id;
 	new->deadline = deadline;
+	new->time_elapsed = time_elapsed;
 	new->kind_p = kind_p;
 	if(est_vide(l))//la liste est vide
 	{
@@ -62,21 +63,22 @@ Event * ajoute_event_trie(Event * l,Event_kind kind, int date,int route,int arc_
 }
 
 
-Elem * ajoute_elem_fifo(Elem * l,int numero_route,int arc_id,int arrival_in_queue,int deadline,Period_kind kind_p)
+Elem * ajoute_elem_fifo(Elem * l,int numero_route,int arc_id,int arrival_in_queue,int time_elapsed,int deadline,Period_kind kind_p)
 {
 	Elem * new = (Elem *)malloc(sizeof(Elem));
 	new->numero_route = numero_route;
 	new->arrival_in_queue = arrival_in_queue;
-	new->deadline = deadline;
+	new->time_elapsed = time_elapsed;
 	new->kind_p = kind_p;
 	new->arc_id = arc_id;
+	new->deadline = deadline;
 	if(est_vide(l))//la liste est vide
 	{
 		new->suiv = NULL;
 		return new;
 	}
 
-	if(l->arrival_in_queue > arrival_in_queue)//insertion au debut
+	if(l->arrival_in_queue < arrival_in_queue)//insertion au debut
 	{
 		new->suiv = l;
 		return new;
@@ -85,7 +87,7 @@ Elem * ajoute_elem_fifo(Elem * l,int numero_route,int arc_id,int arrival_in_queu
 	//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
 	while(l->suiv)
 	{
-		if(l->suiv->arrival_in_queue > arrival_in_queue)//insertion au milieu
+		if(l->suiv->arrival_in_queue < arrival_in_queue)//insertion au milieu
 		{
 			new->suiv = l->suiv;
 			l->suiv = new;
@@ -100,21 +102,22 @@ Elem * ajoute_elem_fifo(Elem * l,int numero_route,int arc_id,int arrival_in_queu
 }
 
 
-Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_queue,int deadline,Period_kind kind_p)
+Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_queue,int time_elapsed,int deadline,Period_kind kind_p)
 {
 	Elem * new = (Elem *)malloc(sizeof(Elem));
 	new->numero_route = numero_route;
 	new->arrival_in_queue = arrival_in_queue;
-	new->deadline = deadline;
+	new->time_elapsed = time_elapsed;
 	new->kind_p = kind_p;
 	new->arc_id = arc_id;
+	new->deadline = deadline;
 	if(est_vide(l))//la liste est vide
 	{
 		new->suiv = NULL;
 		return new;
 	}
 
-	if(l->deadline < deadline)//insertion au debut
+	if(l->deadline > deadline)//insertion au debut
 	{
 		new->suiv = l;
 		return new;
@@ -123,7 +126,7 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 	//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
 	while(l->suiv)
 	{
-		if(l->suiv->deadline < deadline)//insertion au milieu
+		if(l->suiv->deadline > deadline)//insertion au milieu
 		{
 			new->suiv = l->suiv;
 			l->suiv = new;
@@ -137,7 +140,7 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 	return debut;
 }
 
-Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods)
+Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods,int tmax)
 {
 	int date;
 	for(int i=0;i<g.nb_routes;i++)
@@ -152,7 +155,7 @@ Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods)
 		}
 		for(int j=0;j<nb_periods;j++)
 		{
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date,i,0,0,FORWARD);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,0,0,tmax,FORWARD);
 		}
 	}
 	return liste_evt;
@@ -160,8 +163,8 @@ Event * init_events(Graph g, Event * liste_evt,int period, int nb_periods)
 
 void update_time_elapsed(Graph g, Event* liste_evt,int * p_time)
 {
-	if(*p_time < liste_evt->deadline+g.routes[liste_evt->route][liste_evt->arc_id]->length)
-		*p_time = liste_evt->deadline+g.routes[liste_evt->route][liste_evt->arc_id]->length;
+	if(*p_time < liste_evt->time_elapsed+g.routes[liste_evt->route][liste_evt->arc_id]->length)
+		*p_time = liste_evt->time_elapsed+g.routes[liste_evt->route][liste_evt->arc_id]->length;
 	return;
 }
 Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int * p_time)
@@ -174,21 +177,21 @@ Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int 
 	if(liste_evt->kind_p == FORWARD)
 	{
 		g.routes[liste_evt->route][liste_evt->arc_id]->state_f = 1;
-		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,FORWARD);
+		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD);
 		fprintf(logs,"Way forward (arc %d, length %d), new event message at date %d\n",liste_evt->arc_id,g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length);
 		if(liste_evt->arc_id != current_route_size-1) // not the last arc
 		{
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id+1,liste_evt->deadline + g.routes[liste_evt->route][liste_evt->arc_id]->length,FORWARD);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id+1,liste_evt->time_elapsed + g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->deadline - g.routes[liste_evt->route][liste_evt->arc_id]->length,FORWARD);
 		}
 		else
 		{
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id,liste_evt->deadline + g.routes[liste_evt->route][liste_evt->arc_id]->length,BACKWARD);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id,liste_evt->time_elapsed + g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->deadline - g.routes[liste_evt->route][liste_evt->arc_id]->length,BACKWARD);
 		}
 	}
 	else //backward
 	{
 		g.routes[liste_evt->route][liste_evt->arc_id]->state_b = 1;
-		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,BACKWARD);
+		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD);
 		if(liste_evt->kind_p == BACKWARD)
 		{
 			fprintf(logs,"Way backward (arc %d, length %d)",liste_evt->arc_id,g.routes[liste_evt->route][liste_evt->arc_id]->length);
@@ -200,7 +203,7 @@ Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int 
 			else
 			{
 				fprintf(logs,"new event message at date %d\n",liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length);
-				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id -1,liste_evt->deadline+ g.routes[liste_evt->route][liste_evt->arc_id]->length, BACKWARD);
+				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id -1,liste_evt->time_elapsed+ g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->deadline - g.routes[liste_evt->route][liste_evt->arc_id]->length, BACKWARD);
 			}
 		}
 		else
@@ -233,15 +236,15 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 	
 		fprintf(logs,"New arc event at date %d\n",liste_evt->date+message_size);
 		g.routes[liste_evt->route][liste_evt->arc_id]->state_f = 1;
-		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,FORWARD);
+		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD);
 		fprintf(logs,"Way forward, new event message (arc %d length %d) at date %d \n",first_elem->arc_id,g.routes[first_elem->numero_route][first_elem->arc_id]->length,liste_evt->date);
 		if(liste_evt->arc_id != current_route_size-1) // not the last arc
 		{
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length,first_elem->numero_route,first_elem->arc_id+1,first_elem->deadline + g.routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,FORWARD);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length,first_elem->numero_route,first_elem->arc_id+1,first_elem->time_elapsed + g.routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,first_elem->deadline -g.routes[first_elem->numero_route][first_elem->arc_id]->length-time_waited,FORWARD);
 		}
 		else
 		{
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length,first_elem->numero_route,first_elem->arc_id,first_elem->deadline + g.routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,BACKWARD);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length,first_elem->numero_route,first_elem->arc_id,first_elem->time_elapsed + g.routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,first_elem->deadline -g.routes[first_elem->numero_route][first_elem->arc_id]->length-time_waited,BACKWARD);
 		}
 		current_arc->elems_f = first_elem->suiv;
 	}
@@ -259,7 +262,7 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 			
 			fprintf(logs,"New arc event at date %d\n",liste_evt->date+message_size);
 			g.routes[liste_evt->route][liste_evt->arc_id]->state_b = 1;
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,BACKWARD);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD);
 			fprintf(logs,"way backward (arc %d length %d) ",first_elem->arc_id,g.routes[first_elem->numero_route][first_elem->arc_id]->length);
 			if(liste_evt->arc_id == 0)
 			{
@@ -269,7 +272,7 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 			else
 			{
 				fprintf(logs,"new event message at date %d .\n",liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length);
-				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length,first_elem->numero_route,first_elem->arc_id-1,first_elem->deadline + g.routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,BACKWARD);
+				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g.routes[first_elem->numero_route][first_elem->arc_id]->length,first_elem->numero_route,first_elem->arc_id-1,first_elem->time_elapsed +g.routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,first_elem->deadline -g.routes[first_elem->numero_route][first_elem->arc_id]->length-time_waited,BACKWARD);
 			}
 			current_arc->elems_b = first_elem->suiv;
 			
@@ -283,13 +286,14 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 	
 	return liste_evt;
 }
-int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy pol)
+int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy pol, int tmax)
 {
 	logs = fopen("logs_multiplexing.txt","w");
+	//logs = stdout;
 	if(!logs){perror("Error opening multiplexing.txt");}
 	Event * current;
 	Event * liste_evt = NULL;
-	liste_evt = init_events(g,liste_evt,period,nb_periods);
+	liste_evt = init_events(g,liste_evt,period,nb_periods,tmax);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
 	while(liste_evt)
@@ -303,21 +307,21 @@ int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy po
 			if(((liste_evt->kind_p == FORWARD) && g.routes[liste_evt->route][liste_evt->arc_id]->state_f) || ((liste_evt->kind_p == BACKWARD) && g.routes[liste_evt->route][liste_evt->arc_id]->state_b)) // arc used
 			{
 				fprintf(logs,"The arc is used (pol = %d).\n",pol);
-				fprintf(logs,"Adding elem (%d %d %d %d %d) - ",liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->deadline,liste_evt->kind_p);
+				fprintf(logs,"Adding elem (%d %d %d %d %d) - ",liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->kind_p);
 				if(pol == FIFO)
 				{
 					if(liste_evt->kind_p == FORWARD)
-						g.routes[liste_evt->route][liste_evt->arc_id]->elems_f = ajoute_elem_fifo(g.routes[liste_evt->route][liste_evt->arc_id]->elems_f,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->deadline,liste_evt->kind_p);
+						g.routes[liste_evt->route][liste_evt->arc_id]->elems_f = ajoute_elem_fifo(g.routes[liste_evt->route][liste_evt->arc_id]->elems_f,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->deadline,liste_evt->kind_p);
 					else
-						g.routes[liste_evt->route][liste_evt->arc_id]->elems_b = ajoute_elem_fifo(g.routes[liste_evt->route][liste_evt->arc_id]->elems_b,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->deadline,liste_evt->kind_p);
+						g.routes[liste_evt->route][liste_evt->arc_id]->elems_b = ajoute_elem_fifo(g.routes[liste_evt->route][liste_evt->arc_id]->elems_b,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->deadline,liste_evt->kind_p);
 
 				}
 				else
 				{
 					if(liste_evt->kind_p == FORWARD)
-						g.routes[liste_evt->route][liste_evt->arc_id]->elems_f = ajoute_elem_deadline(g.routes[liste_evt->route][liste_evt->arc_id]->elems_f,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->deadline,liste_evt->kind_p);
+						g.routes[liste_evt->route][liste_evt->arc_id]->elems_f = ajoute_elem_deadline(g.routes[liste_evt->route][liste_evt->arc_id]->elems_f,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->deadline,liste_evt->kind_p);
 					else
-						g.routes[liste_evt->route][liste_evt->arc_id]->elems_b = ajoute_elem_deadline(g.routes[liste_evt->route][liste_evt->arc_id]->elems_b,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->deadline,liste_evt->kind_p);
+						g.routes[liste_evt->route][liste_evt->arc_id]->elems_b = ajoute_elem_deadline(g.routes[liste_evt->route][liste_evt->arc_id]->elems_b,liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->deadline,liste_evt->kind_p);
 				}
 				
 			}
@@ -353,6 +357,6 @@ int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy po
 		free(current);
 	
 	}
-
+	fclose(logs);
 	return longest_time_elapsed;
 }

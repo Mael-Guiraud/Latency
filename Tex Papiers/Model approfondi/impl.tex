@@ -5,6 +5,7 @@
 \usepackage{url}
 \usepackage{graphicx,graphics} 
 \usepackage{color}
+\usepackage{caption}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
@@ -51,7 +52,6 @@
 
 \author[1]{Dominique Barth}
 \author[1,2]{Ma\"el Guiraud}
-% \author[1]{Christian Cad\'er\'e}
  \author[2]{Brice Leclerc}
  \author[2]{Olivier Marc\'e}
 \author[1]{Yann Strozecki}
@@ -59,46 +59,104 @@
 \affil[2]{Nokia Bell Labs France}
 
 \begin{document}
+
+\begin{section}{Graphs of conflic depth two}
+
+
+
 The star topology has a conflict depth one. We now look at the topologies with a conflict depth two.
-\begin{section}{Topology, generation and problem}
-\begin{subsection}{Model of the generated graphs}
-
-The goal is to generate some graph which represent a real network architecture which can correspond to the following figure, in which there is two level of contention. The antennas are either directly connected to the datacenter or are connected to a switch which regroup further antennas and is connected to a datacenter. The contention on the routes can occurs at those two points : the distributed switches or the entrance of the datacenter.
-
-\begin{center}
-
-\includegraphics[width=0.5\textwidth]{example23}
-\end{center}
   
-  
-To model this core of the network, we generate some random bipartite graphs. First of all, two parameters set the number of data-centers and switchs. The first set of the graph models the data-centers, and the second level of the trees models the switches. Then each arc is drawn uniformly with a given probability.
-Here is an example of a graph generated with 2  nodes of level 1 and 3  node of level 2.
+In order to generate some random digraphs $G=(V,A)$ of conflict depth two, we first generate some random bipartite graphs $G'=(V',E')$, which represent the core of the network. Indeed, it seems to be a good idea to model the internet topology as mentioned in \cite{tarissan_towards_2013}. This papers also gives us some background to generate some good random bipartite graphs. 
+$V'$ is composed of two sets: The first set $S_1$, of size $a$, models the last switch before the data-centers, and the second set $S_2$, of size $b$, models some distant switches, reparted on the filed. We fix $a$ and $b$ and we uniformly draw the edges of $E'$ with a given probability. Note that $|E'|= a \times b$. If the generated graph  $G'$ is not connected, we generate another bipartite graph.
+Figure~\ref{fig:random23} is an example of a random bipartite graph generated, with $a = 2$, $b=3$ and $|E'|=4$.
 
+\begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.5\textwidth]{random23}
+\caption{A random bipartite graph $G'$.}\label{fig:random23}
+\end{center}
+\end{figure}
+
+
+We now use $G'$ to build our routed network $G$
+In order to create some arcs with conflict, the vertices of $G'$ are extended to become some arcs in $G$. Let us call \textbf{conflict arcs} those arcs. The egdes of $E'$ becomes some arcs of $A$, that we will call \textbf{core arcs}.
+
+Figure~\ref{fig:extendnode} and figure~\ref{fig:extendendgraph} show how the first part of $G$ is build from $G'$.
+
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{extendnode}
+\captionof{figure}{A node of $G'$ represent an arc in $G$.}\label{fig:extendnode}
 \end{center}
 
+\end{minipage}
+\begin{minipage}{.5\linewidth}
 
- We first to generate some bipartite graphs which seems to be a good model for the internet topology as mentioned in \cite{tarissan_towards_2013}. This papers also gives us some background to generate some good random bipartite graphs. 
- 
- In a first time, we chose a simple model to generate our random bipartite graphs. Thus, two parameters set the number of data-centers and switchs. The first set of the graph models the data-centers, and the second set models the switches. We then randomly draw a link between each couple of node $(u,v)$, where $u$ is a node of one set and $v$ a node of the other set, with a given probability (the same for each couple). If the generated graph is not connexe, we generate another bipartite graph.
- 
- A {\bf flow} is a group of antennas, which communicate with a same datacenter.   There is a flow corresponding to each arc previously drawn. This means that there is a group of antennas all connected to a same switch (node of level 2). Also, we generate a flow directly connected to each datacenter. For each flow, we randomly draw between $1$ and $N$ antennas.
-  We say there is a {\bf route} for each antenna generated. The routing of the routes in a same flow is the same. 
+\begin{center}
+\includegraphics[width=0.4\textwidth]{extendendgraph}
+\captionof{figure}{A node of $G'$ represent an arc in $G$.}\label{fig:extendendgraph}
+\end{center}
+
+\end{minipage}
+
+ We now want to create some \textbf{final arcs}, that will model the last link before the antennas.
+We generate $1\leq k\leq K$ final arcs before each contention arc $(u,v)$. We add $k$ new vertices $\{w_1,\ldots,w_k\}$ of indegree $0$ and outdegree $1$ to the set of vertices $V$. The new arcs $\{(w_1,u),\ldots,(w_k,u)\}$ are then added to $A$. 
+
+Each route of the set of routes $\cal{R}$ of the routed network (G,$\cal{R}$) is composed either of one final arc and one contention arc (obtained from the set $S_1$ of arcs in $G'$), or one final arc, two contention arcs (one from $S_1$, one frome $S_2)$) and the core arc between those two contention arcs.
+Note that one final arc belongs to one and only one route, while the core and contention arcs can be shared by several routes. 
+
+Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how the final arcs are generated and define the routes of the routed network (G,$\cal{R}$). The routes of the same color share the same arcs after the final arc.
+
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\linewidth]{extendendgraph2}
+\captionof{figure}{Final arcs before contention arcs obtained from $S_1$.}\label{fig:extendendgraph2}
+\end{center}
+
+\end{minipage}
+\begin{minipage}{.5\linewidth}
+\begin{center}
+\includegraphics[width=0.4\linewidth]{extendendgraph3}
+\captionof{figure}{Final arcs before contention arcs obtained from $S_2$.}\label{fig:extendendgraph3}
+\end{center}
+\end{minipage}
+  The obtained routed network (G,$\cal{R}$) models a meshed network. The vertices of indegree $0$ of final arcs represent the antennas, the contention arcs from $S_1$ represent the last link before the datacenters, and the other nodes and arcs of the graph represent some links and switch of the network. It appears that this topology is realitic in core networks.
+  Figure~\ref{fig:extendendgraphgrey} shows the shape of the network modelized.
+
+\begin{figure}[h]
+\begin{center}
+ \includegraphics[width=0.4\textwidth]{extendendgraphgrey}
+\caption{A network represented by a graph $G$.}\label{fig:extendendgraphgrey}
+\end{center}
+\end{figure}
+
+
 
   
+  \end{section}
+  \begin{section}{Implemented algorithms}
+  
+  \begin{subsection}{Simplification of the model}
+ 
+   The steams are composed of one datagram. For simplicity in the notations, the datagram of the stream on the route $r$ is then denoted $d_r$. All links have the same speed, so $l(d,u,r)=0$, for all vertex $u$ and route $r$ of the network. All the datagrams have the same size $|d_r| = \tau$.
+   Also, we do not allow the messages to be buffered in the nodes of the network so $l(d,u,r)=0$ , exept the last node of the routes, which correspond to the datacenter.
+   The \textbf{waiting time} of a datagram $d_r$ on a route $r$ is defined by $w_r = \{\theta_{\rho_r}(d_r) - t(d_r,v,r)$. This is the time it waits in $v$, the last node of the route before beeing sent back.
+   
   \end{subsection}
+
+  The presented algorithm are designed to solve the problem PAZL and PALL.
+  A \textbf{partial assignment}, is a set of departure times and waiting times $\{(m_0,w_0),\ldots,(m_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
   
-  \begin{subsection}{Different implemented algorithms}
-  Consider that the size $\tau$ of the messages is the same for all routes. Also, the messages are sent in one packet, which can not be fragmented in the network.
-  
-  We first introduce a basic routine that helps us to test if the messages sent on a route at a given departure time can pass through the entire route without collisions.
-  
-    	\begin{algorithm}[H]
- 	\caption{MessageCollisions}
+   
+   
+  In most of the presented algorithm, the following subroutine is used. Given a route $r$, an offset $m_r$, a partial assignment of the routed network, and a way of the message, it returns $1$ if the message sent at time $m_r$ (if the way is forward) or $w_r$ (if the way is backward)  does not collide with the other messages. 
+   	\begin{algorithm}[H]
+ 	\caption{MessageNoCollisions}
  	\begin{algorithmic}
  	\REQUIRE A route $r$, a departure time, and a way of the message (FORWARD/BACKWARD).
-	\ENSURE 1 if the messages can use the route with the given departure time, $0$ otherwise.
+	\ENSURE $1$ if the messages can use the route with the given departure time and without collisions, $0$ otherwise.
 
  	\FORALL{Arcs in the route}
  	\IF{ There is a collision with the previous scheduled messages}
@@ -108,9 +166,14 @@ Here is an example of a graph generated with 2  nodes of level 1 and 3  node of 
 	\STATE return $1$
  	\end{algorithmic}
  	\end{algorithm}
-  \begin{subsection}{Algorithms without waiting times}
+ 	
+  \begin{subsection}{Algorithm to solve PAZL }
+
+  
+
+   
   \begin{subsubsection}{Greedy Prime}
-  The idea here is to send the messages as soon as possible on each route. This is a greedy algorithm that does not try to optimize anything.
+  The basic idea is to try to schedule the routes one by one. The routes are selected by id. Considering the generation of our graph described ahead, this means we select first the routes close from the datacenters.  Then, given a route, we set the departure time for the datagram at the beginning of the route to $0$. If there is no collisions with the other routes, we give this departure time to the route. Otherwise, we increase the departure time of $1$ and call the fuction MessageCollisions again, until we get a departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
 
    	\begin{algorithm}[H]
  	\caption{Greedy Prime}
@@ -119,26 +182,28 @@ Here is an example of a graph generated with 2  nodes of level 1 and 3  node of 
 	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
 
  	\FORALL{routes $i$ }
-	\STATE tmp = $0$
+	\STATE date = $0$
 	
- 	\WHILE{!MessageCollisions($i$,tmp,FORWARD) $||$ !MessageCollisions($i$,tmp+routeLength($i$),BACKWARD) }
+ 	\WHILE{!MessageCollisions($i$,date,FORWARD) $||$ !MessageCollisions($i$,date+routeLength($i$),BACKWARD) }
  	
- 	\STATE tmp++;
- 	\IF{tmp$ > P$}
+ 	\STATE date++;
+ 	\IF{date$ > P$}
 	\STATE return FAILURE
 	\ENDIF
  	\ENDWHILE
-	\STATE DepartureTime($i$) = tmp;
+	\STATE DepartureDate($i$) = date;
  	\ENDFOR
-	\STATE return departureTime
+	\STATE return departureDate
  	\end{algorithmic}
  	\end{algorithm}
-	This algorithm treats the routes one by one by id (arbitrarily chosen), and set the departure time of the messages on the route as soon as possible.
+ 	The complexity of this algorithm is $\mathcal{O}(n\times P)$, with $n$ the number of routes and $P$ the period. It is very bad, since it depends of the period.
   \end{subsubsection}
     \begin{subsubsection}{Greedy Min}
   
-  We now try a smarter greedy algorithm. We start for the greedy algorithm proposed in \cite{Guir1806:Deterministic}.
-  This algorithm works on one forward and one backward period. The idea is to cut the forward period in meta intervals of size $\tau$. Then, for each routes, we try each free meta interval in the forward period until the message can pass in the backward period without collisions. Here, the principle is the same, but instead of looking at only one backward period, we take into consideration all the contention points of the route in the same time. Since we did not study this topology enough for now, we do not have the theoretical result that ensure us to find a solution under a given load, but we use the idea of the algorithm and try to adapt it in order to optimize the chances of success. Indeed, instead of trying the meta intervals one by one and scheduling the route on the first meta interval that gives not collisions, we try to minimize the size lost in all the collisions points of the route.
+  We now try a smarter greedy algorithm. We stil take the routes one by one, sorted by id. Then, we try all departure times in the period. To each departure time is associated a "tic win" score, computed by the following : Considering a departure time that allow the datagram to pass the network without collisions, for each arc, we count evaluate how much the new message is close to the other ones. We look $\tau$ tics before (and after) the message, and if there is another message scheduled at tic $i$ in the period, we increase the tic win score to $\tau -i$.
+  The sum of the tic won score on each arc correspond to the tic won score of the departure time. We then assign to the route the departure time with the maximal tic won score.
+  This algorithm helps us to pack the message in the arcs, indeed, if two message are spaced of a size which is less than $\tau$ this size will be lost, since it is not possible, 
+  
  	The size lost is the number of tics between the end of the previous message and the beginning of the message scheduled.
 	The goal is then to choose, for a route $i$ the meta interval that allow the message to pass though all the arc of its route without collisions, but also that minimise the sum of the size lost in every contention point of the route.
 	
@@ -185,10 +250,9 @@ Here is an example of a graph generated with 2  nodes of level 1 and 3  node of 
 
  	\end{algorithmic}
  	\end{algorithm}
-
-  \end{subsubsection}
+\end{subsubsection}
   \end{subsection}
-    \begin{subsection}{Algorithms with waiting times}
+    \begin{subsection}{Algorithms to solve PALL}
      We now allow the messages to be buffered in the BBUs. Thus we can manage the messages in both the RRH and the BBU.
     \begin{subsubsection}{Greedy Loaded}
 
@@ -237,7 +301,7 @@ First, we search the lowest departure time such that there is no collisions in t
 
     \end{subsubsection}
   \end{subsection}
-\end{subsection}
+
 \end{section}
 \bibliographystyle{ieeetr}
 \bibliography{srcs}

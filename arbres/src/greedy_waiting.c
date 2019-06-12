@@ -33,8 +33,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 			offset++;
 			if(offset == P)
 			{
-				//free_assignment(a);
-				//printf("\nNot possbile\n");
+
 				return a;
 			}
 		}
@@ -71,7 +70,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 			if(offset == (P+begin_offset))
 			{
 				//free_assignment(a);
-				//printf("\nNot possbile\n");
+				printf("\nNot possbile\n");
 				return a;
 			}
 		}
@@ -161,7 +160,7 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 								break;
 							}
 							//fprintf(stdout,"\r%d",offset_back);
-							fflush(stdout);
+							
 						}
 						if(back_found)
 						{
