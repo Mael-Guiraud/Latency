@@ -142,18 +142,20 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
  
    The steams are composed of one datagram. For simplicity in the notations, the datagram of the stream on the route $r$ is then denoted $d_r$. All links have the same speed, so $l(d,u,r)=0$, for all vertex $u$ and route $r$ of the network. All the datagrams have the same size $|d_r| = \tau$.
    Also, we do not allow the messages to be buffered in the nodes of the network so $l(d,u,r)=0$ , exept the last node of the routes, which correspond to the datacenter.
-   The \textbf{waiting time} of a datagram $d_r$ on a route $r$ is defined by $w_r = \{\theta_{\rho_r}(d_r) - t(d_r,v,r)$. This is the time it waits in $v$, the last node of the route before beeing sent back.
+   The \textbf{waiting time} of a datagram $d_r$ on a route $r$ is defined by $w_r = \{\theta_{\rho_r}(d_r) - t(d_r,v,r)$. This is the time it waits in $v$, the last node of the route before being sent back.
+   We also consider that all routes $i$ have the same deadline, that is,  $d(i)= Tmax$.
    
   \end{subsection}
 
   The presented algorithm are designed to solve the problem PAZL and PALL.
-  A \textbf{partial assignment}, is a set of departure times and waiting times $\{(m_0,w_0),\ldots,(m_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
+  A \textbf{partial assignment}, is a set of departure times and waiting times $\{(\theta_0,w_0),\ldots,(\theta_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
   
    
    
-  In most of the presented algorithm, the following subroutine is used. Given a route $r$, an offset $m_r$, a partial assignment of the routed network, and a way of the message, it returns $1$ if the message sent at time $m_r$ (if the way is forward) or $w_r$ (if the way is backward)  does not collide with the other messages. 
+  In most of the presented algorithm, the following subroutine is used. Given a route $r$, a departure time $\theta_r$, a partial assignment of the routed network, and a way of the message, it returns $1$ if the message sent at time $\theta_r$ (if the way is forward) or $\theta_{\rho_r}$ (if the way is backward)  does not collide with the other messages. 
    	\begin{algorithm}[H]
  	\caption{MessageNoCollisions}
+	\label{algo:messagenocollisions}
  	\begin{algorithmic}
  	\REQUIRE A route $r$, a departure time, and a way of the message (FORWARD/BACKWARD).
 	\ENSURE $1$ if the messages can use the route with the given departure time and without collisions, $0$ otherwise.
@@ -173,10 +175,11 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
    
   \begin{subsubsection}{Greedy Prime}
-  The basic idea is to try to schedule the routes one by one. The routes are selected by id. Considering the generation of our graph described ahead, this means we select first the routes close from the datacenters.  Then, given a route, we set the departure time for the datagram at the beginning of the route to $0$. If there is no collisions with the other routes, we give this departure time to the route. Otherwise, we increase the departure time of $1$ and call the fuction MessageCollisions again, until we get a departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
+  The basic idea is to try to schedule the routes one by one. The routes are selected by id. Considering the generation of our graph described ahead, this means we select first the routes close from the datacenters.  Then, given a route, we set the departure time for the datagram at the beginning of the route to $0$. If there is no collisions with the other routes, we give this departure time to the route. Otherwise, we increase the departure time of $1$ and call the algorithm~\ref{algo:messagenocollisions} MessageCollisions again, until we get a departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
 
    	\begin{algorithm}[H]
  	\caption{Greedy Prime}
+	\label{algo:greedyprime}
  	\begin{algorithmic}
  	\REQUIRE A graph, a set of routes, a period $P$
 	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
@@ -202,22 +205,21 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
   
   We now try a smarter greedy algorithm. We stil take the routes one by one, sorted by id. Then, we try all departure times in the period. To each departure time is associated a "tic win" score, computed by the following : Considering a departure time that allow the datagram to pass the network without collisions, for each arc, we count evaluate how much the new message is close to the other ones. We look $\tau$ tics before (and after) the message, and if there is another message scheduled at tic $i$ in the period, we increase the tic win score to $\tau -i$.
   The sum of the tic won score on each arc correspond to the tic won score of the departure time. We then assign to the route the departure time with the maximal tic won score.
-  This algorithm helps us to pack the message in the arcs, indeed, if two message are spaced of a size which is less than $\tau$ this size will be lost, since it is not possible, 
+  This algorithm helps us to pack the message in the arcs, indeed, if two message are spaced of a size $s < \tau$, those $t$ tics will be definitely lost since we can not use them to send a message. Thus, the idea is to pack as much as possible the messages on every arcs.
   
- 	The size lost is the number of tics between the end of the previous message and the beginning of the message scheduled.
-	The goal is then to choose, for a route $i$ the meta interval that allow the message to pass though all the arc of its route without collisions, but also that minimise the sum of the size lost in every contention point of the route.
-	
+ 
     	\begin{algorithm}[H]
- 	\caption{sizeLost}
+ 	\caption{ticsWin}
+	\label{algo:ticswin}
  	\begin{algorithmic}
  	\REQUIRE A route $r$, a departure time $t$
-	\ENSURE $-1$ if the message can not pass without collisions, the size lost otherwise
+	\ENSURE $-1$ if the message can not pass without collisions, the number of tics win otherwise
 	\STATE tmp  $\leftarrow$ $0$
  	\FORALL{Arcs $j$ in the route (forward AND backward)}
  	\IF{ There is a collision with the previous scheduled messages}
  	\STATE return $-1$
 	\ELSE
-	\STATE tmp += numberOfTicsLost(t,j)
+	\STATE tmp += numberOfTicsWon(t,j)
  	\ENDIF
  	\ENDFOR
 	\STATE return tmp
@@ -226,22 +228,23 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
 	
    	\begin{algorithm}[H]
- 	\caption{Greedy Min}
+ 	\caption{Greedy tics won}
  	\begin{algorithmic}
- 	\REQUIRE A graph, a set of routes, a period $P$
+ 	\REQUIRE A graph, a set of routes of size $n$, a period $P$
 	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
 
- 	\FORALL{routes $i$ }
-	\STATE minTicLost $\leftarrow$ INT MAX
-	\STATE minId = $-1$
-	\FORALL{ meta interval $j$ }
-	\STATE tmp = sizeLost($r$,$j\times\tau$)
-	\IF{ (tmp != $-1$)  AND (tmp < minTicLost)}
-	\STATE minTicLost  $\leftarrow$ tmp
-	\STATE minId  $\leftarrow$ $j$
+ 	\FORALL{routes $i \in [0;n[$ }
+	\STATE maxTicsWin $\leftarrow$ $-1$
+	\STATE bestDepartureTime = $-1$
+	\STATE departureTime[$n$]
+	\FORALL{ offset $j \in [0;P[$ }
+	\STATE tmp = ticsWin($r$,$j\times\tau$)
+	\IF{  tmp  > maxTicsWin}
+	\STATE maxTicsWin  $\leftarrow$ tmp
+	\STATE bestDepartureTime  $\leftarrow$ $j$
 	\ENDIF
  	\ENDFOR
-	\IF{minId = $-1$}
+	\IF{bestDepartureTime = $-1$}
 	\STATE return FAILURE
 	\ENDIF
 	\STATE departureTime($i$) = $j\time\tau$
@@ -250,14 +253,25 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
 
  	\end{algorithmic}
  	\end{algorithm}
+	
+	The complexity of this algorithm is $\mathcal{O}(n\times P)$, with $n$ the number of routes and $P$ the period. Unlike the previous algorithm, the worst and medium complexity is the same, since we look at every departure times in the period.
 \end{subsubsection}
   \end{subsection}
     \begin{subsection}{Algorithms to solve PALL}
-     We now allow the messages to be buffered in the BBUs. Thus we can manage the messages in both the RRH and the BBU.
+     We now allow the messages to be buffered in the BBUs. Thus have to choose the departure times and the waiting times of the datagrams.     
+      \begin{subsubsection}{Greedy Deadline}
+      We choose to manage the routes in two steps.
+      First, we send the datagrams in the way forward (from RRH to BBU).
+      This part of the algorithm is basic and uses the same routine than the Algorithm:~\ref{algo:greedyprime}, the Greedy Prime algorithm. We take the route one by one, sorted by id, and we give for each route the first departure time that allow the datagram to reach the BBU without collisions. Note that we only check the way forward.
+      
+      Once we have scheduled the messages in the way forward, we want to send the answers. Consider that $u$ is the last vertex of the route forward (and so, the first of the route backward), the first step of the algorithm has fixed $t(d,u,r)$, that is, the time at which the datagram sent from the RRH has reach the node $u$. For each route, we compute $deadline(i) = Tmax - 2\times\lambda(i) - DepartureTime(i)$. This deadline can be seen as a budget: the lowest the deadline will be, the less waiting time is allowed on the route.\newline
+      We the send the routes with the lowest deadline first in the way backward, trying all waiting times, starting to $0$, until the message can reach the RRH without collisions.
+            
+        \end{subsubsection}
     \begin{subsubsection}{Greedy Loaded}
 
-In this algorithm, we choose to first take care of the more critical contention points first. Thus, we sort the arcs of the graph for the one in which there is the most of routes, to the one in which there is the less of routes. Then we take first the more loaded link and we schedule the routes on it in two steps.
-First, we search the lowest departure time such that there is no collisions in the way forward, then we do it again on the way backward. Then, we can have some waiting times but it gives us a greater degrees of freedom to find an assignment.
+In this algorithm, we choose to first take care of the most critical contention points first. Thus, we sort the arcs of the graph for the one in which there is the greater number of routes to the one in which there is the lower number of routes. Then we take first the more loaded link and we schedule the routes on it in two steps.
+First, we search the lowest departure time such that there is no collisions in the way forward, then we do it again on the way backward. 
 
    	\begin{algorithm}[H]
  	\caption{Greedy Loaded}
@@ -269,27 +283,27 @@ First, we search the lowest departure time such that there is no collisions in t
 	
  	\FORALL{ route $j$ on $i$}
 	\IF{$j$ has not been scheduled yet}
-	\STATE tmp = $0$
+	\STATE depTime = $0$
 	
- 	\WHILE{!MessageCollisions($j$,tmp,FORWARD) }
+ 	\WHILE{!MessageCollisions($j$,depTime,FORWARD) }
  	
- 	\STATE tmp++;
- 	\IF{tmp$ > P$}
+ 	\STATE depTime++;
+ 	\IF{depTime$ > P$}
 	\STATE return FAILURE
 	\ENDIF
  	\ENDWHILE
-	\STATE DepartureTime($j$) = tmp;
-	\STATE tmp2 = tmp + routeLength($j$);
-	\STATE tmp = tmp2;
+	\STATE DepartureTime($j$) = depTime;
+	\STATE beginBackTime = depTime + routeLength($j$);
+	\STATE backTime = beginBackTime;
 	
- 	\WHILE{!MessageCollisions($j$,tmp,BACKWARD) }
+ 	\WHILE{!MessageCollisions($j$,backTime,BACKWARD) }
  	
  	\STATE tmp++;
- 	\IF{tmp$ > P+tmp2$}
+ 	\IF{backTime$ > P+beginBackTime$}
 	\STATE return FAILURE
 	\ENDIF
  	\ENDWHILE
-	\STATE waitingTime($j$) = tmp-tmp2;
+	\STATE waitingTime($j$) = backTime-beginBackTime;
 	\ENDIF
  	\ENDFOR
 
@@ -298,7 +312,12 @@ First, we search the lowest departure time such that there is no collisions in t
 
  	\end{algorithmic}
  	\end{algorithm}
-
+We also propose $3$ different orders to treat the route on the arcs. 
+\begin{itemize}
+\item By id.
+\item From the longest to the shortest route.
+\item By the number of collisions with the other routes on the entire network.
+\end{itemize}
     \end{subsubsection}
   \end{subsection}
 
