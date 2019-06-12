@@ -59,7 +59,7 @@ int sum_tics_won(Graph g,int route,int offset,int message_size,int P)
 		return sum;
 }
 
-Assignment greedy_min_lost(Graph g, int P, int message_size)
+Assignment greedy_tics_won(Graph g, int P, int message_size)
 {
 	if(P < message_size)
 		return NULL;
