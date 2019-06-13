@@ -302,24 +302,33 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
 	Assignment a;
+	int MarginMax = MARGIN_MAX;
+	int MarginMin = MARGIN_MIN;
+	printf("ALGORITHM : %s \n",nom);
 	if(!f)perror("Error while opening file\n");
 	if(TMAX_MOD)
 	{
-		printf("\n The margin displayed on screen are not used in source code, tmax is %d .\n",TMAX);
+		printf("		TMax is fixed to %d .\n",TMAX);
+		MarginMin = 0;
+		MarginMax = 0; 
 	}
-	for(int margin=MARGIN_MIN;margin<=MARGIN_MAX;margin+=MARGIN_GAP)
+	if(FIXED_PERIOD_MOD)
+	{
+		printf("		The period is fixed to %d .\n",PERIOD);
+	}
+	for(int margin=MarginMin;margin<=MarginMax;margin+=MARGIN_GAP)
 	{
 		nb_success=0;
 	
 		moy_routes_scheduled = 0;
-		
+		#pragma omp parallel for private(g,P,a,tmax) 
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			g= init_graph_random_tree(STANDARD_LOAD);
 			if(FIXED_PERIOD_MOD)
 			{
 				if(PERIOD < load_max(g)*MESSAGE_SIZE)
-					printf("WARDNING, not enought space to schedule all the message on the loadest link");
+					printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
 				P = PERIOD;
 			}
 			else
@@ -327,7 +336,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			if(TMAX_MOD)
 			{
 				if(longest_route(g)*2 > TMAX)
-					printf("WARNING! TMAX is higher than the longest route. \n");
+					printf("			WARNING! TMAX is higher than the longest route. \n");
 				tmax = TMAX;
 			}
 			else
@@ -338,11 +347,12 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			{
 				if(travel_time_max( g, tmax, a) != -1)
 				{
-					nb_success++;
+					#pragma omp atomic update
+						nb_success++;
 				}
 				
 			}
-			
+			#pragma omp atomic update
 			moy_routes_scheduled += a->nb_routes_scheduled;
 			//printf("\n%d %d %d\n",g.nb_routes,a->nb_routes_scheduled,a->all_routes_scheduled);
 			free_assignment(a);
@@ -351,7 +361,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 			fflush(stdout);
 		}	
-		printf("\n margin : %d success : %d/%d .\n",margin,nb_success,NB_SIMULS);
+		printf("\nMargin : %d success : %d/%d .\n",margin,nb_success,NB_SIMULS);
 		fprintf(f,"%d %f %f\n",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
 	}
 	fclose(f);
@@ -370,16 +380,29 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 	double moy_routes_scheduled ;
 	int tmax;
 	Assignment a;
+	double loadMin=LOAD_MIN;
+	double loadMax=LOAD_MAX;
 	char buf[64];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
 	if(!f)perror("Error while opening file\n");
-	for(double load=LOAD_MIN;load<=LOAD_MAX;load+=LOAD_GAP)
+	printf("ALGORITHM : %s \n",nom);
+	if(TMAX_MOD)
+	{
+		printf("		TMax is fixed to %d .\n",TMAX);
+	}
+	if(FIXED_PERIOD_MOD)
+	{
+		printf("		The period is fixed to %d .\n",PERIOD);
+		loadMin = 0.0;
+		loadMax = 0.0;
+	}
+	for(double load=loadMin;load<=loadMax;load+=LOAD_GAP)
 	{
 		
 		nb_success=0;
 		moy_routes_scheduled = 0;
-		#pragma omp parallel for private(g,P,a) schedule (static,1)
+		#pragma omp parallel for private(g,P,a,tmax)
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			
@@ -387,12 +410,20 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 
 			g= init_graph_random_tree(load);
 
-			P= (load_max(g)*MESSAGE_SIZE)/load;
-			
+
+			if(FIXED_PERIOD_MOD)
+			{
+				if(PERIOD < load_max(g)*MESSAGE_SIZE)
+					printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+				P = PERIOD;
+			}
+			else
+				P= (load_max(g)*MESSAGE_SIZE)/load;
+
 			if(TMAX_MOD)
 			{
 				if(longest_route(g)*2 > TMAX)
-					printf("WARNING! TMAX is higher than the longest route. \n");
+					printf("			WARNING! TMAX is higher than the longest route. \n");
 				tmax = TMAX;
 			}
 			else
@@ -418,7 +449,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 			fflush(stdout);
 		}	
-		printf("\n load : %f success : %d/%d \n",load,nb_success,NB_SIMULS);
+		printf("\nLoad : %f success : %d/%d \n",load,nb_success,NB_SIMULS);
 		fprintf(f,"%f %f %f\n",load,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
 	}
 	fclose(f);

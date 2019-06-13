@@ -4,11 +4,11 @@
 #define MESSAGE_SIZE 2500
 #define NB_BBU 2
 #define NB_COLLISIONS 2
-#define NB_ROUTES_PER_FLOW 2
+#define NB_ROUTES_PER_FLOW 3
 #define PROBA 0.5
 
 //Mod synch or not
-#define SYNCH 1
+#define SYNCH 0
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.5
@@ -30,4 +30,4 @@
 #define PERIOD 19531	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
-#define NB_SIMULS 10000
+#define NB_SIMULS 1000
