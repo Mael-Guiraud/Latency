@@ -61,8 +61,7 @@ int sum_tics_won(Graph g,int route,int offset,int message_size,int P)
 
 Assignment greedy_tics_won(Graph g, int P, int message_size)
 {
-	if(P < message_size)
-		return NULL;
+
 	Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
 	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
@@ -73,11 +72,11 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 	int max_tics_won;
 	int best_offset;
 
-	//printf("Forward \n");
+
 	//for each route
 	for(int i=0;i<g.nb_routes;i++)
 	{
-		//printf("Route %d : \n",i);
+	
 		max_tics_won = -1;
 		best_offset = -1;
 		for(int offset=0;offset<P;offset++)
@@ -93,26 +92,39 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 		}
 		if(best_offset == -1)
 		{
-			//free_assignment(a);
-			return a;
+			
+			a->offset_forward[i]=-1;
+			a->offset_backward[i]=-1;
+			a->waiting_time[i]=-1;
 		}
-		fill_period(g,i,best_offset,message_size,FORWARD,P);
-		a->offset_forward[i]=best_offset;
-		fill_period(g,i,best_offset+route_length(g,i),message_size,BACKWARD,P);
-		a->offset_backward[i]=0;
-		a->waiting_time[i]=0;
-		a->nb_routes_scheduled++;
+		else
+		{
+			fill_period(g,i,best_offset,message_size,FORWARD,P);
+			a->offset_forward[i]=best_offset;
+			fill_period(g,i,best_offset+route_length(g,i),message_size,BACKWARD,P);
+			a->offset_backward[i]=0;
+			a->waiting_time[i]=0;
+			a->nb_routes_scheduled++;	
+		}
+		
 			
 	}
-	a->all_routes_scheduled = 1;
+	if(a->nb_routes_scheduled == g.nb_routes)
+	{
+		a->all_routes_scheduled = 1;
+
+	}
+	else
+	{
+		a->all_routes_scheduled = 0;
+	}
 	return a;
 
 }
 
 Assignment greedy_PRIME(Graph g, int P, int message_size)
 {
-	if(P < message_size)
-		return NULL;
+
 	Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
 	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
@@ -120,35 +132,49 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
  	int offset;
+ 	int bool_found = 1;
 	
 
-	//printf("Forward \n");
 	//for each route
 	for(int i=0;i<g.nb_routes;i++)
 	{
-		//printf("Route %d : \n",i);
+
 		offset=0;
-		
+		bool_found = 1;
 		while((!message_no_collisions( g, i, offset,message_size,FORWARD,P))||(!message_no_collisions( g, i, offset+route_length(g,i),message_size,BACKWARD,P)) )
 		{
-			//fprintf(stdout,"\roffset %d",offset);fflush(stdout);
+
 			offset++;
 			if(offset == P)
 			{
-				//free_assignment(a);
-				//printf("\nNot possbile\n");
-				return a;
+				a->offset_forward[i]=-1;
+				a->offset_backward[i]=-1;
+				a->waiting_time[i]=-1;
+				bool_found = 0;
+				break;
 			}
 		}
-		//printf("\nOffset %d for route %d\n",offset,i);
-		fill_period(g,i,offset,message_size,FORWARD,P);
-		a->offset_forward[i]=offset;
-		fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
-		a->offset_backward[i]=offset+route_length(g,i);
-		a->waiting_time[i]=0;
-		a->nb_routes_scheduled++;
+		if(bool_found)
+		{
+			fill_period(g,i,offset,message_size,FORWARD,P);
+			a->offset_forward[i]=offset;
+			fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
+			a->offset_backward[i]=offset+route_length(g,i);
+			a->waiting_time[i]=0;
+			a->nb_routes_scheduled++;
+		}
+
+		
 	}
-	a->all_routes_scheduled = 1;
+	if(a->nb_routes_scheduled == g.nb_routes)
+	{
+		a->all_routes_scheduled = 1;
+
+	}
+	else
+	{
+		a->all_routes_scheduled = 0;
+	}
 	return a;
 
 }
