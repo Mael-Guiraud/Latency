@@ -39,7 +39,7 @@ int main (int argc, char *argv[])
 		/*char * noms2[] = {"greedy prime","greedy tics won"};
 		char * ylabels2[] = {"greedy prime","greedy tics won"};
 
-		print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels2);
+		print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels2);*/
 		
 	}
 	

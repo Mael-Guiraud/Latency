@@ -84,7 +84,7 @@ void test()
 	fprintf(f," WITHOUT WAITING TIME : \n\n");
 	printf(" Greedy min lost : ");
 	fprintf(f,"\n Greedy min lost : \n");
-	a = greedy_min_lost( g, P, message_size);
+	a = greedy_tics_won( g, P, message_size);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
 		printf(GRN "OK | " RESET);
@@ -352,6 +352,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 				}
 				
 			}
+			
 			#pragma omp atomic update
 			moy_routes_scheduled += a->nb_routes_scheduled;
 			//printf("\n%d %d %d\n",g.nb_routes,a->nb_routes_scheduled,a->all_routes_scheduled);
