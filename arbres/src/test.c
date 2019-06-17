@@ -1,6 +1,7 @@
 #include "structs.h"
 #include "init.h"
 #include "treatment.h"
+#include "data_treatment.h"
 #include <stdio.h>
 
 void affiche_tab(int * tab, int taille, FILE * f)
@@ -26,8 +27,9 @@ void affiche_periode(int * p, int size, FILE * f)
 		}
 		old = current;
 	}
-	fprintf(f,"%d]\n",size);
+	fprintf(f,"%d]\n",size-1);
 }
+
 
 void affiche_graph(Graph g,int p, FILE * f)
 {

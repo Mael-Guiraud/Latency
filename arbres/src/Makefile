@@ -47,7 +47,7 @@ gnuplot:
 
 
 debug: compil
-	valgrind --leak-check=full -v ./compil simul
+	valgrind --leak-check=full -v ./compil test
 
 debug2: compil
 	valgrind --tool=callgrind -v ./compil simul

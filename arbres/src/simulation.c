@@ -70,6 +70,7 @@ void test()
 	printf(" ---- \n Graph Generated ...\n");
 	fprintf(f,"\n ---- \n Graph Generated ...\n");
 	affiche_graph(g,P,f);
+	printf("Number of routes on the graph : %d .\n",g.nb_routes);
 	printf("Number of routes on the loadest arc : %d .\n",load_max(g));
 	printf("Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(g),longest_route(g)*2);
 	fprintf(f,"Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(g),longest_route(g)*2);
@@ -82,10 +83,11 @@ void test()
 
 	printf("- WITHOUT WAITING TIME : \n");
 	fprintf(f," WITHOUT WAITING TIME : \n\n");
-	printf(" Greedy min lost : ");
-	fprintf(f,"\n Greedy tics won : \n");
+	
 
-	a = greedy_tics_won( g, P, message_size);
+	printf(" Greedy prime: ");
+	fprintf(f,"\n Greedy prime: \n");
+	a = greedy_PRIME( g, P, message_size);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
 		printf(GRN "OK | " RESET);
@@ -104,9 +106,10 @@ void test()
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 
-	printf(" Greedy prime: ");
-	fprintf(f,"\n Greedy prime: \n");
-	a = greedy_PRIME( g, P, message_size);
+	printf(" Greedy min lost : ");
+	fprintf(f,"\n Greedy tics won : \n");
+
+	a = greedy_tics_won( g, P, message_size);
 	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
 		printf(GRN "OK | " RESET);
