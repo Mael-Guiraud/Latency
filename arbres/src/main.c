@@ -24,17 +24,17 @@ int main (int argc, char *argv[])
 	{
 		int seed = time(NULL);
 
-		/*simul(seed,&greedy,"greedy");
-		simul(seed,&loaded_greedy,"loaded greedy");
-		simul(seed,&loaded_greedy_longest,"loaded greedy longest");
-		simul(seed,&loaded_greedy_collisions,"loaded greedy collisions");*/
+		simul(seed,&greedy,"greedy");
+		simul(seed,&loaded_greedy,"loaded_greedy");
+		simul(seed,&loaded_greedy_longest,"loaded_greedy_longest");
+		simul(seed,&loaded_greedy_collisions,"loaded_greedy_collisions");
 
-		simul_period(seed,&greedy_PRIME,"greedy prime");
-		simul_period(seed,&greedy_tics_won,"greedy tics won");
+		simul_period(seed,&greedy_PRIME,"greedy_prime");
+		simul_period(seed,&greedy_tics_won,"greedy_tics_won");
 
-		/*char * noms[] = {"greedy","loaded greedy","loaded greedy longest","loaded greedy collisions"};
+		char * noms[] = {"greedy","loaded_greedy","loaded_greedy_longest","loaded_greedy_collisions"};
 		char * ylabels[] = {"greedy","loaded greedy","loaded greedy longest","loaded greedy collisions"};
-		print_gnuplot("waiting",noms, 4, "performance of greedys with waiting times", "tmax", ylabels);*/
+		print_gnuplot("waiting",noms, 4, "performance of greedys with waiting times", "tmax", ylabels);
 
 		char * noms2[] = {"greedy prime","greedy tics won"};
 		char * ylabels2[] = {"greedy prime","greedy tics won"};

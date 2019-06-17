@@ -7,14 +7,18 @@ DIRgnu = ../gnuplot/
 DIRdat = ../data/
 DIRres = ../pdfs/
 DIRview = ../view/
+DIRfail = ../FAIL/
+
 all: dirs compil run gnuplot
 
 dirs:
+	rm -rf $(DIRfail)
 	mkdir -p $(DIRbin)
 	mkdir -p $(DIRgnu)
 	mkdir -p $(DIRdat)
 	mkdir -p $(DIRres)
 	mkdir -p $(DIRview)
+	mkdir -p $(DIRfail)
 
 test: dirs compil runtest dot
 	
@@ -25,7 +29,7 @@ run:
 	./compil simul
 
 dot:
-	dot -Tpng $(DIRview)view.dot -o $(DIRview)view.png
+	dot -Tpdf $(DIRview)view.dot -o $(DIRview)view.pdf
 
 compil: $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
 	$(CC) -fopenmp  -o $@ $^ 
@@ -46,8 +50,12 @@ gnuplot:
 	./launch.bash
 
 
-debug: compil
+debugtest: compil
 	valgrind --leak-check=full -v ./compil test
 
-debug2: compil
+debugsimul: compil
+	valgrind --leak-check=full -v ./compil simul
+
+
+profile: compil
 	valgrind --tool=callgrind -v ./compil simul

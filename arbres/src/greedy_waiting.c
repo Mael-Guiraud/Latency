@@ -65,12 +65,15 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 
 	
 		//for each route
-	bool_fail = 0;
+	
 	for(int i=0;i<g.nb_routes;i++)
 	{
+		bool_fail = 0;
+		bool_fail_tmax = 0;
 		//For the route we succeced to schedule in the way forward
 		if(a->offset_forward[order[i]] != -1)
 		{
+			
 			begin_offset = route_length(g,order[i]) + a->offset_forward[order[i]];
 			offset=begin_offset;
 			
@@ -85,12 +88,15 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 			}
 			if(!bool_fail)
 			{
+				
 				if( (2*route_length( g,order[i]) + offset-begin_offset ) > tmax )
 				{
+				
 					bool_fail_tmax = 1;
 				}
 				if(!bool_fail_tmax)
 				{
+				
 					fill_period(g,order[i],offset,message_size,BACKWARD,P);
 					a->offset_backward[order[i]]=offset;
 					a->waiting_time[order[i]]=offset-begin_offset;

@@ -8,3 +8,4 @@
 #define WHT   "\x1B[37m"
 #define RESET "\x1B[0m"
 
+#define NB_COLORS 13// The number of colors to color the routes for graphviz
