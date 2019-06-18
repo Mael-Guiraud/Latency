@@ -11,6 +11,7 @@
 #include "greedy_waiting.h"
 #include "data_treatment.h"
 #include "multiplexing.h"
+#include "spall_waiting.h"
 #include "color.h"
 #include <unistd.h>
 
@@ -301,6 +302,40 @@ void test()
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);
 
+	printf(" RRH First: ");
+	fprintf(f,"\n RRH First: \n");
+	a = RRH_first_spall( g, P, message_size,tmax);
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
+	{
+		printf(GRN "OK | " RESET);
+		fprintf(f,"Assignment found !\n");
+		affiche_assignment( a,g.nb_routes,f);
+		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
+		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
+		
+	}
+	else
+	{
+		printf(RED "Not OK --\n" RESET);
+		fprintf(f,"No assignment found\n");
+	}
+	sprintf(buf_dot,"../view/assignments/RRHFirst.dot");
+	print_assignment(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/RRHFirst.pdf",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/RRHFirst.dot");
+	print_assignment_backward(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/RRHFirst.pdf",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");
+	reset_periods(g,P);
+
 	seed = time(NULL);
 
 
@@ -387,6 +422,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	double moy_routes_scheduled ;
 	Graph g;
 	int P ;
+	
 	char buf[256];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
@@ -425,10 +461,11 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		{
 			cmpt_fail = 0;
 			sprintf(buf,"mkdir -p ../FAIL/%s/margin%d",nom,margin);
+			if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 		}
-		if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+		
 
-		#pragma omp parallel for private(g,P,a,tmax,buf,buf_dot)  if(PARALLEL)
+		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			g= init_graph_random_tree(STANDARD_LOAD);
@@ -459,8 +496,11 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 				}
 				else
 				{
-					printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok.\n");
-					exit(56);
+					if(!SYNCH)
+					{
+						printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok.\n");
+						exit(56);	
+					}
 				}
 				
 
@@ -469,6 +509,8 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			{
 				if(!PARALLEL)
 				{
+				
+		
 					sprintf(buf_dot,"../FAIL/%s/margin%d/%df.dot",nom,margin,cmpt_fail);
 					print_assignment(g,a,P,buf_dot);
 					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/margin%d/%df.pdf",buf_dot,nom,margin,cmpt_fail);
@@ -482,8 +524,8 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 					sprintf(buf,"rm -rf %s",buf_dot);
 					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 				
-					#pragma omp atomic update
-						cmpt_fail++;
+			
+					cmpt_fail++;
 				}
 			}
 			
@@ -517,7 +559,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 	Assignment a;
 	double loadMin=LOAD_MIN;
 	double loadMax=LOAD_MAX;
-	char buf[64];
+	char buf[256];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
 	if(!f)perror("Error while opening file\n");
@@ -552,8 +594,11 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 		{
 			cmpt_fail = 0;
 			sprintf(buf,"mkdir -p ../FAIL/%s/load%f",nom,load);
+			if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 		}
-		#pragma omp parallel for private(g,P,a,tmax) if(PARALLEL)
+		
+
+		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			
@@ -592,8 +637,12 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 				}
 				else
 				{
-					printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok since we have no waiting times.\n");
-					exit(56);
+					if(!SYNCH)
+					{
+						printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok since we have no waiting times.\n");
+						exit(56);
+					}
+					
 				}
 						
 			}
@@ -601,6 +650,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 			{
 				if(!PARALLEL)
 				{
+
 					sprintf(buf_dot,"../FAIL/%s/load%f/%df.dot",nom,load,cmpt_fail);
 					print_assignment(g,a,P,buf_dot);
 					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/load%f/%df.pdf",buf_dot,nom,load,cmpt_fail);
@@ -613,9 +663,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 					sprintf(buf,"rm -rf %s",buf_dot);
 					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-				
-					#pragma omp atomic update
-						cmpt_fail++;
+					cmpt_fail++;
 				}
 			}
 

@@ -145,6 +145,50 @@ int * routes_by_id(Arc a)
 	}
 	return id;
 }
+
+
+void moove_elems(int* tab, int debut, int fin)
+{
+	for(int i=fin-1;i>=debut;i--)
+	{
+		tab[i+1] = tab[i];
+	}
+	tab[debut] = 0;
+}
+int * routes_sorted_lenght_arcs_bbu(Graph g)
+{
+	int * id = (int*)malloc(sizeof(int)*g.nb_routes);
+
+	int id_fin =1;
+	int id_tmp;
+	id[0] = 0;
+	for(int i=1;i<g.nb_routes;i++)
+	{
+	
+		for(id_tmp = 0;id_tmp<id_fin;id_tmp++)
+		{
+			if(g.size_routes[i] > g.size_routes[id_tmp])
+			{
+				if(g.routes[i][0]->bbu_dest > g.routes[id_tmp][0]->bbu_dest)
+				{
+					
+					moove_elems(id,id_tmp,id_fin);
+					id[id_tmp] = i;
+					break;
+				}
+			}
+		}
+		if(id_tmp == id_fin)
+		{
+		
+			id[id_tmp] = i;
+		}
+		id_fin++;
+
+	}
+	return id;
+
+}
 int * sort_longest_routes_on_arc(Graph g, Arc a)
 {
 	int * id = (int*)malloc(sizeof(int)*a.nb_routes);

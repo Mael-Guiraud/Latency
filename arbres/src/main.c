@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "greedy_waiting.h"
 #include "data_treatment.h"
-
+#include "spall_waiting.h"
 #include "simulation.h"
 #include "string.h"
 #include "greedy_without_waiting.h"
@@ -28,18 +28,18 @@ int main (int argc, char *argv[])
 		simul(seed,&loaded_greedy,"loaded_greedy");
 		simul(seed,&loaded_greedy_longest,"loaded_greedy_longest");
 		simul(seed,&loaded_greedy_collisions,"loaded_greedy_collisions");
+		simul(seed,&RRH_first_spall,"RRH_FIRST");
 
-		simul_period(seed,&greedy_PRIME,"greedy_prime");
-		simul_period(seed,&greedy_tics_won,"greedy_tics_won");
+		/*simul_period(seed,&greedy_PRIME,"greedy_prime");
+		simul_period(seed,&greedy_tics_won,"greedy_tics_won");*/
 
-		char * noms[] = {"greedy","loaded_greedy","loaded_greedy_longest","loaded_greedy_collisions"};
-		char * ylabels[] = {"greedy","loaded greedy","loaded greedy longest","loaded greedy collisions"};
-		print_gnuplot("waiting",noms, 4, "performance of greedys with waiting times", "tmax", ylabels);
+		char * noms[] = {"greedy","loaded_greedy","loaded_greedy_longest","loaded_greedy_collisions","RRH_FIRST"};
+		char * ylabels[] = {"greedy","loaded greedy","loaded greedy longest","loaded greedy collisions","RRH FIRST"};
+		print_gnuplot("waiting",noms, 5, "performance of greedys with waiting times", "tmax", ylabels);
 
-		char * noms2[] = {"greedy prime","greedy tics won"};
+		/*char * noms2[] = {"greedy_prime","greedy_tics_won"};
 		char * ylabels2[] = {"greedy prime","greedy tics won"};
-
-		print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels2);
+		print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels2);*/
 		
 	}
 	

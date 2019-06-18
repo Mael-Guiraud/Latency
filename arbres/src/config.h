@@ -8,7 +8,7 @@
 #define PROBA 0.5
 
 //Mod synch or not
-#define SYNCH 0
+#define SYNCH 1
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.5
@@ -24,9 +24,9 @@
 
 
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
-#define TMAX_MOD  1//1 activated, 0 dislabed
+#define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
-#define FIXED_PERIOD_MOD 1
+#define FIXED_PERIOD_MOD 0
 #define PERIOD 19531	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
