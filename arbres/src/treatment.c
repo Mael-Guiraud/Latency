@@ -158,7 +158,9 @@ void moove_elems(int* tab, int debut, int fin)
 int * routes_sorted_lenght_arcs_bbu(Graph g)
 {
 	int * id = (int*)malloc(sizeof(int)*g.nb_routes);
-
+	int route_lenghts[g.nb_routes];
+	for(int i=0;i<g.nb_routes;i++)
+		route_lenghts[i] = route_length(g,i);
 	int id_fin =1;
 	int id_tmp;
 	id[0] = 0;
@@ -167,14 +169,35 @@ int * routes_sorted_lenght_arcs_bbu(Graph g)
 	
 		for(id_tmp = 0;id_tmp<id_fin;id_tmp++)
 		{
-			if(g.size_routes[i] > g.size_routes[id_tmp])
+			if(route_lenghts[i] > route_lenghts[id_tmp])
 			{
-				if(g.routes[i][0]->bbu_dest > g.routes[id_tmp][0]->bbu_dest)
+				moove_elems(id,id_tmp,id_fin);
+				id[id_tmp] = i;
+				break;
+				
+			}
+			else
+			{
+				if(route_lenghts[i] == route_lenghts[id_tmp])
 				{
-					
-					moove_elems(id,id_tmp,id_fin);
-					id[id_tmp] = i;
-					break;
+					if(g.size_routes[i] > g.size_routes[id_tmp])
+					{
+						moove_elems(id,id_tmp,id_fin);
+						id[id_tmp] = i;
+						break;
+					}
+					else
+					{
+						if(g.size_routes[i] == g.size_routes[id_tmp])
+						{
+							if(g.routes[i][0]->bbu_dest > g.routes[id_tmp][0]->bbu_dest)
+							{
+								moove_elems(id,id_tmp,id_fin);
+								id[id_tmp] = i;
+								break;
+							}
+						}
+					}
 				}
 			}
 		}

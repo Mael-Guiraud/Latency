@@ -8,10 +8,10 @@
 #define PROBA 0.5
 
 //Mod synch or not
-#define SYNCH 1
+#define SYNCH 0
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
-#define LOAD_MIN 0.5
+#define LOAD_MIN 0.3
 #define LOAD_MAX 1
 #define LOAD_GAP 0.1
 
@@ -30,7 +30,7 @@
 #define PERIOD 19531	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel

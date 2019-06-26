@@ -8,11 +8,13 @@ DIRdat = ../data/
 DIRres = ../pdfs/
 DIRview = ../view/
 DIRfail = ../FAIL/
+DIRassign = ../view/assignment/
 
 all: dirs compil run gnuplot
 
 dirs:
 	rm -rf $(DIRfail)
+	rm -rf $(DIRassign)
 	mkdir -p $(DIRbin)
 	mkdir -p $(DIRgnu)
 	mkdir -p $(DIRdat)
@@ -26,7 +28,17 @@ runtest:
 	./compil test
 run: 
 	rm -f $(DIRgnu)*
-	./compil simul
+	./compil simulAll
+
+waiting: dirs compil 
+	rm -f $(DIRgnu)*
+	./compil simulWaiting
+	./launch.bash
+
+nowaiting: dirs compil 
+	rm -f $(DIRgnu)*
+	./compil simulNoWaiting
+	./launch.bash
 
 dot:
 	dot -Tpdf $(DIRview)view.dot -o $(DIRview)view.pdf
@@ -50,12 +62,12 @@ gnuplot:
 	./launch.bash
 
 
-debugtest: compil
+debugtest: dirs compil
 	valgrind --leak-check=full -v ./compil test
 
 debugsimul: compil
-	valgrind --leak-check=full -v ./compil simul
+	valgrind --leak-check=full -v ./compil simulAll
 
 
 profile: compil
-	valgrind --tool=callgrind -v ./compil simul
+	valgrind --tool=callgrind -v ./compil simulAll
