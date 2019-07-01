@@ -15,6 +15,94 @@
 #include "color.h"
 #include <unistd.h>
 
+int travel_time_topol(Graph g, int tmax, Assignment a,int S)
+{
+	int first_forward =  a->offset_forward[0];
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		if(a->offset_forward[i] < first_forward)
+		{
+			first_forward = a->offset_forward[i];
+		}
+	}
+	
+	int max;
+	if(S)
+	{
+		max = a->offset_forward[0]-first_forward + 2*route_length( g,0) + a->waiting_time[0];
+	}
+	else
+	{
+		max = 2*route_length( g,0) + a->waiting_time[0];
+	}
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		if(S)
+		{
+			if( (a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+				return -1;
+			if((a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > max )
+			{
+				max = a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ;
+			}
+
+		}
+		else
+		{
+			if( (2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+				return -1;
+			if((2*route_length( g,i) + a->waiting_time[i] ) > max )
+			{
+				max = + 2*route_length( g,i) + a->waiting_time[i] ;
+			}
+		}
+	}
+	return max;
+}
+void trouve_topology()
+{
+	srand(time(NULL));
+	Graph g;
+	Assignment a,a2;
+
+	int Nb_sim = 100000;
+	for(int i=0;i<Nb_sim;i++)
+	{
+		g = init_graph_etoile();
+
+		a = greedy_PRIME(g,PERIOD,MESSAGE_SIZE);
+		reset_periods(g,PERIOD);
+		a2 = greedy(g,PERIOD,MESSAGE_SIZE,TMAX);
+		if((a->all_routes_scheduled) && (travel_time_topol( g, TMAX, a,0) != -1) && (a2->all_routes_scheduled) && (travel_time_topol( g, TMAX, a2,1) != -1))
+		{
+			if(travel_time_topol( g, TMAX, a,0) != travel_time_topol( g, TMAX, a2,1))
+			{
+				printf("Graph \n");
+				affiche_graph(g,PERIOD,stdout);
+				printf("Assignemnt pour PALL (travel time %d )\n",travel_time_topol( g, TMAX, a,0));
+				affiche_assignment( a,g.nb_routes,stdout);
+				printf("Assignemnt pour SPALL (travel time %d )\n",travel_time_topol( g, TMAX, a2,1));
+				affiche_assignment( a2,g.nb_routes,stdout);
+				
+		
+				print_graphvitz(g);
+				free_assignment(a);
+				free_assignment(a2);
+				free_graph(g);
+				return;
+			}
+		}
+		fprintf(stdout,"\r[%d/%d]",i+1,Nb_sim);
+		fflush(stdout);
+		free_assignment(a);
+		free_assignment(a2);
+		free_graph(g);
+	}
+	
+	
+
+}
+
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
 {
 	Assignment a;

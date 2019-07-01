@@ -18,6 +18,7 @@ int message_no_collisions(Graph g,int route,int offset,int message_size,Period_k
 				
 				if(g.routes[route][i]->period_f[offset%P] || g.routes[route][i]->period_f[(offset+message_size-1)%P] )
 				{
+					
 					return 0;
 				}
 				

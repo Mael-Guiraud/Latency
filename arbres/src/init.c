@@ -235,3 +235,75 @@ Graph init_graph_random_tree(double load)
 	free(nb_routes_per_flow_collisions);
 	return g;
 }
+
+Graph init_graph_etoile()
+{
+	
+	int nb_routes = NB_BBU ;
+	int nb_bbu = NB_BBU;
+	int nb_total_arcs = nb_routes*4;
+	int real_period;
+
+	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
+	Graph g;
+	g.nb_routes = nb_routes;
+	g.nb_bbu = nb_bbu;
+	g.nb_collisions = 1;
+	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
+	g.routes = malloc(sizeof(Route*)*nb_routes);
+	g.size_routes = malloc(sizeof(int)*nb_routes);
+	g.arc_pool_size = nb_total_arcs;
+	for(int i=0;i<nb_total_arcs;i++)
+	{
+		init_arc(&g.arc_pool[i]);	
+	}
+
+	
+	int index_route = 0;
+	int index_arc = nb_routes+1;
+
+	for(int j=0;j<nb_routes;j++)
+	{
+		g.routes[index_route]=malloc(sizeof(Route)*4);
+		g.size_routes[index_route] = 4;
+
+		g.routes[index_route][0] =  &g.arc_pool[index_arc];
+		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
+		g.arc_pool[index_arc].nb_routes++;
+		g.arc_pool[index_arc].bbu_dest = index_route;
+		index_arc++;
+		//Arc partagé
+		
+		g.routes[index_route][1] =  &g.arc_pool[nb_routes];
+		g.arc_pool[nb_routes].routes_id[g.arc_pool[nb_routes].nb_routes] = index_route;
+		g.arc_pool[nb_routes].nb_routes++;
+		
+		g.routes[index_route][2] =  &g.arc_pool[index_arc];
+		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
+		g.arc_pool[index_arc].nb_routes++;
+		g.arc_pool[index_arc].bbu_dest = index_route;
+		index_arc++;
+
+		g.routes[index_route][3] =  &g.arc_pool[j];
+		g.arc_pool[j].routes_id[g.arc_pool[j].nb_routes] = index_route;
+		g.arc_pool[j].nb_routes++;
+		g.arc_pool[j].bbu_dest = index_route;
+		index_route++;
+	}
+
+	
+	
+	
+	if(FIXED_PERIOD_MOD)
+		real_period = PERIOD;
+	else
+		real_period = (nb_routes * MESSAGE_SIZE) / STANDARD_LOAD;
+
+
+	
+	g.arc_pool[nb_routes].period_f = calloc(real_period,sizeof(int));
+	g.arc_pool[nb_routes].period_b = calloc(real_period,sizeof(int));
+	
+	
+	return g;
+}
