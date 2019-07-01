@@ -11,9 +11,139 @@
 #include "greedy_waiting.h"
 #include "data_treatment.h"
 #include "multiplexing.h"
+#include "spall_waiting.h"
 #include "color.h"
 #include <unistd.h>
 
+int travel_time_topol(Graph g, int tmax, Assignment a,int S)
+{
+	int first_forward =  a->offset_forward[0];
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		if(a->offset_forward[i] < first_forward)
+		{
+			first_forward = a->offset_forward[i];
+		}
+	}
+	
+	int max;
+	if(S)
+	{
+		max = a->offset_forward[0]-first_forward + 2*route_length( g,0) + a->waiting_time[0];
+	}
+	else
+	{
+		max = 2*route_length( g,0) + a->waiting_time[0];
+	}
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		if(S)
+		{
+			if( (a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+				return -1;
+			if((a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > max )
+			{
+				max = a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ;
+			}
+
+		}
+		else
+		{
+			if( (2*route_length( g,i) + a->waiting_time[i] ) > tmax )
+				return -1;
+			if((2*route_length( g,i) + a->waiting_time[i] ) > max )
+			{
+				max = + 2*route_length( g,i) + a->waiting_time[i] ;
+			}
+		}
+	}
+	return max;
+}
+void trouve_topology()
+{
+	srand(time(NULL));
+	Graph g;
+	Assignment a,a2;
+
+	int Nb_sim = 100000;
+	for(int i=0;i<Nb_sim;i++)
+	{
+		g = init_graph_etoile();
+
+		a = greedy_PRIME(g,PERIOD,MESSAGE_SIZE);
+		reset_periods(g,PERIOD);
+		a2 = greedy(g,PERIOD,MESSAGE_SIZE,TMAX);
+		if((a->all_routes_scheduled) && (travel_time_topol( g, TMAX, a,0) != -1) && (a2->all_routes_scheduled) && (travel_time_topol( g, TMAX, a2,1) != -1))
+		{
+			if(travel_time_topol( g, TMAX, a,0) != travel_time_topol( g, TMAX, a2,1))
+			{
+				printf("Graph \n");
+				affiche_graph(g,PERIOD,stdout);
+				printf("Assignemnt pour PALL (travel time %d )\n",travel_time_topol( g, TMAX, a,0));
+				affiche_assignment( a,g.nb_routes,stdout);
+				printf("Assignemnt pour SPALL (travel time %d )\n",travel_time_topol( g, TMAX, a2,1));
+				affiche_assignment( a2,g.nb_routes,stdout);
+				
+		
+				print_graphvitz(g);
+				free_assignment(a);
+				free_assignment(a2);
+				free_graph(g);
+				return;
+			}
+		}
+		fprintf(stdout,"\r[%d/%d]",i+1,Nb_sim);
+		fflush(stdout);
+		free_assignment(a);
+		free_assignment(a2);
+		free_graph(g);
+	}
+	
+	
+
+}
+
+void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
+{
+	Assignment a;
+	char buf[128];
+	char buf_dot[128];
+	printf(" %s: ",nom);
+	fprintf(f,"\n %s: \n",nom);
+	if(ptrfonctionnowaiting)
+		a = ptrfonctionnowaiting( g, P, message_size);
+	else
+		a = ptrfonctionwaiting( g, P, message_size,tmax);
+	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
+	{
+		printf(GRN "OK | " RESET);
+		fprintf(f,"Assignment found !\n");
+		affiche_assignment( a,g.nb_routes,f);
+		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
+		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
+	}
+	else
+	{
+		printf(RED "Not OK --\n" RESET);
+		fprintf(f,"No assignment found\n");
+	}
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");
+	reset_periods(g,P);
+}
 void test()
 {
 	int seed;
@@ -26,10 +156,9 @@ void test()
 	int message_size = MESSAGE_SIZE;
 	int tmax;
 	int margin = rand()%MARGIN_MAX;
-	Assignment a;
-	int * tmp;
 	char buf[128];
-	char buf_dot[128];
+	int * tmp;
+
 	sprintf(buf,"mkdir -p ../view/assignments");
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 				
@@ -92,214 +221,20 @@ void test()
 	printf("- WITHOUT WAITING TIME : \n");
 	fprintf(f," WITHOUT WAITING TIME : \n\n");
 	
-
-	printf(" Greedy prime: ");
-	fprintf(f,"\n Greedy prime: \n");
-	a = greedy_PRIME( g, P, message_size);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
-	}
-	sprintf(buf_dot,"../view/assignments/GreedyPrimef.dot");
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/GreedyPrimef.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/GreedyPrimeb.dot");
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/GreedyPrimeb.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);
-
-	printf(" Greedy min lost : ");
-	fprintf(f,"\n Greedy tics won : \n");
-
-	a = greedy_tics_won( g, P, message_size);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-		
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
-	}
-	sprintf(buf_dot,"../view/assignments/GreedyTicsWonf.dot");
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/GreedyTicsWonf.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/GreedyTicsWonb.dot");
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/GreedyTicsWonb.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);
+	//THE NAME MUST NOT CONTAIN SPACES
+	test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
+	test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
 	
 
 	printf("\n --------- \n- WITH WAITING TIME : \n");
 	fprintf(f,"\n --------- \n WITH WAITING TIME \n");
 	
-	printf(" Greedy : ");
-	fprintf(f,"\n  Greedy : \n");
-	a = greedy( g, P, message_size,tmax);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-		
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
-	}
-	sprintf(buf_dot,"../view/assignments/Greedyf.dot");
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/Greedyf.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/Greedyb.dot");
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/Greedyb.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);
+	test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy,"LoadedGreedy",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	
-	printf(" Loaded Greedy: ");
-	fprintf(f,"\n Loaded Greedy: \n");
-	a = loaded_greedy( g, P, message_size,tmax);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-		
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
-	}
-	sprintf(buf_dot,"../view/assignments/LoadedGreedyf.dot");
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/LoadedGreedyf.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/LoadedGreedyb.dot");
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/LoadedGreedyb.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);
-	
-	printf(" Loaded Greedy longest: ");
-	fprintf(f,"\n Loaded Greedy longest: \n");
-	a = loaded_greedy_longest( g, P, message_size,tmax);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-		
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
-	}
-	sprintf(buf_dot,"../view/assignments/LoadedGreedyLongestf.dot");
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/LoadedGreedyLongestf.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/LoadedGreedyLongestb.dot");
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/LoadedGreedyLongestb.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);
-	
-	printf(" Loaded Greedy collisions: ");
-	fprintf(f,"\n Loaded Greedy collisions: \n");
-	a = loaded_greedy_collisions( g, P, message_size,tmax);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-		
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
-	}
-	sprintf(buf_dot,"../view/assignments/LoadedGreedyCollisionsf.dot");
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/LoadedGreedyCollisionsf.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/LoadedGreedyCollisionsb.dot");
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/LoadedGreedyCollisionsb.pdf",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);
 
 	seed = time(NULL);
 
@@ -387,6 +322,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	double moy_routes_scheduled ;
 	Graph g;
 	int P ;
+	
 	char buf[256];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
@@ -425,10 +361,11 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		{
 			cmpt_fail = 0;
 			sprintf(buf,"mkdir -p ../FAIL/%s/margin%d",nom,margin);
+			if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 		}
-		if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+		
 
-		#pragma omp parallel for private(g,P,a,tmax,buf,buf_dot)  if(PARALLEL)
+		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			g= init_graph_random_tree(STANDARD_LOAD);
@@ -459,8 +396,11 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 				}
 				else
 				{
-					printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok.\n");
-					exit(56);
+					if(!SYNCH)
+					{
+						printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok.\n");
+						exit(56);	
+					}
 				}
 				
 
@@ -469,6 +409,8 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			{
 				if(!PARALLEL)
 				{
+				
+		
 					sprintf(buf_dot,"../FAIL/%s/margin%d/%df.dot",nom,margin,cmpt_fail);
 					print_assignment(g,a,P,buf_dot);
 					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/margin%d/%df.pdf",buf_dot,nom,margin,cmpt_fail);
@@ -482,14 +424,14 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 					sprintf(buf,"rm -rf %s",buf_dot);
 					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 				
-					#pragma omp atomic update
-						cmpt_fail++;
+			
+					cmpt_fail++;
 				}
 			}
 			
 
 			#pragma omp atomic update
-			moy_routes_scheduled += a->nb_routes_scheduled;
+				moy_routes_scheduled += a->nb_routes_scheduled;
 			free_assignment(a);
 	
 			free_graph(g);
@@ -517,7 +459,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 	Assignment a;
 	double loadMin=LOAD_MIN;
 	double loadMax=LOAD_MAX;
-	char buf[64];
+	char buf[256];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
 	if(!f)perror("Error while opening file\n");
@@ -552,8 +494,11 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 		{
 			cmpt_fail = 0;
 			sprintf(buf,"mkdir -p ../FAIL/%s/load%f",nom,load);
+			if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 		}
-		#pragma omp parallel for private(g,P,a,tmax) if(PARALLEL)
+		
+
+		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
 		for(int i=0;i<NB_SIMULS;i++)
 		{
 			
@@ -592,8 +537,12 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 				}
 				else
 				{
-					printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok since we have no waiting times.\n");
-					exit(56);
+					if(!SYNCH)
+					{
+						printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok since we have no waiting times.\n");
+						exit(56);
+					}
+					
 				}
 						
 			}
@@ -601,6 +550,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 			{
 				if(!PARALLEL)
 				{
+
 					sprintf(buf_dot,"../FAIL/%s/load%f/%df.dot",nom,load,cmpt_fail);
 					print_assignment(g,a,P,buf_dot);
 					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/load%f/%df.pdf",buf_dot,nom,load,cmpt_fail);
@@ -613,9 +563,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 					sprintf(buf,"rm -rf %s",buf_dot);
 					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-				
-					#pragma omp atomic update
-						cmpt_fail++;
+					cmpt_fail++;
 				}
 			}
 

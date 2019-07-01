@@ -26,7 +26,8 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 	{
 		
 		offset=0;
-		
+
+	
 		while( !message_no_collisions( g, i, offset,message_size,FORWARD,P) )
 		{
 			

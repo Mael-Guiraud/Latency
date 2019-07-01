@@ -15,3 +15,4 @@ int * sort_longest_routes_on_arc(Graph g, Arc a);
 int * routes_by_id(Arc a);
 int * sort_routes_by_collisions(Graph g, Arc a);
 void reset_periods(Graph g, int P);
+int * routes_sorted_lenght_arcs_bbu(Graph g);

@@ -74,6 +74,6 @@ void affiche_assignment(Assignment a,int nb_routes, FILE * f)
 
 	for( int i=0;i<nb_routes;i++)
 	{
-		fprintf(f,"Route %d : f :%d- b :%d\n",i,a->offset_forward[i],a->offset_backward[i]);
+		fprintf(f,"Route %d : f :%d- b :%d / W : %d\n",i,a->offset_forward[i],a->offset_backward[i],a->waiting_time[i]);
 	}
 }

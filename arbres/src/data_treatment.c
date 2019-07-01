@@ -186,7 +186,7 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 		perror("Opening dot file failure\n");exit(2);
 	}
 
-	fprintf(f,"graph G { \n node[shape=point]\n");
+	 fprintf(f,"graph G { \n node[shape=point]\n 9000 [shape =\"box\",label=\"Period %d\"] \n ",p);
 	vertex_id = 0;
 
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
@@ -262,7 +262,7 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 		perror("Opening dot file failure\n");exit(2);
 	}
 
-	fprintf(f,"graph G { \n node[shape=point]\n");
+	 fprintf(f,"graph G { \n node[shape=point]\n 9000 [shape =\"box\",label=\"Period %d\"] \n ",p);
 	vertex_id = 0;
 
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
