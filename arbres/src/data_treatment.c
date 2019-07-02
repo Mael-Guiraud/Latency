@@ -327,6 +327,75 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 
 }
 
+
+void print_json_arcs(Graph g){
+	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
+	FILE* f;
+	int vertex_id ;
+	int arcid = 0;
+	int previous_end ;
+	int next_begin ;
+	if( !(f = fopen("../view/arcs.json","w")) )
+	{
+		perror("Opening json file failure\n");exit(2);
+	}
+
+	 fprintf(f,"{ \n ");
+	vertex_id = 0;
+
+	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
+	{
+
+		g.arc_pool[i].first = vertex_id;
+		g.arc_pool[i].last = vertex_id+1;
+		g.arc_pool[i].seen = 1;
+		
+		
+		fprintf(f,"\"%d\":{ \n \"from\":%d, \n \"to\":%d, \n \"length\":%d \n }, \n  ",arcid,g.arc_pool[i].first,g.arc_pool[i].last,g.arc_pool[i].length);
+		vertex_id+=2;
+		arcid++;
+	}
+
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		previous_end = -1;
+		next_begin = -1;
+		for(int j=0;j<g.size_routes[i];j++)
+		{
+			if(g.routes[i][j]->seen == 0)
+			{
+				if(j==(g.size_routes[i]-1))
+				{
+					printf("This situation is weyrd(data_treatment.c)\n");
+					exit(491);
+				}
+				next_begin = g.routes[i][j+1]->first;
+				if(previous_end == -1)
+				{
+					previous_end = vertex_id;
+					vertex_id++;
+
+				}
+				g.routes[i][j]->first = previous_end;
+				fprintf(f,"\"%d\":{ \n \"from\":%d, \n \"to\":%d, \n \"length\":%d \n }, \n  ",arcid,g.routes[i][j]->first,g.routes[i][j]->last,g.routes[i][j]->length);
+				
+				g.routes[i][j]->last = next_begin;
+				g.routes[i][j]->seen = 1;
+				arcid++;
+			}
+			
+			previous_end = g.routes[i][j]->last;
+		}
+	}
+
+
+
+	fprintf(f,"} \n");
+
+	fclose(f);
+
+}
+
 void print_python(Graph g)
 {
 	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}

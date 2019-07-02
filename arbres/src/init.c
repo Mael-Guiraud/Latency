@@ -223,7 +223,7 @@ Graph init_graph_random_tree(double load)
 	else
 		real_period = (load_max(g) * MESSAGE_SIZE) / load;
 
-
+	//for(int i=0;i<g.arc_pool_size;i++)
 	for(int i=0;i<nb_real_collisions+nb_bbu;i++)
 	{
 		g.arc_pool[i].period_f = calloc(real_period,sizeof(int));

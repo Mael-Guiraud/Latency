@@ -22,14 +22,11 @@ dirs:
 	mkdir -p $(DIRview)
 	mkdir -p $(DIRfail)
 
-test: dirs compil runtest dot
+tests: dirs compil runtest dot
 
-topol: dirs compil runtopol dot
-	
 runtest: 
 	./compil test
-runtopol: 
-	./compil topol
+
 run: 
 	rm -f $(DIRgnu)*
 	./compil simulAll
