@@ -278,7 +278,7 @@ int parsearcs() {
   {
     printf("Arc : from %d to %d length %d \n",g.arc_pool[i].first,g.arc_pool[i].last,g.arc_pool[i].length);
   }
-
+  return 1;
 }
 int parsepath()
 {
@@ -373,7 +373,7 @@ for(int i=0;i<g.nb_routes;i++)
 }
 
  
-
+return 1;
 }
 int main()
 {
