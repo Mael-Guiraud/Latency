@@ -14,6 +14,7 @@
 #include "spall_waiting.h"
 #include "color.h"
 #include <unistd.h>
+#include "jsondump.h"
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
@@ -223,6 +224,7 @@ void test()
 	printf("Logs in logs.txt\n");
 	free_graph(g);
 	fclose(f);
+	 jsontest();
 
 }
 

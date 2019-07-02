@@ -44,7 +44,7 @@ nowaiting: dirs compil
 dot:
 	dot -Tpdf $(DIRview)view.dot -o $(DIRview)view.pdf
 
-compil: $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
+compil: $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
 	$(CC) -fopenmp  -o $@ $^ 
 
 $(DIRbin)%.o: %.c config.h
