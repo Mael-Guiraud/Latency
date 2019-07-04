@@ -95,43 +95,44 @@ The first vertex of a route models an antenna (RRH) and the last one a data-cent
 	 
     %Time is discretized, hence the unit of all time values is a, the time needed to transmit a minimal unit of data over the network. \todo{parler des différents débits et de ce que ça change}. The weight of an arc is also expressed in tics, that is the time needed by a message to go through this arc.
     
-        In the process we study, some {\bf datagrams} are sent on each route. The size $|d|$ of a datagram $d$ is an integer, correspond to the number of atomic data needed to carry the information contained by the datagram. The number of tics needed by a node $u$ to emit the datagram through the link $(u,v)$ of speed $s_i = {\cal S}(u,v)$ is denoted $|d|_{(u,v)}$ and has for value $ |d| \times \frac{LCM({\cal S})}{s_i}$ . Once a datagram have been emitted, it cannot be fragmented during its travel in the network. Thus, due to the different speed of the links, when the beginning of a datagram $d$ arrives in a node $u$ of a route $r$, it might be delayed in the node to avoid the fragmentation of the datagram. The number of tics lost in the node is given by the function $b(d,u,r)$.\\
+        In the process we study, some {\bf datagrams} are sent on each route. The size $|d|$ of a datagram $d$ is an integer, and correspond to the number of atomic data needed to carry the information contained by the datagram. The number of tics needed by a node $u$ to emit the datagram through the link $(u,v)$ of speed $s_i = {\cal S}(u,v)$ is denoted $|d|_{(u,v)}$ and has for value $ |d| \times \frac{LCM({\cal S})}{s_i}$ . Once a datagram have been emitted, it cannot be fragmented during its travel in the network. Thus, due to the different speed of the links, when the beginning of a datagram $d$ arrives in a node $u$ of a route $r$, it might be delayed in the node to avoid the fragmentation of the datagram. The number of tics lost in the node is given by the function $b(d,u,r)$.\\
         \begin{lemma}
         If a datagram $d$ arrives at a node $v$ through the link $(u,v)$ of speed $s_i$, and must be sent back in the link $(v,w)$ of speed $s_j$, then $b(d,v,r)$ is equal to $ \max( 0, |d|_{(u,v)} - |d|_{(v,w)} )$ tics.
         \end{lemma}
         \begin{proof}
-        We consider a buffer in the node $v$. If $t$ is the reception tic of the datagram $d$ in $v$, it has fully reach the buffer in $|d|_{(u,v)}$ tics that is, at date $t+|d|_{(u,v)}$. If the datagram is fully contained in the buffer, the node can send it in $|d|_{(v,w)}$ tics. We want to choose the sending tic such that the datagram will not be fragmented.\\
+        We consider a buffer in the node $v$. If $t$ is the reception tic of the datagram $d$ in $v$, the last tic of the $d$ has reach the buffer in at date $t+|d|_{(u,v)}$. The node can start to emit immediatly after the reception of the first tic of the datagram, if it is possible. We want to choose the sending tic such that the datagram will not be fragmented. This mean that the buffer must contain at least enough data to fill a tic on the link $(v,w)$.\\
+        
         If $s_i \geq s_j$, the buffer fills as fast or faster as it empties, thus, the datagram crosses the node without additional delay.\\
    
-        If $s_i < s_j$, we want to wait the time at which the datagram can be re-sent without fragmentation. The last tic time at which the node receive some data is $t+|d|_{(u,v)}$. Thus, the next tic ($t+|d|_{(u,v)}+1$), is the minimum date at which the node can send the end of the datagram on the link $(v,w)$. Since the node needs $|d|_{(v,w)}$ to completely send the message, it can start to emit at date $t+|d|_{(u,v)}+ 1 - |d|_{(v,w)}$. 
+        If $s_i < s_j$, the buffer need to be filled a bit before the emission of the datagram, in order to re-sent the datagram without fragmentation. The last tic at which the node receive some data is $t+|d|_{(u,v)}$. Thus, the next tic ($t+|d|_{(u,v)}+1$), is the minimum date at which the node can send the end of the datagram on the link $(v,w)$. Since the node needs $|d|_{(v,w)}$ to completely send the datagram, it can start to emit at date $t+|d|_{(u,v)}+ 1 - |d|_{(v,w)}$. 
         \end{proof}
         
           Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, one can choose to buffer a datagram $d$ in any node $u_i$ of the route. The function $l(d,u_i,r), i \in \{0,\ldots,l\}$ associate to each couple datagram-node of the route an integer. Those integers represent the buffering time of the datagram in each nodes of the route. For all $i$, $l(d,u_i,r) \in \mathbb{N}$.
               
 The \textbf{departure date} of a datagram $d$ on a route $r$, denoted by $\theta_r(d)$, is the sending tic of $d$ at node $u_0$, the first vertex of $r$. 
- Also, the \textbf{reception time} of this datagram $d$ at a vertex $u_i$ in $r$, i.e. the first tic at which the datagram sent at time $\theta_r(d)$ on $r$ reaches $u_i$, is $t(d,u_i,r) = \theta_r(d) + \lambda(u_i,r) + \sum_{k=0}^{i-1}( b(d,u_k,r) + l(d,u_k,r))$. In other words, the date at which a datagram to reach a vertex $u_i$ correspond to the date of the emission of this datagram in the RRH, plus the physical delay of the links, plus the buffers induced by the physical constraints of the network, or determined by the logical solutions proposed.
+ Also, the \textbf{reception date} of this datagram $d$ at a vertex $u_i$ in $r$, i.e. the first tic at which the datagram sent at date $\theta_r(d)$ on $r$ reaches $u_i$, is $t(d,u_i,r) = \theta_r(d) + \lambda(u_i,r) + \sum_{k=0}^{i-1}( b(d,u_k,r) + l(d,u_k,r))$. In other words, the date at which a datagram to reach a vertex $u_i$ correspond to the date of the emission of this datagram in the RRH, plus the physical delay of the links, plus the buffers induced by the physical constraints of the network, or determined by the logical solutions proposed.
    
         A {\bf stream} $St$ is a sequence of several datagrams. To each route of the routed network is associated a stream. The cardinal of a stream, denoted $\#St$ is the number of datagrams in the stream. Let us consider a stream $St_i$ on the route $r_i$, the datagrams $\{d_0,\ldots,d_{\#St_i-1}\}$ are sent in sequence from the first node of the route, that is : $\theta_{r_i}(d_0) < \theta_{r_i}(d_1) < \ldots < \theta_{r_i}(d_{\#St_i-1})$ .  \\
-       For each route, the size of a stream is $|St| = \sum_{i=0}^{{\#St-1}} |d_i|$ . The amount of data sent by an RRH to its BBU is the same, regardless of the route. Hence, we assume that this size is the same for all route, and we denote it by $\tau$. 
+       For each route, the size of a stream is $|St| = \sum_{i=0}^{{\#St-1}} |d_i|$ . The amount of data sent by an RRH to its BBU is the same, regardless of the route. Hence, we assume that this size is the same for all route, and we denote it by $\tau$. This means that for all routes $r$, $|St_r| = \tau$.
         
           
-       Let us call $[t(St,u,r)]$ the set of tics used by a stream $S$ on a route $r$ in the arc $(u,v)$, that is $[t(St,u,r)] =  \bigcup_{i=0}^{\#St -1} \{t(d_i,u,r) + i \mid 0 \leq i < |d_i|_{(u,v)}\}$.
+       Let us call $[t(St,u,r)]$ the set of tics used by a stream $St$ on a route $r$ in the arc $(u,v)$, that is $[t(St,u,r)] =  \bigcup_{i=0}^{\#St -1} \{t(d_i,u,r) + k \mid 0 \leq k < |d_i|_{(u,v)}\}$.
       Let $r_1$ and $r_2$ be two routes, on which two streams $St_1$ and $St_2$ are sent.
       We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(St_1,u,r_{1})] \cap [t(St_2,u,r_{2})] \neq \emptyset$.
             
   \begin{subsubsection}{Notion of jitter}
-   We define by {\bf delay} of a datagram $d$ in a node $u_i$ of a route $r$, the time taken by the datagram to go from $u_0$, the first vertex of the route to $u_i$ through $r$. It is then equal to $DL(d,u_i,r) = t(d,u_j,r) - t(d,u_0,r)$. 
+   We define by {\bf delay} of a datagram $d$ in a node $u_i$ of a route $r$, the time taken by the datagram to go from $u_0$, the first vertex of the route to $u_i$ through $r$.
  Thus, the delay of a datagram in the node $u_i$ is equal to $DL(d,u_i,r) =  t(d,u_i,r) - t(d,u_0,r) = \lambda(u_i,r) + \sum_{k=0}^{i-1}( b(d,u_k,r) + l(d,u_k,r))$.
 This delay is composed of three factors:
 \begin{enumerate}
 \item $\lambda(u_i,r)$ : it is the weight of the route. This time is not alterable. 
 \item  $\sum_{k=0}^{i-1} b(d,u_k,r)$ : those values correspond to some {\bf physical buffers } induced by the potential speedup or slowdown of the different links of the route used.
-\item $\sum_{k=0}^{i-1} l(d,u_k,r)$: are the {\bf logical buffers}, chosen by the solution proposed to solve the problem. Those buffers are chosen by some algorithmic solutions in order to control the traffic in every node, and thus avoid collisions.
+\item $\sum_{k=0}^{i-1} l(d,u_k,r)$: are the {\bf logical buffers}. Those buffers are chosen by some algorithmic solutions in order to control the traffic in every node, and thus avoid collisions.
 \end{enumerate}
 
-As a reminder, a stream is a sequence of datagram. Each period, the sequence of datagrams $\{d_0,\ldots,d_{k-1}\}$, is sent on a route. The sequence of datagram is the same in every period: the same number of datagram which are of the same size are sent at the same tic in the period. For instance if the sequence $\{d_0,\ldots,d_{k-1}\}$ is sent at the first period P on the route r at times $\{\theta_r(d_0),\ldots,\theta_r(d_{k-1})\}$ then the datagrams $\{d_k,\ldots,d_{2k-1}\}$ will be send in the second period at times $\{\theta_r(d_k),\ldots,\theta_r(d_{2k-1})\}$, with $\theta_r(d_i) = \theta_r(d_i+k) \mod P, \forall i \in [0,\ldots,k-1]$. We say that two datagrams $d_i$ and $d_{i+k}$ are associated. The size in tics of two associated datagrams is always the same. 
+As a reminder, a stream $St$ is a sequence of datagram. Each period, the sequence of datagrams $\{d_0,\ldots,d_{\#St-1}\}$, is sent on a route. The sequence of datagram is the same in every period: the same number of datagram which are of the same size are sent at the same tic in the period. For instance if the sequence $\{d_0,\ldots,d_{\#St-1}\}$ is sent at the first period $0$ on the route r at times $\{\theta_r(d_0),\ldots,\theta_r(d_{\#St-1})\}$ then the datagrams $\{d_{\#St \times k},\ldots,d_{(\#St \times k)-1}\}$ will be send in the next period $k$ at times $\{\theta_r(d_{\#St \times k}),\ldots,\theta_r(d_{(\#St \times k)-1})\}$, with $\theta_r(d_i) = \theta_r(d_{i \times k)}) \mod P, \forall i \in [0,\ldots,\#St-1]$. We say that all the datagrams $d_{i \times k}$, forall $k$ are associated. The size in tics of two associated datagrams is always the same. 
 
-The {\bf packet delay variation ($\pdv$) }\cite{demichelis_ip_nodate} is the variation of the delay between two datagram. In our study, we allow some datagrams to be buffered in some nodes of the route, thus, the $\pdv$ between $d_0$ and $d_i$ (with $i<k$) can be greater than $0$. Formally, we denote the packet delay variation between two datagrams $d_i$ and $d_j$ in a node $u$ on a route $r$ by $\pdv(d_i,d_j,u,r) = |DL(d_i,u,r) - DL(d_j,u,r) | \ge 0$. 
+The {\bf packet delay variation ($\pdv$) }\cite{demichelis_ip_nodate} is the variation of the delay between two datagram. In our study, we allow some datagrams to be buffered in some nodes of the route, thus, the $\pdv$ between $d_0$ and $d_i$ can be greater than $0$. Formally, we denote the packet delay variation between two datagrams $d_i$ and $d_j$ in a node $u$ on a route $r$ by $\pdv(d_i,d_j,u,r) = |DL(d_i,u,r) - DL(d_j,u,r) | \ge 0$. 
 
 Note that the $\pdv$ between two associated datagrams is always equal to zero, since the logical delays are deterministic, computed on a period and then applied to all the next periods.
 
@@ -166,11 +167,11 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
 
      \end{subsubsection}
      \begin{subsubsection}{Definition of measures to optimize}
-          We define the {\bf full reception time} of a stream $St_r$ on a node $v$ through the link $(u,v)$ by $rt(St_r,v) =  \displaystyle \max_{i \in \{0,\ldots,\#St_r-1\}} ( t(d_i,v,r) + |d_i|_{(u,v)} )$. This is the time at which the end of the last datagram of the stream has reach the vertex $v$. Recall that a BBU needs to completely receive a stream before sending of the answer, that is $rt(S_r,v)  < \theta_{\rho_r}(d_0)$.
+          We define the {\bf full reception date} of a stream $St_r$ on a node $v$ through the link $(u,v)$ by $rt(St_r,v) =  \displaystyle \max_{i \in \{0,\ldots,\#St_r-1\}} ( t(d_i,v,r) + |d_i|_{(u,v)} )$. This is the time at which the end of the last datagram of the stream has reach the vertex $v$. Recall that a BBU needs to completely receive a stream before sending the answer, that is $rt(S_r,v)  < \theta_{\rho_r}(d_0)$.
      
 
       The whole process time for a route $r$ is equal to $PT(r)= rt(St_{\rho_r},u) - \theta_r(d_0) $, where $u$ is the RRH.      
-      In the process time, we count the time between the time the first tic of the stream is emitted and the time at which the last tic of the answer comes back. 
+      In the process time, we count the time elapsed between the date the first tic of the stream is emitted and the date at which the last tic of the answer comes back. 
       
        We define the \textbf{full transmission time} of a routed network $TR(G,R) = \displaystyle \max_{i \in \{0,\ldots,n\}} rt(St_{\rho_i},u) - \displaystyle \min_{j \in \{0,\ldots,n\}} \theta_j(d_0)$, where $u$ is the first node of the route $i$. This is the time ellapsed between the sending of the first tic of the first stream, and the reception of the last tic of the last stream.
         
@@ -185,6 +186,8 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
         
               We consider the following problems.
        \paragraph{Unsychronized sending of streams}
+       
+    
       \noindent {\bf Periodic Assignment for Low Latency (\pall)} 
 
       \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the integers $P$, a deadline function $d$ and a set of streams.
@@ -192,7 +195,7 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
       \noindent {\bf Question:} does there exist an assignment $m$ of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $PT(r) \leq d(r)$?
       \noindent {\bf Optimisation problem:} Minimizing the highest $PT(r)$.
       
-       We also define another problem, in which we does not allow the message to be buffered in the nodes.
+       We also define another problem, in which we does not allow the message to be buffered in the nodes.\\
           \noindent {\bf Periodic Assignment for Zero Latency (\pazl)} 
 
       \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the integers $P$, a deadline function $d$ and a set of streams.
@@ -206,7 +209,7 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
      
         In the C-RAN context, it appears that the antennas start to emmit their stream at the same tic.
         In this case, we can assume that all streams starts to emit a tic $0$, thus $PT(r)= rt(St_{\rho_r},u)$.
-        Also, the deadline function become an maximal responde time $Tmax$. We want $TR(G,{\cal R}) \leq Tmax$.
+        Also, the deadline function become an maximal response time $Tmax$. We want $TR(G,{\cal R}) \leq Tmax$.
         
          Thus, the problem \pall becomes:
        
@@ -216,7 +219,7 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
       
       \noindent {\bf Question:} does there exist an assignment $m$ of $(G,{\cal R})$ such that $ TR(G,{\cal R}) \leq Tmax$ ?
 
-      \noindent {\bf Optimisation problem:} Minimizing the highest $TR(G,{\cal R})$.
+      \noindent {\bf Optimisation problem:} Minimizing $TR(G,{\cal R})$.
     
         \begin{lemma}
         If $\theta_r(d0) = 0$ for all routes $r$, and all deadlines of the routes for \pall are the same, \pall and \spall are the same problem.
@@ -257,7 +260,7 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
     \hline
     $\theta_r(d)$ & Departure date of the datagram $d$ on route $r$ \\
     \hline
-    $t(d,u_i,r)$ & Reception time of the datagram $d$ on node $u_i$ of the route $r$\\
+    $t(d,u_i,r)$ & Reception date of the datagram $d$ on node $u_i$ of the route $r$\\
     \hline
     $\#St$ & Cardinal of a stream, number of datagrams \\
     \hline
@@ -267,7 +270,7 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
     \hline
     $\pdv(d_i,d_j,u,r)$ & Packet delay variation between two datagrams \\
     \hline
-    $rt(St_r,v)$ & Reception time of the last datagram of $St$ in $v$ \\
+    $rt(St_r,v)$ & Reception date of the last datagram of $St$ in $v$ \\
     \hline 
     $PT(r)$ & Time ellapsed between the emission of the first tic and the reception of the last tic of the answer on a route $r$ \\
     \hline
