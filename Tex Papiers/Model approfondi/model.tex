@@ -236,8 +236,8 @@ Here, we show that on a same routed network, the optimal solution for \pall is n
   We set the weight on the arc $(c_t,v_1)$ $\tau -1$ greater than the weight of the last arc $(c_t,v_2)$. For simplicity, we also consider that those weights are then equal to $\tau-1$ and $0$.
   Consider that we have a large enought period to not care about the periodicity.\\
   
-  We want to solve \spall on this routed network. In order to avoid contention, and considering that the weight of the arcs $(u_i,c_s)$ is the same, one departure time must be equal to $0$ and the other one must be $\tau$. Since the route $1$ is much longer than the route $2$, it seems natural to send the message on the route $1$ first. Thus, $\theta(r_1) = 0$, and $\theta (r_2) = \tau $. If we do not delay the datagrams, then $[t(d_1,c_t,\rho_{r_1})] = [2\tau -2;3\tau-3]$ and $[t(d_2,c_t,\rho_{r_2})] = [\tau;2\tau-1]$. This is not possible since there is a collision. 
-  Thus, there is to possibility: 
+  We want to solve \spall on this routed network. In order to avoid contention, and considering that the weight of the arcs $(u_i,c_s)$ is the same, one departure time must be equal to $0$ and the other one must be $\tau$. Since the route $1$ is much longer than the route $2$, it is natural to send the message on the route $1$ first. Thus, $\theta(r_1) = 0$, and $\theta (r_2) = \tau $. If we do not delay the datagrams, then $[t(d_1,c_t,\rho_{r_1})] = [2\tau -2;3\tau-3]$ and $[t(d_2,c_t,\rho_{r_2})] = [\tau;2\tau-1]$. This is not possible since there is a collision. 
+  Thus, there is two possibility: 
   \begin{enumerate}
                                                                                                                                                                                                                                                                                                                                                                                                                                                \item Adding some waiting time on the route 1; $w_1 = 2$. Thus $PT(r_1) = 3\tau-1$, $PT(r_2) = 2\tau -1$ and $TR(G,{\cal R}) =3\tau-1$. 
 \item Adding some waiting time on the route 2; $w_2 = 2\tau-2$. Thus $PT(r_1) = 3\tau-3$, $PT(r_2) = 4\tau -3$ and $TR(G,{\cal R}) = 4\tau-3$.                                                                                                                                                                                                                                                             \end{enumerate}
@@ -417,8 +417,32 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
  	
   \begin{subsubsection}{Algorithm to solve PAZL }
 
-  
-
+ Let $\frac{n\tau}{P}$ be the \textbf{load} of an arc. The load is the proportion of time slots used by the messages on the arc in a period. Therefore if the load is larger than $1$ there cannot be an assignment. We propose a greedy algorithm to build a $(P,\tau)$-periodic assignment, which always finds an assignment when the load is less than $1/4$.
+ 
+ We say a routing is \textbf{coherent} when the intersection of two routes is a continuous path. When two routes uses the same arc, or consecutive arcs, there is a conflict in the first arc only. a coherent routing ensures that two routes have at most one conflict in each way (forward and backward) in the network.
+ 
+ The period in an arc represent the behaviour of the traffic in the first tic of this arc, during a time of $P$ tics.
+    
+    \begin{proposition}
+    There is a $(P,\tau)$-periodic assignment of a star routed network with waiting times $0$ if the load is less than $1/4$ and it can be found.
+    \end{proposition}
+    \begin{proof}
+     We consider that the periods are cut into consecutive intervals of size $\tau$ that we call macro-slots. The algorithm works by choosing an offset for each route in the following way: try all offsets which put the message in a yet not used macro-slot in the period in the first arc of the route. Since the choice of an offset also sets the position of the message in the  periods in the other arcs of the route, chose the first one which does not create a collision. We now prove that this algorithm always finds a $(P,\tau)$-periodic assignment without waiting time when $P \geq 4n\tau$ that is the load is less than $1/4$.
+     
+     Assume we are choosing the offset of the route $r_{k+1}$.
+     In the worst case, this route collides with the $k$ already scheduled routes in both ways, forward and backward.
+     Since the routing is coherent, all the routes collides in a same arc.
+     The is thus a bijection between the period in the first arc of the route, and the period in the arc in which there is a conflict with all the other routes. Indeed, the pattern is the same in the two periods, shifted by the length of the path between the first node and the conflict arc with the $k$ routes.
+     
+     Consider the second period, each of the $k$ messages in this period intersect with at most $2$ macro slots. This means that, in the worst case, the $k$ messages uses $2k$ macro slots in this period, and thus prohibit $2k$ macro slot in the first period of the route.
+     
+     Remember that we try to chose the departure time in the first node of the route. Considering the $2k$ forbidden macro slots the remaining slots are free and can be used to schedule the $k+1^{th}$ message. 
+     
+     Since the routes can split between the way forward and backward, a message on the way backward can prohibit again $2$ macro slots in the first period of the route. Thus, each of the $k$ previously scheduled messages can intersect with $2k$ macro slots.
+     This means that there is at most $4k$ forbidden macro slot in the first period of the route. Remember that $P \geq 4n\tau$, that mean we have at least $4n$ macro-slots in the forward period, and $k < n$. Thus $4n - 4k \geq 1$, which proves that the algorithm terminates and find a  $(P,\tau)$-periodic assignment. 
+   
+   
+     \end{proof}
    
   \begin{paragraph}{Greedy Prime}
   The basic idea is to try to schedule the routes one by one. The routes are selected by id. Considering the generation of our graph described ahead, this means we select first the routes close from the datacenters.  Then, given a route, we set the departure time for the datagram at the beginning of the route to $0$. If there is no collisions with the other routes, we give this departure time to the route. Otherwise, we increase the departure time of $1$ and call the algorithm~\ref{algo:messagenocollisions} MessageCollisions again, until we get a departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
