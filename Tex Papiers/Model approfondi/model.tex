@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{caption}
 \usepackage{amsthm}
 \usepackage{algorithm}
 \usepackage{algorithmic}
@@ -41,9 +42,9 @@
 
 \newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
 \newcommand\pazl{\textsc{pazl}\xspace}
-\newcommand\pall{\textsc{pall}\xspace}
+\newcommand\pall{\textsc{PALL}\xspace}
 \newcommand\spazl{\textsc{spazl}\xspace}
-\newcommand\spall{\textsc{spall}\xspace}
+\newcommand\spall{\textsc{SPALL}\xspace}
 \newcommand\bra{\textsc{bra}\xspace}
 \DeclareMathOperator{\pdv}{pdv}
 \newcommand\pra{\textsc{pra}\xspace}
@@ -63,7 +64,9 @@
 
 \begin{document}
 
-\maketitle\section{Model and Problems}\label{sec:def}
+\maketitle
+
+\section{General model and Problems}\label{sec:def}
 
 We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
@@ -120,7 +123,7 @@ The \textbf{departure date} of a datagram $d$ on a route $r$, denoted by $\theta
       Let $r_1$ and $r_2$ be two routes, on which two streams $St_1$ and $St_2$ are sent.
       We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(St_1,u,r_{1})] \cap [t(St_2,u,r_{2})] \neq \emptyset$.
             
-  \begin{subsubsection}{Notion of jitter}
+  \begin{subsection}{Notion of jitter}
    We define by {\bf delay} of a datagram $d$ in a node $u_i$ of a route $r$, the time taken by the datagram to go from $u_0$, the first vertex of the route to $u_i$ through $r$.
  Thus, the delay of a datagram in the node $u_i$ is equal to $DL(d,u_i,r) =  t(d,u_i,r) - t(d,u_0,r) = \lambda(u_i,r) + \sum_{k=0}^{i-1}( b(d,u_k,r) + l(d,u_k,r))$.
 This delay is composed of three factors:
@@ -150,10 +153,10 @@ Thus, we can define the jitter in a deterministic point of view:
 
 One can observe that there is a bijection between our notion of jitter and $\pdv$, thus, to avoid confusion, we will not talk about jitter but the $\pdv$. 
 
-  \end{subsubsection}
+  \end{subsection}
 
 
-      \begin{subsubsection}{Clourd-RAN context}
+      \begin{subsection}{Clourd-RAN context}
      
       In the context of cloud-RAN applications, we need to send a stream from an RRH $u$ to a BBU $v$ and then 
       we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in \emph{full-duplex} networks, but we do not need to enforce this property.
@@ -165,8 +168,8 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
 
      Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
 
-     \end{subsubsection}
-     \begin{subsubsection}{Definition of measures to optimize}
+     \end{subsection}
+     \begin{subsection}{Definition of measures to optimize}
           We define the {\bf full reception date} of a stream $St_r$ on a node $v$ through the link $(u,v)$ by $rt(St_r,v) =  \displaystyle \max_{i \in \{0,\ldots,\#St_r-1\}} ( t(d_i,v,r) + |d_i|_{(u,v)} )$. This is the time at which the end of the last datagram of the stream has reach the vertex $v$. Recall that a BBU needs to completely receive a stream before sending the answer, that is $rt(S_r,v)  < \theta_{\rho_r}(d_0)$.
      
 
@@ -221,20 +224,39 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
 
       \noindent {\bf Optimisation problem:} Minimizing $TR(G,{\cal R})$.
     
-        \begin{lemma}
-        If $\theta_r(d0) = 0$ for all routes $r$, and all deadlines of the routes for \pall are the same, \pall and \spall are the same problem.
-          \end{lemma}
-        \begin{proof}
-        By definition, $TR(G,R) = \displaystyle \max_{i \in \{0,\ldots,n\}} rt(St_{\rho_i},u) - \displaystyle \min_{j \in \{0,\ldots,n\}} \theta_j(d_0)$, and $PT(r)= rt(St_{\rho_r},u) - \theta_r(d_0) $, where $u$ is the first node of the route $i$.\newline
-        If, for all routes $r$, $\theta_r(d_0) = 0$, then $TR(G,R) = \displaystyle \max_{i \in \{0,\ldots,n\}} rt(St_{\rho_i},u)$ and $PT(r)= rt(St_{\rho_r},u)$.\newline
-        Also, to solve \pall, we want for all routes $r$, $PT(r) \leq Tmax$, where Tmax is the common deadline.
-        Since $TR(G,R) = \displaystyle \max_{r \in \{0,\ldots,n\}} PT(r)$, finding an assingment such $PT(r) \leq Tmax$, for all $r$ is equivalent to find an assingment such that $TR(G,R) \leq Tmax$.
-        \end{proof}
+     
         
       
         
-        \end{subsubsection}
-          The following table summarize the main notations used in the paper.
+        \end{subsection}
+     \begin{subsection}{\pall and \spall: some different problems}
+Here, we show that on a same routed network, the optimal solution for \pall is not necessarily optimal for \spall and vice versa.
+  Consider the following example. We take a star shaped network in which two routes $r_1$ of first vertex $u_1$ and last vertex $v_1$ and $r_2$ of first vertex $u_2$ and last vertex $v_2$ shares the same arc $(c_s,c_t)$. Thus, there is two contention points on the routed network, one on the way forward on the arc $(c_s,c_t )$, and one on the way backward on the arc $(c_t,c_s)$.
+  We consider that the weight of the arcs $(u_i,c_s)$ is the same for every route $i$. For simplicity, and wlog, we set this weight to $0$. Also, the weight of the central arc can be ignored.
+  We set the weight on the arc $(c_t,v_1)$ $\tau -1$ greater than the weight of the last arc $(c_t,v_2)$. For simplicity, we also consider that those weights are then equal to $\tau-1$ and $0$.
+  Consider that we have a large enought period to not care about the periodicity.\\
+  
+  We want to solve \spall on this routed network. In order to avoid contention, and considering that the weight of the arcs $(u_i,c_s)$ is the same, one departure time must be equal to $0$ and the other one must be $\tau$. Since the route $1$ is much longer than the route $2$, it seems natural to send the message on the route $1$ first. Thus, $\theta(r_1) = 0$, and $\theta (r_2) = \tau $. If we do not delay the datagrams, then $[t(d_1,c_t,\rho_{r_1})] = [2\tau -2;3\tau-3]$ and $[t(d_2,c_t,\rho_{r_2})] = [\tau;2\tau-1]$. This is not possible since there is a collision. 
+  Thus, there is to possibility: 
+  \begin{enumerate}
+                                                                                                                                                                                                                                                                                                                                                                                                                                               \item Adding some waiting time on the route 1; $w_1 = 2$. Thus $PT(r_1) = 3\tau-1$, $PT(r_2) = 2\tau -1$ and $TR(G,{\cal R}) =3\tau-1$. 
+\item Adding some waiting time on the route 2; $w_2 = 2\tau-2$. Thus $PT(r_1) = 3\tau-3$, $PT(r_2) = 4\tau -3$ and $TR(G,{\cal R}) = 4\tau-3$.                                                                                                                                                                                                                                                             \end{enumerate}
+The optimal solution is thus to delay the datagram of the route 1 of $2$ tics. Remark that adding this delay at the emission of the message in the forward or the backward way does not change the result.
+
+However, this solution add some waiting time, and thus is not optimal for \pall. Indeed, if we send the datagram $2$ at time  $\theta (r_2) = 3\tau-2 $, and we let $\theta(r_1) = 0$, then the datagrams will not collide and this solution is optimal for \pall, since there is no waiting time on the routes.
+
+This example is valid for every difference of value between $\Omega(v_1,c_t)$ and $\Omega(v_2,c_t)$ lower than $\tau -1$, which happend frequently in our case of application in which the lenght of the routes is in line with the size of the datagrams.
+
+  \begin{figure}
+  \begin{center}
+ \includegraphics[width=0.4\textwidth]{examplestar}
+\caption{A routed network with different optimal solutions for PALL and SPALL.}\label{fig:pallpallexample}
+\end{center}
+\end{figure}
+  
+    \end{subsection}
+    
+    The following table summarize the main notations used in the paper.
       \begin{center}
    \begin{tabularx}{0.8\textwidth}{|c|X|}
     \hline
@@ -278,9 +300,274 @@ One can observe that there is a bijection between our notion of jitter and $\pdv
     \hline
       \end{tabularx}
       \end{center}
+
+
+\begin{section}{Graphs of conflict depth two}
+
+
+
+The star topology has a conflict depth one. We now look at the topologies with a conflict depth two.
+  
+
+   \begin{subsection}{Simplification of the model}
+ 
+   The steams are composed of one datagram. For simplicity in the notations, the datagram of the stream on the route $r$ is then denoted $d_r$. All links have the same speed, so $l(d,u,r)=0$, for all vertex $u$ and route $r$ of the network. All the datagrams have the same size $|d_r| = \tau$.
+   Also, we do not allow the messages to be buffered in the nodes of the network so $b(d,u,r)=0$ , exept in the last node of the routes, which correspond to the datacenter.
+   The \textbf{waiting time} of a datagram $d_r$ on a route $r$ is defined by $w_r = \theta_{\rho_r}(d_r) - t(d_r,v,r)$. This is the time it waits in $v$, the last node of the route before being sent back.
+   We also consider that all routes $i$ have the same deadline, that is,  $d(i)= Tmax$.
+   
+  \end{subsection}
+ 
+
+
+    \begin{subsection}{Generation of conflict depth two graphs}
     
+     In order to generate some random digraphs $G=(V,A)$ of conflict depth two, we first generate some random bipartite graphs $G'=(V',E')$, which represent the core of the network. Indeed, it seems to be a good idea to model the internet topology as mentioned in \cite{tarissan_towards_2013}. This papers also gives us some background to generate some good random bipartite graphs. 
+$V'$ is composed of two sets: The first set $S_1$, of size $a$, models the last switch before the data-centers, and the second set $S_2$, of size $b$, models some distant switches, reparted on the filed. We fix $a$ and $b$ and we uniformly draw the edges of $E'$ with a given probability. Note that $|E'|= a \times b$. If the generated graph  $G'$ is not connected, we generate another bipartite graph.
+Figure~\ref{fig:random23} is an example of a random bipartite graph generated, with $a = 2$, $b=3$ and $|E'|=4$.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.5\textwidth]{random23}
+\caption{A random bipartite graph $G'$.}\label{fig:random23}
+\end{center}
+\end{figure}
 
 
+We now use $G'$ to build our routed network $G$
+In order to create some arcs with conflict, the vertices of $G'$ are extended to become some arcs in $G$. Let us call \textbf{conflict arcs} those arcs. The egdes of $E'$ becomes some arcs of $A$, that we will call \textbf{core arcs}.
+
+Figure~\ref{fig:extendnode} and figure~\ref{fig:extendendgraph} show how the first part of $G$ is build from $G'$.
+
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{extendnode}
+\captionof{figure}{A node of $G'$ represent an arc in $G$.}\label{fig:extendnode}
+\end{center}
+
+\end{minipage}
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{extendendgraph}
+\captionof{figure}{A node of $G'$ represent an arc in $G$.}\label{fig:extendendgraph}
+\end{center}
+
+\end{minipage}
+
+ We now want to create some \textbf{final arcs}, that will model the last link before the antennas.
+We generate $1\leq k\leq K$ final arcs before each contention arc $(u,v)$. We add $k$ new vertices $\{w_1,\ldots,w_k\}$ of indegree $0$ and outdegree $1$ to the set of vertices $V$. The new arcs $\{(w_1,u),\ldots,(w_k,u)\}$ are then added to $A$. 
+
+Each route of the set of routes $\cal{R}$ of the routed network (G,$\cal{R}$) is composed either of one final arc and one contention arc (obtained from the set $S_1$ of arcs in $G'$), or one final arc, two contention arcs (one from $S_1$, one frome $S_2)$) and the core arc between those two contention arcs.
+Note that one final arc belongs to one and only one route, while the core and contention arcs can be shared by several routes. 
+
+Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how the final arcs are generated and define the routes of the routed network (G,$\cal{R}$). The routes of the same color share the same arcs after the final arc.
+
+\begin{minipage}{.5\linewidth}
+
+\begin{center}
+\includegraphics[width=0.4\linewidth]{extendendgraph2}
+\captionof{figure}{Final arcs before contention arcs obtained from $S_1$.}\label{fig:extendendgraph2}
+\end{center}
+
+\end{minipage}
+\begin{minipage}{.5\linewidth}
+\begin{center}
+\includegraphics[width=0.4\linewidth]{extendendgraph3}
+\captionof{figure}{Final arcs before contention arcs obtained from $S_2$.}\label{fig:extendendgraph3}
+\end{center}
+\end{minipage}
+  The obtained routed network (G,$\cal{R}$) models a meshed network. The vertices of indegree $0$ of final arcs represent the antennas, the contention arcs from $S_1$ represent the last link before the datacenters, and the other nodes and arcs of the graph represent some links and switch of the network. It appears that this topology is realitic in core networks.
+  Figure~\ref{fig:extendendgraphgrey} shows the shape of the network modelized.
+
+\begin{figure}[h]
+\begin{center}
+ \includegraphics[width=0.4\textwidth]{extendendgraphgrey}
+\caption{A network represented by a graph $G$.}\label{fig:extendendgraphgrey}
+\end{center}
+\end{figure}
+    \end{subsection}
+
+  \begin{subsection}{Implemented algorithms}
+  
+ 
+
+  The presented algorithm are designed to solve the problem PAZL and PALL.
+  A \textbf{partial assignment}, is a set of departure times and waiting times $\{(\theta_0,w_0),\ldots,(\theta_k,w_k)\}|k<n$, where $n$ is the number of routes in the network.
+  
+   
+   
+  In most of the presented algorithm, the following subroutine is used. Given a route $r$, a departure time $\theta_r$, a partial assignment of the routed network, and a way of the message, it returns $1$ if the message sent at time $\theta_r$ (if the way is forward) or $\theta_{\rho_r}$ (if the way is backward)  does not collide with the other messages. 
+   	\begin{algorithm}[H]
+ 	\caption{MessageNoCollisions}
+	\label{algo:messagenocollisions}
+ 	\begin{algorithmic}
+ 	\REQUIRE A route $r$, a departure time, and a way of the message (FORWARD/BACKWARD).
+	\ENSURE $1$ if the messages can use the route with the given departure time and without collisions, $0$ otherwise.
+
+ 	\FORALL{Arcs in the route}
+ 	\IF{ There is a collision with the previous scheduled messages}
+ 	\STATE return $0$
+ 	\ENDIF
+ 	\ENDFOR
+	\STATE return $1$
+ 	\end{algorithmic}
+ 	\end{algorithm}
+ 	
+  \begin{subsubsection}{Algorithm to solve PAZL }
+
+  
+
+   
+  \begin{paragraph}{Greedy Prime}
+  The basic idea is to try to schedule the routes one by one. The routes are selected by id. Considering the generation of our graph described ahead, this means we select first the routes close from the datacenters.  Then, given a route, we set the departure time for the datagram at the beginning of the route to $0$. If there is no collisions with the other routes, we give this departure time to the route. Otherwise, we increase the departure time of $1$ and call the algorithm~\ref{algo:messagenocollisions} MessageCollisions again, until we get a departure date that allows the datagram to pass the arcs without collisions with the routes already scheduled.
+
+   	\begin{algorithm}[H]
+ 	\caption{Greedy Prime}
+	\label{algo:greedyprime}
+ 	\begin{algorithmic}
+ 	\REQUIRE A graph, a set of routes, a period $P$
+	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
+
+ 	\FORALL{routes $i$ }
+	\STATE date = $0$
+	
+ 	\WHILE{!MessageCollisions($i$,date,FORWARD) $||$ !MessageCollisions($i$,date+routeLength($i$),BACKWARD) }
+ 	
+ 	\STATE date++;
+ 	\IF{date$ > P$}
+	\STATE return FAILURE
+	\ENDIF
+ 	\ENDWHILE
+	\STATE DepartureDate($i$) = date;
+ 	\ENDFOR
+	\STATE return departureDate
+ 	\end{algorithmic}
+ 	\end{algorithm}
+ 	The complexity of this algorithm is $\mathcal{O}(n\times P)$, with $n$ the number of routes and $P$ the period. It is very bad, since it depends of the period.
+  \end{paragraph}
+    \begin{paragraph}{Greedy Min}
+  
+  We now try a smarter greedy algorithm. We stil take the routes one by one, sorted by id. Then, we try all departure times in the period. To each departure time is associated a "tic win" score, computed by the following : Considering a departure time that allow the datagram to pass the network without collisions, for each arc, we count evaluate how much the new message is close to the other ones. We look $\tau$ tics before (and after) the message, and if there is another message scheduled at tic $i$ in the period, we increase the tic win score to $\tau -i$.
+  The sum of the tic won score on each arc correspond to the tic won score of the departure time. We then assign to the route the departure time with the maximal tic won score.
+  This algorithm helps us to pack the message in the arcs, indeed, if two message are spaced of a size $s < \tau$, those $t$ tics will be definitely lost since we can not use them to send a message. Thus, the idea is to pack as much as possible the messages on every arcs.
+  
+ 
+    	\begin{algorithm}[H]
+ 	\caption{ticsWin}
+	\label{algo:ticswin}
+ 	\begin{algorithmic}
+ 	\REQUIRE A route $r$, a departure time $t$
+	\ENSURE $-1$ if the message can not pass without collisions, the number of tics win otherwise
+	\STATE tmp  $\leftarrow$ $0$
+ 	\FORALL{Arcs $j$ in the route (forward AND backward)}
+ 	\IF{ There is a collision with the previous scheduled messages}
+ 	\STATE return $-1$
+	\ELSE
+	\STATE tmp += numberOfTicsWon(t,j)
+ 	\ENDIF
+ 	\ENDFOR
+	\STATE return tmp
+ 	\end{algorithmic}
+ 	\end{algorithm}
+
+	
+   	\begin{algorithm}[H]
+ 	\caption{Greedy tics won}
+ 	\begin{algorithmic}
+ 	\REQUIRE A graph, a set of routes of size $n$, a period $P$
+	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
+
+ 	\FORALL{routes $i \in [0;n[$ }
+	\STATE maxTicsWin $\leftarrow$ $-1$
+	\STATE bestDepartureTime = $-1$
+	\STATE departureTime[$n$]
+	\FORALL{ offset $j \in [0;P[$ }
+	\STATE tmp = ticsWin($r$,$j\times\tau$)
+	\IF{  tmp  > maxTicsWin}
+	\STATE maxTicsWin  $\leftarrow$ tmp
+	\STATE bestDepartureTime  $\leftarrow$ $j$
+	\ENDIF
+ 	\ENDFOR
+	\IF{bestDepartureTime = $-1$}
+	\STATE return FAILURE
+	\ENDIF
+	\STATE departureTime($i$) = $j\time\tau$
+ 	\ENDFOR
+	\STATE return departureTime
+
+ 	\end{algorithmic}
+ 	\end{algorithm}
+	
+	The complexity of this algorithm is $\mathcal{O}(n\times P)$, with $n$ the number of routes and $P$ the period. Unlike the previous algorithm, the worst and medium complexity is the same, since we look at every departure times in the period.
+\end{paragraph}
+  \end{subsubsection}
+    \begin{subsubsection}{Algorithms to solve PALL}
+     We now allow the messages to be buffered in the BBUs. Thus have to choose the departure times and the waiting times of the datagrams.     
+      \begin{paragraph}{Greedy Deadline}
+      We choose to manage the routes in two steps.
+      First, we send the datagrams in the way forward (from RRH to BBU).
+      This part of the algorithm is basic and uses the same routine than the Algorithm:~\ref{algo:greedyprime}, the Greedy Prime algorithm. We take the route one by one, sorted by id, and we give for each route the first departure time that allow the datagram to reach the BBU without collisions. Note that we only check the way forward.
+      
+      Once we have scheduled the messages in the way forward, we want to send the answers. Consider that $u$ is the last vertex of the route forward (and so, the first of the route backward), the first step of the algorithm has fixed $t(d,u,r)$, that is, the time at which the datagram sent from the RRH has reach the node $u$. For each route, we compute $deadline(i) = Tmax - 2\times\lambda(i) - DepartureTime(i)$. This deadline can be seen as a budget: the lowest the deadline will be, the less waiting time is allowed on the route.\newline
+      We the send the routes with the lowest deadline first in the way backward, trying all waiting times, starting to $0$, until the message can reach the RRH without collisions.
+            
+        \end{paragraph}
+    \begin{paragraph}{Greedy Loaded}
+
+In this algorithm, we choose to first take care of the most critical contention points first. Thus, we sort the arcs of the graph for the one in which there is the greater number of routes to the one in which there is the lower number of routes. Then we take first the more loaded link and we schedule the routes on it in two steps.
+First, we search the lowest departure time such that there is no collisions in the way forward, then we do it again on the way backward. 
+
+   	\begin{algorithm}[H]
+ 	\caption{Greedy Loaded}
+ 	\begin{algorithmic}
+ 	\REQUIRE A graph, a set of routes, a period $P$
+	\ENSURE A P-periodic assignment
+
+ 	\FORALL{arcs $i$ sorted by decreasing number of routes using $i$}
+	
+ 	\FORALL{ route $j$ on $i$}
+	\IF{$j$ has not been scheduled yet}
+	\STATE depTime = $0$
+	
+ 	\WHILE{!MessageCollisions($j$,depTime,FORWARD) }
+ 	
+ 	\STATE depTime++;
+ 	\IF{depTime$ > P$}
+	\STATE return FAILURE
+	\ENDIF
+ 	\ENDWHILE
+	\STATE DepartureTime($j$) = depTime;
+	\STATE beginBackTime = depTime + routeLength($j$);
+	\STATE backTime = beginBackTime;
+	
+ 	\WHILE{!MessageCollisions($j$,backTime,BACKWARD) }
+ 	
+ 	\STATE tmp++;
+ 	\IF{backTime$ > P+beginBackTime$}
+	\STATE return FAILURE
+	\ENDIF
+ 	\ENDWHILE
+	\STATE waitingTime($j$) = backTime-beginBackTime;
+	\ENDIF
+ 	\ENDFOR
+
+ 	\ENDFOR
+	\STATE return departureTime, waitingTime
+
+ 	\end{algorithmic}
+ 	\end{algorithm}
+We also propose $3$ different orders to treat the route on the arcs. 
+\begin{itemize}
+\item By id.
+\item From the longest to the shortest route.
+\item By the number of collisions with the other routes on the entire network.
+\end{itemize}
+    \end{paragraph}
+  \end{subsubsection}
+\end{subsection}
+\end{section}
 	 
 
 \bibliographystyle{ieeetr}
