@@ -4,28 +4,33 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
-
-int id_col(Graph g, int P,int offset, Period_kind kind)
+#include "test.h"
+int id_col(Graph g,int route, int P,int offset, Period_kind kind)
 {
+
 	if(kind == FORWARD)
 	{
+		offset += g.routes[route][0]->length;
 		if(g.routes[0][1]->period_f[offset%P] != 0)
 		{
 			
 			return g.routes[0][1]->period_f[offset%P];
+
 		}
 
 	}
 	else
 	{
-
+		offset += g.routes[route][3]->length;
+		offset += g.routes[route][2]->length;
 		if(g.routes[0][1]->period_b[offset%P] != 0)
 		{
-			return g.routes[0][1]->period_f[offset%P];
+			return g.routes[0][1]->period_b[offset%P];
 		}
 
 	}
-	printf("We shall not be in this situation. \n");
+	printf("We shall not be in this situation.");
+	exit(44);
 
 	return 0;
 }
@@ -89,27 +94,39 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 {
 	int id;
 	int new_offset;
-
+	printf("Forward : \n ");
+	affiche_tab(g.routes[0][1]->period_f,P,stdout);
+	printf("Backward : \n ");
+	affiche_tab(g.routes[0][1]->period_b,P,stdout);
 	for(int offset = 0;offset<P;offset++)
 	{
+		printf(" offset %d(%d) offset back %d(%d) \n",offset,offset+g.routes[id_pb][0]->length,(offset+route_length(g,id_pb))%P,(offset+route_length(g,id_pb)+g.routes[id_pb][3]->length)%P);
 		if(message_no_collisions( g, id_pb, offset,message_size,FORWARD,P))
 		{
 			if(!message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
-			{
-				id = id_col(g, P,offset+route_length(g,id_pb), BACKWARD);
+			{	
+				printf("Collision backward (%d ) ",message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P));
+
+				id = id_col(g,id_pb, P,offset+route_length(g,id_pb), BACKWARD);
+				printf(" avec %d \n",id);
 			}
 			else
+			{
 				printf("Impossible (no cols forward and backward)\n");
+			}
 		}
 		else
 		{
 			if(message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
 			{
-				id = id_col(g, P,offset, FORWARD);
+				printf("Collision forward");
+				id = id_col(g,id_pb, P,offset, FORWARD);
+				printf(" avec %d \n",id);
 
 			}
 			else
 			{
+				printf("Double collisions\n");
 				continue;
 			}
 		}
@@ -185,8 +202,9 @@ Assignment PRIME_reuse(Graph g, int P, int message_size)
 		}
 		else
 		{
+			printf("%d ne marche pas  \n",i);
 			a = search_moove(g,  P,  message_size,  i,a);
-
+			
 		}
 
 		
