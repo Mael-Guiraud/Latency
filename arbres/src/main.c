@@ -19,6 +19,10 @@ int main (int argc, char *argv[])
 	{
 		test();
 	}
+	if(!strcmp(argv[1],"star"))
+	{
+		star();
+	}
 	else
 	{
 		int seed = time(NULL);

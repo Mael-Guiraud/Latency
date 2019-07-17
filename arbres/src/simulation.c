@@ -12,9 +12,47 @@
 #include "data_treatment.h"
 #include "multiplexing.h"
 #include "spall_waiting.h"
+#include "reusePrime.h"
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
+void star()
+{
+	int seed;
+	srand(time(NULL));
+	int P ;
+	int message_size = MESSAGE_SIZE;
+
+	Graph g = init_graph_etoile();
+	P = PERIOD;
+	int tmax = TMAX;
+	print_graphvitz(g);
+	affiche_graph(g,P,stdout);
+	Assignment a = PRIME_reuse(g, P, message_size);
+	affiche_assignment(a,g.nb_routes,stdout);
+
+	char* nom = "star";
+	char buf[128];
+	char buf_dot[128];
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	free_assignment(a);
+	free_graph(g);
+
+
+
+}
+
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
