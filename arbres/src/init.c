@@ -236,11 +236,11 @@ Graph init_graph_random_tree(double load)
 	return g;
 }
 
-Graph init_graph_etoile()
+Graph init_graph_etoile(int nb)
 {
 	
-	int nb_routes = NB_BBU ;
-	int nb_bbu = NB_BBU;
+	int nb_routes = nb ;
+	int nb_bbu = nb;
 	int nb_total_arcs = nb_routes*4;
 	int real_period;
 

@@ -37,6 +37,7 @@ int message_no_collisions(Graph g,int route,int offset,int message_size,Period_k
 			{
 				if(g.routes[route][i]->period_b[offset%P] || g.routes[route][i]->period_b[(offset+message_size-1)%P] )
 				{
+					//printf("[%d %d %d %d ]",offset,offset%P,g.routes[route][i]->period_b[offset%P],g.routes[route][i]->period_b[(offset+message_size-1)%P]);
 					return 0;
 				}
 				

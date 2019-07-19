@@ -12,9 +12,47 @@
 #include "data_treatment.h"
 #include "multiplexing.h"
 #include "spall_waiting.h"
+#include "reusePrime.h"
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
+void star()
+{
+
+	srand(time(NULL));
+	int P ;
+	int message_size = MESSAGE_SIZE;
+	P = PERIOD;
+
+	Assignment a ;
+	Graph g;
+	int min;
+	long long moy;
+	
+	for(int i=1;i<=P;i++)
+	{
+		moy = 0;
+		min = P;
+		for(int j=0;j<1000;j++)
+		{
+			g = init_graph_etoile(i);
+			a = PRIME_reuse(g, P, message_size);
+			moy += a->nb_routes_scheduled;
+			if(min > a->nb_routes_scheduled)
+				min = a->nb_routes_scheduled;
+			free_assignment(a);
+			free_graph(g);	
+		}
+		printf("%d routes, moyenne %lld / min %d\n",i,moy/1000,min);
+
+	}
+	
+	
+
+
+
+}
+
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
