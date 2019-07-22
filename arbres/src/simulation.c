@@ -24,26 +24,42 @@ void star()
 	int message_size = MESSAGE_SIZE;
 	P = PERIOD;
 
-	Assignment a ;
+	Assignment a,a2 ;
 	Graph g;
-	int min;
-	long long moy;
+	int min,min2;
+	long long moy,moy2;
+	int nb_simuls = 10000000;
 	
-	for(int i=1;i<=P;i++)
+	for(int i=P;i<=P;i++)
 	{
 		moy = 0;
+		moy2 = 0;
 		min = P;
-		for(int j=0;j<1000;j++)
+		min2 = P;
+		for(int j=0;j<nb_simuls;j++)
 		{
 			g = init_graph_etoile(i);
-			a = PRIME_reuse(g, P, message_size);
+			a = PRIME_reuse(g, P, message_size,0);
+			reset_periods(g,P);
+			a2 = PRIME_reuse(g, P, message_size,1);
 			moy += a->nb_routes_scheduled;
+			moy2 += a2->nb_routes_scheduled;
 			if(min > a->nb_routes_scheduled)
-				min = a->nb_routes_scheduled;
+				min = a->nb_routes_scheduled;	
+			if(min2 > a2->nb_routes_scheduled)
+				min2 = a2->nb_routes_scheduled;
 			free_assignment(a);
+			free_assignment(a2);
 			free_graph(g);	
+			fprintf(stdout,"\r%8d/%d",j,nb_simuls);
 		}
-		printf("%d routes, moyenne %lld / min %d\n",i,moy/1000,min);
+		//printf("Greedy %d routes, moyenne %lld / min %d\n",i,moy/100000,min);
+		//printf("Swap %d routes, moyenne %lld / min %d\n",i,moy2/100000,min2);
+		printf("\n%d Routes : SwapMoy GreedyMoy SwapMin GreedyMin\n ",i);
+		printf("              %f        %f        %d     %d  ",(moy2/nb_simuls)/(float)P,(moy/nb_simuls)/(float)P,min2,min);
+		if(moy2>moy)printf(GRN"BETTER\n"RESET);
+		else
+			printf("\n");
 
 	}
 	

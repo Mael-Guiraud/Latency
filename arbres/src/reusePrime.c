@@ -94,21 +94,23 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 {
 	int id;
 	int new_offset;
-	printf("Forward : \n ");
-	affiche_tab(g.routes[0][1]->period_f,P,stdout);
-	printf("Backward : \n ");
-	affiche_tab(g.routes[0][1]->period_b,P,stdout);
+	//printf("Forward : \n ");
+	//affiche_tab(g.routes[0][1]->period_f,P,stdout);
+	//printf("Backward : \n ");
+	//affiche_tab(g.routes[0][1]->period_b,P,stdout);
 	for(int offset = 0;offset<P;offset++)
 	{
-		printf(" offset %d(%d) offset back %d(%d) \n",offset,offset+g.routes[id_pb][0]->length,(offset+route_length(g,id_pb))%P,(offset+route_length(g,id_pb)+g.routes[id_pb][3]->length)%P);
+		//printf(" offset %d(%d) offset back %d(%d) \n",offset,offset+g.routes[id_pb][0]->length,(offset+route_length(g,id_pb))%P,(offset+route_length(g,id_pb)+g.routes[id_pb][3]->length)%P);
 		if(message_no_collisions( g, id_pb, offset,message_size,FORWARD,P))
 		{
 			if(!message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
 			{	
-				printf("Collision backward (%d ) ",message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P));
+				//printf("Collision backward (%d ) ",message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P));
 
 				id = id_col(g,id_pb, P,offset+route_length(g,id_pb), BACKWARD);
-				printf(" avec %d \n",id);
+				if(id == -1)
+					id = 0;
+				//printf(" avec %d \n",id);
 			}
 			else
 			{
@@ -119,14 +121,16 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 		{
 			if(message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
 			{
-				printf("Collision forward");
+				//printf("Collision forward");
 				id = id_col(g,id_pb, P,offset, FORWARD);
-				printf(" avec %d \n",id);
+				if(id == -1)
+					id = 0;
+				//printf(" avec %d \n",id);
 
 			}
 			else
 			{
-				printf("Double collisions\n");
+				//printf("Double collisions\n");
 				continue;
 			}
 		}
@@ -159,7 +163,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 
 }
 
-Assignment PRIME_reuse(Graph g, int P, int message_size)
+Assignment PRIME_reuse(Graph g, int P, int message_size,int swap)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
@@ -202,7 +206,8 @@ Assignment PRIME_reuse(Graph g, int P, int message_size)
 		}
 		else
 		{
-			printf("%d ne marche pas  \n",i);
+			//printf("%d ne marche pas  \n",i);
+			if(swap)
 			a = search_moove(g,  P,  message_size,  i,a);
 			
 		}
