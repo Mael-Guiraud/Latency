@@ -20,97 +20,79 @@ Collisions id_col(Graph g,int route, int P,int offset, Period_kind kind, int mes
 	}
 	c.nb_cols = 0;
 	
-	int first = -1;
+	int last = 0;
+
 	if(kind == FORWARD)
 	{
-		offset += g.routes[route][0]->length;
-		for(int i=0;i<message_size;i++)
+		for(int j=0;j<g.size_routes[route];j++)
 		{
-			if(g.routes[0][1]->period_f[(offset+i)%P] != 0)
+			
+			if(g.routes[route][j]->period_f != NULL)
 			{
-				
-				if(first == -1)
+				for(int i=0;i<message_size;i++)
 				{
-					if(g.routes[0][1]->period_f[(offset+i)%P] == -1)
+		
+					if(g.routes[route][j]->period_f[(offset+i)%P] != 0)
 					{
-						first = 0;
-						c.cols[c.nb_cols] = 0;
-						c.nb_cols++;
-					}
-					else
-					{
-						first = g.routes[0][1]->period_f[(offset+i)%P];
-						c.cols[c.nb_cols] = g.routes[0][1]->period_f[(offset+i)%P];
-						c.nb_cols++;
-					}
-				}
-				else
-				{
-					if(g.routes[0][1]->period_f[(offset+i)%P] != first)
-					{
-						if(g.routes[0][1]->period_f[(offset+i)%P] == -1)
+						if(g.routes[route][j]->period_f[(offset+i)%P] != last)
 						{
-							c.cols[c.nb_cols] = 0;
+							
+							if(g.routes[route][j]->period_f[(offset+i)%P] == -1)
+							{
+								c.cols[c.nb_cols] = 0;
+								
+							}
+							else
+							{
+								c.cols[c.nb_cols] = g.routes[route][j]->period_f[(offset+i)%P];
+							}
+							last = g.routes[route][j]->period_f[(offset+i)%P];
 							c.nb_cols++;
 						}
-						else
-						{
-							c.cols[c.nb_cols] = g.routes[0][1]->period_f[(offset+i)%P];
-							c.nb_cols++;
-						}
-					
-						return c;
-					}
-				}
+						
 
+					}
+				}
 			}
+			offset += g.routes[route][j]->length;
 		}
 
 	}
 	else
 	{
-		offset += g.routes[route][3]->length;
-		offset += g.routes[route][2]->length;
-		for(int i=0;i<message_size;i++)
+		//For each arcs
+		for(int j=g.size_routes[route]-1;j>=0;j--)
 		{
-			if(g.routes[0][1]->period_b[(offset+i)%P] != 0)
-			{
-				if(first == -1)
-				{
-					if(g.routes[0][1]->period_b[(offset+i)%P] == -1)
-					{
-						first = 0;
-						c.cols[c.nb_cols] = 0;
-						c.nb_cols++;
-					}
-					else
-					{
-						first = g.routes[0][1]->period_b[(offset+i)%P];
-						c.cols[c.nb_cols] = g.routes[0][1]->period_b[(offset+i)%P];
-						c.nb_cols++;
-					}
-				}
-				else
-				{
-					if(g.routes[0][1]->period_b[(offset+i)%P] != first)
-					{
-						if(g.routes[0][1]->period_b[(offset+i)%P] == -1)
-						{
-							c.cols[c.nb_cols] = 0;
-							c.nb_cols++;
-						}
-						else
-						{
-							c.cols[c.nb_cols] = g.routes[0][1]->period_b[(offset+i)%P];
-							c.nb_cols++;
-						}
 			
-						return c;
+			//This is a contention point
+			if(g.routes[route][j]->period_b != NULL)
+			{
+				for(int i=0;i<message_size;i++)
+				{
+				
+					if(g.routes[route][j]->period_b[(offset+i)%P] != 0)
+					{
+						
+						if(g.routes[route][j]->period_b[(offset+i)%P] != last)
+						{
+							
+							if(g.routes[route][j]->period_b[(offset+i)%P] == -1)
+							{
+								c.cols[c.nb_cols] = 0;
+							}
+							else
+							{
+								c.cols[c.nb_cols] = g.routes[route][j]->period_b[(offset+i)%P];
+							}
+							c.nb_cols++;
+							last = g.routes[route][j]->period_b[(offset+i)%P];
+						}
 					}
 				}
-
 			}
+			offset += g.routes[route][j]->length;
 		}
+		
 
 	}
 
@@ -186,7 +168,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 		{
 			if(!message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
 			{	
-				//printf("Collision backward (%d ) ",message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P));
+				//printf("Collision backward %d %d\n ",!message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P), offset+route_length(g,id_pb));
 
 				c = id_col(g,id_pb, P,offset+route_length(g,id_pb), BACKWARD,message_size);
 				
@@ -201,7 +183,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 		{
 			if(message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
 			{
-				//printf("Collision forward");
+				//printf("Collision forward\n");
 				c = id_col(g,id_pb, P,offset, FORWARD,message_size);
 				
 				//printf(" avec %d \n",id);
@@ -294,7 +276,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 
 }
 
-Assignment PRIME_reuse(Graph g, int P, int message_size,int swap)
+Assignment PRIME_reuse(Graph g, int P, int message_size)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
@@ -338,7 +320,7 @@ Assignment PRIME_reuse(Graph g, int P, int message_size,int swap)
 		else
 		{
 			//printf("%d ne marche pas  \n",i);
-			if(swap)
+			
 			a = search_moove(g,  P,  message_size,  i,a);
 			
 		}

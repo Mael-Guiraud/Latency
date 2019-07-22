@@ -50,9 +50,9 @@ void star()
 		for(int j=0;j<nb_simuls;j++)
 		{
 			g = init_graph_etoile(P/MESSAGE_SIZE);
-			a = PRIME_reuse(g, P, message_size,0);
+			a = greedy_PRIME(g, P, message_size);
 			reset_periods(g,P);
-			a2 = PRIME_reuse(g, P, message_size,1);
+			a2 = PRIME_reuse(g, P, message_size);
 			moy += a->nb_routes_scheduled;
 			moy2 += a2->nb_routes_scheduled;
 			if(min > a->nb_routes_scheduled)
@@ -203,7 +203,9 @@ void test()
 	
 	//THE NAME MUST NOT CONTAIN SPACES
 	test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
+	test_one_algo(g,P,message_size,tmax,&PRIME_reuse,NULL,"PrimeReuse",f);
 	test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
+	
 	
 
 	printf("\n --------- \n- WITH WAITING TIME : \n");
@@ -290,7 +292,7 @@ void test()
 	printf("Logs in logs.txt\n");
 	free_graph(g);
 	fclose(f);
-	 jsontest();
+	 //jsontest();
 
 }
 

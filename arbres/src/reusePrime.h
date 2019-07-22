@@ -1,1 +1,1 @@
-Assignment PRIME_reuse(Graph g, int P, int message_size, int swap);
+Assignment PRIME_reuse(Graph g, int P, int message_size);
