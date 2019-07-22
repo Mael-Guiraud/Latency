@@ -1,7 +1,7 @@
 // CONFIG OF THE TOPOLOGY
 
 #define MAX_LENGTH 5
-#define MESSAGE_SIZE 2
+#define MESSAGE_SIZE 1
 #define NB_BBU 20
 #define NB_COLLISIONS 3
 #define NB_ROUTES_PER_FLOW 3
@@ -27,7 +27,7 @@
 #define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 1
-#define PERIOD 30	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
+#define PERIOD 12	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
 #define NB_SIMULS 1000

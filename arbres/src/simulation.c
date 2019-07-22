@@ -18,11 +18,11 @@
 #include "jsondump.h"
 #include <string.h>
 #include <math.h>
-char * strcmpt(int nb_simuls)
+char * strcmpt(float nb_simuls)
 {	
-	float doublenb = (float)nb_simuls;
+	
 	char * str = (char*)malloc(sizeof(char)*64);
-	sprintf(str,"\r%%%dd/%%d",(int)log10(doublenb));
+	sprintf(str,"\r%%%dd/%%d",(int)log10(nb_simuls));
 	return str;
 }
 void star()
@@ -35,10 +35,10 @@ void star()
 
 	Assignment a,a2 ;
 	Graph g;
-	int min,min2;
-	long long moy,moy2;
+	float min,min2;
+	float moy,moy2;
 	char * str;
-	int nb_simuls = 10000;
+	float nb_simuls = 10000.0;
 	str = strcmpt(nb_simuls);
 	
 	for(int P=8;P<=PERIOD;P++)
@@ -63,12 +63,12 @@ void star()
 			free_assignment(a2);
 			free_graph(g);	
 			
-			fprintf(stdout,str,j+1,nb_simuls);
+			fprintf(stdout,str,j+1,(int)nb_simuls);
 		}
-		//printf("Greedy %d routes, moyenne %lld / min %d\n",i,moy/100000,min);
-		//printf("Swap %d routes, moyenne %lld / min %d\n",i,moy2/100000,min2);
+		printf("Greedy %d routes, moyenne %f / min %f\n",P,moy/nb_simuls,min);
+		printf("Swap %d routes, moyenne %f / min %f\n",P,moy2/nb_simuls,min2);
 		printf("\nP = %d  : SwapMoy GreedyMoy SwapMin GreedyMin\n ",P);
-		  printf("          %f        %f        %f     %f  ",(moy2/nb_simuls)/(float)(P/MESSAGE_SIZE),(moy/nb_simuls)/(float)(P/MESSAGE_SIZE),min2/(float)(P/MESSAGE_SIZE),min/(float)(P/MESSAGE_SIZE));
+		  printf("          %f        %f        %f     %f  ",(moy2/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy/nb_simuls)/((float)P/(float)MESSAGE_SIZE),min2/((float)P/(float)MESSAGE_SIZE),min/((float)P/(float)MESSAGE_SIZE));
 		if(moy2>moy)printf(GRN"BETTER\n"RESET);
 		else
 			printf("\n");
