@@ -38,37 +38,51 @@ void star()
 	float min,min2;
 	float moy,moy2;
 	char * str;
-	float nb_simuls = 10000.0;
+	float nb_simuls = 1.0;
 	str = strcmpt(nb_simuls);
 	
-	for(int P=8;P<=PERIOD;P++)
+	for(int P=PERIOD;P<=PERIOD;P+=message_size)
 	{
 		moy = 0;
 		moy2 = 0;
 		min = P;
 		min2 = P;
-		for(int j=0;j<nb_simuls;j++)
+		#pragma omp parallel for private(g,a,a2)  if(PARALLEL)
+		for( int j=0; j<(int)nb_simuls; j++ )
 		{
 			g = init_graph_etoile(P/MESSAGE_SIZE);
 			a = greedy_PRIME(g, P, message_size);
 			reset_periods(g,P);
 			a2 = PRIME_reuse(g, P, message_size);
-			moy += a->nb_routes_scheduled;
-			moy2 += a2->nb_routes_scheduled;
+			#pragma omp atomic update
+				moy += a->nb_routes_scheduled;
+			#pragma omp atomic update
+				moy2 += a2->nb_routes_scheduled;
 			if(min > a->nb_routes_scheduled)
-				min = a->nb_routes_scheduled;	
+			{
+				#pragma omp critical
+					min = a->nb_routes_scheduled;
+			}
+					
 			if(min2 > a2->nb_routes_scheduled)
-				min2 = a2->nb_routes_scheduled;
+			{
+				#pragma omp critical
+					min2 = a2->nb_routes_scheduled;
+			}
+			printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
+			affiche_assignment(a,g.nb_routes,stdout);
+			affiche_assignment(a2,g.nb_routes,stdout);
 			free_assignment(a);
 			free_assignment(a2);
+			affiche_graph(g,P,stdout);printf("\n\n");
 			free_graph(g);	
 			
 			fprintf(stdout,str,j+1,(int)nb_simuls);
 		}
-		printf("Greedy %d routes, moyenne %f / min %f\n",P,moy/nb_simuls,min);
-		printf("Swap %d routes, moyenne %f / min %f\n",P,moy2/nb_simuls,min2);
-		printf("\nP = %d  : SwapMoy GreedyMoy SwapMin GreedyMin\n ",P);
-		  printf("          %f        %f        %f     %f  ",(moy2/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy/nb_simuls)/((float)P/(float)MESSAGE_SIZE),min2/((float)P/(float)MESSAGE_SIZE),min/((float)P/(float)MESSAGE_SIZE));
+		//printf("Greedy %d routes, moyenne %f / min %f\n",P,moy/nb_simuls,min);
+		//printf("Swap %d routes, moyenne %f / min %f\n",P,moy2/nb_simuls,min2);
+		printf("\nP = %d (%d routes)  : SwapMoy GreedyMoy SwapMin GreedyMin\n ",P,P/message_size);
+		  printf("                      %f        %f        %f     %f  ",(moy2/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy/nb_simuls)/((float)P/(float)MESSAGE_SIZE),min2/((float)P/(float)MESSAGE_SIZE),min/((float)P/(float)MESSAGE_SIZE));
 		if(moy2>moy)printf(GRN"BETTER\n"RESET);
 		else
 			printf("\n");

@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
 		{
 			simul_period(seed,&PRIME_reuse,"PrimeReuse");
 			simul_period(seed,&greedy_PRIME,"greedyPrime");
-			simul_period(seed,&greedy_tics_won,"greedyTicsWon");
+			//simul_period(seed,&greedy_tics_won,"greedyTicsWon");
 			char * noms2[] = {"greedyPrime","PrimeReuse","greedyTicsWon"};
 			print_gnuplot("nowaiting",noms2, 3, "performance of greedys without waiting time", "load", ylabels);
 		}
