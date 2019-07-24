@@ -156,6 +156,7 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 		}
 		if(bool_found)
 		{
+			
 			fill_period(g,i,offset,message_size,FORWARD,P);
 			a->offset_forward[i]=offset;
 			fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);

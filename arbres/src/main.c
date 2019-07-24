@@ -8,6 +8,7 @@
 #include "simulation.h"
 #include "string.h"
 #include "greedy_without_waiting.h"
+#include "reusePrime.h"
 int main (int argc, char *argv[])
 {
 	if(argc < 2)
@@ -39,10 +40,11 @@ int main (int argc, char *argv[])
 		}
 		if(!strcmp(argv[1],"simulNoWaiting") || !strcmp(argv[1],"simulAll"))
 		{
+			simul_period(seed,&PRIME_reuse,"PrimeReuse");
 			simul_period(seed,&greedy_PRIME,"greedyPrime");
-			simul_period(seed,&greedy_tics_won,"greedyTicsWon");
-			char * noms2[] = {"greedyPrime","greedyTicsWon"};
-			print_gnuplot("nowaiting",noms2, 2, "performance of greedys without waiting time", "load", ylabels);
+			//simul_period(seed,&greedy_tics_won,"greedyTicsWon");
+			char * noms2[] = {"greedyPrime","PrimeReuse","greedyTicsWon"};
+			print_gnuplot("nowaiting",noms2, 3, "performance of greedys without waiting time", "load", ylabels);
 		}
 		
 		

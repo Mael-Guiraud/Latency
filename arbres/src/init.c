@@ -300,7 +300,7 @@ Graph init_graph_etoile(int nb)
 		real_period = (nb_routes * MESSAGE_SIZE) / STANDARD_LOAD;
 
 
-	
+
 	g.arc_pool[nb_routes].period_f = calloc(real_period,sizeof(int));
 	g.arc_pool[nb_routes].period_b = calloc(real_period,sizeof(int));
 	

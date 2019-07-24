@@ -16,39 +16,81 @@
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
+#include <string.h>
+#include <math.h>
+char * strcmpt(float nb_simuls)
+{	
+	
+	char * str = (char*)malloc(sizeof(char)*64);
+	sprintf(str,"\r%%%dd/%%d",(int)log10(nb_simuls));
+	return str;
+}
 void star()
 {
 
 	srand(time(NULL));
-	int P ;
-	int message_size = MESSAGE_SIZE;
-	P = PERIOD;
 
-	Assignment a ;
+	int message_size = MESSAGE_SIZE;
+
+
+	Assignment a,a2 ;
 	Graph g;
-	int min;
-	long long moy;
+	float min,min2;
+	float moy,moy2;
+	char * str;
+	float nb_simuls = 1.0;
+	str = strcmpt(nb_simuls);
 	
-	for(int i=1;i<=P;i++)
+	for(int P=PERIOD;P<=PERIOD;P+=message_size)
 	{
 		moy = 0;
+		moy2 = 0;
 		min = P;
-		for(int j=0;j<1000;j++)
+		min2 = P;
+		#pragma omp parallel for private(g,a,a2)  if(PARALLEL)
+		for( int j=0; j<(int)nb_simuls; j++ )
 		{
-			g = init_graph_etoile(i);
-			a = PRIME_reuse(g, P, message_size);
-			moy += a->nb_routes_scheduled;
+			g = init_graph_etoile(P/MESSAGE_SIZE);
+			a = greedy_PRIME(g, P, message_size);
+			reset_periods(g,P);
+			a2 = PRIME_reuse(g, P, message_size);
+			#pragma omp atomic update
+				moy += a->nb_routes_scheduled;
+			#pragma omp atomic update
+				moy2 += a2->nb_routes_scheduled;
 			if(min > a->nb_routes_scheduled)
-				min = a->nb_routes_scheduled;
+			{
+				#pragma omp critical
+					min = a->nb_routes_scheduled;
+			}
+					
+			if(min2 > a2->nb_routes_scheduled)
+			{
+				#pragma omp critical
+					min2 = a2->nb_routes_scheduled;
+			}
+			printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
+			affiche_assignment(a,g.nb_routes,stdout);
+			affiche_assignment(a2,g.nb_routes,stdout);
 			free_assignment(a);
+			free_assignment(a2);
+			affiche_graph(g,P,stdout);printf("\n\n");
 			free_graph(g);	
+			
+			fprintf(stdout,str,j+1,(int)nb_simuls);
 		}
-		printf("%d routes, moyenne %lld / min %d\n",i,moy/1000,min);
+		//printf("Greedy %d routes, moyenne %f / min %f\n",P,moy/nb_simuls,min);
+		//printf("Swap %d routes, moyenne %f / min %f\n",P,moy2/nb_simuls,min2);
+		printf("\nP = %d (%d routes)  : SwapMoy GreedyMoy SwapMin GreedyMin\n ",P,P/message_size);
+		  printf("                      %f        %f        %f     %f  ",(moy2/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy/nb_simuls)/((float)P/(float)MESSAGE_SIZE),min2/((float)P/(float)MESSAGE_SIZE),min/((float)P/(float)MESSAGE_SIZE));
+		if(moy2>moy)printf(GRN"BETTER\n"RESET);
+		else
+			printf("\n");
 
 	}
 	
 	
-
+	free(str);
 
 
 }
@@ -175,7 +217,9 @@ void test()
 	
 	//THE NAME MUST NOT CONTAIN SPACES
 	test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
+	test_one_algo(g,P,message_size,tmax,&PRIME_reuse,NULL,"PrimeReuse",f);
 	test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
+	
 	
 
 	printf("\n --------- \n- WITH WAITING TIME : \n");
@@ -262,7 +306,7 @@ void test()
 	printf("Logs in logs.txt\n");
 	free_graph(g);
 	fclose(f);
-	 jsontest();
+	 //jsontest();
 
 }
 
