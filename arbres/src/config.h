@@ -27,7 +27,7 @@
 #define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 0
-#define PERIOD 7500	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
+#define PERIOD 50000	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
 #define NB_SIMULS 1000

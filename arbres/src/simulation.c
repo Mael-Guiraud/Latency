@@ -38,7 +38,7 @@ void star()
 	float min,min2;
 	float moy,moy2;
 	char * str;
-	float nb_simuls = 1.0;
+	float nb_simuls = 10000.0;
 	str = strcmpt(nb_simuls);
 	
 	for(int P=PERIOD;P<=PERIOD;P+=message_size)
@@ -69,12 +69,12 @@ void star()
 				#pragma omp critical
 					min2 = a2->nb_routes_scheduled;
 			}
-			printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
-			affiche_assignment(a,g.nb_routes,stdout);
-			affiche_assignment(a2,g.nb_routes,stdout);
+			//printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
+			//affiche_assignment(a,g.nb_routes,stdout);
+			//affiche_assignment(a2,g.nb_routes,stdout);
 			free_assignment(a);
 			free_assignment(a2);
-			affiche_graph(g,P,stdout);printf("\n\n");
+			//affiche_graph(g,P,stdout);printf("\n\n");
 			free_graph(g);	
 			
 			fprintf(stdout,str,j+1,(int)nb_simuls);
