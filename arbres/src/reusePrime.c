@@ -227,7 +227,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 				fill_period(g,c.cols[i],new_offset[i],message_size,FORWARD,P);
 				fill_period(g,c.cols[i],new_offset[i]+route_length(g,c.cols[i]),message_size,BACKWARD,P);
 				a->offset_forward[c.cols[i]]=new_offset[i];
-				a->offset_backward[c.cols[i]]=new_offset[i]+route_length(g,c.cols[i]);
+				a->offset_backward[c.cols[i]]=(new_offset[i]+route_length(g,c.cols[i]))%P;
 				a->waiting_time[c.cols[i]]=0;
 			}
 			else
@@ -263,7 +263,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 		else //C'est ok, la nouvelle route est acceptée
 		{
 			a->offset_forward[id_pb]=offset;
-			a->offset_backward[id_pb]=offset+route_length(g,id_pb);
+			a->offset_backward[id_pb]=(offset+route_length(g,id_pb))%P;
 			a->waiting_time[id_pb]=0;
 			a->nb_routes_scheduled++;
 			return a;
@@ -280,9 +280,9 @@ Assignment PRIME_reuse(Graph g, int P, int message_size)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = calloc(g.nb_routes,sizeof(int));
+	a->offset_backward = calloc(g.nb_routes,sizeof(int));
+	a->waiting_time = calloc(g.nb_routes,sizeof(int));
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
  	int offset;
@@ -307,13 +307,16 @@ Assignment PRIME_reuse(Graph g, int P, int message_size)
 				bool_found = 0;
 				break;
 			}
+		
 		}
+		
 		if(bool_found)
 		{
 			fill_period(g,i,offset,message_size,FORWARD,P);
 			a->offset_forward[i]=offset;
 			fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
-			a->offset_backward[i]=offset+route_length(g,i);
+			a->offset_backward[i]=(offset+route_length(g,i))%P;
+		
 			a->waiting_time[i]=0;
 			a->nb_routes_scheduled++;
 		}
