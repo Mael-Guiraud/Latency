@@ -30,10 +30,10 @@
 #define PERIOD 6	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 10000
 
 //for star generation
 #define NB_ROUTES 6
 
 //openMP parallel
-#define PARALLEL 0
+#define PARALLEL 1
