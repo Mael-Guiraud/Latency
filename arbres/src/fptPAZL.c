@@ -1,4 +1,4 @@
-#define DEBUG 0
+#define DEBUG 1
 #include "structs.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -234,7 +234,7 @@ Assignment linear_search(Graph g, int nb_routes, int P, int message_size)
 		for(int k=0;k<i;k++)
 		{
 
-			return_time[k]=  route_length_untill_arc(g,k, &g.arc_pool[nb_routes],BACKWARD)%P;
+			return_time[k]=  (2*route_length_untill_arc(g,k, &g.arc_pool[nb_routes],BACKWARD))%P;
 		}
 		a = search(return_time, i,message_size,P);
 		for(int k=0;k<i;k++)

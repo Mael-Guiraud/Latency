@@ -1,3 +1,3 @@
 
 Graph init_graph_random_tree(double load);
-Graph init_graph_etoile(int nb);
+Graph init_graph_etoile(int nb,int P);
