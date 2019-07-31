@@ -58,6 +58,32 @@ void affiche_graph(Graph g,int p, FILE * f)
 	fprintf(f,"Fin\n");
 	return;
 }
+
+void affiche_graph_routes(Graph g, FILE * f)
+{
+	for(int i=0;i<g.nb_routes; i++)
+	{
+		fprintf(f,"Route %d total length = %d : [ ",i,route_length( g,i));
+		for(int j=0 ; j< g.size_routes[i];j++)
+		{
+			fprintf(f,"%d, ",g.routes[i][j]->length);
+			
+		}
+		fprintf(f,"]\n");
+	}
+	return;
+}
+void affiche_period_star(Graph g,int p, FILE * f)
+{
+
+	fprintf(f," Forward  \n");
+	affiche_periode(g.arc_pool[g.nb_routes].period_f,p,f);
+	fprintf(f,"Backward \n");
+	affiche_periode(g.arc_pool[g.nb_routes].period_b,p,f);
+			
+
+	return;
+}
 void affiche_biparti(int ** g, int a, int b, FILE * f)
 {
 	for(int i=0;i<a;i++)

@@ -56,13 +56,13 @@ void print_gnuplot(char * outputname,char ** files, int nb_files, char* title, c
 }
 
 
-void print_graphvitz(Graph g){
+void print_graphvitz(Graph g,char * nom){
 	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
 	int previous_end ;
 	int next_begin ;
-	if( !(f = fopen("../view/view.dot","w")) )
+	if( !(f = fopen(nom,"w")) )
 	{
 		perror("Opening dot file failure\n");exit(2);
 	}

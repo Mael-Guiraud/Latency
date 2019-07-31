@@ -40,8 +40,10 @@ void star()
 	float min,min2,min3;
 	float moy,moy2,moy3;
 	char * str;
-	float nb_simuls = 1000.0;
+	float nb_simuls = 10000.0;
+	int cmpt_fail = 0;
 	str = strcmpt(nb_simuls);
+	char nom [64];
 
 	
 	for(int P=PERIOD;P<=PERIOD;P+=message_size)
@@ -81,6 +83,7 @@ void star()
 			{
 				//#pragma omp critical
 					min3 = a3->nb_routes_scheduled;
+					print_graphvitz(g,"../view/graphminFPT");
 			}
 			//printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
 			//affiche_assignment(a,g.nb_routes,stdout);
@@ -89,21 +92,27 @@ void star()
 			
 			if(a3->nb_routes_scheduled>a2->nb_routes_scheduled) 
 			{
-				printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
-				affiche_assignment(a,g.nb_routes,stdout);
-				affiche_assignment(a2,g.nb_routes,stdout);
-				affiche_assignment(a3,a3->nb_routes_scheduled,stdout);
-				affiche_graph(g,P,stdout);printf("\n\n");
+				cmpt_fail++;
+				if(cmpt_fail< 5)
+				{
+					printf("\nCas N° %d :\n",cmpt_fail);
+					affiche_graph_routes(g, stdout);
+					sprintf(nom,"../view/graph%d",cmpt_fail);
+					print_graphvitz(g,nom);
+					printf("Solution pour Greedy SWAP :\n");
+					affiche_assignment(a2,g.nb_routes,stdout);
+					affiche_period_star(g,P,stdout);
+					printf("Solution pour FPT :\n");
+					affiche_assignment(a3,a3->nb_routes_scheduled,stdout);
+					//affiche_graph(g,P,stdout);
+					printf("\n-------------------------\n");
+				}
 
 
 			}
 			if(a3->nb_routes_scheduled<a2->nb_routes_scheduled) 
 			{
-				printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
-				affiche_assignment(a,g.nb_routes,stdout);
-				affiche_assignment(a2,g.nb_routes,stdout);
-				affiche_assignment(a3,a3->nb_routes_scheduled,stdout);
-				affiche_graph(g,P,stdout);printf("\n\n");
+				printf("THIS IS IMPOSSIBLE : FPT does not found an existing solution.\n");
 				exit(44);
 			}
 		
@@ -118,10 +127,12 @@ void star()
 			
 			fprintf(stdout,str,j+1,(int)nb_simuls);
 		}
+		printf("\nFPT ne passe au minimum que %f routes .\n",min3);
+		printf("Instance dans ../view/graphminFPT.pdf");
 		//printf("Greedy %d routes, moyenne %f / min %f\n",P,moy/nb_simuls,min);
 		//printf("Swap %d routes, moyenne %f / min %f\n",P,moy2/nb_simuls,min2);
-		printf("\nP = %d (%d routes)  : FPTMoy SwapMoy GreedyMoy FPTMin SwapMin GreedyMin\n ",P,P/message_size);
-		  printf("                     %f      %f      %f        %f      %f     %f  ",(moy3/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy2/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy/nb_simuls)/((float)P/(float)MESSAGE_SIZE),min3/((float)P/(float)MESSAGE_SIZE),min2/((float)P/(float)MESSAGE_SIZE),min/((float)P/(float)MESSAGE_SIZE));
+		printf("\nP = %d (%d routes)  :   FPTMoy   SwapMoy   GreedyMoy   FPTMin   SwapMin   GreedyMin\n ",P,P/message_size);
+		  printf("                     %f %f  %f  %f  %f  %f  ",(moy3/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy2/nb_simuls)/((float)P/(float)MESSAGE_SIZE),(moy/nb_simuls)/((float)P/(float)MESSAGE_SIZE),min3/((float)P/(float)MESSAGE_SIZE),min2/((float)P/(float)MESSAGE_SIZE),min/((float)P/(float)MESSAGE_SIZE));
 
 		printf("\n");
 
@@ -338,7 +349,7 @@ void test()
 
 	
 
-	printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
+	printf("\n printing graphvitz ...");print_graphvitz(g,"../view/view.dot");printf("Ok.\n");
 	printf("\n printing python ...");print_python(g);printf("Ok.\n");
 	printf("\n printing json arcs ..."); print_json_arcs(g);
 	printf("Logs in logs.txt\n");
