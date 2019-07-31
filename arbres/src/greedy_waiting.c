@@ -294,3 +294,134 @@ Assignment loaded_greedy_collisions(Graph g, int P, int message_size, int tmax)
 {
 	return greedy_by_arcs(g,P,message_size,tmax,2);
 }
+
+Assignment greedy(Graph g, int P, int message_size, int tmax)
+{
+	Assignment a = malloc(sizeof(struct assignment));
+	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->nb_routes_scheduled = 0;
+	a->all_routes_scheduled = 0;
+	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	int offset;
+	int begin_offset;
+	int bool_fail = 0;
+	int bool_fail_tmax = 0;
+	
+
+	//for each route
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		
+		offset=0;
+
+	
+		while( !message_no_collisions( g, i, offset,message_size,FORWARD,P) )
+		{
+			
+			offset++;
+			if(offset == P)
+			{
+				
+				bool_fail = 1;
+				break;
+			}			
+		}
+		if(!bool_fail)
+		{
+			fill_period(g,i,offset,message_size,FORWARD,P);
+			a->offset_forward[i]=offset;
+		}
+		else
+		{
+			a->offset_forward[i]=-1;
+			bool_fail = 0;
+		}
+		
+	}
+
+	int deadline[g.nb_routes];
+	int order[g.nb_routes];
+	for(int i=0;i<g.nb_routes;i++)
+		order[i]=i;
+	
+	for(int i= 0;i<g.nb_routes;i++)
+	{
+		deadline[i] = tmax - (2 * route_length(g,i) + a->offset_forward[i]);
+	}
+
+	tri_bulles_inverse(deadline,order, g.nb_routes);
+
+	
+		//for each route
+	
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		bool_fail = 0;
+		bool_fail_tmax = 0;
+		//For the route we succeced to schedule in the way forward
+		if(a->offset_forward[order[i]] != -1)
+		{
+			
+			begin_offset = route_length(g,order[i]) + a->offset_forward[order[i]];
+			offset=begin_offset;
+			
+			while( !message_no_collisions( g, order[i], offset,message_size,BACKWARD,P) )
+			{
+
+				offset++;
+				if(offset == (P+begin_offset))
+				{
+					bool_fail = 1;
+				}
+			}
+			if(!bool_fail)
+			{
+				
+				if( (2*route_length( g,order[i]) + offset-begin_offset ) > tmax )
+				{
+				
+					bool_fail_tmax = 1;
+				}
+				if(!bool_fail_tmax)
+				{
+				
+					fill_period(g,order[i],offset,message_size,BACKWARD,P);
+					a->offset_backward[order[i]]=offset;
+					a->waiting_time[order[i]]=offset-begin_offset;
+					a->nb_routes_scheduled++;
+				}
+				else
+				{
+					a->offset_backward[order[i]]=-1;
+					a->waiting_time[order[i]]=-1;
+				}
+				
+			}
+			else
+			{
+				a->offset_backward[order[i]]=-1;
+				a->waiting_time[order[i]]=-1;
+			}
+		}
+		else
+		{
+			a->offset_backward[order[i]]=-1;
+			a->waiting_time[order[i]]=-1;
+		}
+	}
+	if(a->nb_routes_scheduled == g.nb_routes)
+	{
+		a->all_routes_scheduled = 1;
+
+	}
+	else
+	{
+		a->all_routes_scheduled = 0;
+	}
+
+
+
+	return a;
+
+}

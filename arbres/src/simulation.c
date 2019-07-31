@@ -55,7 +55,7 @@ void star()
 		//#pragma omp parallel for private(g,a,a2)  if(PARALLEL)
 		for( int j=0; j<(int)nb_simuls; j++ )
 		{
-			g = init_graph_etoile(P/MESSAGE_SIZE);
+			g = init_graph_etoile(P/MESSAGE_SIZE,P);
 			a = greedy_PRIME(g, P, message_size);
 			reset_periods(g,P);
 			a2 = PRIME_reuse(g, P, message_size);

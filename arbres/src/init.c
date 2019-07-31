@@ -236,7 +236,7 @@ Graph init_graph_random_tree(double load)
 	return g;
 }
 
-Graph init_graph_etoile(int nb)
+Graph init_graph_etoile(int nb, int P)
 {
 	
 	int nb_routes = nb ;
@@ -292,17 +292,11 @@ Graph init_graph_etoile(int nb)
 	}
 
 	
-	
-	
-	if(FIXED_PERIOD_MOD)
-		real_period = PERIOD;
-	else
-		real_period = (nb_routes * MESSAGE_SIZE) / STANDARD_LOAD;
 
 
 
-	g.arc_pool[nb_routes].period_f = calloc(real_period,sizeof(int));
-	g.arc_pool[nb_routes].period_b = calloc(real_period,sizeof(int));
+	g.arc_pool[nb_routes].period_f = calloc(P,sizeof(int));
+	g.arc_pool[nb_routes].period_b = calloc(P,sizeof(int));
 	
 	
 	return g;
