@@ -40,7 +40,7 @@ void star()
 	float min,min2,min3;
 	float moy,moy2,moy3;
 	char * str;
-	float nb_simuls = 10000.0;
+	float nb_simuls = NB_SIMULS;
 	int cmpt_fail = 0;
 	str = strcmpt(nb_simuls);
 	char nom [64];
