@@ -72,16 +72,42 @@ void print_graphvitz(Graph g,char * nom){
 
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
 	{
-
-		g.arc_pool[i].first = vertex_id;
-		g.arc_pool[i].last = vertex_id+1;
-		g.arc_pool[i].seen = 1;
-		if(i<g.nb_bbu)
+		if(g.kind == STAR)
 		{
-			fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+			
+			if(i<g.nb_bbu)
+			{
+				g.arc_pool[i].first = 0;
+				g.arc_pool[i].last = vertex_id+1;
+				g.arc_pool[i].seen = 1;
+				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g.arc_pool[i].length);
+				vertex_id++;
+			}
+			else
+			{
+				g.arc_pool[i].last = 0;
+				g.arc_pool[i].first = vertex_id+1;
+				g.arc_pool[i].seen = 1;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
+				vertex_id+=2;
+			}
+			
+			
 		}
-		fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
-		vertex_id+=2;
+		else
+		{
+			g.arc_pool[i].first = vertex_id;
+			g.arc_pool[i].last = vertex_id+1;
+			g.arc_pool[i].seen = 1;
+			if(i<g.nb_bbu)
+			{
+				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+			}
+			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
+			vertex_id+=2;
+		}
+		
 	}
 
 	for(int i=0;i<g.nb_routes;i++)

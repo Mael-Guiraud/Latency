@@ -152,9 +152,9 @@ void free_period(Graph g,int route,int offset,int message_size,Period_kind kind,
 
 Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment a)
 {
-
-	int new_offset;
 	Collisions c,c2;
+	c.nb_cols = 0;
+	c2.nb_cols = 0;
 	int fail;
 	int var_continue;
 	

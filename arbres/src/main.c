@@ -6,6 +6,7 @@
 #include "data_treatment.h"
 #include "spall_waiting.h"
 #include "simulation.h"
+#include "simulation_star.h"
 #include "string.h"
 #include "greedy_without_waiting.h"
 #include "reusePrime.h"
@@ -22,7 +23,8 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"star"))
 	{
-		star();
+		//star_search_random_routes();
+		star_all_routes_lenghts();
 	}
 	else
 	{

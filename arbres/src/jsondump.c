@@ -550,7 +550,7 @@ int parseflows()
    
   return 1;
 }
-
+/*
 void count_cols_bbu(Graph g,int* p_bbu,int * p_cols)
 {
   for(int i=0;i<g.arc_pool_size;i++)
@@ -579,7 +579,7 @@ void count_cols_bbu(Graph g,int* p_bbu,int * p_cols)
     }
   }
 
-}
+}*/
 void jsontest()
 {
   g.arc_pool = NULL;
@@ -591,14 +591,15 @@ void jsontest()
   parsearcs();
   parsepath();  
   parseflows();
-  int nb_bbu=0;
-  int nb_cols=0;
+ // int nb_bbu=0;
+ // int nb_cols=0;
   for(int i=0;i<g.arc_pool_size;i++)
   {
     g.arc_pool[i].period_f = calloc(period,sizeof(int));
     g.arc_pool[i].period_b = calloc(period,sizeof(int));
   }
-  count_cols_bbu(g,&nb_bbu,&nb_cols);
+ // count_cols_bbu(g,&nb_bbu,&nb_cols);
+//  printf("%d %d \n",nb_bbu,nb_cols);
   printf("%d %d \n",period,tmax);
   affiche_graph(g,period,stdout);
   free_graph(g);

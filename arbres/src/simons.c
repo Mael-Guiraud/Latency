@@ -1058,7 +1058,7 @@ Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int da
 	int a_scheduler = nbr_route;
 	/////////////////////////////////////////////////////int a_scheduler = 11;
 	Ensemble * ens = NULL;
-	Ensemble * ensembletmp;
+	Ensemble * ensembletmp = NULL;
 	while(a_scheduler != 0)//tant qu'on n'a pas schedul tous les elements
 	{
 		//printf("test %p\n",elems2);
