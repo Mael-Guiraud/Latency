@@ -23,17 +23,17 @@ dirs:
 	mkdir -p $(DIRview)
 	mkdir -p $(DIRfail)
 
-tests: dirs compil runtest dot
+tests: dirs runtest dot
 
-star: dirs clear compil runstar dot
+star: dirs clear runstar dot
 
-runstar:
+runstar: compil
 	./compil star
 
-runtest: 
+runtest: compil
 	./compil test
 
-run: 
+run: compil
 	rm -f $(DIRgnu)*
 	./compil simulAll
 
@@ -62,9 +62,12 @@ depend:
 clean: clear
 	rm -rf *.o
 	rm -rf $(EXEC)
-	rm -rf bin/*
+	rm -rf rapport
+	rm -rf rapport.info
+	
 
 clear:
+	rm -rf bin/*
 	rm -rf ../view/graph*
 
 gnuplot: 
@@ -80,4 +83,10 @@ debugsimul: compil
 
 profile: compil
 	valgrind --tool=callgrind -v ./compil simulAll
+
+cover: dirs runstar dot 
+	lcov --directory . -c -o rapport.info
+	genhtml -o ./rapport -t "Couverture code" rapport.info
+	firefox ./rapport/index.html
+
 

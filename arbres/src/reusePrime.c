@@ -154,8 +154,9 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 {
 
 	int new_offset;
-	Collisions c;
+	Collisions c,c2;
 	int fail;
+	int var_continue;
 	
 	//printf("Forward : \n ");
 	//affiche_tab(g.routes[0][1]->period_f,P,stdout);
@@ -191,8 +192,29 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 			}
 			else
 			{
+				c = id_col(g,id_pb, P,offset, FORWARD,message_size);
+				c2 = id_col(g,id_pb, P,offset+route_length(g,id_pb), BACKWARD,message_size);
+				for(int i=0;i<c2.nb_cols;i++)
+				{
+					var_continue = 0;
+					for(int j=0;j<c.nb_cols;j++)
+					{
+						//la route dans C2 existe dans c
+						if(c2.cols[i]==c.cols[j])
+						{
+							var_continue = 1;
+							break;
+						}
+					}
+					if(var_continue)
+						continue;
+					//la route n'existait pas
+					c.cols[c.nb_cols] = c2.cols[i];
+					c.nb_cols++;
+
+				}
 				//printf("Double collisions\n");
-				continue;
+			
 			}
 		}
 		

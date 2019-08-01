@@ -32,8 +32,6 @@
 
 #define NB_SIMULS 1000
 
-//for star generation
-#define NB_ROUTES 6
 
 //openMP parallel
 #define PARALLEL 1
