@@ -3,6 +3,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 //return 1 if the message can reach the destination without collision, 0 otherwise
 int message_no_collisions(Graph g,int route,int offset,int message_size,Period_kind kind,int P)
 {
@@ -466,4 +467,32 @@ int  load_max(Graph g)
 	}
 	
 	return loadmax;
+}
+
+
+
+
+int logarithme(int base, int nb)
+{
+	if(nb == 0)
+		return 0;
+	return log((double)nb) / log((double)base);
+}
+//renvoie la taille en bits du nombre nb en base base
+int taille_bits(int base, int nb)
+{
+	return (int)logarithme(base,nb) +1;
+}
+//Renvoie le nombre "nb" sous un tableau d'int en base "base"
+void chgt_base(int base, int nb, int * tab)
+{
+	int taille = taille_bits(base,nb);
+
+	for(int i=0;i<taille;i++)
+	{
+		tab[i] = nb % base;
+		nb /= base;
+	}
+	return;
+
 }

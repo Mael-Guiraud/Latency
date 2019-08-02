@@ -27,11 +27,21 @@
 #define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 1
+<<<<<<< HEAD
 #define PERIOD 10	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
 #define NB_SIMULS 1000
+=======
+#define PERIOD 7	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
+
+
+#define NB_SIMULS 1
+>>>>>>> 5eeeb975b88e2caeb4ce0976d703e8dc7d27c45c
 
 
 //openMP parallel
-#define PARALLEL 1
+#define PARALLEL 0
+
+//for logs 
+#define SHOW_EVERY 100
