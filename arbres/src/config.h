@@ -28,7 +28,7 @@
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 1
 
-#define PERIOD 2
+#define PERIOD 9
 
 
 #define NB_SIMULS 1

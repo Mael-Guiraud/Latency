@@ -249,12 +249,12 @@ Assignment linear_search(Graph g, int nb_routes, int P, int message_size)
 		
 		if(!a->all_routes_scheduled)
 		{
-			free(a);
+			 free_assignment(a);
 			
 			return olda;
 		}
 		if(olda)
-			free(olda);
+			free_assignment(olda);
 		olda = a;
 	
 	}
