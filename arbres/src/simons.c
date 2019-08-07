@@ -1340,7 +1340,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 */
 
 //int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int mode)
-int simons_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int  nbr_route, int taille_paquet, int periode, int premier,int * subset)
+int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet, int periode, int premier,int * subset)
 {	
 	
 	///////////////////////////////////////////////////////taille_paquet = 6;
@@ -1350,8 +1350,8 @@ int simons_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int  nbr_rou
 
 
 	
-	int Dl[nbr_route];
-	int w_i[nbr_route];
+	//int Dl[nbr_route];
+	int* w_i=malloc(sizeof(int)*nbr_route);
 	int fin[nbr_route];
 	int debut_periode_retour;
 	int arrivee[nbr_route];
@@ -1362,11 +1362,11 @@ int simons_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int  nbr_rou
 	Element * elems;
 	Ensemble * ens;
 	Ensemble * a_free;
-	int maximum;
+	
 	
 	for(int i=0;i<nbr_route;i++)
 	{
-		Dl[i] = LENGTH[i];//g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
+		//Dl[i] = LENGTH[i];//g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
 		release[i] = RELEASE[i];//Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
 		arrivee[i] = RELEASE[i];//Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
 		deadline[i] =  DEADLINE[i];//TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
@@ -1418,7 +1418,11 @@ int simons_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int  nbr_rou
 	//printf("FPT premier = %d\n",premier);
 	//affichejobs(elems);
 	ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
-	if(ens == NULL)return -1;
+	if(ens == NULL)
+		{
+			free(w_i);
+			return NULL;
+		}
 	/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
 	ens->frereG->frereD = ens;
 	ens = ens->frereG;*/
@@ -1460,6 +1464,7 @@ int simons_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int  nbr_rou
 	*/
 
 	//if(!is_ok(g,taille_paquet,m_i,w_i,periode)){printf("ca arrive\n");return -1;}
+	/*int maximum;
 	if(!SYNCH)
 	{
 		maximum= w_i[0]+2*Dl[0];
@@ -1479,18 +1484,19 @@ int simons_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int  nbr_rou
 				maximum= m_i[i]+w_i[i]+2*Dl[i];
 		}
 
-	}
-	return maximum;
+	}*/
+	return w_i;
 	
 
 }
 
 //Fait l'arbre recursif avec tous les sous ensemble de routes et appel sur MLS avec la premiere route fixée
-int rec_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int nbr_route, int taille_paquet, int periode, int premier, int* subset,int * candidats, int profondeur, int nbr_candidats)
+int* rec_FPT(int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int periode, int premier, int* subset,int * candidats, int profondeur, int nbr_candidats)
 {
 	
-	int test;
-	int val_G,val_D;
+	
+	int *val_G=NULL;
+	int *val_D=NULL;
 	if(profondeur == nbr_candidats)
 	{
 		//affiche_tab(subset,nbr_candidats);
@@ -1500,22 +1506,22 @@ int rec_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int nbr_route, 
 		for(int i=0;i<nbr_candidats;i++)
 			if(subset[i])
 				routes[candidats[i]]=1;
-		test= simons_FPT(RELEASE,DEADLINE,LENGTH,m_i,nbr_route,taille_paquet,periode,premier,routes);
-		return test;
+		return simons_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,routes);
+
 	}
 	else
 	{
 		//printf("PArcours a droite, %d\n",profondeur);
 		subset[profondeur] = 0;
 		//affiche_tab(subset,nbr_candidats);
-		val_D =  rec_FPT(RELEASE,DEADLINE,LENGTH,m_i,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats);
+		val_D =  rec_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats);
 		
-		if(val_D != -1)// SI on ne trouve pas on essaye la branche soeur
+		if(val_D)// SI on ne trouve pas on essaye la branche soeur
 			return val_D;
 		//printf("PArcours a gauche %d\n",profondeur);
 		subset[profondeur]= 1;
 		//affiche_tab(subset,nbr_candidats);
-		val_G =  rec_FPT(RELEASE,DEADLINE,LENGTH,m_i,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats); 
+		val_G =  rec_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats); 
 		return val_G;
 
 	}
@@ -1523,10 +1529,10 @@ int rec_FPT(int* RELEASE, int * DEADLINE,int * LENGTH, int* m_i, int nbr_route, 
 
 
 //Les dates release, deadline et m_i sont calculées dans le graph de base, l'algo se charge de les normaliser
-int FPT_PALL(int *RELEASE, int *DEADLINE,int*LENGTH, int * m_i, int nbr_route, int taille_paquet, int periode)
+int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode)
 {	
 
-	int res;
+	int *res=NULL;
 
 	int arrivee[nbr_route];
 	int deadline[nbr_route];
@@ -1592,11 +1598,11 @@ int FPT_PALL(int *RELEASE, int *DEADLINE,int*LENGTH, int * m_i, int nbr_route, i
 			
 		}*/
 
-		res = rec_FPT(arrivee,deadline,LENGTH,m_i,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
+		res = rec_FPT(arrivee,deadline,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
 		
 
 
-		if(res!= -1)
+		if(res)
 		{
 			return res;
 		}
@@ -1605,5 +1611,5 @@ int FPT_PALL(int *RELEASE, int *DEADLINE,int*LENGTH, int * m_i, int nbr_route, i
 	}
 
 
-	return -1;
+	return NULL;
 }

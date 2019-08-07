@@ -141,7 +141,7 @@ void star_all_routes_lenghts()
 	float nb_simuls = pow((double)P,(double)nb_routes-1);
 	int taille_max=nb_routes-1;
 	int tab[taille_max+1];
-	tab[0]=0;
+	
 
 	Assignment a,a2,a3 ;
 	Graph g;
@@ -154,19 +154,23 @@ void star_all_routes_lenghts()
 	float min2 = P;
 	float min3 = P;
 	char * str = strcmpt(nb_simuls);
-	char nom [64];
+	int nb_boucles = (int)pow((double)P,(double)nb_routes-1);
+	//char nom [64];
 	
 	
 	// Pour tout les nombres de 0 a P^(nbroutes -1)
-	for( int j=0; j<(int)pow((double)P,(double)nb_routes-1); j++ )
+	#pragma omp parallel for private(tab,a,a2,a3,g)  if(PARALLEL)
+	for( int j=0; j<nb_boucles; j++ )
 	{
 
 		//On ecrit le nombre en base P
+		tab[0]=0;
 		for(int i=0;i<taille_max;i++)
 		{
 			tab[i+1]=0;
 		}
 		chgt_base(P,j,tab+1);
+
 
 
 		g =  init_graph_etoile_values_set(nb_routes,P,tab);
@@ -175,26 +179,39 @@ void star_all_routes_lenghts()
 		a2 = PRIME_reuse(g, P, message_size);
 		a3 = linear_search(g, nb_routes,  P,  MESSAGE_SIZE);
 
-		moy += a->nb_routes_scheduled;
-		moy2 += a2->nb_routes_scheduled;
-		moy3 += a3->nb_routes_scheduled;
+		#pragma omp atomic update
+			moy += a->nb_routes_scheduled;
+		#pragma omp atomic update			
+			moy2 += a2->nb_routes_scheduled;
+		#pragma omp atomic update
+			moy3 += a3->nb_routes_scheduled;
 		
-		if(min > a->nb_routes_scheduled)
+		#pragma omp critical
 		{
-				min = a->nb_routes_scheduled;
+			if(min > a->nb_routes_scheduled)
+			{
+					min = a->nb_routes_scheduled;
+					print_graphvitz(g,"../view/graphminGreedy");
+			}
 		}
-				
-		if(min2 > a2->nb_routes_scheduled)
-		{
-				min2 = a2->nb_routes_scheduled;
+		#pragma omp critical
+		{			
+			if(min2 > a2->nb_routes_scheduled)
+			{
+					min2 = a2->nb_routes_scheduled;
+					print_graphvitz(g,"../view/graphminSWAPT");
+			}
 		}
-		if(min3 > a3->nb_routes_scheduled)
-		{
-			min3 = a3->nb_routes_scheduled;
-			print_graphvitz(g,"../view/graphminFPT");
+		#pragma omp critical
+		{	
+			if(min3 > a3->nb_routes_scheduled)
+			{
+				min3 = a3->nb_routes_scheduled;
+				print_graphvitz(g,"../view/graphminFPT");
+			}
 		}
 
-		if(a3->nb_routes_scheduled>a2->nb_routes_scheduled) 
+		/*if(a3->nb_routes_scheduled>a2->nb_routes_scheduled) 
 		{
 			cmpt_fail++;
 
@@ -218,7 +235,7 @@ void star_all_routes_lenghts()
 		{
 			printf("THIS IS IMPOSSIBLE : FPT does not found an existing solution.\n");
 			exit(44);
-		}
+		}*/
 	
 
 		

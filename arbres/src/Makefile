@@ -80,6 +80,8 @@ debugtest: dirs compil
 debugsimul: compil
 	valgrind --leak-check=full -v ./compil simulAll
 
+debugstar: compil 
+	valgrind --leak-check=full -v ./compil star
 
 profile: compil
 	valgrind --tool=callgrind -v ./compil simulAll
