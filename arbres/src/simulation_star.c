@@ -202,7 +202,7 @@ void star_all_routes_lenghts()
 			}
 		}
 
-		if(a2->all_routes_scheduled != 1)
+		if(a2->nb_routes_scheduled <= 6)
 		{
 			a3 = linear_search(g, P/MESSAGE_SIZE,  P,  MESSAGE_SIZE);
 			#pragma omp atomic update
