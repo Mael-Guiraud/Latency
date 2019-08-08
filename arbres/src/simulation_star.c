@@ -159,7 +159,7 @@ void star_all_routes_lenghts()
 	
 	
 	// Pour tout les nombres de 0 a P^(nbroutes -1)
-	#pragma omp parallel for private(tab,a,a2,a3,g)  if(PARALLEL)
+	#pragma omp parallel for private(tab,a,a2,a3,g) schedule(dynamic,500) if(PARALLEL) 
 	for( int j=0; j<nb_boucles; j++ )
 	{
 
@@ -177,14 +177,13 @@ void star_all_routes_lenghts()
 		a = greedy_PRIME(g, P, message_size);
 		reset_periods(g,P);
 		a2 = PRIME_reuse(g, P, message_size);
-		a3 = linear_search(g, nb_routes,  P,  MESSAGE_SIZE);
+	
 
 		#pragma omp atomic update
 			moy += a->nb_routes_scheduled;
 		#pragma omp atomic update			
 			moy2 += a2->nb_routes_scheduled;
-		#pragma omp atomic update
-			moy3 += a3->nb_routes_scheduled;
+		
 		
 		#pragma omp critical
 		{
@@ -202,14 +201,34 @@ void star_all_routes_lenghts()
 					print_graphvitz(g,"../view/graphminSWAPT");
 			}
 		}
-		#pragma omp critical
-		{	
-			if(min3 > a3->nb_routes_scheduled)
+
+		if(a2->all_routes_scheduled != 1)
+		{
+			a3 = linear_search(g, P/MESSAGE_SIZE,  P,  MESSAGE_SIZE);
+			#pragma omp atomic update
+				moy3 += a3->nb_routes_scheduled;
+			#pragma omp critical
 			{
-				min3 = a3->nb_routes_scheduled;
-				print_graphvitz(g,"../view/graphminFPT");
+				if(min3 > a3->nb_routes_scheduled)
+				{
+				
+						min3 = a3->nb_routes_scheduled;
+						print_graphvitz(g,"../view/graphminFPT");
+				}
+	
 			}
+			if(a3->nb_routes_scheduled>a2->nb_routes_scheduled) 
+			{
+				cmpt_fail++;
+			}
+			free_assignment(a3);
 		}
+		else
+		{
+			#pragma omp atomic update
+				moy3 += a2->nb_routes_scheduled;
+		}
+	
 
 		/*if(a3->nb_routes_scheduled>a2->nb_routes_scheduled) 
 		{
@@ -242,10 +261,11 @@ void star_all_routes_lenghts()
 
 		free_assignment(a);
 		free_assignment(a2);
-		free_assignment(a3);
-		free_graph(g);	
 		
-		fprintf(stdout,str,j+1,(int)nb_simuls);
+		free_graph(g);	
+
+		#pragma omp critical
+			fprintf(stdout,str,j+1,(int)nb_simuls);
 	}
 	printf("\nIl y a eu %d cas dans lequel FPT est meilleur que swap .\n",cmpt_fail);
 	printf("\nFPT ne passe au minimum que %f routes .\n",min3);
