@@ -217,18 +217,47 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
 	{
-
-		g.arc_pool[i].first = vertex_id;
-		g.arc_pool[i].last = vertex_id+1;
-		g.arc_pool[i].seen = 1;
-		str = sprint_periode_color(g.arc_pool[i].period_f,p,str);
-		fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id,str);	
-		if(i<g.nb_bbu)
+		if(g.kind == STAR)
 		{
-			fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+			
+			if(i<g.nb_bbu)
+			{
+				g.arc_pool[i].first = 0;
+				g.arc_pool[i].last = vertex_id+1;
+				g.arc_pool[i].seen = 1;
+				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g.arc_pool[i].length);
+				vertex_id++;
+			}
+			else
+			{
+				g.arc_pool[i].last = 0;
+				g.arc_pool[i].first = vertex_id+1;
+				g.arc_pool[i].seen = 1;
+				str = sprint_periode_color(g.arc_pool[g.nb_routes].period_f,p,str);
+				fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id+1,str);	
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
+				vertex_id+=2;
+			}
+			
+			
 		}
-		fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
-		vertex_id+=2;
+		else
+		{
+			g.arc_pool[i].first = vertex_id;
+			g.arc_pool[i].last = vertex_id+1;
+			g.arc_pool[i].seen = 1;
+			str = sprint_periode_color(g.arc_pool[i].period_f,p,str);
+			fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id,str);	
+			if(i<g.nb_bbu)
+			{
+				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+			}
+			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
+			vertex_id+=2;
+		}
+		
+		
 	}
 
 	for(int i=0;i<g.nb_routes;i++)
@@ -294,19 +323,49 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
 	{
 
-		g.arc_pool[i].first = vertex_id;
-		g.arc_pool[i].last = vertex_id+1;
-		g.arc_pool[i].seen = 1;
-		
-		
-		str = sprint_periode_color(g.arc_pool[i].period_b,p,str);
-		if(strcmp(str,"<>") == 0)
-			fprintf(f,"%d [shape = \"point\"]\n",vertex_id+1);	
+		if(g.kind == STAR)
+		{
+			str = sprint_periode_color(g.arc_pool[g.nb_routes].period_b,p,str);
+			fprintf(f,"%d [shape = \"box\",label=%s]\n",0,str);	
+			
+			if(i<g.nb_bbu)
+			{
+				g.arc_pool[i].first = 0;
+				g.arc_pool[i].last = vertex_id+1;
+				g.arc_pool[i].seen = 1;
+				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g.arc_pool[i].length);
+				vertex_id++;
+			}
+			else
+			{
+				g.arc_pool[i].last = 0;
+				g.arc_pool[i].first = vertex_id+1;
+				g.arc_pool[i].seen = 1;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
+				vertex_id+=2;
+			}
+			
+			
+		}
 		else
-			fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id+1,str);	
+		{
+			g.arc_pool[i].first = vertex_id;
+			g.arc_pool[i].last = vertex_id+1;
+			g.arc_pool[i].seen = 1;
+			
+			
+			str = sprint_periode_color(g.arc_pool[i].period_b,p,str);
+			if(strcmp(str,"<>") == 0)
+				fprintf(f,"%d [shape = \"point\"]\n",vertex_id+1);	
+			else
+				fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id+1,str);	
+			
+			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
+			vertex_id+=2;
+		}
+
 		
-		fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
-		vertex_id+=2;
 	}
 
 	for(int i=0;i<g.nb_routes;i++)

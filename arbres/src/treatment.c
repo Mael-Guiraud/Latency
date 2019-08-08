@@ -99,6 +99,7 @@ void fill_period(Graph g,int route,int offset,int message_size,Period_kind kind,
 		}
 	}
 }
+
 int route_length(Graph g,int route)
 {
 	int length = 0;
@@ -495,4 +496,19 @@ void chgt_base(int base, int nb, int * tab)
 	}
 	return;
 
+}
+
+//return a mod b
+int mod(int a, int b)
+{
+	if( a>= 0)
+		return a%b;
+	else
+	{
+		while(a<0)
+		{
+			a+=b;
+		}
+		return a%b;
+	}
 }

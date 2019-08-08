@@ -9,6 +9,8 @@ All rights reserved.
 #include <math.h>
 #include <assert.h>
 #include "config.h"
+#include "structs.h"
+#include "treatment.h"
 /*
 #include "struct.h"
 #include "operations.h"
@@ -1174,11 +1176,7 @@ Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int da
 
 }
 */
-int mod(int a, int b)
-{
-    int r = a % b;
-    return (r < 0) ? r + b : r;
-}
+
 void decaler_release(int * release, int* deadline, int periode, int premier,int nbr_route,int taille_paquet)
 {
 	int releasepremier=release[premier];
@@ -1598,7 +1596,7 @@ int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int
 			
 		}*/
 
-		res = rec_FPT(arrivee,deadline,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
+		res = rec_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
 		
 
 

@@ -25,7 +25,7 @@ dirs:
 
 tests: dirs runtest dot
 
-star: dirs clear runstar dot
+star: dirs runstar dot
 
 runstar: compil
 	./compil star
@@ -50,7 +50,7 @@ nowaiting: dirs compil
 dot:
 	./tpdf.sh
 
-compil: $(DIRbin)simulation_star.o $(DIRbin)simons.o $(DIRbin)fptPAZL.o $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
+compil: $(DIRbin)starSPALL.o $(DIRbin)simulation_star.o $(DIRbin)simons.o $(DIRbin)fptPAZL.o $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
 	$(CC) $(LFLAGS) -o $@ $^ -lm -lgcov
 
 $(DIRbin)%.o: %.c config.h structs.h
@@ -64,11 +64,11 @@ clean: clear
 	rm -rf $(EXEC)
 	rm -rf rapport
 	rm -rf rapport.info
-	
-
-clear:
 	rm -rf bin/*
 	rm -rf ../view/graph*
+	
+
+	
 
 gnuplot: 
 	./launch.bash

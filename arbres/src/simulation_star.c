@@ -18,6 +18,7 @@
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
+#include "starSPALL.h"
 #include <string.h>
 #include <math.h>
 char * strcmpt(float nb_simuls)
@@ -284,3 +285,98 @@ void star_all_routes_lenghts()
 
 }
 
+
+void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
+{
+	srand(seed);
+	int message_size = MESSAGE_SIZE;
+	int nb_success;
+	int tmax;
+	double moy_routes_scheduled ;
+	Graph g;
+	int P ;
+	
+	char buf[256];
+	sprintf(buf,"../data/%s",nom);
+	FILE * f = fopen(buf,"w");
+
+	Assignment a;
+	int MarginMax = MARGIN_MAX;
+	int MarginMin = MARGIN_MIN;
+
+	//Generation of the pdf of fails
+
+	if(!PARALLEL)
+	{
+		sprintf(buf,"mkdir -p ../FAIL/%s",nom);
+		if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	}
+
+	printf("ALGORITHM : %s \n",nom);
+	if(!f)perror("Error while opening file\n");
+	if(TMAX_MOD)
+	{
+		printf("		TMax is fixed to %d .\n",TMAX);
+		MarginMin = 0;
+		MarginMax = 0; 
+	}
+	if(FIXED_PERIOD_MOD)
+	{
+		printf("		The period is fixed to %d .\n",PERIOD);
+	}
+	for(int margin=MarginMin;margin<=MarginMax;margin+=MARGIN_GAP)
+	{
+		nb_success=0;
+		moy_routes_scheduled = 0;
+
+		
+
+		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
+		for(int i=0;i<NB_SIMULS;i++)
+		{
+			
+			if(FIXED_PERIOD_MOD)
+			{
+				if(PERIOD < load_max(g)*MESSAGE_SIZE)
+					printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+				P = PERIOD;
+			}
+			else
+				P= (NB_ROUTES*MESSAGE_SIZE)/STANDARD_LOAD;
+			g= init_graph_etoile(NB_ROUTES,P);
+			if(TMAX_MOD)
+			{
+				if(longest_route(g)*2 > TMAX)
+					printf("			WARNING! TMAX is higher than the longest route. \n");
+				tmax = TMAX;
+			}
+			else
+				tmax = longest_route(g)*2 + margin;
+			
+
+			a = ptrfonction( g, P, message_size,tmax);
+			if(a->all_routes_scheduled)
+			{
+				printf("\n success \n");
+				nb_success++;
+			
+			
+			}
+		
+			
+
+			#pragma omp atomic update
+				moy_routes_scheduled += a->nb_routes_scheduled;
+			free_assignment(a);
+	
+			free_graph(g);
+			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
+			fflush(stdout);
+		}	
+		printf("\nMargin : %d success : %d/%d .\n",margin,nb_success,NB_SIMULS);
+		fprintf(f,"%d %f %f\n",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
+	}
+	fclose(f);
+	
+		
+}

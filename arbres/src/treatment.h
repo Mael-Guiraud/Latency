@@ -21,3 +21,4 @@ int * routes_sorted_lenght_arcs_bbu(Graph g);
 int logarithme(int base, int nb);
 int taille_bits(int base, int nb);
 void chgt_base(int base, int nb, int * tab);
+int mod(int a, int b);

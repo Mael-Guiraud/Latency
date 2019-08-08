@@ -6,7 +6,6 @@
 
 void affiche_tab(int * tab, int taille, FILE * f)
 {
-	fprintf(f,"\n");
 	for(int i=0;i<taille;i++)
 	{
 		fprintf(f,"%d,",tab[i]);

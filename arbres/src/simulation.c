@@ -17,6 +17,7 @@
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
+
 #include <string.h>
 #include <math.h>
 
@@ -156,7 +157,6 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
-	
 
 	seed = time(NULL);
 

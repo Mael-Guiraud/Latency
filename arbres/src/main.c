@@ -10,8 +10,10 @@
 #include "string.h"
 #include "greedy_without_waiting.h"
 #include "reusePrime.h"
+#include "starSPALL.h"
 int main (int argc, char *argv[])
 {
+	int seed = time(NULL);
 	if(argc < 2)
 	{
 		printf("Usage %s [arg]",argv[0]);
@@ -24,11 +26,12 @@ int main (int argc, char *argv[])
 	if(!strcmp(argv[1],"star"))
 	{
 		//star_search_random_routes();
-		star_all_routes_lenghts();
+		//star_all_routes_lenghts();
+		simul_star(seed,&fpt_spall,"FPTSPALL");
 	}
 	else
 	{
-		int seed = time(NULL);
+		
 		char * ylabels[] = {"Success Rate","NbRoutes"};
 		if(!strcmp(argv[1],"simulWaiting") || !strcmp(argv[1],"simulAll"))
 		{

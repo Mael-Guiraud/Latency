@@ -18,24 +18,26 @@
 
 // CONFIG OF THE SIMULATIONS FOR ALGORITHMS WITH WAITING TIME
 #define MARGIN_MIN 0
-#define MARGIN_MAX 15000
-#define MARGIN_GAP 1000
-#define STANDARD_LOAD 0.7
+#define MARGIN_MAX 20
+#define MARGIN_GAP 1
+#define STANDARD_LOAD 0.5
 
 
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
 #define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
-#define FIXED_PERIOD_MOD 1
-
+#define FIXED_PERIOD_MOD 0
 #define PERIOD 9
 
 
-#define NB_SIMULS 1
+//For star simulation
+#define NB_ROUTES 7
+
+#define NB_SIMULS 10
 
 
 //openMP parallel
-#define PARALLEL 1
+#define PARALLEL 0
 
 //for logs 
 #define SHOW_EVERY 100
