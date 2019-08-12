@@ -1,14 +1,14 @@
 // CONFIG OF THE TOPOLOGY
 
-#define MAX_LENGTH 3
-#define MESSAGE_SIZE 1
+#define MAX_LENGTH 700
+#define MESSAGE_SIZE 2500
 #define NB_BBU 2
 #define NB_COLLISIONS 3
 #define NB_ROUTES_PER_FLOW 3
 #define PROBA 0.5
 
 //Mod synch or not
-#define SYNCH 0
+#define SYNCH 1
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.3
@@ -18,8 +18,8 @@
 
 // CONFIG OF THE SIMULATIONS FOR ALGORITHMS WITH WAITING TIME
 #define MARGIN_MIN 0
-#define MARGIN_MAX 20
-#define MARGIN_GAP 1
+#define MARGIN_MAX 40000
+#define MARGIN_GAP 500
 #define STANDARD_LOAD 0.5
 
 
@@ -33,11 +33,11 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 10
+#define NB_SIMULS 100
 
 
 //openMP parallel
-#define PARALLEL 0
+#define PARALLEL 1
 
 //for logs 
 #define SHOW_EVERY 100

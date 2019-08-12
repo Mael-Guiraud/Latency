@@ -16,7 +16,7 @@ void print_tab(element_sjt * tab, int taille)
 	for(int i=0;i<taille;i++)
 	{
 		if(tab[i].sens == 0)printf(".");
-		printf("%d",tab[i].val+1);
+		printf("%d",tab[i].val);
 		if(tab[i].sens == 1)printf(".");
 	}
 	printf("\n");
@@ -124,8 +124,8 @@ void compute_tabs(element_sjt * tab,int * m_i,int * release, int * deadline, Gra
 	for(int i=0;i<g.nb_routes;i++)
 	{
 		m_i[tab[i].val] = mod(offset-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],FORWARD),P);
-		release[tab[i].val] = (m_i[tab[i].val]+route_length(g,tab[i].val)+route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD))%P;
-		deadline[tab[i].val] = (message_size+tmax+m_i[tab[i].val]-(route_length(g,tab[i].val)-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD)))%P;
+		release[tab[i].val] = m_i[tab[i].val]+route_length(g,tab[i].val)+route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD);
+		deadline[tab[i].val] = message_size+tmax+m_i[tab[i].val]-(route_length(g,tab[i].val)-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD));
 		offset+=message_size;
 	}
 }

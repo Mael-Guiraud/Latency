@@ -291,6 +291,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
 	int nb_success;
+	long long moy;
 	int tmax;
 	double moy_routes_scheduled ;
 	Graph g;
@@ -328,8 +329,8 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 	{
 		nb_success=0;
 		moy_routes_scheduled = 0;
-
-		
+		moy = 0;
+		int travel_time;
 
 		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
 		for(int i=0;i<NB_SIMULS;i++)
@@ -343,6 +344,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 			}
 			else
 				P= (NB_ROUTES*MESSAGE_SIZE)/STANDARD_LOAD;
+
 			g= init_graph_etoile(NB_ROUTES,P);
 			if(TMAX_MOD)
 			{
@@ -357,10 +359,14 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 			a = ptrfonction( g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
 			{
-				printf("\n success \n");
-				nb_success++;
-			
-			
+				travel_time = travel_time_max(g, tmax,a);
+				
+				if(travel_time != -1)
+				{
+					nb_success++;
+					#pragma omp atomic update
+						moy += travel_time;
+				}
 			}
 		
 			
@@ -373,7 +379,10 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 			fflush(stdout);
 		}	
-		printf("\nMargin : %d success : %d/%d .\n",margin,nb_success,NB_SIMULS);
+
+		printf("\nMargin : %d success : %d/%d ,",margin,nb_success,NB_SIMULS);
+		if(nb_success == 0)nb_success++;//eviter la division par 0.
+		printf(" moyenne = %lld\n",moy/nb_success);
 		fprintf(f,"%d %f %f\n",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
 	}
 	fclose(f);

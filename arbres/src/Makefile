@@ -25,7 +25,7 @@ dirs:
 
 tests: dirs runtest dot
 
-star: dirs runstar dot
+star: dirs runstar 
 
 runstar: compil
 	./compil star
