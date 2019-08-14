@@ -330,6 +330,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 		nb_success=0;
 		moy_routes_scheduled = 0;
 		moy = 0;
+
 		int travel_time;
 
 		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
@@ -344,7 +345,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 			}
 			else
 				P= (NB_ROUTES*MESSAGE_SIZE)/STANDARD_LOAD;
-
+		
 			g= init_graph_etoile(NB_ROUTES,P);
 			if(TMAX_MOD)
 			{
@@ -366,6 +367,8 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 					nb_success++;
 					#pragma omp atomic update
 						moy += travel_time;
+		
+					
 				}
 			}
 		

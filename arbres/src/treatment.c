@@ -406,13 +406,16 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 		if(a->offset_forward[i] < first_forward)
 		{
 			first_forward = a->offset_forward[i];
+		
 		}
 	}
+
 	
 	int max;
 	if(SYNCH)
 	{
 		max = a->offset_forward[0]-first_forward + 2*route_length( g,0) + a->waiting_time[0];
+
 	}
 	else
 	{
@@ -422,6 +425,7 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 	{
 		if(SYNCH)
 		{
+			
 			if( (a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
 				return -1;
 			if((a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > max )
@@ -440,6 +444,7 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 			}
 		}
 	}
+
 	return max;
 }
 

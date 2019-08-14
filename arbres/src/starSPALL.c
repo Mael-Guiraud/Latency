@@ -120,10 +120,21 @@ long long fact(int a)
 
 void compute_tabs(element_sjt * tab,int * m_i,int * release, int * deadline, Graph g, int P, int message_size,int tmax)
 {
-	int offset = 0;
+	int offset;
+	int longest = route_length(g,0);
+	int tmp;
+	for(int i=1;i<g.nb_routes;i++)
+	{
+		tmp = route_length(g,i);
+		if(tmp > longest)
+		{
+			longest = tmp;
+		}
+	}
+	offset = longest;
 	for(int i=0;i<g.nb_routes;i++)
 	{
-		m_i[tab[i].val] = mod(offset-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],FORWARD),P);
+		m_i[tab[i].val] = (offset-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],FORWARD)) % P;
 		release[tab[i].val] = m_i[tab[i].val]+route_length(g,tab[i].val)+route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD);
 		deadline[tab[i].val] = message_size+tmax+m_i[tab[i].val]-(route_length(g,tab[i].val)-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD));
 		offset+=message_size;
@@ -146,6 +157,7 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 	element_sjt * tab = init_sjt(g.nb_routes);
 	long long facto=fact(g.nb_routes);
 	int * res;
+	int travel_time;
 
 	//Pour tout les ordres de routes :
 	for(int i=0;i<facto;i++)
@@ -154,7 +166,7 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 		
 		res = FPT_PALL(release,deadline,g.nb_routes,message_size,P);
 		if(res)
-		{
+		{	
 		
 			for(int j=0;j<g.nb_routes;j++)
 			{
@@ -164,9 +176,24 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 			}
 			a->all_routes_scheduled=1;
 			a->nb_routes_scheduled = g.nb_routes;
-			free(tab);
-			free(res);
-			return a;
+			travel_time = travel_time_max(g, tmax,a);
+			if(travel_time != -1)
+			{
+				free(tab);
+				free(res);
+				return a;
+			}
+			else
+			{
+				for(int j=0;j<g.nb_routes;j++)
+				{
+					a->offset_forward[j] = -1;
+					a->waiting_time[j] = -1;
+					a->offset_backward[j] = -1;
+				}
+				a->all_routes_scheduled=0;
+				a->nb_routes_scheduled = 0;
+			}
 		}
 		if(i!=facto-1)
 			algo_sjt(tab,g.nb_routes);

@@ -27,7 +27,10 @@ int main (int argc, char *argv[])
 	{
 		//star_search_random_routes();
 		//star_all_routes_lenghts();
+		char * ylabels[] = {"Success Rate","NbRoutes"};
 		simul_star(seed,&fpt_spall,"FPTSPALL");
+		char * noms[]={"FPTSPALL"};
+		print_gnuplot("fptaspall",noms, 1, "performance of fptspall", "margin", ylabels);
 	}
 	else
 	{
