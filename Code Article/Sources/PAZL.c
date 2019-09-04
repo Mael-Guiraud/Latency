@@ -306,7 +306,10 @@ int search(Graphe g,int message_size, int period){
 	int route_number = g.N/2;
 	int return_time[route_number];
 
-	graphe_to_temps_retour(g,return_time,period);
+		for (int i = 0; i < nbr_route; i++)
+	  {
+	    return_time[i] = (2 * g.matrice[nbr_route][i + nbr_route + 1])%periode;
+	  }
 	if(DEBUG)printf("Instance aléatoire :\n");//we assume that the value in return time are in [0,period[
 	if(DEBUG)for(int i = 0; i < route_number; i++) printf("%d  ",return_time[i]);
 	int shift = return_time[0];

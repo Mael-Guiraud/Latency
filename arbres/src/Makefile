@@ -1,6 +1,7 @@
 
-CC=gcc-7
-CFLAGS=-W -Wall -g -O2 -fopenmp
+CC=gcc
+CFLAGS=-W -Wall -g -O2 -fopenmp -fprofile-arcs -ftest-coverage -std=c99
+LFLAGS = -fopenmp
 
 DIRbin = bin/
 DIRgnu = ../gnuplot/
@@ -22,17 +23,17 @@ dirs:
 	mkdir -p $(DIRview)
 	mkdir -p $(DIRfail)
 
-tests: dirs compil runtest dot
+tests: dirs runtest dot
 
-star: dirs compil runstar dot
+star: dirs runstar 
 
-runstar:
+runstar: compil
 	./compil star
 
-runtest: 
+runtest: compil
 	./compil test
 
-run: 
+run: compil
 	rm -f $(DIRgnu)*
 	./compil simulAll
 
@@ -47,22 +48,27 @@ nowaiting: dirs compil
 	./launch.bash
 
 dot:
-	dot -Tpdf $(DIRview)view.dot -o $(DIRview)view.pdf
+	./tpdf.sh
 
-compil: $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
-	$(CC) -fopenmp -o $@ $^ -lm
+compil: $(DIRbin)starSPALL.o $(DIRbin)simulation_star.o $(DIRbin)simons.o $(DIRbin)fptPAZL.o $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
+	$(CC) $(LFLAGS) -o $@ $^ -lm -lgcov
 
-$(DIRbin)%.o: %.c config.h
+$(DIRbin)%.o: %.c config.h structs.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 depend:
 	makedepend *.c
 
-clean:
+clean: clear
 	rm -rf *.o
 	rm -rf $(EXEC)
+	rm -rf rapport
+	rm -rf rapport.info
 	rm -rf bin/*
+	rm -rf ../view/graph*
+	
 
+	
 
 gnuplot: 
 	./launch.bash
@@ -74,6 +80,15 @@ debugtest: dirs compil
 debugsimul: compil
 	valgrind --leak-check=full -v ./compil simulAll
 
+debugstar: compil 
+	valgrind --leak-check=full -v ./compil star
 
 profile: compil
 	valgrind --tool=callgrind -v ./compil simulAll
+
+cover: dirs runstar dot 
+	lcov --directory . -c -o rapport.info
+	genhtml -o ./rapport -t "Couverture code" rapport.info
+	firefox ./rapport/index.html
+
+

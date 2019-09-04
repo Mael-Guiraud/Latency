@@ -3,6 +3,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 //return 1 if the message can reach the destination without collision, 0 otherwise
 int message_no_collisions(Graph g,int route,int offset,int message_size,Period_kind kind,int P)
 {
@@ -98,6 +99,7 @@ void fill_period(Graph g,int route,int offset,int message_size,Period_kind kind,
 		}
 	}
 }
+
 int route_length(Graph g,int route)
 {
 	int length = 0;
@@ -404,13 +406,16 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 		if(a->offset_forward[i] < first_forward)
 		{
 			first_forward = a->offset_forward[i];
+		
 		}
 	}
+
 	
 	int max;
 	if(SYNCH)
 	{
 		max = a->offset_forward[0]-first_forward + 2*route_length( g,0) + a->waiting_time[0];
+
 	}
 	else
 	{
@@ -420,6 +425,7 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 	{
 		if(SYNCH)
 		{
+			
 			if( (a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > tmax )
 				return -1;
 			if((a->offset_forward[i]-first_forward + 2*route_length( g,i) + a->waiting_time[i] ) > max )
@@ -438,6 +444,7 @@ int travel_time_max(Graph g, int tmax, Assignment a)
 			}
 		}
 	}
+
 	return max;
 }
 
@@ -466,4 +473,47 @@ int  load_max(Graph g)
 	}
 	
 	return loadmax;
+}
+
+
+
+
+int logarithme(int base, int nb)
+{
+	if(nb == 0)
+		return 0;
+	return log((double)nb) / log((double)base);
+}
+//renvoie la taille en bits du nombre nb en base base
+int taille_bits(int base, int nb)
+{
+	return (int)logarithme(base,nb) +1;
+}
+//Renvoie le nombre "nb" sous un tableau d'int en base "base"
+void chgt_base(int base, int nb, int * tab)
+{
+	int taille = taille_bits(base,nb);
+
+	for(int i=0;i<taille;i++)
+	{
+		tab[i] = nb % base;
+		nb /= base;
+	}
+	return;
+
+}
+
+//return a mod b
+int mod(int a, int b)
+{
+	if( a>= 0)
+		return a%b;
+	else
+	{
+		while(a<0)
+		{
+			a+=b;
+		}
+		return a%b;
+	}
 }

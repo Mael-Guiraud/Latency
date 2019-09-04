@@ -42,6 +42,9 @@ typedef struct arc{
 typedef enum event_kind{
 	MESSAGE, ARC
 } Event_kind;
+typedef enum graph_kind{
+	STAR, TREE
+} Graph_kind;
 
 
 typedef struct event{
@@ -60,6 +63,7 @@ typedef Arc** Route;
 
 
 typedef struct graph{
+	Graph_kind kind;
 	int nb_routes;
 	Arc * arc_pool;
 	int arc_pool_size;

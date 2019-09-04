@@ -74,8 +74,7 @@ We study a star shaped topology, where all contentions are on a single arc share
 
 
 \section{Model}
-Describe the general model + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$
-and two values $P, \tau$. 
+Describe the general model + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. 
 \cite{Guir1806:Deterministic}
 
 Explain the notion of shadow ? Give the compacity critieria.
@@ -87,23 +86,25 @@ Explain the notion of shadow ? Give the compacity critieria.
 Algorithm with meta intervals with load $n/4$
 Specialization to the result of the article for the star with $n/3$.
 
-Copy the results of the previous article and propose heuristics to chose (compacity heuristic).
+Copy the results of the previous article and propose heuristics to chose among several positions/candidates (compacity heuristic).
 
 \subsection{First position}
 
 Describes how it builds compact assignments 
 + heuristic to build super compact assignment (among the compact assignments
-possible, choose the one which maximize the gain on the second bloc)
+possible, chose the one which maximize the gain on the second bloc)
 
 \section{Towards $n/2$}
 
 Simple result with $\tau = 1$: $n/2$. 
 Two questions:
 \begin{itemize}
- \item can we do better.
+ \item can we do better with a greedy alg ?
 + add the results with the heuristic which reduce collisions with the last elements
 by choosing properly the first $n/2$ elements which are placed to gain $\sqrt{n}$ elements. 
 \item can we get the same bound for any $\tau$ ?
+Answer: Yes by paying a waiting time of at most $\tau$ (all blocs aligned on meta interval,
+degenerate to the case $\tau = 1$).
 \end{itemize}
 
 \subsection{Pairs of elements in order of shifts}
@@ -115,21 +116,78 @@ Precise description of the algorithm.
 Bit more sketchy description + value derived from the programm computing the value with many
 different size of groups.
 
+\section{Above $1/2$}
+TODO: properly define the potential of a position, of a route. Relates both through a lemma 
+showing that the sum of both is equal. 
+Also a lemma which relates potential to the number of conflicts. 
+
+We assume that all distances are different (if at least a constant fraction are, it is ok).
+The greedy algorithm is as follows, for $(1/2 + \epsilon)P$ routes:
+
+Let $S$ be the set of routes of potential $2\epsilon n$, intialized to $\emptyset$.
+When a route is added to $S$, it is removed from the routes used to compute the potential. 
+When $|S| \geq \epsilon n$, the algorithm stops.
+For $k < P/4$ routes already placed, the potential of a position $i$ on the backward windows 
+is the number of yet unused routes of delay $d$ such that $i-d \mod P$ is used.
+This potential corresponds to the number of routes for which placing a route at this position
+remove only one possible offset instead of two.
+On the backward windows select the unused position of largest potential and find a route which can be 
+placed at this position, not in the best $\epsilon n - |S|$ routes.  
+
+Proof it works: 
+
+Since all distances are differents, 
+there are at least $(1/2 + \epsilon)n - |S|- k$ positions in the forward windows which allows
+to place a route attaining a given position in the backward windows. 
+Since there are $k$ used offsets in the forward windows, there are at least $(1/2 + \epsilon)n - |S|- 2k$ free positions among them. Since $k < n/4$, there are at least $\epsilon n - |S|$ possible routes satisfying the constraint, hence one is not among the $\epsilon n - |S|$ routes having best potential
+(with the chosen variant, not useful to spare the best ones, simplifiyng the proof and the algorithm).
+
+
+Assume that there is a free position, wich increases the global potential by at least $2/3$
+of the average which is $k(1/2 - k)/n$. Then the global potential is a least $(2/3)\sum_{i=1}^{k}i(1/2 - i)/n$. On the other hand, if no position of at least $2/3$ the average is avalaible, then the global
+potential is at least $1/3 k(1/2 - k)$. (to clean that, prove by induction that the potential is always larger than some value at step $k$).
+If we can prove that when $k = P/4$, the potential is at least $2\epsilon n (1/2 + \epsilon)n$, then 
+it implies that the algorithm has stopped before that point and it implies there is a solution.
+We solve the equation lower bound on the potential larger than $2\epsilon n (1/2 + \epsilon)n$
+to obtain a correct value on $\epsilon$.
+
+
+
+The computation is not optimised at all. We win only on the backward windows but 
+we should win as much on the forward windows. Several simplification in the bound (but of little impact).
+Lose too much when dealing with only positions of potential lower than the average (can do better than $1/3 $ vs $2/3$).
+
 \section{Algorithms for random instances}
 
+\paragraph{$\tau > 1$}
 Compute a better bound working w.h.p. for some greedy algorithms (celui qui fait un ou plusieurs serpents). 
+
+\paragraph{$\tau = 1$}
+
+Greedy algorithm with constraints on the possible positions. 
+At each step placing a new route take only one slot more and more often. 
+Should give a $2 - \sqrt{2} = 0.585\dots$ bound.
 
 \section{Greedy and delay}
 
-Tradeoff between delay and load. Can we prove $0.5 + \epsilon$ load for $f(\epsilon,n,\tau)$ delay ?
+Tradeoff between waiting time and load. Can we prove $0.5 + \epsilon$ load for $f(\epsilon,n,\tau)$ waiting time ?  No idea yet.
 
+
+\section{Non greedy algorithm}
+
+Greedy + swap one element if necessary. 
+Can we guarantee a solution for a larger load ? Conjecture, yes for $\lambda = 2/3$. 
+Seems hard for group theoritic reason (how to avoid subgroups of Z/pZ which are a problem)
 
 \section{Lower bounds}
 
-??????
+Example/family of examples for which some greedy alg fail.
+Example/family of examples with a given load such that there are no feasible solution.
 
 \section{$\NP$-hardness}
-???????
+
+Are we able to prove $\NP$-hardness
+
 % \bibliographystyle{ieeetr}
 % \bibliography{Sources}
 

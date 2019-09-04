@@ -6,11 +6,14 @@
 #include "data_treatment.h"
 #include "spall_waiting.h"
 #include "simulation.h"
+#include "simulation_star.h"
 #include "string.h"
 #include "greedy_without_waiting.h"
 #include "reusePrime.h"
+#include "starSPALL.h"
 int main (int argc, char *argv[])
 {
+	int seed = time(NULL);
 	if(argc < 2)
 	{
 		printf("Usage %s [arg]",argv[0]);
@@ -22,11 +25,16 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"star"))
 	{
-		star();
+		//star_search_random_routes();
+		//star_all_routes_lenghts();
+		char * ylabels[] = {"Success Rate","NbRoutes"};
+		simul_star(seed,&fpt_spall,"FPTSPALL");
+		char * noms[]={"FPTSPALL"};
+		print_gnuplot("fptaspall",noms, 1, "performance of fptspall", "margin", ylabels);
 	}
 	else
 	{
-		int seed = time(NULL);
+		
 		char * ylabels[] = {"Success Rate","NbRoutes"};
 		if(!strcmp(argv[1],"simulWaiting") || !strcmp(argv[1],"simulAll"))
 		{

@@ -13,11 +13,14 @@
 #include "multiplexing.h"
 #include "spall_waiting.h"
 #include "reusePrime.h"
+#include "fptPAZL.h"
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
+
 #include <string.h>
 #include <math.h>
+<<<<<<< HEAD
 char * strcmpt(float nb_simuls)
 {	
 	
@@ -92,8 +95,9 @@ void star()
 	
 	free(str);
 
+=======
+>>>>>>> 703956ee70dc4202347e3fff0bfbe68cadbce76c
 
-}
 
 
 
@@ -230,7 +234,6 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
-	
 
 	seed = time(NULL);
 
@@ -300,7 +303,7 @@ void test()
 
 	
 
-	printf("\n printing graphvitz ...");print_graphvitz(g);printf("Ok.\n");
+	printf("\n printing graphvitz ...");print_graphvitz(g,"../view/view.dot");printf("Ok.\n");
 	printf("\n printing python ...");print_python(g);printf("Ok.\n");
 	printf("\n printing json arcs ..."); print_json_arcs(g);
 	printf("Logs in logs.txt\n");

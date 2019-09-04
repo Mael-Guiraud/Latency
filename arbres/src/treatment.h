@@ -16,3 +16,9 @@ int * routes_by_id(Arc a);
 int * sort_routes_by_collisions(Graph g, Arc a);
 void reset_periods(Graph g, int P);
 int * routes_sorted_lenght_arcs_bbu(Graph g);
+
+
+int logarithme(int base, int nb);
+int taille_bits(int base, int nb);
+void chgt_base(int base, int nb, int * tab);
+int mod(int a, int b);

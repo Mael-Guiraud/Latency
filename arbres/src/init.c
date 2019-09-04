@@ -122,6 +122,7 @@ Graph init_graph_random_tree(double load)
 
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
+	g.kind = TREE;
 	g.nb_routes = nb_routes;
 	g.nb_bbu = nb_bbu;
 	g.nb_collisions = nb_real_collisions;
@@ -236,17 +237,18 @@ Graph init_graph_random_tree(double load)
 	return g;
 }
 
-Graph init_graph_etoile(int nb)
+Graph init_graph_etoile(int nb, int P)
 {
 	
 	int nb_routes = nb ;
 	int nb_bbu = nb;
-	int nb_total_arcs = nb_routes*4;
-	int real_period;
+	int nb_total_arcs = nb_routes*3;
+
 
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
 	Graph g;
 	g.nb_routes = nb_routes;
+	g.kind = STAR;
 	g.nb_bbu = nb_bbu;
 	g.nb_collisions = 1;
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
@@ -264,8 +266,8 @@ Graph init_graph_etoile(int nb)
 
 	for(int j=0;j<nb_routes;j++)
 	{
-		g.routes[index_route]=malloc(sizeof(Route)*4);
-		g.size_routes[index_route] = 4;
+		g.routes[index_route]=malloc(sizeof(Route)*3);
+		g.size_routes[index_route] = 3;
 
 		g.routes[index_route][0] =  &g.arc_pool[index_arc];
 		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
@@ -278,13 +280,8 @@ Graph init_graph_etoile(int nb)
 		g.arc_pool[nb_routes].routes_id[g.arc_pool[nb_routes].nb_routes] = index_route;
 		g.arc_pool[nb_routes].nb_routes++;
 		
-		g.routes[index_route][2] =  &g.arc_pool[index_arc];
-		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
-		g.arc_pool[index_arc].nb_routes++;
-		g.arc_pool[index_arc].bbu_dest = index_route;
-		index_arc++;
 
-		g.routes[index_route][3] =  &g.arc_pool[j];
+		g.routes[index_route][2] =  &g.arc_pool[j];
 		g.arc_pool[j].routes_id[g.arc_pool[j].nb_routes] = index_route;
 		g.arc_pool[j].nb_routes++;
 		g.arc_pool[j].bbu_dest = index_route;
@@ -292,17 +289,90 @@ Graph init_graph_etoile(int nb)
 	}
 
 	
+
+
+
+	g.arc_pool[nb_routes].period_f = calloc(P,sizeof(int));
+	g.arc_pool[nb_routes].period_b = calloc(P,sizeof(int));
 	
 	
-	if(FIXED_PERIOD_MOD)
-		real_period = PERIOD;
-	else
-		real_period = (nb_routes * MESSAGE_SIZE) / STANDARD_LOAD;
+	return g;
+}
+
+
+Graph init_graph_etoile_values_set(int nb, int P,int * tab)
+{
+	
+	int nb_routes = nb ;
+	int nb_bbu = nb;
+	int nb_total_arcs = nb_routes*3;
+
+
+	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
+	Graph g;
+	g.kind = STAR;
+	g.nb_routes = nb_routes;
+	g.nb_bbu = nb_bbu;
+	g.nb_collisions = 1;
+	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
+	g.routes = malloc(sizeof(Route*)*nb_routes);
+	g.size_routes = malloc(sizeof(int)*nb_routes);
+	g.arc_pool_size = nb_total_arcs;
+	for(int i=0;i<nb_total_arcs;i++)
+	{
+		if(i<g.nb_bbu)
+		{
+			g.arc_pool[i].length = tab[i];
+		}
+		else
+		{
+			g.arc_pool[i].length = rand()%MAX_LENGTH;
+		}
+		
+		g.arc_pool[i].nb_routes = 0;
+		g.arc_pool[i].period_f = NULL;
+		g.arc_pool[i].period_b = NULL;
+
+		g.arc_pool[i].first = -1;
+		g.arc_pool[i].last = -1;
+		g.arc_pool[i].bbu_dest = -1;
+		g.arc_pool[i].seen = 0;
+	}
+
+	
+	int index_route = 0;
+	int index_arc = nb_routes+1;
+
+	for(int j=0;j<nb_routes;j++)
+	{
+		g.routes[index_route]=malloc(sizeof(Route)*3);
+		g.size_routes[index_route] = 3;
+
+		g.routes[index_route][0] =  &g.arc_pool[index_arc];
+		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
+		g.arc_pool[index_arc].nb_routes++;
+		g.arc_pool[index_arc].bbu_dest = index_route;
+		index_arc++;
+		//Arc partagé
+		
+		g.routes[index_route][1] =  &g.arc_pool[nb_routes];
+		g.arc_pool[nb_routes].routes_id[g.arc_pool[nb_routes].nb_routes] = index_route;
+		g.arc_pool[nb_routes].nb_routes++;
+		
+
+		g.routes[index_route][2] =  &g.arc_pool[j];
+		g.arc_pool[j].routes_id[g.arc_pool[j].nb_routes] = index_route;
+		g.arc_pool[j].nb_routes++;
+		g.arc_pool[j].bbu_dest = index_route;
+		index_route++;
+	}
+
+	
 
 
 
-	g.arc_pool[nb_routes].period_f = calloc(real_period,sizeof(int));
-	g.arc_pool[nb_routes].period_b = calloc(real_period,sizeof(int));
+	g.arc_pool[nb_routes].period_f = calloc(P,sizeof(int));
+	g.arc_pool[nb_routes].period_b = calloc(P,sizeof(int));
 	
 	
 	return g;
