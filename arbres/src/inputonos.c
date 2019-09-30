@@ -16,8 +16,8 @@ Devices * devices()
 	FILE* f = fopen(file,"r");
 	if(!file)
 	  {
-	    fprintf(stderr,"Error opening %s .\n",filea)
-	    return EXIT_FAILURE;
+	    fprintf(stderr,"Error opening %s .\n",file);
+	    exit(32);
 	  }
 	int nb_dev;
 
@@ -25,13 +25,13 @@ Devices * devices()
 	Devices * devs = malloc(sizeof(Devices)* nb_dev);
 	for(int i = 0;i<nb_dev;i++)
 	{
-		fscanf("%d", &devs[i]->id);
-		fscanf("%s", &devs[i]->address);
+		fscanf("%d", &devs[i].id);
+		fscanf("%s", &devs[i].address);
 	}
 
 	for(int i = 0;i<nb_dev;i++)
 	{
-		printf("id %d adress %s ", devs[i]->id,devs[i]->address);
+		printf("id %d adress %s ", devs[i].id,devs[i].address);
 
 	}
 	fclose(f);
@@ -44,14 +44,14 @@ Graph links(Graph g)
 	if(!file)
 	  {
 	    fprintf(stderr,"Error opening %s .\n",file);
-	    return EXIT_FAILURE;
+	    exit(32);
 	  }
 	int nb_links = fscanf(f,"%d");
 
 }
 Graph parseinput()
 {
-	Graph g:
+	Graph g;
 	g.arc_pool = NULL;
 	g.routes = NULL;
 	g.size_routes = NULL;
