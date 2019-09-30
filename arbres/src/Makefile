@@ -1,5 +1,5 @@
 
-CC=gcc
+CC=gcc-7
 CFLAGS=-W -Wall -g -O2 -fopenmp -fprofile-arcs -ftest-coverage -std=c99
 LFLAGS = -fopenmp
 
@@ -26,7 +26,7 @@ dirs:
 tests: dirs runtest dot
 
 onos: dirs runonos
-	
+
 star: dirs runstar 
 
 runstar: compil
@@ -64,7 +64,7 @@ $(DIRbin)%.o: %.c config.h structs.h
 depend:
 	makedepend *.c
 
-clean: clear
+clean: 
 	rm -rf *.o
 	rm -rf $(EXEC)
 	rm -rf rapport
