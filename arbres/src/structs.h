@@ -49,7 +49,13 @@ typedef enum graph_kind{
 typedef struct {
 	int id;
 	char * address;
+}device;
+
+typedef struct{
+	int nb_devs;
+	device * devs;
 }Devices;
+
 
 typedef struct event{
 	int date;

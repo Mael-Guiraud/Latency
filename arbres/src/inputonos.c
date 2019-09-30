@@ -8,7 +8,7 @@
 #include "test.h"
 
 
-Devices * devices()
+Devices  devices()
 {
 
 	char str[64];
@@ -20,21 +20,26 @@ Devices * devices()
 	    exit(32);
 	  }
 	int nb_dev;
-
+	int id; 
 	fscanf(f,"%d",&nb_dev);
-	Devices * devs = malloc(sizeof(Devices)* nb_dev);
+	Devices D;
+	D.nb_devs = nb_dev;
+	D.devs = malloc(sizeof(Devices)* nb_dev);
 	for(int i = 0;i<nb_dev;i++)
 	{
-		fscanf(f,"%d", &devs[i].id);
-		fscanf(f,"%s", &devs[i].address);
+		fscanf(f,"%d", &id);
+		D.devs[i].id = id;
+		fscanf(f,"%s", &str);
+		D.devs[i].address = str;
 	}
 
 	for(int i = 0;i<nb_dev;i++)
 	{
-		printf("id %d adress %s ", devs[i].id,devs[i].address);
+		printf("id %d adress %s ", D.devs[i].id,D.devs[i].address);
 
 	}
 	fclose(f);
+	return D;
 }
 
 Graph links(Graph g)
