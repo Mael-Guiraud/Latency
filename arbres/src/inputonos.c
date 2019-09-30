@@ -25,8 +25,8 @@ Devices * devices()
 	Devices * devs = malloc(sizeof(Devices)* nb_dev);
 	for(int i = 0;i<nb_dev;i++)
 	{
-		fscanf("%d", &devs[i].id);
-		fscanf("%s", &devs[i].address);
+		fscanf(f,"%d", &devs[i].id);
+		fscanf(f,"%s", &devs[i].address);
 	}
 
 	for(int i = 0;i<nb_dev;i++)
