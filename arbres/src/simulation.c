@@ -20,7 +20,7 @@
 
 #include <string.h>
 #include <math.h>
-<<<<<<< HEAD
+
 char * strcmpt(float nb_simuls)
 {	
 	
@@ -95,8 +95,6 @@ void star()
 	
 	free(str);
 
-=======
->>>>>>> 703956ee70dc4202347e3fff0bfbe68cadbce76c
 
 
 
