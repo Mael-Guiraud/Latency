@@ -10,6 +10,7 @@
 #include "string.h"
 #include "greedy_without_waiting.h"
 #include "reusePrime.h"
+#include "inputonos.h"
 #include "starSPALL.h"
 int main (int argc, char *argv[])
 {
@@ -22,6 +23,10 @@ int main (int argc, char *argv[])
 	if(!strcmp(argv[1],"test"))
 	{
 		test();
+	}
+	if(!strcmp(argv[1],"onos"))
+	{
+		testonos();
 	}
 	if(!strcmp(argv[1],"star"))
 	{

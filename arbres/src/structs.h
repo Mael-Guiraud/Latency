@@ -46,6 +46,10 @@ typedef enum graph_kind{
 	STAR, TREE
 } Graph_kind;
 
+typedef struct {
+	int id;
+	char * address;
+}Devices;
 
 typedef struct event{
 	int date;
