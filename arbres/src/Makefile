@@ -25,6 +25,8 @@ dirs:
 
 tests: dirs runtest dot
 
+onos: dirs runonos
+	
 star: dirs runstar 
 
 runstar: compil
@@ -33,7 +35,7 @@ runstar: compil
 runtest: compil
 	./compil test
 
-onos: compil
+runonos: compil
 	./compil onos
 
 run: compil
