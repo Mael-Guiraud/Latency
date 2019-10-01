@@ -48,13 +48,28 @@ typedef enum graph_kind{
 
 typedef struct {
 	int id;
-	char * address;
+	char address[64];
 }device;
 
 typedef struct{
 	int nb_devs;
 	device * devs;
 }Devices;
+typedef struct {
+	int id;
+	char src[64];
+	int src_port;
+	char  dst[64];
+	int dst_port;
+	int latency;
+	int src_id;
+	int dst_id;
+}linkk;
+
+typedef struct{
+	int nb_links;
+	linkk * links;
+}Links;
 
 
 typedef struct event{

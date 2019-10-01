@@ -1,1 +1,1 @@
-void testonos();
+Graph parseinput();

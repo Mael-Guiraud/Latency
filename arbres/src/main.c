@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"onos"))
 	{
-		testonos();
+		parseinput();
 	}
 	if(!strcmp(argv[1],"star"))
 	{
