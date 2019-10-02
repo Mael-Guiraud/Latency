@@ -56,6 +56,14 @@ Nous proposons des algorithmes centralisés, qui correspondent très bien à la 
   Nous avons choisi de modéliser le réseau comme un graphe orienté $G=(V,A)$, dans lequel les sommets représentent les noeuds du réseau et les arcs $(u,v)$ représentent les liens physiques entre ces noeuds. Ces arcs sont pondérées par un entier $\Omega(u,v)$  qui représente le temps physique pris par un message pour traverser le lien. Une {\bf route} est un chemin simple, c'est à dire une suite de sommets adjacents $u_0, \ldots , u_{l}$, avec $(u_i,u_{i+1}) \in A$. La {\bf latence} d'un sommet $u_i$ sur une route $r$ est définie par $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. En particulier, la latence du premier sommet d'une route est $\lambda(u_0,r)=0$. La longueur d'une route $r$ est égale à  $\lambda (r)= \lambda (u_l,r)$. 
   Le premier sommet d'une route représente une RRH et le dernier sommet représente la BBU qui y est associée.
   Un {\bf réseau routé} $(G, {\cal R})$ est un graphe $G$ et un ensemble de routes dans ce graphe .
+  
+   \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.8\textwidth]{reseau.pdf}
+      \end{center}
+      \caption{Un exemple de réseau.}
+      \label{fig:res}   
+     \end{figure}    
 
 Nous travaillons dans un modèle à temps discret. L'unité de temps est appelée le {\bf tic}, et modélise le temps nécessaire pour transmettre un paquet de $64$ octets (la plus petite taille d'un paquet en ethernet) sur un lien. La vitesse de propagation des messages dans les liens étant fixe, on peut donner le poids des arcs en tics, ce qui corresponds au temps nécéssaire à un message pour traverser le lien.
 Dans les applications que nous étudions, un message est envoyé sur chaque route périodiquement. La durée de la période est notée $P$ et nous considérons que l'envoi de tout les messages ont la même périodicité.
@@ -181,7 +189,7 @@ Le graphe $G$ comprend deux ensembles de sommets $S=\{s_0,...,s_{n-1}\}$ et $T=\
 
    \subsection{Topologie plus générale: profondeur de conflit $2$}
  
- Après avoir beaucoup étudié la topologie de profondeur $1$, nous nous sommes penchés sur une topologie plus générale, tout en restant sur des réseaux réalistes. Nous avons naturellement choisi de regarder des DAG de profondeur $2$, c'est à dire dans lesquels une route n'a que deux arcs sur lesquels elle est en conflit avec les autres routes.
+ Après avoir beaucoup étudié la topologie de profondeur $1$, nous nous sommes penchés sur une topologie plus générale, tout en restant sur des réseaux réalistes. Nous avons naturellement choisi de regarder des DAG de profondeur de conflit $2$, c'est à dire dans lesquels une route n'a que deux arcs sur lesquels elle est en conflit avec les autres routes.
  La figure~\ref{fig:extendendgraphgrey} représente le type de réseau que nous étudions. 
 
 \begin{figure}[h]
@@ -197,16 +205,19 @@ Nous définissons la {\bf charge} du réseau comme le rapport entre le nombre de
 \subsection{PAZL}
  Nous avons dans un premier temps choisi d'étudier le problème PAZL, dans lequel toutes les solutions trouvées seraient optimales en latence.
  
- Dans un premier temps nous proposons plusieurs algorithmes gloutons. Nous avons proposé un algorithme glouton qui nous assure de trouver une solution si la charge du réseau est est inférieure à $1/3$. Cet algorithme fonctionne de la manière suivante: pour chaque route, on attribue le premier temps de départ disponible qui ne crée pas de conflit avec les routes déjà placées.
- 
-  Nous avons aussi prouvé que si la différence entre la taille des routes est suffisamment petite par rapport à la période, il existe une solution au problème PAZL. Dans ce cas, on trie les routes par ordre croissant de taille et on envoie les messages collés dans l'arc central à l'aller, de celui qui utilise la route la plus courte à celui qui utilise la route la plus longe.
- Nous proposons également un algorithme de recherche exhaustive de complexité FPT en $n$ le nombre de routes, ce qui est interessant car le nombre de route est le paramètre le plus petit de nos instances. L'idée de l'algorithme est de décrire une solution sous une forme normale dans laquelle les messages sont collées entre eux soit à l'aller, soit au retour, et de tester tout les ordres possibles des messages à l'aller et au retour.
- Après avoir simulé le comportement de nos algorithmes sur des graphes avec des tailles de routes différentes: 
+ Dans un premier temps nous proposons plusieurs algorithmes gloutons.
  \begin{itemize}
- \item Dans le cas de routes courtes, (inférieure en nombre de tics à la taille des messages), il est facile d'organiser les messages.
- \item Dans le cas de routes longues, nous avons comparé nos algorithmes gloutons à l'algorithme FPT et nous nous sommes rendu compte que nos algorithmes ne trouvent que très peu de solutions au dessus de $0,7$ de charge, alors que la recherche exhaustive montre qu'il existe des solutions jusqu'a $0,9$ de charge.
+ \item Un algorithme glouton qui nous assure de trouver une solution si la charge du réseau est est inférieure à $1/3$. Cet algorithme (Greedy dans la figure~\ref{fig:long}) fonctionne de la manière suivante: pour chaque route, on attribue le premier temps de départ disponible qui ne crée pas de conflit avec les routes déjà placées.
+ \item  Nous avons aussi prouvé que si la différence entre la taille des routes est suffisamment petite par rapport à la période, il existe une solution au problème PAZL. Dans ce cas, on trie les routes par ordre croissant de taille et on envoie les messages à la suite dans l'arc central à l'aller, de celui qui utilise la route la plus courte à celui qui utilise la route la plus longe. Nous appelons cet algorithme Shortest Longest
+ \item Nous proposons également un algorithme de recherche exhaustive de complexité FPT en $n$ le nombre de routes, ce qui est interessant car le nombre de route est le paramètre le plus petit de nos instances. L'idée de l'algorithme est de décrire une solution sous une forme normale dans laquelle les messages sont collées entre eux soit à l'aller, soit au retour, et de tester tout les ordres possibles des messages à l'aller et au retour.
  \end{itemize}
-      
+ 
+ Nous avons simulé le comportement de nos algorithmes sur des graphes aléatoires avec des routes dont la longueur est soit petite par rapport à la période soit longue. \begin{itemize}
+ \item Dans le cas de routes courtes, organiser les routes de la plus courte à la plus longue donne presque toujours la solution optimale.
+ \item Dans le cas de routes longues, nous avons comparé nos deux heuristiques à l'algorithme FPT. Dans ce cas, trier les routes dans l'ordre donne une mauvaise solution et
+ l'algorithme glouton fonctionne bien jusqu'à $50\%$ de charge. La recherche exhaustive montre qu'il existe presque toujours une solution jusqu'à $80\%$ de charge et qu'il y en a rarement pour les charges plus élevées.
+  \end{itemize}     
+  
  La figure~\ref{fig:long} représente les performances des algorithmes que nous venons de présenter, sur des instances avec des routes longues.
 \begin{figure}[h]
 
@@ -218,12 +229,18 @@ Nous définissons la {\bf charge} du réseau comme le rapport entre le nombre de
      \end{figure}
      
 \subsection{PALL}
-Après avoir vu les limites du problème PAZL, nous nous sommes intéressés au problème PALL, dans lequel nous pouvons ajouter du temps d'attente dans les BBU. Ce problème nous offre un plus grand degré de liberté, en effet, nous nous autorisons à dégrader la latence de certains messages pour pouvoir trouver des solutions dans lesquelles la condition de latence globale est satisfaite.
+Étant donné qu'il n'existe pas de solution sans temps d'attente quand la charge est élevée, nous nous sommes intéressés au problème PALL qui permet un temps d'attente dans les BBU. Ce problème nous offre une plus grande liberté, en effet, nous nous autorisons à dégrader la latence de certains messages pour pouvoir trouver des solutions dans lesquelles la condition de latence globale est satisfaite.
 
-Nos algorithmes pour résoudre ce problème peuvent se décomposer en deux phases. D'abord on fixe la phase aller, de façon arbitraire, puis on essaye d'organiser les messages au retour.
-Pour ce faire, nous avons étudié dans un premier temps des algorithmes gloutons, peu efficaces, qui renvoient les messages selon la taille des routes ou selon la deadline. Nous avons ensuite choisi d'utiliser le lien qui existe entre l'ordonnancement de la phase retour du problème et un problème classique d'ordonnancement. On a donc pour le retour des release times, des deadlines, et un lien en commun sur lequel faire passer tout les messages. Nous avons donc utilisé un algorithme d'ordonnancement qui trouve une solution dans laquelle le temps de complétion est minimal, en temps polynomial~\cite{simons1978fast}. Cet algorithme ne donnait toujours pas de bonnes performances, car il ne prends pas la périodicité du problème en compte. Nous avons dans un premier temps essayé d'adapter au mieux possible les solutions données pour gérer ce problème de périodicité. Finalement, nous avons imaginée un algorithme FPT en le nombre de routes, qui réutilise l'algorithme d'ordonnancement mais qui travaille sur une seule période.
+Nos algorithmes pour résoudre ce problème peuvent se décomposer en deux phases. D'abord on fixe la phase aller, de façon arbitraire, puis on essaye d'organiser les messages au retour. Dans ce cas, on obtiens un problème avec en entrée un temps de départ minimal pour chaque route, une date limite d'envoi et une taille de message. Si on ne considère pas la périodicité, c'est un problème d'ordonnancement classique de "single processor scheduling" dans lequel les tâches ont la même durée. Il existe un algorithme polynomial~\cite{simons1978fast} qui trouve une solution à ce problème en minimisant le temps de complétion. Nous appellerons cet algorithme MLS.
 
-La figure~\ref{fig:success21000} représente les performances de différents algorithmes que nous proposons. Un algorithme greedy adapté pour la périodicité (GD), l'algorithme d'ordonnancement qui ne gère pas du tout la périodicité (MLS), adapté pour la périodicité (PMLS), et l'algorithme FPT (FPT-PMLS).
+Cet algorithme ne donnait toujours pas de bonnes performances, car il ne prend pas la périodicité du problème PALL en compte. Nous proposons deux méthodes pour intégrer la périodicité à l'algorithme MLS.
+\begin{itemize}
+\item La première solution (PMLS) est de modifier les dates limites des routes pour faire en sorte que tous les messages soient ordonnancés dans la même période.
+\item La seconde solution (FPT-PMLS) est un algorithme FPT en le nombre de routes qui devine dans quelle période on fait passer un messages entre deux périodes consécutives. Cet algorithme nous donne une solution optimale pour le problème du retour.
+\end{itemize}
+Nous avons également proposé un algorithme glouton (GD pour Greedy Deadline) qui organise les messages selon leur dates limites. 
+
+La figure~\ref{fig:success21000} représente les performances de différents algorithmes que nous proposons. Notre algorithme glouton adapté pour la périodicité (GD), l'algorithme d'ordonnancement qui ne gère pas du tout la périodicité (MLS), adapté pour la périodicité (PMLS), et l'algorithme FPT (FPT-PMLS).
 Pour chaque instance, nous fixons la latence maximal à deux fois la taille de la route la plus longue, puis nous avons fait varier la margin, qui correspond à du temps de latence supplémentaire donné aux messages.
 
     \begin{figure} [h] 
@@ -234,23 +251,23 @@ Pour chaque instance, nous fixons la latence maximal à deux fois la taille de l
      \label{fig:success21000}
      \end{figure}
     
-    Les deux algorithmes (PMLS et FPT PMLS ) présentent d'exellentes performances, même sur un réseau très chargé.
+    Les deux algorithmes (PMLS et FPT PMLS ) présentent d'excellentes performances, même sur un réseau très chargé.
   En pratique l'algorithme FPT ne trouve pas beaucoup plus de solutions que PMLS. En effet, il y à très peu d'instances pour lesquelles il est utile d'utiliser l'algorithme FPT.
-  Il est donc recommandé d'utiliser l'algorithme PMLS, surtout quand il y a beaucoup de routes (calcul $15000$ fois plus long avec l'algorithme FPT pour $24$ routes).
+  Il est donc recommandé d'utiliser l'algorithme PMLS, surtout quand il y a beaucoup de routes (calcul $15000$ fois plus long avec l'algorithme FPT pour $24$ routes). Il est important de noter que la gestion de la périodicité est capitale dans notre problème. En effet, l'algorithme MLS ne trouve que très peu de solution par rapport à notre algorithme glouton qui prend en compte la périodicité.
 
-Afin de fixer l'ordre et la date de départ des temps à l'aller, nous avons essayé plusieurs variantes. En ce qui concerne l'ordre, nous avons essayé d'envoyer les messages sur les routes de la plus longue a la plus courte, où inversement, où de les envoyer dans un ordre aléatoire. en ce qui concerne les dates de départ, nous avons essayé de coller tout les messages (et donc de les envoyer le plus tôt possible), où encore d'espacer les messages de façon uniforme, ou aléatoire dans la période. Finalement, après des simulations, nous avons conclu que la meilleure façon de trouver une solution pour le problème PALL est de générer un grand nombre d'ordres aléatoires, de coller tout les messages et de chercher une solution pour le retour avec l'algorithme FPT présenté plus haut.
+Afin de fixer l'ordre et la date de départ des temps à l'aller, nous avons essayé plusieurs variantes. Nous avons essayé différents ordres: envoyer les messages sur les routes de la plus longue a la plus courte, de la route la plus courte à la plus longue, où de les envoyer dans un ordre aléatoire. En ce qui concerne les dates de départ, nous avons essayé de coller tout les messages, et d'espacer les messages de façon uniforme, où aléatoire dans la période. Finalement, après des simulations, nous avons conclu que la meilleure façon de trouver une solution pour le problème PALL est de générer un grand nombre d'ordres aléatoires, de coller tout les messages à l'aller et de chercher une solution pour le retour avec l'algorithme PMLS.
 
-Nous avons aussi proposé un algorithme FPT pour le problème PALL (aller et retour). A une instance on associe un nombre exponentiel (qui dépend du nombre de routes) de système linéaires tels que si l'un au moins d'entre eux est satisfait, il existe une solution. Nous ne l'avons pas implémenté car les performances de l'algorithme précédent sont déjà excellentes. Néanmoins, ayant trouvé des papiers récent en rapport avec nos travaux, nous avons contacté plusieurs équipes qui utilisent la programmation linéaire pour résoudre un problème très similaire au notre, afin de collaborer et de mettre en parallèle nos travaux respectifs~\cite{steiner2018traffic,craciunas2017formal}.
+Nous avons aussi proposé un algorithme FPT pour le problème PALL (aller et retour). À une instance on associe un nombre exponentiel (qui dépend du nombre de routes) de système linéaires tels que si l'un au moins d'entre eux est satisfait, il existe une solution. Nous ne l'avons pas implémenté car ses performances ne permettraient pas de traiter plus de quelques solutions et que l'algorithme précédent nous permet déjà de trouver un très grand nombre de solutions d'excellentes qualités. Néanmoins, ayant trouvé des papiers récents en rapport avec nos travaux, nous avons contacté plusieurs équipes qui utilisent la programmation linéaire pour résoudre un problème très similaire au notre, afin de collaborer et de confronter nos travaux respectifs~\cite{steiner2018traffic,craciunas2017formal}.
 
 
      
 \subsection{SPALL}
-Le problème SPALL est en fait une variante plus simple de PALL sur l'étoile. Etant donné que le temps est compté dès l'envoi du message depuis la RRH, il n'y a pas d'intérêt à retarder les messages dans la RRH. Pour choisir comment envoyer les routes à l'aller, il suffit donc de choisir l'ordre d'envoi des routes. Ensuite, nous pouvons utiliser l'algorithme FPT utilisé pour PALL au retour. Nous avons donc un algorithme FPT pour résoudre le problème SPALL sur l'étoile.
+Le problème SPALL est en fait une variante plus simple de PALL sur l'étoile. Étant donné que le temps est compté dès l'envoi du message depuis la RRH, il n'y a pas d'intérêt à retarder les messages dans la RRH. Pour choisir comment envoyer les routes à l'aller, il suffit donc de choisir l'ordre d'envoi des routes. Ensuite, nous pouvons utiliser l'algorithme FPT utilisé pour PALL au retour. Nous avons donc un algorithme FPT pour résoudre le problème SPALL sur l'étoile qui est efficace en pratique pour $20$ routes contrairement à celui proposé pour PALL.
 
 
 
 \subsection{Comparaison avec une gestion statistique des messages}
-Afin d'évaluer les performances de nos algorithmes d'organisation déterministe des flux dans les réseaux, nous avons choisis d'implémenter un simulateur du comportement actuel des réseaux; tout les messages sont envoyées dès qu'ils sont disponible, et si ils doivent utiliser un même lien en même temps, alors l'un des deux est mis en attente dans le noeud de départ de ce lien en attendant qu'il puisse utiliser la ressource partagée. Nous proposons plusieurs politiques de gestions des messages dans les files d'attentes en cas de conflit. La première est le FIFO basique, et la seconde est d'envoyer le message qui à déjà passé le plus de temps dans le réseau.
+Afin d'évaluer les performances de nos algorithmes d'organisation déterministe des flux dans les réseaux, nous avons choisis d'implémenter un simulateur du comportement actuel des réseaux. Tout les messages sont envoyés dès qu'ils sont disponibles, et si ils doivent utiliser un même lien en même temps, alors l'un des deux est mis dans une file d'attente dans le noeud de départ de ce lien en attendant qu'il puisse utiliser la ressource partagée. Nous avons étudié deux politiques de gestion de message dans les files d'attentes en cas de conflit. La première est le FIFO basique, et la seconde est d'envoyer le message qui à arriverait le plus tard à sa destination. 
 La figure~\ref{fig:sto} représente les performances de notre algorithme PMLS, comparé à une gestion statistique des flux.
  \begin{figure}
        \begin{center}
@@ -261,22 +278,23 @@ La figure~\ref{fig:sto} représente les performances de notre algorithme PMLS, c
       \label{fig:sto}   
      \end{figure}    
 \section{Intégration du travail en entreprise}
-Dans le cadre de ma thèse CIFRE avec Nokia Bell Labs France, nous sommes amenés du coté industriel à justifier l'utilité et la faisabilité des solutions que nous proposons sur le plan technique.
+Dans le cadre de ma thèse CIFRE avec Nokia Bell Labs France, nous sommes amenés à justifier l'utilité et la faisabilité technique des solutions théoriques que nous proposons.
 Pour cela, nous développons un prototype. L'idée est d'utiliser un contrôleur SDN, c'est à dire un serveur qui centralise l'intelligence du réseau. Il est directement connecté à tout les appareils du réseau et contrôle la gestion des flux dans chaque noeud. 
 
 Dans notre cas, nous avons choisis ONOS (Open Network Operating System) comme support logiciel pour gérer notre réseau. ONOS est, comme son nom l'indique un système d'exploitation avec des fonctionnalités implémentée pour récupérer les informations sur le réseau et envoyer les instructions de gestion des flux aux noeuds.
 
-Un des enjeu technique consiste à gérer les messages à la nanoseconde près, et donc à utiliser du materiel adéquat. La technologie utilisée pour gérer les flux de manière très fine est relativement nouvelle et il existe très peu de switch dit "TSN" (Time Sensitive Networking). De plus, ce genre de matériel est très cher. Nous avons donc choisi pour des raisons principalement économiques d'utiliser une machine standard avec un linux modifié qui nous permet d'utiliser la technologie TSN sur les cartes réseaux.
+Un enjeu technique consiste à gérer les envoi des messages de façon précise. La technologie utilisée pour gérer les flux de manière très fine s'appelle TSN  (Time Sensitive Networking). Le principe est de gérer l'ouverture et la fermeture des files d'attentes dans les ports de sortie des équipements à la nanoseconde près. Cette technologie est relativement nouvelle et il existe très peu de switch dit TSN. De plus, ce genre de matériel est très cher. Nous avons donc choisi pour des raisons économiques d'utiliser une machine standard avec un linux modifié qui nous permet d'utiliser la technologie TSN avec ses cartes réseaux.
 
 
 \section{Objectifs pour la fin}
 
-Nous avons beaucoup de travaux en cours à terminer avant la fin de ma thèse. Du coté académique, nous prévoyons de finir les résultats théoriques que nous avons trouvés sur l'étoile. Nous avons imaginé un algorithme qui s'autorise à modifier les solutions partielles trouvées pour pouvoir faire passer les messages le plus contraints. Nous pensons qu'il est possible avec un tel algorithme de résoudre le problème PAZL sur l'étoile si la charge est inférieure à $2/3$.
+Nous avons beaucoup de travaux en cours à terminer avant la fin de ma thèse. Du coté académique, nous prévoyons de rédiger les résultats théoriques que nous avons obtenus sur l'étoile. En particulier, nous avons des garanties que le problème PAZL a toujours une solution sur des réseaux à charge moyenne. Nous avons aussi imaginé un algorithme qui s'autorise à modifier les solutions partielles trouvées pour pouvoir faire passer les messages le plus contraints. Nous pensons qu'il est possible avec un tel algorithme de résoudre le problème PAZL sur l'étoile si la charge est inférieure à $2/3$.
 Nous avons aussi testé d'importer les algorithmes gloutons de l'étoile sur la topologie de profondeur de conflit 2, mais il s'avère que les performances ne sont pas très bonnes.  De plus, les algorithmes FPT ne sont pas applicables à cette topologie car ils s'appuient sur le fait qu'il n'existe qu'un arc en commun entre toutes les routes.
 Nous avons néanmoins de bonnes idées, utilisant les techniques de voisinage pour résoudre le problème sur cette topologie plus générale.
 Nous prévoyons donc d'écrire deux papiers sur le sujet: Un papier plus théorique avec des résultats sur le problème PAZL, et un papier plus axé sur l'évaluation de performance de nos algorithmes sur la topologie de profondeur de conflit 2.
 
 Du coté industriel, nous avons toutes les idées pour avancer sur la réalisation de notre prototype, mais nous allons surement nous heurter à des contraintes techniques au fur et a mesure que les choses avanceront.
+
 \todo{enseignements}
 \bibliographystyle{ieeetr}
 \bibliography{srcs,Bib,Sources}

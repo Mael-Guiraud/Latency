@@ -8,7 +8,7 @@
 #define PROBA 0.5
 
 //Mod synch or not
-#define SYNCH 0
+#define SYNCH 1
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.3

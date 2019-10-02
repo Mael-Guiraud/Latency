@@ -1,6 +1,6 @@
 #include "structs.h"
 #include "treatment.h"
-
+#include "starSPALL.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
@@ -178,4 +178,91 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 	}
 	return a;
 
+}
+Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt * tab)
+{
+
+	Assignment a = malloc(sizeof(struct assignment));
+	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->nb_routes_scheduled = 0;
+	a->all_routes_scheduled = 0;
+ 	int offset;
+ 	int bool_found = 1;
+	
+
+	//for each route
+	for(int i=0;i<g.nb_routes;i++)
+	{
+
+		offset=0;
+		bool_found = 1;
+		while((!message_no_collisions( g, tab[i].val, offset,message_size,FORWARD,P))||(!message_no_collisions( g, tab[i].val, offset+route_length(g,tab[i].val),message_size,BACKWARD,P)) )
+		{
+
+			offset++;
+			if(offset == P)
+			{
+				a->offset_forward[tab[i].val]=-1;
+				a->offset_backward[tab[i].val]=-1;
+				a->waiting_time[tab[i].val]=-1;
+				bool_found = 0;
+				break;
+			}
+		}
+		if(bool_found)
+		{
+			
+			fill_period(g,tab[i].val,offset,message_size,FORWARD,P);
+			a->offset_forward[tab[i].val]=offset;
+			fill_period(g,tab[i].val,offset+route_length(g,tab[i].val),message_size,BACKWARD,P);
+			a->offset_backward[tab[i].val]=offset+route_length(g,tab[i].val);
+			a->waiting_time[tab[i].val]=0;
+			a->nb_routes_scheduled++;
+		}
+
+		
+	}
+	if(a->nb_routes_scheduled == g.nb_routes)
+	{
+		a->all_routes_scheduled = 1;
+
+	}
+	else
+	{
+		a->all_routes_scheduled = 0;
+	}
+	return a;
+
+}
+Assignment Prime_all_routes(Graph g, int P, int message_size,int tmax)
+{
+	Assignment a;
+	element_sjt * tab = init_sjt(g.nb_routes);
+	long long facto=fact(g.nb_routes);
+	int travel_time;
+
+	//Pour tout les ordres de routes :
+	for(int i=0;i<facto;i++)
+	{
+	
+		a = greedy_PRIME_allroutes(g,P,message_size,tab);
+		if(a->all_routes_scheduled)
+		{	
+	
+			travel_time = travel_time_max(g, tmax,a);
+			if(travel_time != -1)
+			{
+				free(tab);
+				return a;
+			}
+		}
+		if(i!=facto-1)
+			algo_sjt(tab,g.nb_routes);
+		reset_periods(g,P);
+		
+	}
+	free(tab);
+	return a;
 }

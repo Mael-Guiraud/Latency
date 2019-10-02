@@ -4,13 +4,8 @@
 #include "simons.h"
 #include "test.h"
 #include "treatment.h"
+#include "starSPALL.h"
 
-
-typedef struct 
-{
-	int val;
-	int sens; //0 gauche 1 droite
-} element_sjt;
 void print_tab(element_sjt * tab, int taille)
 {
 	for(int i=0;i<taille;i++)
