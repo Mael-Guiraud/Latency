@@ -124,11 +124,14 @@ Graph init_graph_random_tree(double load)
 	Graph g;
 	g.kind = TREE;
 	g.nb_routes = nb_routes;
+	g.contention_level = 4;
 	g.nb_bbu = nb_bbu;
 	g.nb_collisions = nb_real_collisions;
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
 	g.routes = malloc(sizeof(Route*)*nb_routes);
+	g.contention = malloc(sizeof(Route*)*nb_routes);
 	g.size_routes = malloc(sizeof(int)*nb_routes);
+	g.nb_levels = malloc(sizeof(int)*nb_routes);
 	g.arc_pool_size = nb_total_arcs;
 	for(int i=0;i<nb_total_arcs;i++)
 	{
@@ -144,18 +147,23 @@ Graph init_graph_random_tree(double load)
 		for(int j=0;j<nb_routes_per_flow_bbu[i];j++)
 		{
 			g.routes[index_route]=malloc(sizeof(Route)*2);
+			g.contention[index_route]=malloc(sizeof(Route));
 			g.size_routes[index_route] = 2;
+			g.nb_levels[index_route] = 2;
 
 			g.routes[index_route][0] =  &g.arc_pool[index_arc];
 			g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 			g.arc_pool[index_arc].nb_routes++;
 			g.arc_pool[index_arc].bbu_dest = i;
+			g.arc_pool[index_arc].contention_level = -1;
 
 
 			index_arc++;
 			g.routes[index_route][1] =  &g.arc_pool[i];
+			g.contention[index_route][0] =  &g.arc_pool[i];
 			g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 			g.arc_pool[i].nb_routes++;
+			g.arc_pool[i].contention_level = 1;
 			
 
 			index_route++;
@@ -181,33 +189,41 @@ Graph init_graph_random_tree(double load)
 					//printf("%d %d %d %d \n",nb_bbu+j-nb_fake_collisions,index_arc,i,index_route);
 
 					g.routes[index_route]=malloc(sizeof(Route)*4);
+					g.contention[index_route]=malloc(sizeof(Route)*2);
 					g.size_routes[index_route] = 4;
+					g.nb_levels[index_route] = 4;
 
 					//Arcs vers les antennes
 					g.routes[index_route][0] = &g.arc_pool[index_arc];
 					g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 					g.arc_pool[index_arc].nb_routes++;
 					g.arc_pool[index_arc].bbu_dest = i;
+					g.arc_pool[index_arc].contention_level = -1;
 					index_arc++;
 
 					//ARcs des points de collisions
 					g.routes[index_route][1] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
+					g.contention[index_route][0] = &g.arc_pool[nb_bbu+j-nb_fake_collisions];
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].routes_id[g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes] = index_route;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].nb_routes++;
 					g.arc_pool[nb_bbu+j-nb_fake_collisions].bbu_dest = i;
+					g.arc_pool[nb_bbu+j-nb_fake_collisions].contention_level = 0;
 
 					//ARcs du graph biparti
 					g.routes[index_route][2] = &g.arc_pool[index_middle_arc];
 					g.arc_pool[index_middle_arc].routes_id[g.arc_pool[index_middle_arc].nb_routes] = index_route;
 					g.arc_pool[index_middle_arc].nb_routes++;
 					g.arc_pool[index_middle_arc].bbu_dest = i;
+					g.arc_pool[index_middle_arc].contention_level = -1;
 					
 
 					//Arcs vers la BBU
 					g.routes[index_route][3] = &g.arc_pool[i];
+					g.contention[index_route][1] = &g.arc_pool[i];
 					g.arc_pool[i].routes_id[g.arc_pool[i].nb_routes] = index_route;
 					g.arc_pool[i].nb_routes++;
 					g.arc_pool[i].bbu_dest = i;
+					g.arc_pool[i].contention_level = 1;
 					index_route++;
 					
 				}
@@ -218,6 +234,16 @@ Graph init_graph_random_tree(double load)
 			}
 		}
 	}	
+
+	for(int i=0;i<nb_total_arcs;i++)
+	{
+		for(int j=0;j<128;j++)
+		{
+			g.arc_pool[i].routes_delay[j] =0;		
+		}
+		
+	}
+
 	
 	if(FIXED_PERIOD_MOD)
 		real_period = PERIOD;

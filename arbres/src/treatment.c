@@ -278,6 +278,7 @@ int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 			if(a == g.routes[route][i])
 				return length;
 			length += g.routes[route][i]->length;
+			length += g.routes[route][i]->route_delay[route];
 		}
 		
 	}
@@ -289,12 +290,14 @@ int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 			if(a == g.routes[route][i])
 				return length;
 			length += g.routes[route][i]->length;
+			length += g.routes[route][i]->route_delay[route];
 		}
 		
 	}	
 	return length;		
 	
 }
+
 
 
 
