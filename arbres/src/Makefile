@@ -23,7 +23,8 @@ dirs:
 	mkdir -p $(DIRview)
 	mkdir -p $(DIRfail)
 
-tests: dirs runtest dot
+tests: dirs runtest
+	dot -Tpdf ../view/view.dot -o ../view/view.pdf
 
 onos: dirs runonos
 

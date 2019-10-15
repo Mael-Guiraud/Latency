@@ -502,3 +502,4 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 	}
 	fclose(f);	
 }
+
