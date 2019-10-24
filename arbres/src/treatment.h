@@ -22,3 +22,6 @@ int logarithme(int base, int nb);
 int taille_bits(int base, int nb);
 void chgt_base(int base, int nb, int * tab);
 int mod(int a, int b);
+int route_length_with_buffers(Graph g,int route);
+int travel_time_max_buffers(Graph g);
+int route_length_with_buffers_forward(Graph g,int route);

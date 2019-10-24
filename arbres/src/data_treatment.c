@@ -148,7 +148,7 @@ void print_graphvitz(Graph g,char * nom){
 	fclose(f);
 
 }
-char* sprint_periode_color(int * p, int size,char * string)
+char* sprint_periode_color(int * bufs,int * p, int size,char * string)
 {
 	int old, current;
 	
@@ -163,11 +163,11 @@ char* sprint_periode_color(int * p, int size,char * string)
 			{
 				if(current == -1)
 				{
-					sprintf(string,"%s <font color=\"%s\">%d[%d-",string,COLORS[0],0,i);
+					sprintf(string,"%s <font color=\"%s\">%d[(%d)%d-",string,COLORS[0],0,bufs[0],i);
 				}
 				else
 				{
-					sprintf(string,"%s <font color=\"%s\">%d[%d-",string,COLORS[current],current,i);
+					sprintf(string,"%s <font color=\"%s\">%d[(%d)%d-",string,COLORS[current],current,bufs[current],i);
 				}
 			}
 			else
@@ -180,11 +180,11 @@ char* sprint_periode_color(int * p, int size,char * string)
 				{
 					if(current == -1)
 					{
-						sprintf(string,"%s %d]</font>  <font color=\"%s\">%d[%d-",string,i-1,COLORS[0],0,i);
+						sprintf(string,"%s %d]</font>  <font color=\"%s\">%d[(%d)%d-",string,i-1,COLORS[0],0,bufs[0],i);
 					}
 					else
 					{
-						sprintf(string,"%s %d]</font>  <font color=\"%s\">%d[%d-",string,i-1,COLORS[current],current,i);
+						sprintf(string,"%s %d]</font>  <font color=\"%s\">%d[(%d)%d-",string,i-1,COLORS[current],current,bufs[current],i);
 					}
 				}
 			}
@@ -234,7 +234,7 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 				g.arc_pool[i].last = 0;
 				g.arc_pool[i].first = vertex_id+1;
 				g.arc_pool[i].seen = 1;
-				str = sprint_periode_color(g.arc_pool[g.nb_routes].period_f,p,str);
+				str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_f,g.arc_pool[g.nb_routes].period_f,p,str);
 				fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id+1,str);	
 				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
 				vertex_id+=2;
@@ -247,7 +247,7 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 			g.arc_pool[i].first = vertex_id;
 			g.arc_pool[i].last = vertex_id+1;
 			g.arc_pool[i].seen = 1;
-			str = sprint_periode_color(g.arc_pool[i].period_f,p,str);
+			str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_f,g.arc_pool[i].period_f,p,str);
 			fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id,str);	
 			if(i<g.nb_bbu)
 			{
@@ -325,7 +325,7 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 
 		if(g.kind == STAR)
 		{
-			str = sprint_periode_color(g.arc_pool[g.nb_routes].period_b,p,str);
+			str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_b,g.arc_pool[g.nb_routes].period_b,p,str);
 			fprintf(f,"%d [shape = \"box\",label=%s]\n",0,str);	
 			
 			if(i<g.nb_bbu)
@@ -355,7 +355,7 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 			g.arc_pool[i].seen = 1;
 			
 			
-			str = sprint_periode_color(g.arc_pool[i].period_b,p,str);
+			str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_b,g.arc_pool[i].period_b,p,str);
 			if(strcmp(str,"<>") == 0)
 				fprintf(f,"%d [shape = \"point\"]\n",vertex_id+1);	
 			else

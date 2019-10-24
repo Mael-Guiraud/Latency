@@ -17,7 +17,7 @@
 #include "color.h"
 #include <unistd.h>
 #include "jsondump.h"
-
+#include "voisinage.h"
 #include <string.h>
 #include <math.h>
 
@@ -138,6 +138,8 @@ void test()
 	printf("------- \n TESTING ALGORITHMS : \n");
 	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
+	//printf("Le voisinage donne un temps aller retour de %d.\n",descente(g,P,message_size));
+
 	printf("- WITHOUT WAITING TIME : \n");
 	fprintf(f," WITHOUT WAITING TIME : \n\n");
 	
@@ -222,6 +224,8 @@ void test()
 	{
 		printf(RED "Not OK --\n" RESET);
 	}
+
+	
 
 	
 
@@ -502,4 +506,5 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 	}
 	fclose(f);	
 }
+
 

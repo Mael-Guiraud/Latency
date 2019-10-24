@@ -25,6 +25,7 @@ int message_no_collisions(Graph g,int route,int offset,int message_size,Period_k
 				
 			}
 			offset += g.routes[route][i]->length; 
+
 		}
 	}
 	else
@@ -111,6 +112,7 @@ int route_length(Graph g,int route)
 	}
 	return length;
 }
+
 int insert_if_not_seen(int * tab, int sizetab, int e)
 {
 	int i;
@@ -278,7 +280,7 @@ int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 			if(a == g.routes[route][i])
 				return length;
 			length += g.routes[route][i]->length;
-			length += g.routes[route][i]->route_delay[route];
+			length += g.routes[route][i]->routes_delay_f[route];
 		}
 		
 	}
@@ -290,7 +292,7 @@ int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 			if(a == g.routes[route][i])
 				return length;
 			length += g.routes[route][i]->length;
-			length += g.routes[route][i]->route_delay[route];
+			length += g.routes[route][i]->routes_delay_b[route];
 		}
 		
 	}	
@@ -505,7 +507,44 @@ void chgt_base(int base, int nb, int * tab)
 	return;
 
 }
-
+int route_length_with_buffers(Graph g,int route)
+{
+	int length = 0;
+	//printf("%d \n",g.size_routes[route]);
+	//For each arcs
+	for(int i=0;i<g.size_routes[route];i++)
+	{
+		length += 2*g.routes[route][i]->length;
+		length += g.routes[route][i]->routes_delay_b[route];
+		length += g.routes[route][i]->routes_delay_f[route];
+	}
+	return length;
+}
+int route_length_with_buffers_forward(Graph g,int route)
+{
+	int length = 0;
+	//printf("%d \n",g.size_routes[route]);
+	//For each arcs
+	for(int i=0;i<g.size_routes[route];i++)
+	{
+		length += g.routes[route][i]->length;
+		length += g.routes[route][i]->routes_delay_f[route];
+	}
+	return length;
+}
+int travel_time_max_buffers(Graph g)
+{
+	int lenght;
+	int max = route_length_with_buffers(g,0);
+	for(int i=1;i<g.nb_routes;i++)
+	{
+		lenght = route_length_with_buffers(g,i);
+	
+		max = (max>lenght)?max:lenght;
+		
+	}
+	return max;
+}
 //return a mod b
 int mod(int a, int b)
 {

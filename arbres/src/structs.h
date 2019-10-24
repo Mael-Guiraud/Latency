@@ -40,7 +40,8 @@ typedef struct arc{
 
 	//pour le voisinage
 	int routes_order[128];
-	int routes_delay[128];
+	int routes_delay_f[128];
+	int routes_delay_b[128];
 	int contention_level;
 
 } Arc;
@@ -94,6 +95,7 @@ typedef Arc** Route;
 
 
 typedef struct graph{
+	int period;
 	Graph_kind kind;
 	int nb_routes;
 	Arc * arc_pool;
@@ -111,6 +113,7 @@ struct assignment{
 	int * offset_forward;
 	int * offset_backward;
 	int * waiting_time;
+	int ** buffers ;
 	int nb_routes_scheduled;
 	int all_routes_scheduled;
 };

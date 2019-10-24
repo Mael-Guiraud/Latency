@@ -19,6 +19,13 @@ void init_arc(Arc * a)
 	a->last = -1;
 	a->bbu_dest = -1;
 	a->seen = 0;
+	for(int i=0;i<128;i++)
+	{
+		a->routes_id[i]=0;
+		a->routes_order[i]=0;
+		a->routes_delay_f[i]=0;
+		a->routes_delay_b[i]=0;
+	}
 }
 
 int count_real_collisions(int ** graph, int nb_bbu, int nb_collisions)
@@ -239,7 +246,8 @@ Graph init_graph_random_tree(double load)
 	{
 		for(int j=0;j<128;j++)
 		{
-			g.arc_pool[i].routes_delay[j] =0;		
+			g.arc_pool[i].routes_delay_f[j] =0;		
+			g.arc_pool[i].routes_delay_b[j] =0;		
 		}
 		
 	}
@@ -249,7 +257,7 @@ Graph init_graph_random_tree(double load)
 		real_period = PERIOD;
 	else
 		real_period = (load_max(g) * MESSAGE_SIZE) / load;
-
+	g.period = real_period;
 	//for(int i=0;i<g.arc_pool_size;i++)
 	for(int i=0;i<nb_real_collisions+nb_bbu;i++)
 	{
