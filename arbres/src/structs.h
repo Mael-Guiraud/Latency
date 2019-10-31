@@ -39,10 +39,12 @@ typedef struct arc{
 	int state_b; //0 free, 1 used
 
 	//pour le voisinage
-	int routes_order[128];
+	int routes_order_f[128];
+	int routes_order_b[128];
 	int routes_delay_f[128];
 	int routes_delay_b[128];
 	int contention_level;
+	int pos_swap;
 
 } Arc;
 
@@ -113,7 +115,7 @@ struct assignment{
 	int * offset_forward;
 	int * offset_backward;
 	int * waiting_time;
-	int ** buffers ;
+	int time;
 	int nb_routes_scheduled;
 	int all_routes_scheduled;
 };

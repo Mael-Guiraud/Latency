@@ -22,7 +22,8 @@ void init_arc(Arc * a)
 	for(int i=0;i<128;i++)
 	{
 		a->routes_id[i]=0;
-		a->routes_order[i]=0;
+		a->routes_order_f[i]=0;
+		a->routes_order_b[i]=0;
 		a->routes_delay_f[i]=0;
 		a->routes_delay_b[i]=0;
 	}

@@ -247,7 +247,7 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 			g.arc_pool[i].first = vertex_id;
 			g.arc_pool[i].last = vertex_id+1;
 			g.arc_pool[i].seen = 1;
-			str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_f,g.arc_pool[i].period_f,p,str);
+			str = sprint_periode_color(g.arc_pool[i].routes_delay_f,g.arc_pool[i].period_f,p,str);
 			fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id,str);	
 			if(i<g.nb_bbu)
 			{
@@ -355,7 +355,7 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 			g.arc_pool[i].seen = 1;
 			
 			
-			str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_b,g.arc_pool[i].period_b,p,str);
+			str = sprint_periode_color(g.arc_pool[i].routes_delay_b,g.arc_pool[i].period_b,p,str);
 			if(strcmp(str,"<>") == 0)
 				fprintf(f,"%d [shape = \"point\"]\n",vertex_id+1);	
 			else

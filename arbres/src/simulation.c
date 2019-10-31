@@ -39,13 +39,23 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d \n",travel_time_max( g, tmax, a));
+		printf("Travel time max = %d | buffers %d \n",travel_time_max( g, tmax, a), travel_time_max_buffers(g));
 		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
 	}
 	else
 	{
-		printf(RED "Not OK --\n" RESET);
-		fprintf(f,"No assignment found\n");
+		printf(RED "Not OK -- " RESET);
+		if(a->all_routes_scheduled)
+		{
+			printf("Travel time max = %d |buffers %d \n",travel_time_max( g, tmax, a), travel_time_max_buffers( g));
+			fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
+		}
+		else
+		{
+			printf("No assignment found\n");
+			fprintf(f,"No assignment found\n");
+		}
+		
 	}
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
 	print_assignment(g,a,P,buf_dot);
@@ -146,7 +156,7 @@ void test()
 	//THE NAME MUST NOT CONTAIN SPACES
 	test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
 	test_one_algo(g,P,message_size,tmax,&PRIME_reuse,NULL,"PrimeReuse",f);
-	test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
+	//test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
 	
 	
 
@@ -158,6 +168,8 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);
+
 
 	seed = time(NULL);
 
