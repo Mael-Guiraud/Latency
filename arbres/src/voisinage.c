@@ -485,7 +485,7 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 	return orders;
 }
 
-Assignment descente(Graph g, int P, int message_size)
+Assignment descente(Graph g, int P, int message_size,int tmax)
 {
 	Voisin v;
 	v= init_voisinage( g,  v);

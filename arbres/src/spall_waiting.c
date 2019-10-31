@@ -88,10 +88,11 @@ Assignment RRH_first_spall(Graph g, int P, int message_size, int tmax)
 			{
 				fill_period(g,id_routes[j],best_offset,message_size,FORWARD,P);
 				a->offset_forward[id_routes[j]]=best_offset;
-
+				g.routes[id_routes[j]][0]->routes_delay_f[id_routes[j]] = best_offset;
 				
 				fill_period(g,id_routes[j],best_back,message_size,BACKWARD,P);
 				a->offset_backward[id_routes[j]]=best_back;
+				g.routes[id_routes[j]][0]->routes_delay_b[id_routes[j]] = best_back-best_begin;
 				a->waiting_time[id_routes[j]]=best_back-best_begin;	
 				a->nb_routes_scheduled++;
 			}

@@ -1,1 +1,1 @@
-Assignment descente(Graph g, int P, int message_size);
+Assignment descente(Graph g, int P, int message_size,int tmax);

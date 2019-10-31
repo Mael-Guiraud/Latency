@@ -17,9 +17,9 @@
 
 
 // CONFIG OF THE SIMULATIONS FOR ALGORITHMS WITH WAITING TIME
-#define MARGIN_MIN 0
+#define MARGIN_MIN 5000
 #define MARGIN_MAX 40000
-#define MARGIN_GAP 1000
+#define MARGIN_GAP 5000
 #define STANDARD_LOAD 0.7
 
 
@@ -34,7 +34,7 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 100
+#define NB_SIMULS 10
 
 
 //openMP parallel
