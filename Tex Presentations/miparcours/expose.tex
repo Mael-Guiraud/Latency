@@ -78,7 +78,7 @@
   
   
  \begin{multicols}{2}
-Constraints in Fronthaul network :
+Specificity of Fronthaul network :
 \vspace{1cm}
 \begin{itemize}
 \item Highly loaded
@@ -88,8 +88,8 @@ Constraints in Fronthaul network :
 \vspace{0.5cm}
 Current approaches: \begin{itemize}
 \vspace{1cm}
-\item PtP connections $\rightarrow$ Too expensive
-\item Statistical multiplexing $\rightarrow$ No latency guarantees  
+\item Point to Point connections $\rightarrow$ Too expensive
+\item Statistical multiplexing $\rightarrow$ No latency guarantee
 \end{itemize}
 \end{multicols}
 
@@ -218,20 +218,24 @@ Current approaches: \begin{itemize}
 }
 \vspace{1cm}
 \end{center}
-There is a route going from each RRH to the BBU.\\
+There is a route going from each RRH to its BBU.\\
 
 A {\bf routed network} : set of routes.
  \end{frame}
 
  
  \begin{frame}{The communication process}
+ 
+ The time is discretized.
+
 Two parameters
 \begin{itemize}
 \item The period $P$
 \item The size of a message $\tau$
 \end{itemize}
 \vspace{0.5cm}
-The time is discretized and on each route of the network, every $P$ units of time, a message of size $\tau$ is emitted.
+
+Every $P$ units of time, a message of size $\tau$ is emitted from each RRH and BBU.
 
 \vspace{0.5cm}
 \begin{center}
@@ -285,13 +289,13 @@ The time is discretized and on each route of the network, every $P$ units of tim
     
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = 5](a1)(n2)   
+  \Edge[label = 2](a1)(n2)   
    \Edge[label = 3](n2)(n7)
   
     \tikzset{
   EdgeStyle/.append style = {red} }
     \Edge[label = 2](a3)(n1)
-      \Edge[label = 6](n1)(n7)
+      \Edge[label = 1](n1)(n7)
       
        \node (0) at (9,4){\includegraphics[scale=0.2]{col1.png}};
 
@@ -348,13 +352,13 @@ There is a \textcolor{blue}{collision} between two routes when their messages go
     
   \tikzset{
   EdgeStyle/.append style = {blue} }
-  \Edge[label = 5](a1)(n2)   
+  \Edge[label = 2](a1)(n2)   
    \Edge[label = 3](n2)(n7)
   
     \tikzset{
   EdgeStyle/.append style = {red} }
     \Edge[label = 2](a3)(n1)
-      \Edge[label = 6](n1)(n7)
+      \Edge[label = 1](n1)(n7)
       
        \node (0) at (9,4){\includegraphics[scale=0.2]{col2.png}};
 
@@ -380,23 +384,31 @@ In each BBU, one can choose the \textcolor{blue}{waiting time} before sending ba
 \begin{center}
   \includegraphics[scale=0.7]{BBU}\\
  \end{center} 
-Two different problems:
+
+\textbf{Problem:}
+
+Given a routed network, a period and a message size, find an assignment such that there is no collisions.
+\end {frame}
+\begin{frame}
+Two measures to optimize.
  \begin{multicols}{2}
-PALL :
+PALL:
 \begin{itemize}
 \item The RRH send their message at different dates in the period.
 \item Local latency constraint.
 \item Minimizing the process time on the longest route.
 \end{itemize}
 \vspace{0.5cm}
-SPALL
+SPALL:
 \begin{itemize}
 \item The RRH send their message at the same date (Synchronized).
 \item Global time constraint.
 \item Minimizing the time between the emission of the first message and the reception of the last message.
 \end{itemize}
 \end{multicols}
-\end {frame}
+
+The optimal solutions for PALL and SPALL are not the same.
+\end{frame}
 \end{subsection}
 
 
@@ -407,7 +419,9 @@ SPALL
 \begin{subsection}{A star routed Network}
 \begin{frame}{Different topologies}
 
-The  {\bf conflict depth} of a route is defined as the number of arcs shared with other routes.
+The  {\bf conflict depth} of a route is defined as the number of first arcs shared with other routes.
+
+The conflict depth of a routed network is the maximal conflict depth of the routes in the network.
   \centering
    \begin{multicols}{2}
 
@@ -471,13 +485,14 @@ The  {\bf conflict depth} of a route is defined as the number of arcs shared wit
    \begin{multicols}{2}
    PALL:
    \begin{itemize}
-   \item Hard on conflict depth $2$ : reduction of a k-coloring problem
-   \item Hard on conflict depth $1$ if the shared arc is bidirectional.
+   \item Hard on conflict depth $2$: reduction from k-coloring problem
+   \item Hard on conflict depth $1$ if the shared arc is not bidirectional.
    \end{itemize}
    
    SPALL:
    \begin{itemize}
-   \item Hard on conflict depth $1$ : reduction of a two processor scheduling problem.
+    \item Hard on conflict depth $2$ 
+       \item Hard on conflict depth $1$: reduction from two processors scheduling problem.
    \end{itemize}
    \end{multicols}
 
@@ -508,24 +523,21 @@ The  {\bf conflict depth} of a route is defined as the number of arcs shared wit
 
   \begin{frame}{Performances of the algorithms}
 \centering
-
   \includegraphics[scale=0.4]{retour_21000.pdf}\\
+  
+    Period : $20.000$ tics -  Load : $95\%$
   \end{frame}
   
     \begin{frame}{Deterministic vs Stochastic}
 \centering
 \vspace{-2cm}
   \includegraphics[scale=0.4]{stochastic.pdf}\\
+  
+  Period : $20.000$ tics - Load : $95\%$
   \end{frame}
   
   
-  \begin{frame}{SPALL on conflict depth $1$}
-  FPT algorithm to solve SPALL:
-  \begin{itemize}
-  \item Try all the orders in the way forward
-  \item Use FPT-PMLS in the way backward
-  \end{itemize}
-  \end{frame}
+
 \end{subsection}
 
 
@@ -533,29 +545,43 @@ The  {\bf conflict depth} of a route is defined as the number of arcs shared wit
 
 
 
-\begin{section}{Optical ring}
-\begin{frame}{Optical ring}
+\begin{section}{Related works}
+\begin{frame}{Related works}
 \centering
-\vspace{1cm}
-  \includegraphics[scale=0.8]{interface}\\
+\begin{multicols}{2}
+
+  \includegraphics[scale=0.4]{interface}\\
+  
+  ANR N-GREEN project.
+  
+   \includegraphics[scale=0.4]{onos}\\
+   
+   Industrial developpement.
+   
+  \end{multicols}
 \end{frame}
 
-\begin{frame}{Results}
-\centering
-\vspace{1cm}
-  \includegraphics[scale=0.3]{optim}\\
-
-\end{frame}
 \end{section}
 
 
 
 \begin{section}{Conculsion}
-\begin{frame}{Next steps}
+\begin{frame}{Future work}
 \begin{itemize}
-\item Solutions for SPALL and SPALL on conflict depth $2$
 \vspace{1cm}
-\item ...?
+\item FPT algorithm for SPALL on conflict depth $1$
+\vspace{1cm}
+\item Understanding small load on conflict depth $1$
+\vspace{1cm}
+\item Solutions for SPALL and PALL on conflict depth $2$
+\begin{itemize}
+\item Heuristics / Greedy
+\item Normal form of assignments $\rightarrow$ FPT algorithms
+\item Local optimisation / Simulated annealing
+\end{itemize}
+
+
+\vspace{1cm}
 
 \end{itemize}
 \vspace{0.5cm}
@@ -565,7 +591,8 @@ The  {\bf conflict depth} of a route is defined as the number of arcs shared wit
 \end{frame}
 
 \begin{frame}
-Thank you for your attention.
+\centering
+\huge{Thank you for your attention.}
 
 \end{frame}
 \end{section}
