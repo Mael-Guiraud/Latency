@@ -101,9 +101,11 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 		{
 			fill_period(g,i,best_offset,message_size,FORWARD,P);
 			a->offset_forward[i]=best_offset;
+			g.routes[i][0]->routes_delay_f[i] = best_offset;
 			fill_period(g,i,best_offset+route_length(g,i),message_size,BACKWARD,P);
 			a->offset_backward[i]=0;
 			a->waiting_time[i]=0;
+
 			a->nb_routes_scheduled++;	
 		}
 		
@@ -159,6 +161,7 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 			
 			fill_period(g,i,offset,message_size,FORWARD,P);
 			a->offset_forward[i]=offset;
+			g.routes[i][0]->routes_delay_f[i] = offset;
 			fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
 			a->offset_backward[i]=offset+route_length(g,i);
 			a->waiting_time[i]=0;
@@ -216,6 +219,7 @@ Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt 
 			
 			fill_period(g,tab[i].val,offset,message_size,FORWARD,P);
 			a->offset_forward[tab[i].val]=offset;
+			g.routes[i][0]->routes_delay_f[i] = offset;
 			fill_period(g,tab[i].val,offset+route_length(g,tab[i].val),message_size,BACKWARD,P);
 			a->offset_backward[tab[i].val]=offset+route_length(g,tab[i].val);
 			a->waiting_time[tab[i].val]=0;

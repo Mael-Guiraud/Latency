@@ -90,9 +90,9 @@ debugstar: compil
 	valgrind --leak-check=full -v ./compil star
 
 profile: compil
-	valgrind --tool=callgrind -v ./compil simulAll
+	valgrind --tool=callgrind -v ./compil simulWaiting
 
-cover: dirs runstar dot 
+cover: dirs  
 	lcov --directory . -c -o rapport.info
 	genhtml -o ./rapport -t "Couverture code" rapport.info
 	firefox ./rapport/index.html

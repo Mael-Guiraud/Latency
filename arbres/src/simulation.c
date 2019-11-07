@@ -261,7 +261,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	double moy_routes_scheduled ;
 	Graph g;
 	int P ;
-	
+	long long moy;
 	char buf[256];
 	sprintf(buf,"../data/%s",nom);
 	FILE * f = fopen(buf,"w");
@@ -295,7 +295,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 	{
 		nb_success=0;
 		moy_routes_scheduled = 0;
-
+		moy = 0;
 		if(!PARALLEL)
 		{
 			cmpt_fail = 0;
@@ -328,10 +328,13 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			a = ptrfonction( g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
 			{
-				if(travel_time_max( g, tmax, a) != -1)
+				//if(travel_time_max( g, tmax, a) != -1)
+				if(travel_time_max_buffers( g) <= tmax)
 				{
 					#pragma omp atomic update
 						nb_success++;
+					#pragma omp atomic update
+						moy+=travel_time_max_buffers( g);
 				}
 				else
 				{
@@ -377,8 +380,24 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 			fflush(stdout);
 		}	
-		printf("\nMargin : %d success : %d/%d .\n",margin,nb_success,NB_SIMULS);
-		fprintf(f,"%d %f %f\n",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
+		printf("\nMargin : %d success : %d/%d ",margin,nb_success,NB_SIMULS);
+		if(nb_success)
+		{
+			printf("moy = %d.\n",moy/nb_success);
+		}
+		else
+		{
+			printf("\n");
+		}
+		fprintf(f,"%d %f %f ",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
+		if(nb_success)
+		{
+			fprintf(f,"%d \n",moy/nb_success);
+		}
+		else
+		{
+			fprintf(f,"-1 \n");
+		}
 	}
 	fclose(f);
 	

@@ -43,6 +43,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 		{
 			fill_period(g,i,offset,message_size,FORWARD,P);
 			a->offset_forward[i]=offset;
+			g.routes[i][0]->routes_delay_f[i] = offset;
 		}
 		else
 		{
@@ -100,6 +101,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 				
 					fill_period(g,order[i],offset,message_size,BACKWARD,P);
 					a->offset_backward[order[i]]=offset;
+					g.routes[order[i]][0]->routes_delay_b[order[i]] = offset-begin_offset;
 					a->waiting_time[order[i]]=offset-begin_offset;
 					a->nb_routes_scheduled++;
 				}
@@ -248,11 +250,12 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 					{
 						fill_period(g,id_routes[j],best_offset,message_size,FORWARD,P);
 						a->offset_forward[id_routes[j]]=best_offset;
-
+						g.routes[id_routes[j]][0]->routes_delay_f[id_routes[j]] = best_offset;
 						
 						fill_period(g,id_routes[j],best_back,message_size,BACKWARD,P);
 						a->offset_backward[id_routes[j]]=best_back;
 						a->waiting_time[id_routes[j]]=best_back-best_begin;
+						g.routes[id_routes[j]][0]->routes_delay_b[id_routes[j]] = best_back-best_begin;
 						routes[id_routes[j]] = 1;	
 						a->nb_routes_scheduled++;
 					}
