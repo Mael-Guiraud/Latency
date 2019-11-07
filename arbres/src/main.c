@@ -49,8 +49,9 @@ int main (int argc, char *argv[])
 			simul(seed,&loaded_greedy_longest,"loadedGreedyLongest");
 			simul(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
 			simul(seed,&RRH_first_spall,"RRHFirst");*/
-			simul(seed,&descente,"Descente");
-			char * noms[] = {"greedy","loadedGreedy","loadedGreedyLongest","loadedGreedyCollisions","RRHFirst","Descente"};
+			//simul(seed,&descente,"Descente");
+			simul(seed,&best_of_x,"DescenteX");
+			char * noms[] = {"greedy","loadedGreedy","loadedGreedyLongest","loadedGreedyCollisions","RRHFirst","Descente","DescenteX"};
 			print_gnuplot("waiting",noms, 6, "performance of greedys with waiting times", "margin", ylabels);
 		}
 		if(!strcmp(argv[1],"simulNoWaiting") || !strcmp(argv[1],"simulAll"))

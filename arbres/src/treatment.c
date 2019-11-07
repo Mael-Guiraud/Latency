@@ -267,6 +267,78 @@ void reset_periods(Graph g, int P)
 		}
 	}
 }
+void period_to_order(Arc * a,int P)
+{
+	int idf=0;
+	int idb=0;
+	int lastF=-2;
+	int lastB=-2;
+	for(int i=0;i<P;i++)
+	{
+
+		
+		if(a->period_f[i] != lastF)
+		{
+			if(a->period_f[i] != 0)
+			{
+				if(a->period_f[i] == -1)
+				{
+					a->routes_order_f[idf]=0;
+				}
+				else
+				{
+					a->routes_order_f[idf]=a->period_f[i];
+				}
+				idf++;
+				
+			}
+			lastF  = a->period_f[i];
+		}
+		
+		
+
+	
+		if(a->period_b[i] != lastB)
+		{
+	
+			if(a->period_b[i] != 0)
+			{
+				
+				if(a->period_b[i] == -1)
+				{
+					a->routes_order_b[idb]=0;
+				}
+				else
+				{
+					a->routes_order_b[idb]=a->period_b[i];
+				}
+				idb++;
+			
+				
+			}
+			lastB  = a->period_b[i];
+			
+		}
+		
+		
+	}
+	if(a->period_b)
+		if(idb != a->nb_routes)
+		{
+			affiche_periode(a->period_b, P, stdout);
+			printf("fin %d %d \n",idb,a->nb_routes);
+			exit(95);
+		}
+
+}
+void convert_graph_order(Graph g, int P)
+{
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		if(g.arc_pool[i].period_f)
+			period_to_order(&g.arc_pool[i],P);
+	}
+}
 int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 {
 	int length = 0;
@@ -332,6 +404,11 @@ void free_graph(Graph g)
 		free(g.routes[i]);
 	free(g.routes);
 	free(g.size_routes);
+	for(int i=0;i<g.nb_routes;i++)
+		free(g.contention[i]);
+	free(g.contention);
+
+	free(g.nb_levels);
 }
 
 //trie le tableau "odre"
