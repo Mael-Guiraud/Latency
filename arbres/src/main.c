@@ -44,12 +44,12 @@ int main (int argc, char *argv[])
 		char * ylabels[] = {"Success Rate","NbRoutes"};
 		if(!strcmp(argv[1],"simulWaiting") || !strcmp(argv[1],"simulAll"))
 		{
-			/*simul(seed,&greedy,"greedy");
+			simul(seed,&greedy,"greedy");
 			simul(seed,&loaded_greedy,"loadedGreedy");
 			simul(seed,&loaded_greedy_longest,"loadedGreedyLongest");
 			simul(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
-			simul(seed,&RRH_first_spall,"RRHFirst");*/
-			//simul(seed,&descente,"Descente");
+			simul(seed,&RRH_first_spall,"RRHFirst");
+			simul(seed,&descente,"Descente");
 			simul(seed,&best_of_x,"DescenteX");
 			char * noms[] = {"greedy","loadedGreedy","loadedGreedyLongest","loadedGreedyCollisions","RRHFirst","Descente","DescenteX"};
 			print_gnuplot("waiting",noms, 6, "performance of greedys with waiting times", "margin", ylabels);
