@@ -6,8 +6,7 @@
 #include "greedy_waiting.h"
 typedef struct{
 	int route;
-	int level;
-	int pos;
+	int* pos;
 } Voisin;
 
 int indice_identique(int * t, int taille)
@@ -28,125 +27,229 @@ int indice_identique(int * t, int taille)
 	}
 	return 0;
 }
-Voisin nouveau_voisin(Voisin v,Graph g)
+
+void next(int * tab, int id)
 {
-	
-	int tmp, idtmp;
-	int x = v.level;
-	Period_kind kind;
-
-	if(x >= g.nb_levels[v.route]/2)
+	if(tab[id] == 2)
 	{
-		x=g.nb_levels[v.route]-v.level-1;
-		
-	}
-	
-	if(v.pos >= g.contention[v.route][x]->nb_routes)
-	{
-		v.pos = 0;
-		v.level++;
-		if(v.level == g.nb_levels[v.route]/2)//Si on est au retour sur l'arc de la bbu, pas besoin de changer les ordres.
+		if(id==0)
 		{
-			v.level++;
+			printf("Error, the number max is reached.\n");
+			exit(94);
 		}
-	}
-	if(v.level >= g.nb_levels[v.route])
-	{
-		v.level=0;
-		v.route++;
-	}
-	if(v.route >= g.nb_routes)
-	{
-		v.route = -1;
-		return v;
-	}
-
-	x=v.level;
-	kind = FORWARD;
-	if(v.level >= g.nb_levels[v.route]/2)
-	{
-		x=g.nb_levels[v.route]-v.level-1;
-		kind = BACKWARD;
-	}
-
-	
-
-	//echange v.pos et v.route
-	if(kind == FORWARD)
-	{
-
-		
-		if(v.pos ==0)
-		{
-			for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-			{
-				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
-				{
-					g.contention[v.route][x]->pos_swap = i;//contient l'indice de la position de v.route avant le voisinage
-					//printf("swapf = %d -----------------------------------\n",i);
-				}
-
-			}
-			tmp = g.contention[v.route][x]->routes_order_f[v.pos];
-			g.contention[v.route][x]->routes_order_f[v.pos] = v.route;
-			g.contention[v.route][x]->routes_order_f[g.contention[v.route][x]->pos_swap] = tmp;
-			if(v.level == (g.nb_levels[v.route]/2)-1)
-			{
-				tmp = g.contention[v.route][x]->routes_order_b[v.pos];
-				g.contention[v.route][x]->routes_order_b[v.pos] = v.route;
-				g.contention[v.route][x]->routes_order_b[g.contention[v.route][x]->pos_swap] = tmp;
-			}
-			
-		}
-		else
-		{
-			g.contention[v.route][x]->routes_order_f[v.pos-1] = g.contention[v.route][x]->routes_order_f[g.contention[v.route][x]->pos_swap];
-			g.contention[v.route][x]->routes_order_f[g.contention[v.route][x]->pos_swap] = g.contention[v.route][x]->routes_order_f[v.pos];
-			g.contention[v.route][x]->routes_order_f[v.pos] = v.route;
-			if(v.level == (g.nb_levels[v.route]/2)-1)
-			{
-				g.contention[v.route][x]->routes_order_b[v.pos-1] = g.contention[v.route][x]->routes_order_b[g.contention[v.route][x]->pos_swap];
-				g.contention[v.route][x]->routes_order_b[g.contention[v.route][x]->pos_swap] = g.contention[v.route][x]->routes_order_b[v.pos];
-				g.contention[v.route][x]->routes_order_b[v.pos] = v.route;
-			}
-		}
-		
+		tab[id]=0;
+		next(tab,id-1);
 	}
 	else
 	{
-		if(v.pos ==0)
+		tab[id]++;
+	}
+}
+
+int fin_vois(int * tab, int size)
+{
+	for(int i=0;i<size;i++)
+	{
+		if(tab[i] != 2)
 		{
-			for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		
+			return 0;
+		}
+	}
+	return 1;
+
+}
+void init_vois(int * tab, int size)
+{
+	for(int i=0;i<size;i++)
+	{
+		tab[i] =0;
+
+	}
+
+}
+void echanger_gauche(int * tab, int size, int id)
+{
+	int tmp;
+	if(size <= 1)
+		return;
+	if(id ==0)
+	{
+		tmp = tab[0];
+		tab[0] = tab[size-1];
+		tab[size-1]=tmp;
+	}
+	else
+	{
+		tmp = tab[id];
+		tab[id] = tab[id-1];
+		tab[id-1]=tmp;
+	}
+}
+void echanger_droite(int * tab, int size, int id)
+{
+	int tmp;
+	if(size <= 1)
+		return;
+	if(id ==size-1)
+	{
+		tmp = tab[0];
+		tab[0] = tab[size-1];
+		tab[size-1]=tmp;
+	}
+	else
+	{
+		tmp = tab[id];
+		tab[id] = tab[id+1];
+		tab[id+1]=tmp;
+	}
+}
+
+Voisin nouveau_voisin(Voisin v,Graph g)
+{
+
+	int tmp, idtmp;
+	Period_kind kind;
+	int x;
+	//On remet comme avant
+	for(int level=0;level<g.nb_levels[v.route];level++)
+	{
+		x=level;
+		kind = FORWARD;
+		if(level >= g.nb_levels[v.route]/2)
+		{
+			x=g.nb_levels[v.route]-level-1;
+			kind = BACKWARD;
+		}
+		//x contient le level de contention de l'arc, et kind le sens
+
+
+		//On cherche l'indice de au quel v.route est placée dans l'arc
+		
+		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		{
+			if(kind == FORWARD)
+			{
+				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+			else
 			{
 				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
 				{
-					g.contention[v.route][x]->pos_swap = i;//contient l'indice de la position de v.route avant le voisinage
-					//printf("swapb = %d ---------------------------------\n",i);
+					idtmp = i;
+					break;
 				}
 			}
-			tmp = g.contention[v.route][x]->routes_order_b[v.pos];
-			g.contention[v.route][x]->routes_order_b[v.pos] = v.route;
-			g.contention[v.route][x]->routes_order_b[g.contention[v.route][x]->pos_swap] = tmp;
-			if(v.level == (g.nb_levels[v.route]/2))
-			{
-				printf("Ce cas de figure ne dois pas arriver, normalement si on est au backward, cet arc n'est pas traité\n");
-				exit(54);
-			}
-			
+
 		}
-		else
+
+
+		if(v.pos[level] == 2)//permutation a gauche(car c'était droite avant)
 		{
-			g.contention[v.route][x]->routes_order_b[v.pos-1] = g.contention[v.route][x]->routes_order_b[g.contention[v.route][x]->pos_swap];
-			g.contention[v.route][x]->routes_order_b[g.contention[v.route][x]->pos_swap] = g.contention[v.route][x]->routes_order_b[v.pos];
-			g.contention[v.route][x]->routes_order_b[v.pos] = v.route;
-			if(v.level == (g.nb_levels[v.route]/2))
+			if(kind == FORWARD)
 			{
-				printf("Ce cas de figure ne dois pas arriver, normalement si on est au backward, cet arc n'est pas traité\n");
-				exit(54);
+				echanger_gauche(g.contention[v.route][x]->routes_order_f,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+			else
+			{
+				echanger_gauche(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+		}
+		if(v.pos[level] == 1)//permutation a droite
+		{
+			if(kind == FORWARD)
+			{
+				echanger_droite(g.contention[v.route][x]->routes_order_f,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+			else
+			{
+				echanger_droite(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
 			}
 		}
 	}
-	v.pos++;
+	if(fin_vois(v.pos,g.nb_levels[v.route]))//Nouvelle route
+	{
+		v.route++;
+		free(v.pos);
+		if(v.route >= g.nb_routes)
+		{
+			v.route = -1;
+
+			return v;
+		}
+		v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+		init_vois(v.pos,g.nb_levels[v.route]);
+	}
+	else
+	{
+		next(v.pos,g.nb_levels[v.route]-1);
+	}
+	
+
+	//On echange dans la periode
+	for(int level=0;level<g.nb_levels[v.route];level++)
+	{
+		x=level;
+		kind = FORWARD;
+		if(level >= g.nb_levels[v.route]/2)
+		{
+			x=g.nb_levels[v.route]-level-1;
+			kind = BACKWARD;
+		}
+		//x contient le level de contention de l'arc, et kind le sens
+
+
+		//On cherche l'indice de au quel v.route est placée dans l'arc
+		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		{
+			if(kind == FORWARD)
+			{
+				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+			else
+			{
+				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+
+		}
+
+
+		if(v.pos[level] == 1)//permutation a gauche
+		{
+			if(kind == FORWARD)
+			{
+				echanger_gauche(g.contention[v.route][x]->routes_order_f,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+			else
+			{
+				echanger_gauche(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+		}
+		if(v.pos[level] == 2)//permutation a droite
+		{
+			if(kind == FORWARD)
+			{
+				echanger_droite(g.contention[v.route][x]->routes_order_f,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+			else
+			{
+				echanger_droite(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+		}
+	}
+	
 	return v;
 }
 
@@ -201,15 +304,17 @@ Voisin init_voisinage(Graph g, Voisin v)
 		}
 	}
 	v.route =0;
-	v.pos =0;
-	v.level =0;
+	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+	init_vois(v.pos,g.nb_levels[v.route]);
+
 	return v;
 }
-Voisin reinit_voins(Voisin v)
+Voisin reinit_voins(Graph g, Voisin v)
 {
 	v.route =0;
-	v.pos =0;
-	v.level =0;
+	v.pos= malloc(sizeof(int)* g.nb_levels[v.route]);
+	init_vois(v.pos,g.nb_levels[v.route]);
+
 	return v;
 }
 
@@ -536,7 +641,6 @@ Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size, int tma
 	reset_periods(g,P);
 	free_assignment(a);
 	v.pos=0;
-	v.level=0;
 	v.route=0;
 	return v;
 }
@@ -568,7 +672,7 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		nb_d++;
 		if(a)
 			free_assignment(a);
-		v=reinit_voins(v);
+		v=reinit_voins(g,v);
 		cpy_orders(orders,g,0);
 		//printf("On remet le dernier graph renvoyé\n");aff_orders(orders,g);
 		reinit_delays(g);
