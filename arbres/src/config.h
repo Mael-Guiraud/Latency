@@ -21,6 +21,7 @@
 #define MARGIN_MAX 40000
 #define MARGIN_GAP 5000
 #define STANDARD_LOAD 0.7
+#define LAT_GAP 10
 
 
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
