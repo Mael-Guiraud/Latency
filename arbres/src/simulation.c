@@ -539,3 +539,63 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 }
 
 
+
+
+void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
+{
+	srand(seed);
+	int message_size = MESSAGE_SIZE;
+	Graph g;
+	int P ;
+
+	char buf[256];
+	sprintf(buf,"../data/%s.plot",nom);
+	FILE * f = fopen(buf,"w");
+
+	Assignment a=NULL;
+	
+	int tmax;
+	int additional_lat;
+	printf("ALGORITHM : %s \n",nom);
+	if(!f)perror("Error while opening file\n");
+
+	#pragma omp parallel for private(g,P,a,tmax,additional_lat)  if(PARALLEL)
+	for(int i=0;i<NB_SIMULS;i++)
+	{
+		a = NULL;
+
+		g= init_graph_random_tree(STANDARD_LOAD);
+		if(FIXED_PERIOD_MOD)
+		{
+			if(PERIOD < load_max(g)*MESSAGE_SIZE)
+				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+			P = PERIOD;
+		}
+		else
+			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+		tmax = tmax = longest_route(g)*2 ;
+
+		additional_lat = 0;
+		do{
+			if(a)
+				free_assignment(a);
+			a = ptrfonction( g, P, message_size,tmax);
+			reset_periods(g,P);
+			additional_lat += LAT_GAP;
+			tmax += LAT_GAP;
+			printf("%d\n",additional_lat);
+		}while(!a->all_routes_scheduled);
+		
+		#pragma omp critical
+			fprintf(f,"%d\n",additional_lat);		
+		free_assignment(a);
+
+		free_graph(g);
+		fprintf(stdout,"									%d/%d\n",i+1,NB_SIMULS);
+		fflush(stdout);
+	}	
+	
+	fclose(f);
+	
+		
+}

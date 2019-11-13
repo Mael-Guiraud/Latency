@@ -44,11 +44,11 @@ int main (int argc, char *argv[])
 		char * ylabels[] = {"Success Rate","NbRoutes"};
 		if(!strcmp(argv[1],"simulWaiting") || !strcmp(argv[1],"simulAll"))
 		{
-			/*simul(seed,&greedy,"greedy");
+			simul(seed,&greedy,"greedy");
 			simul(seed,&loaded_greedy,"loadedGreedy");
 			simul(seed,&loaded_greedy_longest,"loadedGreedyLongest");
 			simul(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
-			simul(seed,&RRH_first_spall,"RRHFirst");*/
+			simul(seed,&RRH_first_spall,"RRHFirst");
 			simul(seed,&descente,"Descente");
 			//simul(seed,&best_of_x,"DescenteX");
 			char * noms[] = {"greedy","loadedGreedy","loadedGreedyLongest","loadedGreedyCollisions","RRHFirst","Descente","DescenteX"};
@@ -62,8 +62,15 @@ int main (int argc, char *argv[])
 			char * noms2[] = {"greedyPrime","PrimeReuse","greedyTicsWon"};
 			print_gnuplot("nowaiting",noms2, 3, "performance of greedys without waiting time", "load", ylabels);
 		}
-		
-		
+		if(!strcmp(argv[1],"simulDistrib") || !strcmp(argv[1],"simulAll"))
+		{
+			print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
+			print_distrib_margin_algo_waiting(seed,&descente,"Descente");
+			print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");
+			char * noms[] = {"loadedGreedyCollisions","Descente","DescenteX"};
+			
+		}
+	
 
 		
 

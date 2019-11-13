@@ -48,6 +48,11 @@ waiting: dirs compil
 	./compil simulWaiting
 	./launch.bash
 
+distrib: dirs compil 
+	rm -f $(DIRgnu)*
+	./compil simulDistrib
+	./launch.bash
+
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*
 	./compil simulNoWaiting

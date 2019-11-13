@@ -259,11 +259,13 @@ void reset_periods(Graph g, int P)
 	{
 		if(g.arc_pool[i].period_f)
 		{
-			for(int j=0;j<P;j++)
+			memset(g.arc_pool[i].period_f,0,sizeof(int)*P);
+			memset(g.arc_pool[i].period_b,0,sizeof(int)*P);
+			/*for(int j=0;j<P;j++)
 			{
 				g.arc_pool[i].period_f[j]=0;
 				g.arc_pool[i].period_b[j]=0;
-			}
+			}*/
 		}
 	}
 }
@@ -312,7 +314,8 @@ void period_to_order(Arc * a,int P)
 				{
 					a->routes_order_b[idb]=a->period_b[i];
 				}
-				idb++;
+				if(a->period_b[i] != a->period_b[0]) // Pour eviter les bugs quand une route dépasse dans la periode d'apres
+					idb++;
 			
 				
 			}
