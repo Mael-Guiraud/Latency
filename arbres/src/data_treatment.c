@@ -69,7 +69,7 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 		{
 			fprintf(f_GPLT,"re");
 		}	
-		fprintf(f_GPLT,"plot '../data/%s' title smooth frequency w box \"%s\" \n",files[i],files[i]);
+		fprintf(f_GPLT,"plot '../data/%s.plot' title smooth cumulative \"%s\" \n",files[i],files[i]);
 		
 	}
 
@@ -84,16 +84,7 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 	"set ylabel \"%s\"\n"
 	"set output '| ps2pdf - ../pdfs/%s_sucess.pdf'\nreplot\n",title,xlabel,ylabel[0],outputname);
 	fclose(f_GPLT);
-	fprintf(f_GPLT2,"set term postscript color solid\n"
-
-	"set title \"%s\"\n"
-	"set xlabel \"%s\" \n"
-	//"set xtics 10\n" 
-
-	"set key bottom right \n"
-	"set ylabel \"%s\"\n"
-	"set output '| ps2pdf - ../pdfs/%s_nb_routes.pdf'\nreplot\n",title,xlabel,ylabel[1],outputname);
-	fclose(f_GPLT2);
+	
 
 }
 
