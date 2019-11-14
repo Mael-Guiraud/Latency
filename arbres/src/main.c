@@ -66,11 +66,12 @@ int main (int argc, char *argv[])
 		}
 		if(!strcmp(argv[1],"simulDistrib") || !strcmp(argv[1],"simulAll"))
 		{
-			print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
+			/*print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
 			print_distrib_margin_algo_waiting(seed,&descente,"Descente");
-			print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");
+			print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");*/
 			char * noms[] = {"loadedGreedyCollisions","Descente","DescenteX"};
-			print_gnuplot("waiting",noms, 3, "Distribution of additional Latency needed", "additional Latency", ylabels);
+			char * ylabels2[] = {"Cumulative distribution"};
+			print_gnuplot_distrib("waiting",noms, 3, "Distribution of additional Latency needed", "additional Latency", ylabels2);
 		}
 	
 

@@ -21,7 +21,7 @@
 #define MARGIN_MAX 40000
 #define MARGIN_GAP 5000
 #define STANDARD_LOAD 0.7
-#define LAT_GAP 10
+#define LAT_GAP 100
 
 
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
@@ -35,7 +35,7 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel

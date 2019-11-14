@@ -69,7 +69,7 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 		{
 			fprintf(f_GPLT,"re");
 		}	
-		fprintf(f_GPLT,"plot '../data/%s.plot' title smooth cumulative \"%s\" \n",files[i],files[i]);
+		fprintf(f_GPLT,"plot '../data/%s.plot' title \"%s\" smooth frequency  \n",files[i],files[i]);
 		
 	}
 
@@ -82,7 +82,7 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 
 	"set key bottom right \n"
 	"set ylabel \"%s\"\n"
-	"set output '| ps2pdf - ../pdfs/%s_sucess.pdf'\nreplot\n",title,xlabel,ylabel[0],outputname);
+	"set output '| ps2pdf - ../pdfs/%s_distrib.pdf'\nreplot\n",title,xlabel,ylabel[0],outputname);
 	fclose(f_GPLT);
 	
 
