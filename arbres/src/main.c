@@ -48,10 +48,10 @@ int main (int argc, char *argv[])
 			simul(seed,&loaded_greedy,"loadedGreedy");
 			simul(seed,&loaded_greedy_longest,"loadedGreedyLongest");
 			simul(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
-			simul(seed,&RRH_first_spall,"RRHFirst");
-			simul(seed,&descente,"Descente");
+			simul(seed,&RRH_first_spall,"RRHFirst");*/
+			//simul(seed,&descente,"Descente");
 
-			simul(seed,&best_of_x,"DescenteX");*/
+			simul(seed,&best_of_x,"DescenteX");
 
 			char * noms[] = {"greedy","loadedGreedy","loadedGreedyLongest","loadedGreedyCollisions","RRHFirst","Descente","DescenteX"};
 			print_gnuplot("waiting",noms, 7, "performance of greedys with waiting times", "margin", ylabels);
@@ -66,12 +66,13 @@ int main (int argc, char *argv[])
 		}
 		if(!strcmp(argv[1],"simulDistrib") || !strcmp(argv[1],"simulAll"))
 		{
-			/*print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
-			print_distrib_margin_algo_waiting(seed,&descente,"Descente");
-			print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");*/
-			char * noms[] = {"loadedGreedyCollisions","Descente","DescenteX"};
-			char * ylabels2[] = {"Cumulative distribution"};
-			print_gnuplot_distrib("waiting",noms, 3, "Distribution of additional Latency needed", "additional Latency", ylabels2);
+			//print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
+			//print_distrib_margin_algo_waiting(seed,&descente,"Descente");
+			//print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");
+			print_distrib_margin_algo_waiting(seed,NULL,"StatisticDeadline");
+			char * noms[] = {"loadedGreedyCollisions","Descente","DescenteX","StatisticDeadline"};
+			char * ylabels2[] = {"Pourcentage de reussite"};
+			print_gnuplot_distrib("waiting",noms, 4, "Distribution of additional Latency needed", "additional Latency", ylabels2);
 		}
 	
 

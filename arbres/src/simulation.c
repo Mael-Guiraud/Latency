@@ -20,7 +20,7 @@
 #include "voisinage.h"
 #include <string.h>
 #include <math.h>
-
+#include <limits.h>
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
@@ -39,7 +39,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
 		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d | buffers %d \n",travel_time_max( g, tmax, a), travel_time_max_buffers(g));
+		printf("Travel time max = %d | buffers %d \n",travel_time_max( g, tmax, a),travel_time_max_buffers(g) );
 		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
 	}
 	else
@@ -169,6 +169,7 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&greedy_stat_deadline,"GreedyStatDeadline",f);
 
 
 	seed = time(NULL);
@@ -554,12 +555,11 @@ void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,
 
 	Assignment a=NULL;
 	
-	int tmax;
-	int additional_lat;
+
 	printf("ALGORITHM : %s \n",nom);
 	if(!f)perror("Error while opening file\n");
-
-	#pragma omp parallel for private(g,P,a,tmax,additional_lat)  if(PARALLEL)
+	int time;
+	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
 		a = NULL;
@@ -573,33 +573,46 @@ void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,
 		}
 		else
 			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-		tmax = tmax = longest_route(g)*2 ;
-
-		additional_lat = 0;
-		int continuer = 1;
-		do{
-			if(a)
-				free_assignment(a);
-			a = ptrfonction( g, P, message_size,tmax);
-			reset_periods(g,P);
-			additional_lat += LAT_GAP;
-			tmax += LAT_GAP;
-			printf("%d\n",additional_lat);
-			if(a->all_routes_scheduled)
-			{
-				if(travel_time_max( g, tmax, a) != -1)
-				{
-					continuer = 0;
-				}
-			}
-		}while(continuer);
+	
+		if(ptrfonction)
+		{
+			a = ptrfonction( g, P, message_size,0);
+			time = travel_time_max_buffers(g);
+			
+		}
 		
+		else
+		{
+			int last_time_ellapsed =0;
+			int time_ellapsed = 0;
+			int nb_periods=1;
+			while(1)
+			{
+				time_ellapsed = multiplexing(g, P, message_size, nb_periods, DEADLINE,INT_MAX);
+				if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
+				{
+					nb_periods *= 10;
+					last_time_ellapsed = time_ellapsed;
+					if(nb_periods == 1000)
+					{
+						printf("Il y a peut être un problème.\n");
+						break;
+					}
+				}
+				else
+					break;
+			}
+			time = last_time_ellapsed;
+		}
+		
+
 		#pragma omp critical
-			fprintf(f,"%d\n",additional_lat);		
-		free_assignment(a);
+			fprintf(f,"%d\n",time);		
+		if(a)
+			free_assignment(a);
 
 		free_graph(g);
-		fprintf(stdout,"									%d/%d\n",i+1,NB_SIMULS);
+		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 		fflush(stdout);
 	}	
 	

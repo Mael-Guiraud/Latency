@@ -17,9 +17,9 @@
 
 
 // CONFIG OF THE SIMULATIONS FOR ALGORITHMS WITH WAITING TIME
-#define MARGIN_MIN 5000
-#define MARGIN_MAX 40000
-#define MARGIN_GAP 5000
+#define MARGIN_MIN 8000
+#define MARGIN_MAX 10000
+#define MARGIN_GAP 1000
 #define STANDARD_LOAD 0.7
 #define LAT_GAP 100
 
@@ -39,7 +39,7 @@
 
 
 //openMP parallel
-#define PARALLEL 1
+#define PARALLEL 0
 
 //for logs 
 #define SHOW_EVERY 100

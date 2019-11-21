@@ -109,7 +109,7 @@ void echanger_droite(int * tab, int size, int id)
 Voisin nouveau_voisin(Voisin v,Graph g)
 {
 
-	int tmp, idtmp;
+	int idtmp;
 	Period_kind kind;
 	int x;
 	//On remet comme avant
@@ -349,14 +349,14 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 {
 	for(int i=0;i<nb_routes;i++)
 	{
-		if( (P[i]+2500)%per < P[i]%per  ) // le message pi est a cheval sur deux periodes 
+		if( (P[i]+message_size)%per < P[i]%per  ) // le message pi est a cheval sur deux periodes 
 		{
-			if((offset%per > P[i]%per)||(offset%per < (P[i]+2500)%per) )
+			if((offset%per > P[i]%per)||(offset%per < (P[i]+message_size)%per) )
 				return 0;
 		}
 		else
 		{
-			if((offset%per > P[i]%per) && (offset%per < (P[i]+2500)%per) )
+			if((offset%per > P[i]%per) && (offset%per < (P[i]+message_size)%per) )
 				return 0;
 		}
 	}
@@ -804,8 +804,8 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 {
 	Voisin v;
 	int nb_d =0;
-	//v= init_voisinage( g,  v);
-	v=init_voisinage_greedy(v,g,P,message_size,tmax);
+	v= init_voisinage( g,  v);
+	//v=init_voisinage_greedy(v,g,P,message_size,tmax);
 
 	int ** orders = parcours_voisinage(g,P,message_size,v,INT_MAX);
 
@@ -864,7 +864,7 @@ Assignment best_of_x(Graph g, int P, int message_size,int tmax)
 	Assignment a;
 	Assignment best = NULL;
 	int prev = INT_MAX;
-	for(int i=0;i<10;i++)
+	for(int i=0;i<100;i++)
 	{
 		a = descente(g,P,message_size,tmax);
 		if(a->time < prev )
