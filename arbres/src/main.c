@@ -71,14 +71,15 @@ int main (int argc, char *argv[])
 			/*print_distrib_margin_algo_waiting_int(seed,&borneInf,"BorneInf");
 			print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
 			print_distrib_margin_algo_waiting(seed,&greedy_stat_deadline,"GreedyDeadline");
-			print_distrib_margin_algo_waiting(seed,&descente,"Descente");*/
-			//print_distrib_margin_algo_waiting(seed,&taboo,"Taboo");
-			//print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");
+			print_distrib_margin_algo_waiting(seed,&descente,"Descente");
+			print_distrib_margin_algo_waiting(seed,&taboo,"Taboo");
+			print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");
 			
 
 			char * noms[] = {"BorneInf","loadedGreedyCollisions","Descente","DescenteX","GreedyDeadline","Taboo"};
 			char * ylabels2[] = {"Pourcentage de reussite"};
-			print_gnuplot_distrib("waiting",noms, 6, "Distribution of the Latency", "Latency", ylabels2);
+			print_gnuplot_distrib("waiting",noms, 6, "Distribution of the Latency", "Latency", ylabels2);*/
+			simuldistrib(seed);
 		}
 	
 

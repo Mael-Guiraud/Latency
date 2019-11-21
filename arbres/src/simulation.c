@@ -24,6 +24,7 @@
 #include "borneInf.h"
 
 
+
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
 {
 	Assignment a;
@@ -647,6 +648,123 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 	}	
 	
 	fclose(f);
+	
+		
+}
+
+void simuldistrib(int seed)
+{
+	
+	int nb_algos = 6 ;
+	char noms[nb_algos][64];
+
+	sprintf(noms[0],"BorneInf");
+	sprintf(noms[1],"loadedGreedyCollisions");
+	sprintf(noms[2],"GreedyDeadline");
+	sprintf(noms[3],"Descente");
+	sprintf(noms[4],"Taboo");
+	sprintf(noms[5],"DescenteX");
+
+	srand(seed);
+	int message_size = MESSAGE_SIZE;
+	Graph g;
+	int P ;
+
+
+	char buf[256];
+	FILE * f[nb_algos];
+	for(int i=0;i<nb_algos;i++)
+	{
+		sprintf(buf,"../data/%s.plot",noms[i]);
+		f[i] = fopen(buf,"w");
+		if(!f[i])perror("Error while opening file\n");
+	}
+
+
+	Assignment a=NULL;
+	
+
+	
+	
+	int time[nb_algos];
+	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
+	for(int i=0;i<NB_SIMULS;i++)
+	{
+		a = NULL;
+
+		g= init_graph_random_tree(STANDARD_LOAD);
+
+		if(FIXED_PERIOD_MOD)
+		{
+			if(PERIOD < load_max(g)*MESSAGE_SIZE)
+				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+			P = PERIOD;
+		}
+		else
+			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+		
+		for(int algo = 0;algo<nb_algos;algo++)
+		{
+			switch(algo){
+				case 0:
+					time[i] = borneInf( g, P, message_size);
+					#pragma omp critical
+						fprintf(f[i],"%d\n",time[i]);		
+				break;
+				case 1:
+					a = loaded_greedy_collisions( g, P, message_size,20);
+					time[i] = travel_time_max_buffers(g);
+					#pragma omp critical
+						fprintf(f[i],"%d\n",time[i]);		
+					if(a)
+						free_assignment(a);
+				break;
+				case 2:
+					a = greedy_stat_deadline( g, P, message_size,20);
+					time[i] = travel_time_max_buffers(g);
+					#pragma omp critical
+						fprintf(f[i],"%d\n",time[i]);		
+					if(a)
+						free_assignment(a);
+				break;
+				case 3:
+					a = descente( g, P, message_size,20);
+					time[i] = travel_time_max_buffers(g);
+					#pragma omp critical
+						fprintf(f[i],"%d\n",time[i]);		
+					if(a)
+						free_assignment(a);
+				break;
+				case 4:
+					a = taboo( g, P, message_size,100);
+					time[i] = travel_time_max_buffers(g);
+					#pragma omp critical
+						fprintf(f[i],"%d\n",time[i]);		
+					if(a)
+						free_assignment(a);
+				break;
+				case 5:
+					a = best_of_x( g, P, message_size,100);
+					time[i] = travel_time_max_buffers(g);
+					#pragma omp critical
+						fprintf(f[i],"%d\n",time[i]);		
+					if(a)
+						free_assignment(a);
+				break;
+
+			}
+
+		}
+		
+		free_graph(g);
+		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
+		fflush(stdout);
+	}	
+	for(int i=0;i<nb_algos;i++)
+		fclose(f[i]);
+
+	char * ylabels2[] = {"Pourcentage de reussite"};
+	print_gnuplot_distrib("waiting",noms, nb_algos, "Distribution of the Latency", "Latency", ylabels2);
 	
 		
 }

@@ -892,10 +892,10 @@ Assignment best_of_x(Graph g, int P, int message_size,int tmax)
 	Assignment best = NULL;
 	int prev = INT_MAX;
 	
-	for(int i=0;i<100;i++)
+	for(int i=0;i<tmax;i++)
 	{
-		tmax = 1;
-		a = descente(g,P,message_size,tmax);
+
+		a = descente(g,P,message_size,1);
 		if(a->time < prev )
 			best = a;
 		else
