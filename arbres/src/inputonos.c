@@ -16,7 +16,7 @@
 double mult;
 Devices  devices()
 {
-
+	
 	char str[64];
 	char * file = "../../onos/Topolexample/devices";
 	FILE* f = fopen(file,"r");
@@ -26,16 +26,17 @@ Devices  devices()
 	    exit(32);
 	  }
 	int nb_dev;
-	int id; 
-	fscanf(f,"%d",&nb_dev);
+	int id;
+	int retval; 
+	retval = fscanf(f,"%d",&nb_dev);
 	Devices D;
 	D.nb_devs = nb_dev;
 	D.devs = malloc(sizeof(device)* nb_dev);
 	for(int i = 0;i<nb_dev;i++)
 	{
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 		D.devs[i].id = id;
-		fscanf(f,"%s", str);
+		retval = fscanf(f,"%s", str);
 		strcpy(D.devs[i].address,str);
 	}
 
@@ -64,19 +65,20 @@ Links links(Devices D)
 	  }
 	int nb_links;
 	int id; 
-	fscanf(f,"%d",&nb_links);
+	int retval; 
+	retval = fscanf(f,"%d",&nb_links);
 	Links L;
 	L.nb_links = nb_links;
 	L.links = malloc(sizeof(linkk)* nb_links);
 	for(int i = 0;i<nb_links;i++)
 	{
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 		L.links[i].id = id;
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 		L.links[i].latency = id;
-		fscanf(f,"%s", str);
+		retval = fscanf(f,"%s", str);
 		strcpy(L.links[i].src,str);
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 		L.links[i].src_port = id;
 		L.links[i].src_id = match(str,D);
 		if(L.links[i].src_id == -1)
@@ -84,9 +86,9 @@ Links links(Devices D)
 			fprintf(stderr,"Matching error in inputonos.c\n");
 	   		 exit(33);
 		}
-		fscanf(f,"%s", str);
+		retval = fscanf(f,"%s", str);
 		strcpy(L.links[i].dst,str);
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 		L.links[i].dst_port = id;
 		L.links[i].dst_id = match(str,D);
 		if(L.links[i].dst_id == -1)
@@ -236,7 +238,7 @@ Graph parseinput()
 {	
 	mult = 1.0;
 	
-
+	int retval; 
 	int period = 0;						
  	int tmax = 0;
  	int message_size = 2500;
@@ -248,8 +250,8 @@ Graph parseinput()
 	    exit(32);
 	  }
 
-	fscanf(f,"%d",&tmax);
-	fscanf(f,"%d",&period);
+	retval = fscanf(f,"%d",&tmax);
+	retval = fscanf(f,"%d",&period);
 	fclose(f);
 	printf("\nLecture des devices...");
  	Devices D = devices();
@@ -299,7 +301,7 @@ Graph parseinput()
 	char dst[64];
 	int portsrc;
 	int portdst;
-	fscanf(f,"%d",&nb_paths);
+	retval = fscanf(f,"%d",&nb_paths);
 	g.nb_routes = nb_paths;
 	g.routes = malloc(sizeof(Route*)*nb_paths);
 	g.size_routes = malloc(sizeof(int)*nb_paths);
@@ -308,19 +310,19 @@ Graph parseinput()
 	for(int i = 0;i<nb_paths;i++)
 	{
 		//Id , osef c'est le même que i
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 
 
 		//taille en arcs
-		fscanf(f,"%d", &id);
+		retval = fscanf(f,"%d", &id);
 		g.routes[i]=malloc(sizeof(Route)*id);
 		g.size_routes[i] = id;
 		for(int j=0;j<id;j++)
 		{
-			fscanf(f,"%s", src);
-			fscanf(f,"%d", &portsrc);
-			fscanf(f,"%s", dst);
-			fscanf(f,"%d", &portdst);
+			retval = fscanf(f,"%s", src);
+			retval = fscanf(f,"%d", &portsrc);
+			retval = fscanf(f,"%s", dst);
+			retval = fscanf(f,"%d", &portdst);
 
 			id_arc = match_link(src,portsrc,dst,portdst,L);
 			if(id_arc == -1)

@@ -69,7 +69,7 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 		{
 			fprintf(f_GPLT,"re");
 		}	
-		fprintf(f_GPLT,"plot '../data/%s.plot'  u 1:(1.) smooth cnorm title \"%s\"  \n",files[i],files[i]);
+		fprintf(f_GPLT,"plot '../data/%s.plot'  u 1:(1.) smooth cumul with point pointsize 0.2 title \"%s\"  \n",files[i],files[i]);
 		
 	}
 
@@ -77,7 +77,7 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 	fprintf(f_GPLT,"set term postscript color solid\n"
 
 	"set title \"%s\"\n"
-	"set xlabel \"%s\" \n"
+	"set xlabel \"%s\" \n \n"
 	//"set xtics 10\n" 
 
 	"set key bottom right \n"

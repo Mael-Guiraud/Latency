@@ -149,6 +149,8 @@ ARG mode :
 */
 Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 {
+	//to avoid warn
+	tmax = 0;
 	Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
 	a->nb_routes_scheduled = 0;

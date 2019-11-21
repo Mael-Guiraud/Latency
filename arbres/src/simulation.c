@@ -21,6 +21,7 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include "borneInf.h"
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
@@ -145,6 +146,8 @@ void test()
 	affiche_tab(tmp,g.arc_pool_size,f);
 	free(tmp);
 
+	printf("La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
+	fprintf(f,"La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
 	printf("------- \n TESTING ALGORITHMS : \n");
 	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
@@ -162,7 +165,6 @@ void test()
 
 	printf("\n --------- \n- WITH WAITING TIME : \n");
 	fprintf(f,"\n --------- \n WITH WAITING TIME \n");
-	
 	test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy,"LoadedGreedy",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
@@ -170,6 +172,7 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&greedy_stat_deadline,"GreedyStatDeadline",f);
+	
 
 
 	seed = time(NULL);
@@ -384,7 +387,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		printf("\nMargin : %d success : %d/%d ",margin,nb_success,NB_SIMULS);
 		if(nb_success)
 		{
-			printf("moy = %d.\n",moy/nb_success);
+			printf("moy = %lld.\n",moy/nb_success);
 		}
 		else
 		{
@@ -393,7 +396,7 @@ void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 		fprintf(f,"%d %f %f ",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
 		if(nb_success)
 		{
-			fprintf(f,"%d \n",moy/nb_success);
+			fprintf(f,"%lld \n",moy/nb_success);
 		}
 		else
 		{
@@ -544,6 +547,7 @@ void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
 
 void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
 {
+	
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
 	Graph g;
@@ -565,6 +569,7 @@ void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,
 		a = NULL;
 
 		g= init_graph_random_tree(STANDARD_LOAD);
+
 		if(FIXED_PERIOD_MOD)
 		{
 			if(PERIOD < load_max(g)*MESSAGE_SIZE)
@@ -573,43 +578,68 @@ void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,
 		}
 		else
 			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-	
-		if(ptrfonction)
-		{
-			a = ptrfonction( g, P, message_size,0);
-			time = travel_time_max_buffers(g);
-			
-		}
 		
-		else
-		{
-			int last_time_ellapsed =0;
-			int time_ellapsed = 0;
-			int nb_periods=1;
-			while(1)
-			{
-				time_ellapsed = multiplexing(g, P, message_size, nb_periods, DEADLINE,INT_MAX);
-				if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
-				{
-					nb_periods *= 10;
-					last_time_ellapsed = time_ellapsed;
-					if(nb_periods == 1000)
-					{
-						printf("Il y a peut être un problème.\n");
-						break;
-					}
-				}
-				else
-					break;
-			}
-			time = last_time_ellapsed;
-		}
 		
+		a = ptrfonction( g, P, message_size,20);
 
+		time = travel_time_max_buffers(g);
+			
 		#pragma omp critical
 			fprintf(f,"%d\n",time);		
 		if(a)
 			free_assignment(a);
+
+		free_graph(g);
+		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
+		fflush(stdout);
+	}	
+	
+	fclose(f);
+	
+		
+}
+void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int,int),char * nom)
+{
+
+	srand(seed);
+	int message_size = MESSAGE_SIZE;
+	Graph g;
+	int P ;
+
+	char buf[256];
+	sprintf(buf,"../data/%s.plot",nom);
+	FILE * f = fopen(buf,"w");
+
+
+	
+
+	printf("ALGORITHM : %s \n",nom);
+	if(!f)perror("Error while opening file\n");
+	int time;
+	#pragma omp parallel for private(g,P,time)  if(PARALLEL)
+	for(int i=0;i<NB_SIMULS;i++)
+	{
+		
+
+		g= init_graph_random_tree(STANDARD_LOAD);
+
+		if(FIXED_PERIOD_MOD)
+		{
+			if(PERIOD < load_max(g)*MESSAGE_SIZE)
+				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+			P = PERIOD;
+		}
+		else
+			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+		
+		
+		time = ptrfonction( g, P, message_size);
+		
+			
+
+		#pragma omp critical
+			fprintf(f,"%d\n",time);		
+		
 
 		free_graph(g);
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);

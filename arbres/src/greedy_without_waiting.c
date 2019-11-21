@@ -242,7 +242,7 @@ Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt 
 }
 Assignment Prime_all_routes(Graph g, int P, int message_size,int tmax)
 {
-	Assignment a;
+	Assignment a=NULL;
 	element_sjt * tab = init_sjt(g.nb_routes);
 	long long facto=fact(g.nb_routes);
 	int travel_time;

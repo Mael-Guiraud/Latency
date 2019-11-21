@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <limits.h>
 FILE * logs;
+#pragma omp threadprivate(logs)
 void init_arcs_state(Graph g)
 {
 	for(int i=0;i<g.arc_pool_size;i++)
@@ -256,7 +257,7 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 		if(g.routes[liste_evt->route][liste_evt->arc_id]->period_f)
 			for(int i=0;i<message_size;i++)
 			{
-				if(liste_evt->route == 0)
+				if(first_elem->numero_route == 0)
 					g.routes[liste_evt->route][liste_evt->arc_id]->period_f[(liste_evt->date+i)%g.period] = -1;
 				else
 					g.routes[liste_evt->route][liste_evt->arc_id]->period_f[(liste_evt->date+i)%g.period] = first_elem->numero_route;
@@ -292,7 +293,7 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 			if(g.routes[liste_evt->route][liste_evt->arc_id]->period_b)
 				for(int i=0;i<message_size;i++)
 				{
-					if(liste_evt->route == 0)
+					if(first_elem->numero_route == 0)
 						g.routes[liste_evt->route][liste_evt->arc_id]->period_b[(liste_evt->date+i)%g.period] = -1;
 					else
 						g.routes[liste_evt->route][liste_evt->arc_id]->period_b[(liste_evt->date+i)%g.period] = first_elem->numero_route;
@@ -326,6 +327,7 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy pol, int tmax)
 {
 	logs = fopen("logs_multiplexing.txt","w");
+
 	//logs = stdout;
 	if(!logs){perror("Error opening multiplexing.txt");}
 	Event * current;
@@ -394,7 +396,9 @@ int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy po
 		free(current);
 	
 	}
+
 	fclose(logs);
+
 	return longest_time_elapsed;
 }
 
@@ -407,7 +411,9 @@ Assignment greedy_stat_deadline(Graph g, int P, int message_size, int tmax)
 	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
 	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
 	a->time  = multiplexing(g, P, message_size, 1, DEADLINE,INT_MAX);
-	affiche_graph(g,P, stdout);
+	//affiche_graph(g,P, stdout);
+	//to avoid warn
+	tmax = 0;
 	return a;
 }
 

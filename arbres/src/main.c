@@ -13,6 +13,8 @@
 #include "inputonos.h"
 #include "voisinage.h"
 #include "starSPALL.h"
+#include "multiplexing.h"
+#include "borneInf.h"
 int main (int argc, char *argv[])
 {
 	int seed = time(NULL);
@@ -66,13 +68,17 @@ int main (int argc, char *argv[])
 		}
 		if(!strcmp(argv[1],"simulDistrib") || !strcmp(argv[1],"simulAll"))
 		{
-			//print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
-			//print_distrib_margin_algo_waiting(seed,&descente,"Descente");
+			/*print_distrib_margin_algo_waiting_int(seed,&borneInf,"BorneInf");
+			print_distrib_margin_algo_waiting(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
+			print_distrib_margin_algo_waiting(seed,&greedy_stat_deadline,"GreedyDeadline");
+			print_distrib_margin_algo_waiting(seed,&descente,"Descente");*/
+			//print_distrib_margin_algo_waiting(seed,&taboo,"Taboo");
 			//print_distrib_margin_algo_waiting(seed,&best_of_x,"DescenteX");
-			print_distrib_margin_algo_waiting(seed,NULL,"StatisticDeadline");
-			char * noms[] = {"loadedGreedyCollisions","Descente","DescenteX","StatisticDeadline"};
+			
+
+			char * noms[] = {"BorneInf","loadedGreedyCollisions","Descente","DescenteX","GreedyDeadline","Taboo"};
 			char * ylabels2[] = {"Pourcentage de reussite"};
-			print_gnuplot_distrib("waiting",noms, 4, "Distribution of additional Latency needed", "additional Latency", ylabels2);
+			print_gnuplot_distrib("waiting",noms, 6, "Distribution of the Latency", "Latency", ylabels2);
 		}
 	
 

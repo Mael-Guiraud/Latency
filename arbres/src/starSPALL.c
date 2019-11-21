@@ -25,19 +25,30 @@ int id_mobile(element_sjt * tab,int taille)
 	{
 		if((tab[i].sens == 0) && (tab[i].val > tab[i-1].val) )
 		{
-			if((tab[i].val > tab[id].val) || (id == -1))
+			if(id == -1)
 				id = i;
+			else
+				if(tab[i].val > tab[id].val) 
+					id = i;
 		}
 		if((tab[i].sens == 1) && (tab[i].val > tab[i+1].val) )
 		{
-			if((tab[i].val > tab[id].val) || (id == -1))
+			if(id == -1)
 				id = i;
+			else
+				if(tab[i].val > tab[id].val)
+					id = i;
 		}
 	}
-	if((tab[taille-1].sens == 0) && (tab[taille-1].val > tab[taille-2].val))
-		if((tab[taille-1].val > tab[id].val) || (id == -1))
+	if( (tab[taille-1].sens == 0) && (tab[taille-1].val > tab[taille-2].val) )
+	{
+		if(id == -1)
 			id = taille-1;
-
+		else
+			if(tab[taille-1].val > tab[id].val) 
+				id = taille-1;
+	}
+	
 	return id;
 }
 void swap_greater(element_sjt* tab, int taille,int nb)

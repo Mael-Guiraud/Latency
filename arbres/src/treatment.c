@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
+#include "test.h"
 //return 1 if the message can reach the destination without collision, 0 otherwise
 int message_no_collisions(Graph g,int route,int offset,int message_size,Period_kind kind,int P)
 {
@@ -488,6 +490,35 @@ void tri_bulles_inverse(int* tab,int* ordre,int taille)
 
 }
 
+
+
+void tri_bulles_classique_croissant(int* tab,int taille)
+{
+	int sorted;
+	int tmp;
+
+
+	int tabcpy[taille];
+	for(int i=0;i<taille;i++)tabcpy[i]=tab[i];
+
+	for(int i=taille-1;i>=1;i--)
+	{
+		sorted = 1;
+		for(int j = 0;j<=i-1;j++)
+		{
+
+			if(tabcpy[j+1]<tabcpy[j])
+			{
+				tmp = tab[j+1];
+				tab[j+1]=tab[j];
+				tab[j]=tmp;
+				sorted = 0;
+			}
+		}
+		if(sorted){return;}
+	}
+
+}
 
 int travel_time_max(Graph g, int tmax, Assignment a)
 {
