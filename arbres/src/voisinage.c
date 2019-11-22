@@ -988,10 +988,11 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
 			v= nouveau_voisin(v,g);
 		}
 		a = assignment_with_orders(g,P,message_size);
-		
 		if(a->all_routes_scheduled)
 		{
+
 			a->time = travel_time_max_buffers(g);
+			//printf("Nouveau temmps %d \n",a->time);
 			if(a->time < min)
 			{
 		
@@ -1026,7 +1027,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	free_assignment(a);
 	a = assignment_with_orders(g,P,message_size);
 	a->time = travel_time_max_buffers(g);
-
+	int min = a->time;
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
 	for(int i=0;i<g.arc_pool_size*2;i++)
 	{
@@ -1045,13 +1046,15 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	v.route=0;
 	
 	int cmpt = 0;
-	int min = INT_MAX;
-	int nb_steps_better=0;
-	int ** best_order = NULL;
+	
+	int nb_steps_better=1;
+	int ** best_order = orders;
+	//printf("Taboo \n");
 	while(cmpt < nb_steps)
 	{
+		cmpt ++;
 		t= parcours_voisinage_tabou( g, P,  message_size, v,t);
-
+		//printf("%d \n",t->time);
 		if(t->time<min)
 		{
 			best_order = t->order;
@@ -1059,7 +1062,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 			nb_steps_better = cmpt;
 		}
 		v=reinit_voins(g,v);
-		cmpt ++;
+		
 	}
 	//Fin du parcours, on remet le meilleur ordre dans le graph, on calcul et on renvoie
 	cpy_orders(best_order,g,0);

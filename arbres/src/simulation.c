@@ -729,10 +729,10 @@ void simuldistrib(int seed)
 						free_assignment(a);
 				break;
 				case 4:
-					a = taboo( g, P, message_size,1000);
+					a = taboo( g, P, message_size,10);
 					time[algo] = travel_time_max_buffers(g);
 					#pragma omp critical
-						fprintf(f[algo] ,"%d\n",time[algo], a->nb_routes_scheduled);		
+						fprintf(f[algo] ,"%d %d\n",time[algo], a->nb_routes_scheduled);		
 					if(a)
 						free_assignment(a);
 				break;
