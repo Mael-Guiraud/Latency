@@ -140,6 +140,7 @@ int borneInf(Graph g, int P, int message_size)
 	}
     free(perms);
 
+    
 	return min;
 
 }

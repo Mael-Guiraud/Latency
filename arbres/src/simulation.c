@@ -656,14 +656,7 @@ void simuldistrib(int seed)
 {
 	
 	int nb_algos = 6 ;
-	char noms[nb_algos][64];
-
-	sprintf(noms[0],"BorneInf");
-	sprintf(noms[1],"loadedGreedyCollisions");
-	sprintf(noms[2],"GreedyDeadline");
-	sprintf(noms[3],"Descente");
-	sprintf(noms[4],"Taboo");
-	sprintf(noms[5],"DescenteX");
+	char * noms[] = {"BorneInf","loadedGreedyCollisions","GreedyDeadline","Descente","Taboo","DescenteX"};
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
@@ -707,53 +700,62 @@ void simuldistrib(int seed)
 		{
 			switch(algo){
 				case 0:
-					time[i] = borneInf( g, P, message_size);
+					time[algo] = borneInf( g, P, message_size);
 					#pragma omp critical
-						fprintf(f[i],"%d\n",time[i]);		
+						fprintf(f[algo],"%d\n",time[algo]);		
 				break;
 				case 1:
 					a = loaded_greedy_collisions( g, P, message_size,20);
-					time[i] = travel_time_max_buffers(g);
+					time[algo] = travel_time_max_buffers(g);
 					#pragma omp critical
-						fprintf(f[i],"%d\n",time[i]);		
+						fprintf(f[algo],"%d\n",time[algo]);		
 					if(a)
 						free_assignment(a);
 				break;
 				case 2:
 					a = greedy_stat_deadline( g, P, message_size,20);
-					time[i] = travel_time_max_buffers(g);
+					time[algo] = travel_time_max_buffers(g);
 					#pragma omp critical
-						fprintf(f[i],"%d\n",time[i]);		
+						fprintf(f[algo],"%d\n",time[algo]);		
 					if(a)
 						free_assignment(a);
 				break;
 				case 3:
-					a = descente( g, P, message_size,20);
-					time[i] = travel_time_max_buffers(g);
+					a = descente( g, P, message_size,0);
+					time[algo] = travel_time_max_buffers(g);
 					#pragma omp critical
-						fprintf(f[i],"%d\n",time[i]);		
+						fprintf(f[algo],"%d\n",time[algo]);		
 					if(a)
 						free_assignment(a);
 				break;
 				case 4:
-					a = taboo( g, P, message_size,100);
-					time[i] = travel_time_max_buffers(g);
+					a = taboo( g, P, message_size,1000);
+					time[algo] = travel_time_max_buffers(g);
 					#pragma omp critical
-						fprintf(f[i],"%d\n",time[i]);		
+						fprintf(f[algo] ,"%d\n",time[algo], a->nb_routes_scheduled);		
 					if(a)
 						free_assignment(a);
 				break;
 				case 5:
-					a = best_of_x( g, P, message_size,100);
-					time[i] = travel_time_max_buffers(g);
+					a = best_of_x( g, P, message_size,10);
+					time[algo] = travel_time_max_buffers(g);
 					#pragma omp critical
-						fprintf(f[i],"%d\n",time[i]);		
+						fprintf(f[algo],"%d\n",time[algo]);		
 					if(a)
 						free_assignment(a);
 				break;
 
 			}
+			reset_periods(g,P);
+			
+		}
+		if((time[3] > time[2]) || (time[4]>time[2]) )
+			printf("La descente ou le taboo est moins bon que l'algo greedy d'init \n");
 
+		for(int k=1;k<nb_algos;k++)
+		{
+			if(time[k]<time[0])
+				printf("On dépasse la borne inf, c'est chelou %d %d %d\n",i,time[i],time[0]);
 		}
 		
 		free_graph(g);
@@ -762,9 +764,8 @@ void simuldistrib(int seed)
 	}	
 	for(int i=0;i<nb_algos;i++)
 		fclose(f[i]);
-
-	char * ylabels2[] = {"Pourcentage de reussite"};
-	print_gnuplot_distrib("waiting",noms, nb_algos, "Distribution of the Latency", "Latency", ylabels2);
+	char * ylabels2[] = {"Nombre d'instances"};
+	print_gnuplot_distrib("waiting",noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
 	
 		
 }

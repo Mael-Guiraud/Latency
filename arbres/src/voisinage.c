@@ -1046,6 +1046,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	
 	int cmpt = 0;
 	int min = INT_MAX;
+	int nb_steps_better=0;
 	int ** best_order = NULL;
 	while(cmpt < nb_steps)
 	{
@@ -1055,6 +1056,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		{
 			best_order = t->order;
 			min = t->time;
+			nb_steps_better = cmpt;
 		}
 		v=reinit_voins(g,v);
 		cmpt ++;
@@ -1064,6 +1066,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	reinit_delays(g);
 	reset_periods(g,P);
 	a = assignment_with_orders_period(g,P,message_size);
+	a->nb_routes_scheduled = nb_steps_better;
 	a->time = travel_time_max_buffers(g);
 
 
