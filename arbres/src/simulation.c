@@ -59,6 +59,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		}
 		
 	}
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
 	print_assignment(g,a,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
@@ -680,6 +681,9 @@ void simuldistrib(int seed)
 	
 	
 	int time[nb_algos];
+	int res[nb_algos][NB_SIMULS];
+	float nb_pas[3];
+	for(int i=0;i<3;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
@@ -700,53 +704,37 @@ void simuldistrib(int seed)
 		{
 			switch(algo){
 				case 0:
-					time[algo] = borneInf( g, P, message_size);
-					#pragma omp critical
-						fprintf(f[algo],"%d\n",time[algo]);		
+					time[algo] = borneInf( g, P, message_size);	
 				break;
 				case 1:
 					a = loaded_greedy_collisions( g, P, message_size,20);
-					time[algo] = travel_time_max_buffers(g);
-					#pragma omp critical
-						fprintf(f[algo],"%d\n",time[algo]);		
-					if(a)
-						free_assignment(a);
 				break;
 				case 2:
 					a = greedy_stat_deadline( g, P, message_size,20);
-					time[algo] = travel_time_max_buffers(g);
-					#pragma omp critical
-						fprintf(f[algo],"%d\n",time[algo]);		
-					if(a)
-						free_assignment(a);
 				break;
 				case 3:
 					a = descente( g, P, message_size,0);
-					time[algo] = travel_time_max_buffers(g);
-					#pragma omp critical
-						fprintf(f[algo],"%d\n",time[algo]);		
-					if(a)
-						free_assignment(a);
+					nb_pas[0] += a->nb_routes_scheduled;
 				break;
 				case 4:
-					a = taboo( g, P, message_size,10);
-					time[algo] = travel_time_max_buffers(g);
-					#pragma omp critical
-						fprintf(f[algo] ,"%d %d\n",time[algo], a->nb_routes_scheduled);		
-					if(a)
-						free_assignment(a);
+					a = taboo( g, P, message_size,1000);
+					nb_pas[1] += a->nb_routes_scheduled;
 				break;
 				case 5:
-					a = best_of_x( g, P, message_size,10);
-					time[algo] = travel_time_max_buffers(g);
-					#pragma omp critical
-						fprintf(f[algo],"%d\n",time[algo]);		
-					if(a)
-						free_assignment(a);
+					a = best_of_x( g, P, message_size,1);
+					nb_pas[2] += a->nb_routes_scheduled;
 				break;
+				}
+				if(algo > 0)
+				{
+					time[algo] = travel_time_max_buffers(g);
+				}
 
-			}
-			reset_periods(g,P);
+				#pragma omp critical
+					res[algo][i]=time[algo];
+				if(a)
+					free_assignment(a);
+				reset_periods(g,P);
 			
 		}
 		if((time[3] > time[2]) || (time[4]>time[2]) )
@@ -755,17 +743,36 @@ void simuldistrib(int seed)
 		for(int k=1;k<nb_algos;k++)
 		{
 			if(time[k]<time[0])
-				printf("On dépasse la borne inf, c'est chelou %d %d %d\n",i,time[i],time[0]);
+				printf("On dépasse la borne inf, c'est chelou %d %d %d\n",k,time[k],time[0]);
 		}
 		
 		free_graph(g);
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 		fflush(stdout);
 	}	
+
+	int max=0;
 	for(int i=0;i<nb_algos;i++)
+	{
+		tri_bulles_classique_croissant(res[i],NB_SIMULS);
+		if(res[i][NB_SIMULS-1] > max)
+			max = res[i][NB_SIMULS-1];
+		
+	}
+	int interval_size = max / NB_POINTS;
+	for(int i=0;i<nb_algos;i++)
+	{
+		for(int j=0;j<NB_SIMULS;j++)
+		{
+			fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
+		}
 		fclose(f[i]);
+	}
+	
 	char * ylabels2[] = {"Nombre d'instances"};
 	print_gnuplot_distrib("waiting",noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
+	
+	printf("Nombre de pas moyen : Descente %f | Taboo %f | DescenteX %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS);
 	
 		
 }

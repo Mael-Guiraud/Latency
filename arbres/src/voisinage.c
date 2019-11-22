@@ -986,6 +986,13 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
 		{
 
 			v= nouveau_voisin(v,g);
+			if(v.route == -1)
+			{
+				cpy_orders(orders,g,0);//on remet le graph optimal
+				t = ajouter_orders(t,orders,min);
+				return t;
+			}
+
 		}
 		a = assignment_with_orders(g,P,message_size);
 		if(a->all_routes_scheduled)

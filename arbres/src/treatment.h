@@ -26,3 +26,4 @@ int route_length_with_buffers(Graph g,int route);
 int travel_time_max_buffers(Graph g);
 int route_length_with_buffers_forward(Graph g,int route);
 void tri_bulles_classique_croissant(int* tab,int taille);
+int verifie_solution(Graph g,int message_size);

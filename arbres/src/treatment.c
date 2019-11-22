@@ -293,7 +293,14 @@ void period_to_order(Arc * a,int P)
 				{
 					a->routes_order_f[idf]=a->period_f[i];
 				}
-				idf++;
+				if(i!=0)
+				{
+					if(a->period_f[i] != a->period_f[0]) // Pour eviter les bugs quand une route dépasse dans la periode d'apres
+						idf++;
+				}
+				else
+					idf++;
+				
 				
 			}
 			lastF  = a->period_f[i];
@@ -675,4 +682,156 @@ int mod(int a, int b)
 		}
 		return a%b;
 	}
+}
+
+int check_period(Arc * a,int P,int message_size)
+{
+	int i = 0;
+	int fin = 0;
+	int id;
+	int nb_elems_f=0;
+	int nb_elems_b=0;
+	int taille;
+	//Cas particulier ou ca deborde entre les deux periodes
+	if(a->period_f[0] != 0)
+	{ 
+		nb_elems_f++;
+		id = a->period_f[0];
+		taille = 0;
+		while(a->period_f[i]==id)
+		{
+			i++;
+			taille++;
+		}
+		while(a->period_f[P-fin-1]==id)
+		{
+			fin++;
+			taille++;
+		}
+		if(taille+1 != message_size)
+		{
+			
+			return 0;
+		}
+	}
+	for(i;i<P-fin;i++)
+	{
+		if(a->period_f[i] != 0)
+		{
+			nb_elems_f++;
+			id = a->period_f[i];
+			taille = 0;
+			while(a->period_f[i]==id)
+			{
+				i++;
+				taille++;
+			}
+			if(taille+1 != message_size){
+				
+				return 0;
+				
+			}
+		}
+	}
+
+	i=0;
+	fin = 0;
+	if(a->period_b[0] != 0)
+	{ 
+		nb_elems_b++;
+		id = a->period_b[0];
+		taille = 0;
+		while(a->period_b[i]==id)
+		{
+			i++;
+			taille++;
+		}
+		while(a->period_b[P-fin-1]==id)
+		{
+			fin++;
+			taille++;
+		}
+		if(taille+1 != message_size){
+
+			return 0;
+			
+		}
+	}
+	for(i;i<P-fin;i++)
+	{
+		if(a->period_b[i] != 0)
+		{
+			nb_elems_b++;
+			id = a->period_b[i];
+			taille = 0;
+			while(a->period_b[i]==id)
+			{
+				i++;
+				taille++;
+			}
+			if(taille+1 != message_size)
+			{
+			
+				return 0;
+			}
+		}
+	}
+	if(nb_elems_b != nb_elems_f)
+	{
+
+		return 0;
+	}
+
+	return nb_elems_b;
+
+}
+int verifie_solution(Graph g,int message_size)
+{
+
+	//On test si toutes les periodes ont le bon nombre de routes et si les messages sont bien de taille message size
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		if(check_period(&g.arc_pool[i],g.period,message_size) != g.arc_pool[i].nb_routes )
+			return 0;
+	}
+	int offset;
+	for(int i=0;i<g.nb_routes;i++)
+	{
+		offset = 0;
+
+		//Forward
+		for(int j=0;j<g.size_routes[i];j++)
+		{
+			offset += g.routes[i][j]->routes_delay_f[i];
+			if(g.routes[i][j]->period_f)
+			{
+				if(i==0)
+				{
+					if(g.routes[i][j]->period_f[offset] != -1)
+						return 0;
+				}
+				else
+					if(g.routes[i][j]->period_f[offset] != i)
+						return 0;
+			}
+			offset += g.routes[i][j]->length;
+		}
+		for(int j=g.size_routes[i]-1;j>=0;j--)
+		{
+			offset += g.routes[i][j]->routes_delay_b[i];
+			if(g.routes[i][j]->period_b)
+			{
+				if(i==0)
+				{
+					if(g.routes[i][j]->period_b[offset%g.period] != -1)
+						return 0;
+				}
+				else
+					if(g.routes[i][j]->period_b[offset%g.period] != i)
+						return 0;
+			}
+			offset += g.routes[i][j]->length;
+		}
+	}
+	return 1;
 }
