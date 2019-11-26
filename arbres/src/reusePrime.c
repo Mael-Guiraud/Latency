@@ -221,7 +221,7 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 		//On a trouvé la ou les routes problématiques
 		if(c.cols[0] == -1)
 		{
-			printf("Error 95\n");exit(95);
+			printf("Error 96\n");exit(96);
 		}
 
 		int old_forward[c.nb_cols];

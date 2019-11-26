@@ -852,7 +852,7 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 
 	while(orders != NULL)
 	{
-	//	printf("descente\n");
+		//printf("descente\n");
 		nb_d++;
 		if(a)
 			free_assignment(a);

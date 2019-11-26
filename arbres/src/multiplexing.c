@@ -180,13 +180,19 @@ Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int 
 		
 		g.routes[liste_evt->route][liste_evt->arc_id]->routes_delay_f[liste_evt->route] = 0;
 		if(g.routes[liste_evt->route][liste_evt->arc_id]->period_f)
+		{
+			
+		
 			for(int i=0;i<message_size;i++)
 			{
 				if(liste_evt->route == 0)
 					g.routes[liste_evt->route][liste_evt->arc_id]->period_f[(liste_evt->date+i)%g.period] = -1;
 				else
 					g.routes[liste_evt->route][liste_evt->arc_id]->period_f[(liste_evt->date+i)%g.period] = liste_evt->route;
+				
 			}
+			
+		}
 		g.routes[liste_evt->route][liste_evt->arc_id]->state_f = 1;
 		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD);
 		fprintf(logs,"Way forward (arc %d, length %d), new event message at date %d\n",liste_evt->arc_id,g.routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->date+g.routes[liste_evt->route][liste_evt->arc_id]->length);
@@ -203,13 +209,19 @@ Event * message_on_arc_free_fct(Graph g, Event * liste_evt,int message_size,int 
 	{
 		g.routes[liste_evt->route][liste_evt->arc_id]->routes_delay_b[liste_evt->route] = 0;
 		if(g.routes[liste_evt->route][liste_evt->arc_id]->period_b)
+		{
+	
 			for(int i=0;i<message_size;i++)
 			{
+				
 				if(liste_evt->route == 0)
 					g.routes[liste_evt->route][liste_evt->arc_id]->period_b[(liste_evt->date+i)%g.period] = -1;
 				else
 					g.routes[liste_evt->route][liste_evt->arc_id]->period_b[(liste_evt->date+i)%g.period] = liste_evt->route;
+				
 			}
+			
+		}
 		g.routes[liste_evt->route][liste_evt->arc_id]->state_b = 1;
 		liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD);
 		if(liste_evt->kind_p == BACKWARD)
@@ -255,13 +267,19 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 		fprintf(logs,"The elem at the top of the list (route %d arc %d) has waited %d slots (arrival %d, date %d).",first_elem->numero_route,first_elem->arc_id,time_waited,first_elem->arrival_in_queue,liste_evt->date);
 		g.routes[first_elem->numero_route][first_elem->arc_id]->routes_delay_f[first_elem->numero_route] = time_waited;
 		if(g.routes[liste_evt->route][liste_evt->arc_id]->period_f)
+		{
+
 			for(int i=0;i<message_size;i++)
 			{
+				
 				if(first_elem->numero_route == 0)
-					g.routes[liste_evt->route][liste_evt->arc_id]->period_f[(liste_evt->date+i)%g.period] = -1;
+					g.routes[first_elem->numero_route][first_elem->arc_id]->period_f[(liste_evt->date+i)%g.period] = -1;
 				else
-					g.routes[liste_evt->route][liste_evt->arc_id]->period_f[(liste_evt->date+i)%g.period] = first_elem->numero_route;
+					g.routes[first_elem->numero_route][first_elem->arc_id]->period_f[(liste_evt->date+i)%g.period] = first_elem->numero_route;
+				
 			}
+		
+		}
 		fprintf(logs,"New arc event at date %d\n",liste_evt->date+message_size);
 		g.routes[liste_evt->route][liste_evt->arc_id]->state_f = 1;
 	
@@ -291,13 +309,17 @@ Event * arc_free_fct(Graph g, Event * liste_evt,int message_size, int * p_time)
 			fprintf(logs,"The elem at the top of the list (route %d arc %d) has waited %d slots (arrival %d, date %d).",first_elem->numero_route,first_elem->arc_id,time_waited,first_elem->arrival_in_queue,liste_evt->date);
 			g.routes[first_elem->numero_route][first_elem->arc_id]->routes_delay_b[first_elem->numero_route] = time_waited;
 			if(g.routes[liste_evt->route][liste_evt->arc_id]->period_b)
+			{
 				for(int i=0;i<message_size;i++)
 				{
 					if(first_elem->numero_route == 0)
-						g.routes[liste_evt->route][liste_evt->arc_id]->period_b[(liste_evt->date+i)%g.period] = -1;
+						g.routes[first_elem->numero_route][first_elem->arc_id]->period_b[(liste_evt->date+i)%g.period] = -1;
 					else
-						g.routes[liste_evt->route][liste_evt->arc_id]->period_b[(liste_evt->date+i)%g.period] = first_elem->numero_route;
+						g.routes[first_elem->numero_route][first_elem->arc_id]->period_b[(liste_evt->date+i)%g.period] = first_elem->numero_route;
+					
 				}
+	
+			}
 			fprintf(logs,"New arc event at date %d\n",liste_evt->date+message_size);
 			g.routes[liste_evt->route][liste_evt->arc_id]->state_b = 1;
 			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD);
@@ -410,7 +432,7 @@ Assignment greedy_stat_deadline(Graph g, int P, int message_size, int tmax)
 	a->all_routes_scheduled = 1;
 	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
 	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
-	a->time  = multiplexing(g, P, message_size, 1, DEADLINE,INT_MAX);
+	a->time  = multiplexing(g, P, message_size, 10, DEADLINE,INT_MAX);
 	//affiche_graph(g,P, stdout);
 	//to avoid warn
 	tmax = 0;

@@ -717,7 +717,7 @@ void simuldistrib(int seed)
 					nb_pas[0] += a->nb_routes_scheduled;
 				break;
 				case 4:
-					a = taboo( g, P, message_size,1000);
+					a = taboo( g, P, message_size,10);
 					nb_pas[1] += a->nb_routes_scheduled;
 				break;
 				case 5:
