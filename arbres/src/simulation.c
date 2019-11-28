@@ -193,9 +193,9 @@ void test()
 		time_ellapsed = multiplexing(g, P, message_size, nb_periods, FIFO,tmax);
 		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		fprintf(f,"For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
-		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
+		if(time_ellapsed > (last_time_ellapsed) )
 		{
-			nb_periods *= 10;
+			nb_periods ++;
 			printf("This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
 			fprintf(f,"This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
 			last_time_ellapsed = time_ellapsed;
@@ -224,9 +224,9 @@ void test()
 		time_ellapsed = multiplexing(g, P, message_size, nb_periods, DEADLINE,tmax);
 		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		fprintf(f,"For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
-		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
+		if(time_ellapsed > (last_time_ellapsed) )
 		{
-			nb_periods *= 10;
+			nb_periods ++;
 			printf("This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
 			fprintf(f,"This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
 			last_time_ellapsed = time_ellapsed;
