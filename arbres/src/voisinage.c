@@ -951,6 +951,16 @@ int jamais_vu(Trace t, Graph g)
 	}
 	return 0;
 }
+int nb_elems(Trace t)
+{
+	int nb = 0;
+	while(t)
+	{
+		nb++;
+		t= t->suiv;
+	}
+	return nb;
+}
 
 void free_trace(Trace t,int arcpoolsize)
 {
@@ -1078,7 +1088,6 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	a = assignment_with_orders_period(g,P,message_size);
 	a->nb_routes_scheduled = nb_steps_better;
 	a->time = travel_time_max_buffers(g);
-
 
 	return a;
 

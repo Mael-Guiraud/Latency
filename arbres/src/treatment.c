@@ -726,7 +726,8 @@ int check_period(Arc * a,int P,int message_size)
 				i++;
 				taille++;
 			}
-			if(taille+1 != message_size){
+			if( (taille < message_size-1)|| (taille > message_size+1))
+			{
 				
 				return 0;
 				
@@ -751,7 +752,7 @@ int check_period(Arc * a,int P,int message_size)
 			fin++;
 			taille++;
 		}
-		if(taille+1 != message_size){
+		if( (taille < message_size-1)|| (taille > message_size+1)){
 
 			return 0;
 			
@@ -769,7 +770,7 @@ int check_period(Arc * a,int P,int message_size)
 				i++;
 				taille++;
 			}
-			if(taille+1 != message_size)
+			if( (taille < message_size-1)|| (taille > message_size+1))
 			{
 			
 				return 0;
@@ -791,8 +792,9 @@ int verifie_solution(Graph g,int message_size)
 	//On test si toutes les periodes ont le bon nombre de routes et si les messages sont bien de taille message size
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		if(check_period(&g.arc_pool[i],g.period,message_size) != g.arc_pool[i].nb_routes )
-			return 0;
+		if(g.arc_pool[i].period_f)
+			if(check_period(&g.arc_pool[i],g.period,message_size) != g.arc_pool[i].nb_routes )
+				return 0;
 	}
 	int offset;
 	for(int i=0;i<g.nb_routes;i++)
