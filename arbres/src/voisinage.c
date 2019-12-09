@@ -955,6 +955,16 @@ int jamais_vu(Trace t, Graph g)
 	}
 	return 1;
 }
+int nb_elems(Trace t)
+{
+	int nb = 0;
+	while(t)
+	{
+		nb++;
+		t= t->suiv;
+	}
+	return nb;
+}
 
 void free_trace(Trace t,int arcpoolsize)
 {
@@ -1082,6 +1092,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	a = assignment_with_orders_period(g,P,message_size);
 	a->nb_routes_scheduled = nb_steps_better;
 	a->time = travel_time_max_buffers(g);
+
 	printf("%d nb step \n",nb_steps_better);
 	Trace tmp = t;
 	/*while(t)
@@ -1090,6 +1101,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		t = t->suiv;
 	}*/
 	free_trace(tmp,g.arc_pool_size);
+
 	return a;
 
 }
