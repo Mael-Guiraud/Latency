@@ -450,6 +450,10 @@ Assignment assignment_with_orders(Graph g, int P, int message_size)
  					if(kind == BACKWARD)
  					{
  						dl += route_length_with_buffers_forward(g, current_route);
+ 						if(kind == FORWARD)
+ 							g.arc_pool[j].routes_delay_f[current_route] =  0;
+ 						else
+ 							g.arc_pool[j].routes_delay_b[current_route] =  0;
  					}
  				
  					if(dl < offset )
@@ -572,6 +576,10 @@ Assignment assignment_with_orders_period(Graph g, int P, int message_size)
  					if(kind == BACKWARD)
  					{
  						dl += route_length_with_buffers_forward(g, current_route);
+ 						if(kind == FORWARD)
+ 							g.arc_pool[j].routes_delay_f[current_route] =  0;
+ 						else
+ 							g.arc_pool[j].routes_delay_b[current_route] =  0;
  					}
  				
  					if(dl < offset )
@@ -730,10 +738,10 @@ void aff_orders(int*  cpy[], Graph g)
 			}
 			
 		}
-		for(int i=0;i<g.arc_pool_size;i++)
+		/*for(int i=0;i<g.arc_pool_size;i++)
 			if(g.arc_pool[i].contention_level != -1)
 				if(indice_identique(cpy[i+g.arc_pool_size],g.arc_pool[i].nb_routes) || indice_identique(cpy[i],g.arc_pool[i].nb_routes)|| indice_identique(g.arc_pool[i].routes_order_f,g.arc_pool[i].nb_routes) || indice_identique(g.arc_pool[i].routes_order_b,g.arc_pool[i].nb_routes))
-					exit(67);
+					exit(67);*/
 	
 }
 
@@ -797,29 +805,12 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 }
 Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size, int tmax)
 {
-	Assignment a=NULL; 
-	do{
-
-		if(a)
-			free_assignment(a);
-		reset_periods(g,P);
-
-		a = greedy_stat_deadline( g, P, message_size,tmax);
-
-		tmax += 500;
-
-	}while(!a->all_routes_scheduled);
-	convert_graph_order(g,P);
-	a->time = travel_time_max_buffers(g);
-
-	reset_periods(g,P);
+	if(!greedy_deadline(g, P, message_size))
+	{
+		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
+		exit(47);
+	}
 	
-	free_assignment(a);
-
-	a = assignment_with_orders(g,P,message_size);
-	
-	reset_periods(g,P);
-	free_assignment(a);
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
 	init_vois(v.pos,g.nb_levels[v.route]);
 	v.route=0;
@@ -834,8 +825,9 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 	else
 		v=init_voisinage_greedy(v,g,P,message_size,tmax);
 
+	reinit_delays(g);
 	int ** orders = parcours_voisinage(g,P,message_size,v,INT_MAX);
-
+	reinit_delays(g);
 	Assignment a=NULL;
 	if(!orders)
 	{
@@ -921,8 +913,8 @@ Trace ajouter_orders(Trace t,int ** order, int time)
 	new->suiv = t;
 	return new;
 }
-//1 if non equal,0 if equal
-int orderscmp(int*  cpy[], Graph g)
+
+int ordersequal(int**  cpy, Graph g)
 {
 
 	for(int i=0;i<g.arc_pool_size;i++)
@@ -930,26 +922,30 @@ int orderscmp(int*  cpy[], Graph g)
 		for(int j=0;j<g.arc_pool[i].nb_routes;j++)
 		{
 
-			if(cpy[i][j] != g.arc_pool[i].routes_order_f[j])
-				return 1;
-			if(cpy[i+g.arc_pool_size][j] != g.arc_pool[i].routes_order_b[j])
-				return 1;
+			if((cpy[i][j] != g.arc_pool[i].routes_order_f[j]) || (cpy[i+g.arc_pool_size][j] != g.arc_pool[i].routes_order_b[j]))
+				return 0;
 		}
 
 		
 	}
-	return 0;
+	return 1;
 }
 
 int jamais_vu(Trace t, Graph g)
 {
+	int cmpt = 0;
 	while(t)
 	{
-		if( orderscmp(t->order,g))
-			return 1;
+		if(ordersequal(t->order,g))
+		{
+			//aff_orders(t->order,g);
+			return 0;
+		}
+			
 		t= t->suiv;
+		cmpt ++;
 	}
-	return 0;
+	return 1;
 }
 int nb_elems(Trace t)
 {
@@ -989,31 +985,34 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
 	{
 		orders[i] = malloc(sizeof(int)*128);
 	}
-	
+	//printf("Nouveau parcours\n");
 	while(v.route != -1)
 	{
+		//printf("nouveau voisin \n");
 		while(!jamais_vu(t,g))
 		{
+			//printf("Voisin interdit \n");
 
 			v= nouveau_voisin(v,g);
+
 			if(v.route == -1)
 			{
 				cpy_orders(orders,g,0);//on remet le graph optimal
 				t = ajouter_orders(t,orders,min);
 				return t;
 			}
-
 		}
 		a = assignment_with_orders(g,P,message_size);
 		if(a->all_routes_scheduled)
 		{
 
 			a->time = travel_time_max_buffers(g);
-			//printf("Nouveau temmps %d \n",a->time);
-			if(a->time < min)
+			
+			if(a->time <= min)
 			{
-		
+				//printf("Nouveau meileur temmps %d \n",a->time);
 				cpy_orders(orders,g,1);// de g vers orders
+				//aff_orders(orders,g);
 				min = a->time;
 				
 			}
@@ -1031,25 +1030,24 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	Voisin v;
 	Assignment a=NULL; 
 	
-	reset_periods(g,P);
-	a = greedy_stat_deadline( g, P, message_size,INT_MAX);
-	if(!a->all_routes_scheduled)
+	
+	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
 		exit(47);
 	}
 
-	convert_graph_order(g,P);
-	reset_periods(g,P);
-	free_assignment(a);
 	a = assignment_with_orders(g,P,message_size);
 	a->time = travel_time_max_buffers(g);
+
 	int min = a->time;
+	reinit_delays(g);
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
 	for(int i=0;i<g.arc_pool_size*2;i++)
 	{
 		orders[i] = malloc(sizeof(int)*128);
 	}
+	//aff_orders(orders,g);
 	cpy_orders(orders,g,1);
 
 	Trace t = NULL;
@@ -1071,7 +1069,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	{
 		cmpt ++;
 		t= parcours_voisinage_tabou( g, P,  message_size, v,t);
-		//printf("%d \n",t->time);
+		//printf("step :%d best = %d \n",cmpt, t->time);
 		if(t->time<min)
 		{
 			best_order = t->order;
@@ -1088,6 +1086,16 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	a = assignment_with_orders_period(g,P,message_size);
 	a->nb_routes_scheduled = nb_steps_better;
 	a->time = travel_time_max_buffers(g);
+
+	printf("%d nb step \n",nb_steps_better);
+	Trace tmp = t;
+	/*while(t)
+	{
+		printf(" Time = %d \n",t->time);
+		aff_orders(t->order,g);
+		t = t->suiv;
+	}*/
+	free_trace(tmp,g.arc_pool_size);
 
 	return a;
 

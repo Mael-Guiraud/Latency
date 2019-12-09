@@ -44,6 +44,18 @@ void affiche_graph(Graph g,int p, FILE * f)
 				fprintf(f,"%d ",g.routes[i][j]->routes_id[k]);
 			}
 			fprintf(f,"\n");
+			fprintf(f,"order f: ");
+			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			{
+				fprintf(f,"%d ",g.routes[i][j]->routes_order_f[k]);
+			}
+			fprintf(f,"\n");
+			fprintf(f,"order b: ");
+			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			{
+				fprintf(f,"%d ",g.routes[i][j]->routes_order_b[k]);
+			}
+			fprintf(f,"\n");
 			if( g.routes[i][j]->period_f != NULL)
 			{
 				fprintf(f," Forward  \n");
