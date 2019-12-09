@@ -45,7 +45,8 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
 	}
 	else
-	{
+	{	
+		
 		printf(RED "Not OK -- " RESET);
 		if(a->all_routes_scheduled)
 		{
@@ -57,7 +58,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 			printf("No assignment found\n");
 			fprintf(f,"No assignment found\n");
 		}
-		
+			
 	}
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
@@ -159,21 +160,21 @@ void test()
 	fprintf(f," WITHOUT WAITING TIME : \n\n");
 	
 	//THE NAME MUST NOT CONTAIN SPACES
-	test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
-	test_one_algo(g,P,message_size,tmax,&PRIME_reuse,NULL,"PrimeReuse",f);
+	//test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
+	//test_one_algo(g,P,message_size,tmax,&PRIME_reuse,NULL,"PrimeReuse",f);
 	//test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
 	
 	
 
 	printf("\n --------- \n- WITH WAITING TIME : \n");
 	fprintf(f,"\n --------- \n WITH WAITING TIME \n");
-	test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
+	/*test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy,"LoadedGreedy",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&greedy_stat_deadline,"GreedyStatDeadline",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
+	test_one_algo(g,P,message_size,1000,NULL,&taboo,"taboo",f);
 	
 
 

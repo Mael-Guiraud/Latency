@@ -357,6 +357,36 @@ void convert_graph_order(Graph g, int P)
 			period_to_order(&g.arc_pool[i],P);
 	}
 }
+int route_length_untill_arc_without_delay(Graph g,int route, Arc * a,Period_kind kind)
+{
+	int length = 0;
+	
+	if(kind == FORWARD)
+	{
+		for(int i=0;i<g.size_routes[route];i++)
+		{
+
+			
+			if(a == g.routes[route][i])
+				return length;
+			length += g.routes[route][i]->length;
+		}
+		
+	}
+	else
+	{
+		for(int i=g.size_routes[route]-1;i>=0;i--)
+		{
+
+			if(a == g.routes[route][i])
+				return length;
+			length += g.routes[route][i]->length;
+		}
+		
+	}	
+	return length;		
+	
+}
 int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 {
 	int length = 0;
