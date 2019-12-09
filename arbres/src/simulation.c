@@ -174,7 +174,8 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
-	test_one_algo(g,P,message_size,1000,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
 	
 
 
@@ -711,14 +712,14 @@ void simuldistrib(int seed)
 					a = loaded_greedy_collisions( g, P, message_size,20);
 				break;
 				case 2:
-					a = greedy_stat_deadline( g, P, message_size,20);
+					a =  greedy_deadline_assignment( g, P, message_size,0);
 				break;
 				case 3:
 					a = descente( g, P, message_size,0);
 					nb_pas[0] += a->nb_routes_scheduled;
 				break;
 				case 4:
-					a = taboo( g, P, message_size,10);
+					a = taboo( g, P, message_size,100);
 					nb_pas[1] += a->nb_routes_scheduled;
 				break;
 				case 5:
@@ -726,7 +727,7 @@ void simuldistrib(int seed)
 					nb_pas[2] += a->nb_routes_scheduled;
 				break;
 				}
-				if(algo > 0)
+				if((algo > 0))
 				{
 					time[algo] = travel_time_max_buffers(g);
 				}
@@ -735,11 +736,14 @@ void simuldistrib(int seed)
 					res[algo][i]=time[algo];
 				if(a)
 					free_assignment(a);
+				a=NULL;
 				reset_periods(g,P);
 			
 		}
-		if((time[3] > time[2]) || (time[4]>time[2]) )
-			printf("La descente ou le taboo est moins bon que l'algo greedy d'init \n");
+		if((time[3] > time[2]) )
+			printf("La descente est moins bonne que l'algo greedy d'init \n");
+		if((time[4]>time[2]) )
+			printf("Le taboo est moins bon que l'algo greedy d'init \n");
 
 		for(int k=1;k<nb_algos;k++)
 		{

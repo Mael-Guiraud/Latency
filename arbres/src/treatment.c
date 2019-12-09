@@ -738,10 +738,10 @@ int check_period(Arc * a,int P,int message_size)
 			fin++;
 			taille++;
 		}
-		if(taille+1 != message_size)
+		if( (taille < message_size-1)|| (taille > message_size+1))
 		{
 			
-			return 0;
+			return taille;
 		}
 	}
 	for(i;i<P-fin;i++)
@@ -759,7 +759,7 @@ int check_period(Arc * a,int P,int message_size)
 			if( (taille < message_size-1)|| (taille > message_size+1))
 			{
 				
-				return 0;
+				return taille;
 				
 			}
 		}
@@ -784,7 +784,7 @@ int check_period(Arc * a,int P,int message_size)
 		}
 		if( (taille < message_size-1)|| (taille > message_size+1)){
 
-			return 0;
+			return taille;
 			
 		}
 	}
@@ -803,14 +803,14 @@ int check_period(Arc * a,int P,int message_size)
 			if( (taille < message_size-1)|| (taille > message_size+1))
 			{
 			
-				return 0;
+				return taille;
 			}
 		}
 	}
 	if(nb_elems_b != nb_elems_f)
 	{
 
-		return 0;
+		return nb_elems_b;
 	}
 
 	return nb_elems_b;
@@ -824,7 +824,7 @@ int verifie_solution(Graph g,int message_size)
 	{
 		if(g.arc_pool[i].period_f)
 			if(check_period(&g.arc_pool[i],g.period,message_size) != g.arc_pool[i].nb_routes )
-				return 0;
+				return check_period(&g.arc_pool[i],g.period,message_size);
 	}
 	int offset;
 	for(int i=0;i<g.nb_routes;i++)
@@ -840,11 +840,11 @@ int verifie_solution(Graph g,int message_size)
 				if(i==0)
 				{
 					if(g.routes[i][j]->period_f[offset] != -1)
-						return 0;
+						return 2;
 				}
 				else
 					if(g.routes[i][j]->period_f[offset] != i)
-						return 0;
+						return 3;
 			}
 			offset += g.routes[i][j]->length;
 		}
@@ -856,14 +856,14 @@ int verifie_solution(Graph g,int message_size)
 				if(i==0)
 				{
 					if(g.routes[i][j]->period_b[offset%g.period] != -1)
-						return 0;
+						return 4;
 				}
 				else
 					if(g.routes[i][j]->period_b[offset%g.period] != i)
-						return 0;
+						return 5;
 			}
 			offset += g.routes[i][j]->length;
 		}
 	}
-	return 1;
+	return 0;
 }
