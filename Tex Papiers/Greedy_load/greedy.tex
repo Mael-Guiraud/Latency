@@ -74,49 +74,67 @@ We study a star shaped topology, where all contentions are on a single arc share
 
 
 \section{Model}
-Describe the general model + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. 
-\cite{Guir1806:Deterministic}
+Describe the general model, and objective to optimize: no buffering.
+It is a scheduling/packing problem, could call each element a task or just an element. 
+Notion of depth.
 
-Explain the notion of shadow ? Give the compacity critieria.
+ + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. Notion of load.
+\cite{Guir1806:Deterministic}
 
 \section{Basic Algorithms}
 
+Notion of partial solution, how to extend it (and notation). All
+algorithms are greedy and most can work online. Once a route is placed,
+it is not changed, hence in a partial solution we are only interested in the 
+set of positions used in the backward and forward period. If $n$ tasks has been
+placed, we denote them by $x_1, \dots, x_n$ and $y_1,\dots,y_n$.
+
+\subsection{Depth one}
+
+Algorithm of increasing quality
+
+First fit, analyzed naively $n/4$, then better through compacity $n/3$.
+
+Meta interval, load of $n/3$.
+
+First fit in order of the $d_i \mod \tau$ $n/2$, as good as naive first fit for 
+$\tau = 1$ (all alg degenerate to this one for $\tau =1$).
+
 \subsection{General graph}
 
-Algorithm with meta intervals with load $n/4$
-Specialization to the result of the article for the star with $n/3$.
+Use the coherent routing property.
+Algo first fit :$n/4$ for any $\tau$ and $P$, and any DAG of depth $k$. 
 
 Copy the results of the previous article and propose heuristics to chose among several positions/candidates (compacity heuristic).
 
-\subsection{First position}
+\subsection{Experimental results}
 
-Describes how it builds compact assignments 
-+ heuristic to build super compact assignment (among the compact assignments
-possible, chose the one which maximize the gain on the second bloc)
-
-\section{Towards $n/2$}
-
-Simple result with $\tau = 1$: $n/2$. 
-Two questions:
+Results better in practice: give the data
+Two heuristics to test:
 \begin{itemize}
- \item can we do better with a greedy alg ?
-+ add the results with the heuristic which reduce collisions with the last elements
-by choosing properly the first $n/2$ elements which are placed to gain $\sqrt{n}$ elements. 
-\item can we get the same bound for any $\tau$ ?
-Answer: Yes by paying a waiting time of at most $\tau$ (all blocs aligned on meta interval,
-degenerate to the case $\tau = 1$).
+	\item  heuristic to build super compact assignment (among the compact assignments
+possible, chose the one which maximize the gain on the second bloc)
+	\item heuristic to maximize the free position of the remaining elements
 \end{itemize}
 
-\subsection{Pairs of elements in order of shifts}
+Quality of the results explained by the average analysis done later
+ 
 
-Precise description of the algorithm. 
+\section{Why $\tau$ can be assumed to be one}
 
-\subsection{Tuples of elements in order of shifts}
+Rank the $d_i$ by value, and compute $d_i + d_n \mod \tau$.
+We allow buffering, but the worst time should not increase !
+Bufferize  each route during $\tau - (d_i + d_n \mod \tau)$.
+All routes have the same remainder mod $\tau$, can assume they are of 
+size one.
+A bit mor complex on the general graphs, proofs on the depth of the graph. 
+Should take into account the length of the graph.
 
-Bit more sketchy description + value derived from the programm computing the value with many
-different size of groups.
 
 \section{Above $1/2$}
+
+We show that we can go above $1/2$ using a greedy algorithm.
+
 TODO: properly define the potential of a position, of a route. Relates both through a lemma 
 showing that the sum of both is equal. 
 Also a lemma which relates potential to the number of conflicts. 
@@ -159,14 +177,40 @@ Lose too much when dealing with only positions of potential lower than the avera
 
 \section{Algorithms for random instances}
 
-\paragraph{$\tau > 1$}
-Compute a better bound working w.h.p. for some greedy algorithms (celui qui fait un ou plusieurs serpents). 
-
 \paragraph{$\tau = 1$}
 
-Greedy algorithm with constraints on the possible positions. 
-At each step placing a new route take only one slot more and more often. 
-Should give a $2 - \sqrt{2} = 0.585\dots$ bound.
+We analyze the following process, called \textbf{Uniform Greedy} or UG.
+For each element in order, chose one admissible position
+uniformly at random. We analyze the probability that Uniform Greedy
+solve the problem, averaged over all possible instances. 
+It turns out that this probability, for a fixed load strictly less than
+one goes to zero when $m$ grows. 
+
+Définir l'ensemble des solutions de taille $n$ parmi $m$.
+\begin{theorem}
+Given an instance of size $n$ uniformly at random UG
+produces a solution uniformly at random or fail.
+\end{theorem}
+\begin{proof}
+Regarder mes notes partielles pour compléter ça.
+\end{proof}
+
+Let us denote by $P(m,n)$ the probability that UG fails at the $n_th$
+steps assuming it has not failed before.
+
+\begin{theorem}
+We have $$P(m,n) = \frac{\binom{n}{2n-m}}{\binom{m}{n}}.$$
+In particular, $P(m,n) \leq f(\lambda)^m$, where $f(\lambda) < 1$.
+\end{theorem}
+\begin{proof}
+Probability independent of the shift of the $n$ element, can say it is $0$.
+It is the probability that two sets of size $n$ in $[m]$ are of union $[m]$.
+It is the same as the probability that it contains a given set of size $m-n$.
+Could find an asymptotic online.
+\end{proof}
+
+Can we make the same argument for a deterministic algorithm?
+The not average version of the argument is the previous proof.
 
 \section{Greedy and delay}
 
@@ -186,7 +230,7 @@ Example/family of examples with a given load such that there are no feasible sol
 
 \section{$\NP$-hardness}
 
-Are we able to prove $\NP$-hardness
+Are we able to prove $\NP$-hardness ?
 
 % \bibliographystyle{ieeetr}
 % \bibliography{Sources}
