@@ -335,7 +335,10 @@ void fill_Per(int * P, int route, int offset, int message_size, int per)
 {
 	for(int i=0;i<message_size;i++)
 	{
-		P[(i+offset)%per] = route;
+		if(route == 0)
+			P[(i+offset)%per] = -1;
+		else
+			P[(i+offset)%per] = route;
 	}
 }
 void init_Per(int * P, int per)
@@ -363,16 +366,19 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 	{
 		if( (P[i]+message_size)%per < P[i]%per  ) // le message pi est a cheval sur deux periodes 
 		{
-			if((offset%per > P[i]%per)||(offset%per < (P[i]+message_size)%per) )
+			if( (offset%per <= (P[i]+message_size)%per)||( (offset+message_size)%per >= P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
 				return 0;
 		}
 		else
 		{
-			if((offset%per > P[i]%per) && (offset%per < (P[i]+message_size)%per) )
+			if(((offset%per >= P[i]%per) && ( offset%per <= (P[i]+message_size)%per) ) ||(( (offset+message_size)%per >= P[i]%per) && ( (offset+message_size)%per <= (P[i]+message_size)%per) )  )
 				return 0;
 		}
 	}
 	return 1;
+
+
+
 }
 void cpy_per(int * t , int * t2 ,int p)
 {
@@ -390,7 +396,7 @@ void cpy_per(int * t , int * t2 ,int p)
 		
 	}
 }
-Assignment assignment_with_orders(Graph g, int P, int message_size)
+Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
@@ -450,12 +456,8 @@ Assignment assignment_with_orders(Graph g, int P, int message_size)
  					if(kind == BACKWARD)
  					{
  						dl += route_length_with_buffers_forward(g, current_route);
- 						if(kind == FORWARD)
- 							g.arc_pool[j].routes_delay_f[current_route] =  0;
- 						else
- 							g.arc_pool[j].routes_delay_b[current_route] =  0;
  					}
- 				
+ 					//printf("Route %d release %d \n",current_route,dl);
  					if(dl < offset )
  					{
  						
@@ -467,6 +469,11 @@ Assignment assignment_with_orders(Graph g, int P, int message_size)
  					else
  					{
  						offset = dl;
+ 						if(kind == FORWARD)
+ 							g.arc_pool[j].routes_delay_f[current_route] =  0;
+ 						else
+ 							g.arc_pool[j].routes_delay_b[current_route] =  0;
+ 						
  					}
  					ok = 0;
  					for(int add =0;add<P;add++)
@@ -493,7 +500,16 @@ Assignment assignment_with_orders(Graph g, int P, int message_size)
  						return a;
  					}
  					Per[k]=offset;
+ 					if(print)
+ 					{
+ 						if(kind == FORWARD)
+ 							fill_Per(g.arc_pool[j].period_f, current_route, offset, message_size,P);
+ 						else
+ 							fill_Per(g.arc_pool[j].period_b, current_route, offset, message_size,P);
+ 					}
+ 					
  					offset+=message_size;
+
  					//printf("%d ",current_route);printf("\n");
  				}
  				
@@ -516,142 +532,6 @@ Assignment assignment_with_orders(Graph g, int P, int message_size)
 
 }
 
-Assignment assignment_with_orders_period(Graph g, int P, int message_size)
-{
-
-	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
-
-	a->nb_routes_scheduled = 0;
-	a->all_routes_scheduled = 0;
-	Period_kind kind;
-	int CL;
-	int offset ;
-	int current_route;
-	int dl;
-	int Per[P];
-	int ok;
-
- 	//for each contention  level
- 	for(int i=0;i<g.contention_level;i++)
- 	{
- 		offset = 0;
- 		if(i<g.contention_level/2)
- 		{	
- 			CL = i;
- 			kind = FORWARD;
- 		}
- 		else
- 		{
- 			CL = g.contention_level-i-1;
- 			kind = BACKWARD;
- 		}
-
- 		for(int j=0;j<g.arc_pool_size;j++)
- 		{
- 			offset = 0;
- 			init_Per(Per,P);
- 			if(g.arc_pool[j].contention_level == CL)
- 			{
- 				/*printf("Routes sur l'arc : %d\n",kind);
- 				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
- 				{
- 					if(kind == FORWARD)
- 						printf("%d ",g.arc_pool[j].routes_order_f[k]);
- 					else
- 						printf("%d ",g.arc_pool[j].routes_order_f[k]);
- 				}
- 				printf("\n");*/
- 				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
- 				{
-
-
- 					if(kind == FORWARD)
- 						current_route = g.arc_pool[j].routes_order_f[k];
- 					else
- 						current_route = g.arc_pool[j].routes_order_b[k];
- 					dl = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
- 					if(kind == BACKWARD)
- 					{
- 						dl += route_length_with_buffers_forward(g, current_route);
- 						if(kind == FORWARD)
- 							g.arc_pool[j].routes_delay_f[current_route] =  0;
- 						else
- 							g.arc_pool[j].routes_delay_b[current_route] =  0;
- 					}
- 				
- 					if(dl < offset )
- 					{
- 						
- 						if(kind == FORWARD)
- 							g.arc_pool[j].routes_delay_f[current_route] =  offset - dl;
- 						else
- 							g.arc_pool[j].routes_delay_b[current_route] =  offset - dl;
- 					}
- 					else
- 					{
- 						offset = dl;
- 					}
- 					ok = 0;
- 					for(int add =0;add<P;add++)
- 					{
-
- 						if(col_check(Per,offset+add,message_size,P))
- 						{
- 							
- 							if(kind == FORWARD)
- 								g.arc_pool[j].routes_delay_f[current_route] += add;
- 							else
- 								g.arc_pool[j].routes_delay_b[current_route] += add;
- 							offset += add;
- 							ok = 1;
- 							break;
- 						}
-
- 					}
- 					
- 					if(ok == 0)
- 					
- 					{
- 					
- 						return a;
- 					}
- 					fill_Per(Per, current_route, offset, message_size,P);
- 					offset+=message_size;
- 					//printf("%d ",current_route);printf("\n");
- 				}
- 				if(kind == FORWARD)
- 				{
- 					cpy_per(Per,g.arc_pool[j].period_f,P);
- 					//affiche_periode(Per, P, stdout);
- 				}
- 				else
- 				{
- 					cpy_per(Per,g.arc_pool[j].period_b,P);
- 					//affiche_periode(Per, P, stdout);
- 				}
-
- 				
-
- 			}
- 		}
-
- 	}
- 	for(int i=0;i<g.nb_routes;i++)
- 	{
- 		a->offset_forward[i] = 0;
- 		a->offset_backward[i] = route_length_with_buffers_forward(g, i);
- 		a->waiting_time[i]=0;
- 	}
-	a->all_routes_scheduled = 1;
-	a->nb_routes_scheduled = g.nb_routes;
-
-
-	return a;
-
-}
 void reinit_delays(Graph g)
 {
 	
@@ -763,7 +643,7 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 	while(v.route != -1)
 	{
 		//reset_periods(g,P);
-		a = assignment_with_orders(g,P,message_size);
+		a = assignment_with_orders(g,P,message_size,0);
 		if(a->all_routes_scheduled)
 		{
 			a->time = travel_time_max_buffers(g);
@@ -853,7 +733,7 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		//printf("On remet le dernier graph renvoyé\n");aff_orders(orders,g);
 		reinit_delays(g);
 		//reset_periods(g,P);
-		a = assignment_with_orders(g,P,message_size);
+		a = assignment_with_orders(g,P,message_size,0);
 		a->time = travel_time_max_buffers(g);
 		
 		for(int i=0;i<g.arc_pool_size*2;i++)
@@ -871,7 +751,12 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		free_assignment(a);
 	reinit_delays(g);
 	reset_periods(g,P);
-	a = assignment_with_orders_period(g,P,message_size);
+	a = assignment_with_orders(g,P,message_size,1);
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution n'est pas correcte descente (error %d) ",verifie_solution( g,message_size));
+		exit(82);
+	}
 	a->time = travel_time_max_buffers(g);
 
 	a->nb_routes_scheduled = nb_d;
@@ -1002,7 +887,7 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
 				return t;
 			}
 		}
-		a = assignment_with_orders(g,P,message_size);
+		a = assignment_with_orders(g,P,message_size,0);
 		if(a->all_routes_scheduled)
 		{
 
@@ -1037,7 +922,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		exit(47);
 	}
 
-	a = assignment_with_orders(g,P,message_size);
+	a = assignment_with_orders(g,P,message_size,0);
 	a->time = travel_time_max_buffers(g);
 
 	int min = a->time;
@@ -1083,11 +968,15 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	cpy_orders(best_order,g,0);
 	reinit_delays(g);
 	reset_periods(g,P);
-	a = assignment_with_orders_period(g,P,message_size);
+	a = assignment_with_orders(g,P,message_size,1);
 	a->nb_routes_scheduled = nb_steps_better;
 	a->time = travel_time_max_buffers(g);
-
-	printf("%d nb step \n",nb_steps_better);
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution n'est pas correcte TABOO (error %d) ",verifie_solution( g,message_size));
+		exit(83);
+	}
+	//printf("%d nb step \n",nb_steps_better);
 	Trace tmp = t;
 	/*while(t)
 	{

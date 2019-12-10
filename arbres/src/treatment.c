@@ -690,10 +690,11 @@ int travel_time_max_buffers(Graph g)
 {
 	int lenght;
 	int max = route_length_with_buffers(g,0);
+	//printf("taille de la route %d = %d \n",0,max);
 	for(int i=1;i<g.nb_routes;i++)
 	{
 		lenght = route_length_with_buffers(g,i);
-	
+		//printf("taille de la route %d = %d \n",i,lenght);
 		max = (max>lenght)?max:lenght;
 		
 	}
@@ -812,7 +813,7 @@ int check_period(Arc * a,int P,int message_size)
 
 		return nb_elems_b;
 	}
-
+	//printf("retour nb elems\n");
 	return nb_elems_b;
 
 }
@@ -823,8 +824,17 @@ int verifie_solution(Graph g,int message_size)
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
 		if(g.arc_pool[i].period_f)
-			if(check_period(&g.arc_pool[i],g.period,message_size) != g.arc_pool[i].nb_routes )
-				return check_period(&g.arc_pool[i],g.period,message_size);
+		{
+			int val = check_period(&g.arc_pool[i],g.period,message_size);
+			if(val != g.arc_pool[i].nb_routes )
+			{
+				printf("Code de retour = %d\n",val);
+				return 6;
+
+			}
+				
+				
+		}
 	}
 	int offset;
 	for(int i=0;i<g.nb_routes;i++)
@@ -835,6 +845,7 @@ int verifie_solution(Graph g,int message_size)
 		for(int j=0;j<g.size_routes[i];j++)
 		{
 			offset += g.routes[i][j]->routes_delay_f[i];
+			offset = offset %g.period;
 			if(g.routes[i][j]->period_f)
 			{
 				if(i==0)
@@ -844,7 +855,11 @@ int verifie_solution(Graph g,int message_size)
 				}
 				else
 					if(g.routes[i][j]->period_f[offset] != i)
+					{
+						printf("i = %d offset = %d\n",i,offset);
+						affiche_periode(g.routes[i][j]->period_f,g.period,stdout);
 						return 3;
+					}
 			}
 			offset += g.routes[i][j]->length;
 		}

@@ -301,25 +301,8 @@ Assignment loaded_greedy_collisions(Graph g, int P, int message_size, int tmax)
 }
 
 
-int can_fit_in_per(int *P, int offset, int message_size,int per, int nb_routes)
-{
-	for(int i=0;i<nb_routes;i++)
-	{
-		if( (P[i]+message_size)%per < P[i]%per  ) // le message pi est a cheval sur deux periodes 
-		{
-			if((offset%per > P[i]%per)||(offset%per < (P[i]+message_size)%per) )
-				return 0;
-		}
-		else
-		{
-			if((offset%per > P[i]%per) && (offset%per < (P[i]+message_size)%per) )
-				return 0;
-		}
-	}
-	return 1;
-}
 
-int oderinarc(int* release, int * budget, int  P , int size,int message_size,int * order, int * delay,int * id)
+int oderinarc(int* release, int * budget, int  P , int size,int message_size,int * order, int * delay,int * id,int * period)
 {
 	/*printf("ARc :");
 	for(int i=0;i<size;i++)printf(" %d ",id[i]);printf("\n");
@@ -346,8 +329,11 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 	int Per[size];
 	Per[0]=release[current_route];
 	offset = release[current_route]+message_size;
+	fill_Per(period, id[current_route], release[current_route], message_size,P);
+	//printf("Premiere route : %d(pos %d dans le tableau) release %d\n",id[current_route],current_route,release[current_route]);
+	
 	release[current_route]= INT_MAX;
-	//printf("Premiere route : %d(pos %d dans le tableau)\n",id[current_route],current_route);
+
 	for(int i=1;i<size;i++)
 	{
 		//Choix de la route éligible
@@ -378,7 +364,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 				}
 			}
 		}
-		//printf("route eligible : %d(pos %d dans le tableau)\n",id[current_route],current_route);
+		//printf("route eligible : %d(pos %d dans le tableau) release %d\n",id[current_route],current_route,release[current_route]);
 		//Detection de bug
 		if(release[current_route]==INT_MAX){printf("PAS NORMAL;\n");exit(93);}
 		order[i]=id[current_route];
@@ -392,13 +378,13 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		{
 			offset = release[current_route];
 			delay[id[current_route]] = 0;
-			//printf("Offset est à %d \n",offset);
+			//printf("Offset est à %d delay route %d a 0\n",offset,id[current_route]);
 		}
 		int ok = 0;
 		for(int add =0;add<P;add++)
 		{
 
-			if(can_fit_in_per(Per,offset+add,message_size,P,i))
+			if(cols_check(Per,offset+add,message_size,P,i))
 			{
 				
 				delay[id[current_route]] += add;
@@ -416,6 +402,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			return 0;
 		}
 		Per[i]=offset;
+		fill_Per(period, id[current_route], offset, message_size,P);
 		offset+=message_size;
 		release[current_route]=INT_MAX;
 		budget[current_route]=0;
@@ -463,7 +450,7 @@ int greedy_deadline(Graph g, int P, int message_size)
  						//printf("route %d(%d) : %d = %d - %d ",ids[l], g.size_routes[ids[l]],budget[l], route_length(g,g.arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD));
  					}
  					//printf("\n");
- 					if(!oderinarc(release,  budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_f, g.arc_pool[j].routes_delay_f,ids))
+ 					if(!oderinarc(release,  budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_f, g.arc_pool[j].routes_delay_f,ids,g.arc_pool[j].period_f))
  						return 0;
  				}
  					
@@ -475,7 +462,7 @@ int greedy_deadline(Graph g, int P, int message_size)
  						release[l] = route_length_with_buffers_forward(g,g.arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
  						budget[l]= route_length(g,g.arc_pool[j].routes_id[l]) - route_length_untill_arc_without_delay(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
  					}
- 					if(!oderinarc( release, budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_b, g.arc_pool[j].routes_delay_b,ids))
+ 					if(!oderinarc( release, budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_b, g.arc_pool[j].routes_delay_b,ids,g.arc_pool[j].period_b))
  						return 0;
  				}
  					
@@ -493,25 +480,33 @@ int greedy_deadline(Graph g, int P, int message_size)
 Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int useless)
 {
 	Assignment a=NULL; 
-	
-	
+//printf("\n\n\n\nnew greedy \n\n\n");
+	reset_periods( g, P);
+
 	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
 		exit(47);
 	}
 	int t = travel_time_max_buffers(g);
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution n'est pas correcte GD (error %d) ",verifie_solution( g,message_size));
+		affiche_graph(g,P,stdout);
+		exit(84);
+	}
+	a = assignment_with_orders(g,P,message_size,1);
 
-	a = assignment_with_orders_period(g,P,message_size);
 	int t2 = travel_time_max_buffers(g);
+
 	if(t!= t2)
 	{
-		printf("Les deux algos sont pas pareils, impossible.\n");
+		printf("Les deux algos sont pas pareils, impossible (%d %d).\n",t,t2);
 		exit(85);
 	}
 	if(verifie_solution( g,message_size))
 	{
-		printf("LA solution n'est pas correcte (error %d) ",verifie_solution( g,message_size));
+		printf("La solution n'est pas correcte AwO (error %d) ",verifie_solution( g,message_size));
 		exit(86);
 	}
 	a->all_routes_scheduled = 1;

@@ -175,7 +175,7 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
 	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
-	test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
+	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
 	
 
 
@@ -704,6 +704,7 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
+			printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
 				case 0:
 					time[algo] = borneInf( g, P, message_size);	
