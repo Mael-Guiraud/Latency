@@ -75,11 +75,19 @@ We study a star shaped topology, where all contentions are on a single arc share
 
 \section{Model}
 Describe the general model, and objective to optimize: no buffering.
+It is a scheduling/packing problem, could call each element a task or just an element. 
+Notion of depth.
 
- + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. 
+ + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. Notion of load.
 \cite{Guir1806:Deterministic}
 
 \section{Basic Algorithms}
+
+Notion of partial solution, how to extend it (and notation). All
+algorithms are greedy and most can work online. Once a route is placed,
+it is not changed, hence in a partial solution we are only interested in the 
+set of positions used in the backward and forward period. If $n$ tasks has been
+placed, we denote them by $x_1, \dots, x_n$ and $y_1,\dots,y_n$.
 
 \subsection{Depth one}
 
@@ -102,10 +110,15 @@ Copy the results of the previous article and propose heuristics to chose among s
 \subsection{Experimental results}
 
 Results better in practice: give the data
-Explanation by number of routes which can be dealt with high probability ???? 
- 
- heuristic to build super compact assignment (among the compact assignments
+Two heuristics to test:
+\begin{itemize}
+	\item  heuristic to build super compact assignment (among the compact assignments
 possible, chose the one which maximize the gain on the second bloc)
+	\item heuristic to maximize the free position of the remaining elements
+\end{itemize}
+
+Quality of the results explained by the average analysis done later
+ 
 
 \section{Why $\tau$ can be assumed to be one}
 
@@ -166,21 +179,38 @@ Lose too much when dealing with only positions of potential lower than the avera
 
 \paragraph{$\tau = 1$}
 
-Use the same argument as in the previous proof: 
-if there are $n$ routes placed, then chosing randomly a new one 
-it has $2n$ constraints. However some constraint are redondant:
-$(x_i)$ position in the forward windows and $(y_i)$ in the backward.
-Compute the probability that for a randomly chosen $d_{n+1}$ and  
-$|\{i \mid \exists j x_i+d_{n+1} = y_j\}|>k$.
+We analyze the following process, called \textbf{Uniform Greedy} or UG.
+For each element in order, chose one admissible position
+uniformly at random. We analyze the probability that Uniform Greedy
+solve the problem, averaged over all possible instances. 
+It turns out that this probability, for a fixed load strictly less than
+one goes to zero when $m$ grows. 
 
-If we compute the expectation of this set: 
-$n/2$, with $P=2n$ (we can show such a result with high probability, using chernov). The new routes placed cost two constraints, hence we can expect to place around $n + \lambda n$ routes such that $2(n + \lambda n) -n/2 < 2n $ hence $\lambda = 1/4$. 
-Hence the ``average'' constant is $5/8$
+Définir l'ensemble des solutions de taille $n$ parmi $m$.
+\begin{theorem}
+Given an instance of size $n$ uniformly at random UG
+produces a solution uniformly at random or fail.
+\end{theorem}
+\begin{proof}
+Regarder mes notes partielles pour compléter ça.
+\end{proof}
 
-If we can somehow argue that the new routes placed are also randomly distributed, then
-$2 \lambda n - \lambda n \lambda < n$. 
-$$ 2\lambda - \lambda ^2 = 1$$
-Too good to be true ? Il y a un problème.
+Let us denote by $P(m,n)$ the probability that UG fails at the $n_th$
+steps assuming it has not failed before.
+
+\begin{theorem}
+We have $$P(m,n) = \frac{\binom{n}{2n-m}}{\binom{m}{n}}.$$
+In particular, $P(m,n) \leq f(\lambda)^m$, where $f(\lambda) < 1$.
+\end{theorem}
+\begin{proof}
+Probability independent of the shift of the $n$ element, can say it is $0$.
+It is the probability that two sets of size $n$ in $[m]$ are of union $[m]$.
+It is the same as the probability that it contains a given set of size $m-n$.
+Could find an asymptotic online.
+\end{proof}
+
+Can we make the same argument for a deterministic algorithm?
+The not average version of the argument is the previous proof.
 
 \section{Greedy and delay}
 
