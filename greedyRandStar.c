@@ -4,8 +4,8 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 50
-#define NB_ROUTES 45
+#define PERIODE 100
+#define NB_ROUTES 90
 #define TAILLE_ROUTES 100
 #define NB_SIMUL 10000
 
@@ -47,14 +47,14 @@ int compte_places_dispo(int *dispo,int * p, int * p2, int decalage, int taille,i
 			}
 	}
 	return nb_places_libres;
-}
+}	
 //renvoie l'id dans la periode à l'aller de la place choisie au hasard
 //renvoie -1 si il n'y a aucune place disponible
 int random_position(int * p, int * p2, int decalage, int taille,int periode)
 {
 	//init du tableau dispo
-	int dispo[taille];
-	memset(dispo,0,sizeof(int)*taille);
+	int dispo[periode];
+	memset(dispo,0,sizeof(int)*periode);
 	//compte le nombre de places libres et met leurs indices dans les premieres case du tableau dispo
 	int nb_places_libres = compte_places_dispo(dispo,p,p2,decalage,taille,periode);
 
