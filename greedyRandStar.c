@@ -4,12 +4,12 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 10
-#define NB_ROUTES 6
-#define TAILLE_ROUTES 10
+#define PERIODE 50
+#define NB_ROUTES 45
+#define TAILLE_ROUTES 100
 #define NB_SIMUL 10000
 
-#define DEBUG 1
+#define DEBUG 0
 
 void affiche_solution(int * p, int * p2, int taille,int nb_routes_placees,int nb_routes)
 {
@@ -112,6 +112,21 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 	return nb_routes_placees;
 }
 
+double prob_set(int n, int m){
+	double res = 1;
+	for(int i = 0; i < m-n; i++){
+		res*= ((double)(i + 2*n - m + 1 ))/((double)(n + i + 1));
+	}
+	return res;
+}
+
+double prob_theo(int n, int m){
+	double res = 0;  
+	for(int i = m/2; i < n; i++){
+		res += (1-res)*prob_set(i,m);
+	}
+	return res;
+}
 
 int main()
 {
@@ -131,4 +146,5 @@ int main()
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMUL);
 	}
 	printf("\nL'algorithme à réussi à placer toutes les routes %d fois sur %d (%lld routes placées en moyenne).\n",cmpt_sucess,NB_SIMUL,moy_routes/NB_SIMUL);
+	printf("Proba d'échec empirique : %f, théorique : %f\n", 1 - (cmpt_sucess/ (double)NB_SIMUL), prob_theo(NB_ROUTES,PERIODE));
 }
