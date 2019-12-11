@@ -704,7 +704,7 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
-			printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
+			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
 				case 0:
 					time[algo] = borneInf( g, P, message_size);	

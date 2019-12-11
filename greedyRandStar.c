@@ -4,9 +4,9 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 100
-#define NB_ROUTES 60
-#define TAILLE_ROUTES 100
+#define PERIODE 1000
+#define NB_ROUTES 600
+#define TAILLE_ROUTES 2000
 #define NB_SIMUL 100
 
 #define DEBUG 0
