@@ -572,6 +572,7 @@ Figure~\ref{fig:extendendgraph2} and figure~\ref{fig:extendendgraph3} shows how 
       We the send the routes with the lowest deadline first in the way backward, trying all waiting times, starting to $0$, until the message can reach the RRH without collisions.
             
         \end{paragraph}
+
     \begin{paragraph}{Greedy Loaded}
 
 In this algorithm, we choose to first take care of the most critical contention points first. Thus, we sort the arcs of the graph for the one in which there is the greater number of routes to the one in which there is the lower number of routes. Then we take first the more loaded link and we schedule the routes on it in two steps.
@@ -632,16 +633,68 @@ We also propose $3$ different orders to treat the route on the arcs.
 \begin{proof}
 As we just mentioned, for the way forward, it is enough to consider the sending order of the routes to capture all the solutions.
 Since we already have an FPT algorithm that solves the way backward \cite{Guir1806:Deterministic}, we then apply it to each sending order.
-
-It is possible to reduce the complexity of the $n!$ sending orders on the way forward. Indeed, once a sending order is generated, it is easy to compute the deadline for all route and to determine if yes or no, the input will fail in our fpt algorithm for the backward way.
-\todo{implémenter cette amélioration}
-
-
 \end{proof}
 
+It is possible to reduce the complexity of the $n!$ sending orders on the way forward. Indeed, once a sending order is generated, it is easy to compute the deadline for all route and to determine if yes or no, the input will fail in our fpt algorithm for the backward way.
+\todo{implémenter cette amélioration: en utilisant un branch and bound}
 
 
   \end{subsubsection}
+\end{subsection}
+
+\begin{subsection}{Compact representation}
+
+We explain in this section how to represent an assignment for the problem 
+\spall over an instance of depth $1$ in a compact way. Then, this representation
+can be used at any contention point in an instance of larger depth.
+Not all solutions can be represented in a compact way, but there
+is at least one optimal assignment for \spall wich is.
+It allows to design FPT algorithm by going through all compact 
+representations. We obtain good heuristic algorithms using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.
+
+\begin{definition}
+A compact representation of an assignment over $n$ routes is a pair $(O,S)$,
+where $O$ is an order on the $n$ routes and $S$ is a subset of the $n$ routes.
+\end{definition}
+
+We now explain how to decompress a compact representation into an assignment.
+\todo{Je ne connais pas les notations pour \spall, je suppose qu'on a des temps
+d'arrivée sur l'arc $a_1,\dots,a_n$ et qu'on fixe des temps de départ sur l'arc 
+$d_1,\dots,d_n$. Je note un assignement A. Je remarque qu'on a souvent omis des 
+fonctions comme PT, TR la dépendence en l'assignement, du coup certaines choses sont 
+plus dures à écrire proprement}
+Say w.l.o.g. that the routes are indexed in the order given by $O$.
+We fix the departure of the first route $d_1 = a_1$, that is the packet of this route do not wait in a buffer. Then, in each period beginning by the first route, the routes will be in order. To simplify, we assume that $d_1 = a_1 = 0$, which can be obtained by removing $a_1$
+to all arrival times. We fix the departure times of the route in order, when the first $i$ routes have their departure time computed, we fix $a_{i+1}$ in the following way. 
+
+If $i+1 \notin S$, then $d_{i+1} >= a_{i+1}$ otherwise the route $i+1$ should go in the period after the one it is available in, that is $d_{i+1} > (a_{i+1}/P + 1)P$.
+The value of  $d_{i+1}$ is the smallest value which satisfies the previous constraint,
+ensures that there are no collision with the first $i$ routes and  satisfies the order, that is $d_{i+1} \mod \tau > d_i \mod \tau$. 
+It is possible that the process fails to find a correct value for $d_i$ at some point,
+in that case there are no assignment associated to this compact representation.
+
+We denote this transformation by $Sol$, that is $Sol(O,S)$ is the solution previously defined
+(the routed network is implicit) or a special value to denote there is no assignment compatible with this compact representation. 
+
+We can also define an inverse function which from most assignment $A$ computes a compact representation, that we denote by $Compact(A)$. The function is define only for
+assignments $A = (a_1,\dots,a_n)$, such that the first route has no waiting time, that is $a_1 = d_1$. Assume w.l.o.g that $a_1 = d_1 = 0$, by considering the equivalent problem where $a_i= a_i -a_1$ and $d_i = d_i - a_1$.
+Compute the values $(d_i)\mod P$ and  call their order $O$. Let 
+ $S$ be the set of $i$ such that $(d_i \geq (a_i / P + 1) P$. We let $Compact(A) = (O,S)$.
+
+
+A compact representation of a solution for an instance of depth larger than $k$
+is a list of compact representations, one for each contention arc. The following theorem explains why it is enough to explore the compact representations to solve \spall.
+
+\begin{theorem}
+Among all assignments for a routed network $G,{\cal R})$, there is a compact representation which minimizes $TR(G,{\cal R})$.
+\end{theorem}
+\begin{proof}
+Idée, si on regarde un assignement et que toutes les routes d'un arc ont 
+un temps d'attente alors on peut trouver une solution au moins aussi bonne ou 
+une route n'attends pas. Ensuite on montre que pour un assignement A donné, 
+Sol(Compact(A)) a un meilleur $TR(G,{\cal R})$. Tout a été défini pour ça, mais il faut le montrer.
+
+\end{proof}
 \end{subsection}
 
 
