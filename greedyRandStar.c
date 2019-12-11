@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define PERIODE 100
-#define NB_ROUTES 60
+#define NB_ROUTES 50
 #define TAILLE_ROUTES 100
 #define NB_SIMUL 100
 
