@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define PERIODE 1000
-#define NB_ROUTES 600
+#define NB_ROUTES 70
 #define TAILLE_ROUTES 2000
 #define NB_SIMUL 100
 
@@ -60,7 +60,7 @@ int random_position(int * p, int * p2, int decalage, int taille,int periode)
 	memset(dispo,0,sizeof(int)*taille);
 	//compte le nombre de places libres et met leurs indices dans les premieres case du tableau dispo
 	int nb_places_libres = compte_places_dispo(dispo,p,p2,decalage,taille,periode);
-
+	printf("%d \n",nb_places_libres);
 	//Si aucune place libre, ça echoue
 	if(nb_places_libres == 0)
 		return -1;
@@ -95,7 +95,7 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 
 	int position_tiree;
 	int nb_routes_placees = 0;
-	for(int i=1;i<=nb_routes+1;i++)
+	for(int i=1;i<=nb_routes;i++)
 	{
 		position_tiree = random_position(aller,retour,decalages[i],nb_routes,periode);
 		if(position_tiree != -1)
@@ -126,6 +126,7 @@ int main()
 	for(int i=0;i<NB_SIMUL;i++)
 	{
 		val = greedy_random_star(PERIODE,NB_ROUTES,TAILLE_ROUTES);
+		printf("%d \n",val);
 		if(val == NB_ROUTES)
 		{
 			cmpt_sucess++;
