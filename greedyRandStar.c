@@ -4,10 +4,12 @@
 #include <time.h>
 #include <string.h>
 
+
 #define PERIODE 1000
 #define NB_ROUTES 70
 #define TAILLE_ROUTES 2000
 #define NB_SIMUL 100
+
 
 #define DEBUG 0
 
@@ -38,16 +40,13 @@ void affiche_star(int * decalages, int nb_routes)
 int compte_places_dispo(int *dispo,int * p, int * p2, int decalage, int taille,int periode)
 {
 	int nb_places_libres = 0;
-	for(int i=0;i<taille;i++)
+	for(int i=0;i<periode;i++)
 	{
-		if(p[i]==0)
-		{
-			if(p2[(i+decalage) % periode] == 0)
+		if(!p[i] && !p2[(i+decalage) % periode])
 			{
 				dispo[nb_places_libres]=i;
 				nb_places_libres++;
 			}
-		}
 	}
 	return nb_places_libres;
 }
@@ -95,18 +94,20 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 
 	int position_tiree;
 	int nb_routes_placees = 0;
-	for(int i=1;i<=nb_routes;i++)
+
+	for(int i=0;i<nb_routes;i++)
+
 	{
 		position_tiree = random_position(aller,retour,decalages[i],nb_routes,periode);
 		if(position_tiree != -1)
 		{
-			aller[position_tiree]=i;
-			retour[ (position_tiree+decalages[i])%periode] = i;
+			aller[position_tiree]=1;
+			retour[ (position_tiree+decalages[i])%periode] = 1;
 			nb_routes_placees++;
 		}
 		
 	}
-	if(DEBUG)
+	if(DEBUG && nb_routes_placees < nb_routes)
 	{
 		affiche_star(decalages,nb_routes);
 		affiche_solution(aller,retour,periode,nb_routes_placees,nb_routes);
@@ -115,6 +116,21 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 	return nb_routes_placees;
 }
 
+double prob_set(int n, int m){
+	double res = 1;
+	for(int i = 0; i < m-n; i++){
+		res*= ((double)(i + 2*n - m + 1 ))/((double)(n + i + 1));
+	}
+	return res;
+}
+
+double prob_theo(int n, int m){
+	double res = 0;  
+	for(int i = m/2; i < n; i++){
+		res += (1-res)*prob_set(i,m);
+	}
+	return res;
+}
 
 int main()
 {
@@ -135,4 +151,5 @@ int main()
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMUL);
 	}
 	printf("\nL'algorithme à réussi à placer toutes les routes %d fois sur %d (%lld routes placées en moyenne).\n",cmpt_sucess,NB_SIMUL,moy_routes/NB_SIMUL);
+	printf("Proba d'échec empirique : %f, théorique : %f\n", 1 - (cmpt_sucess/ (double)NB_SIMUL), prob_theo(NB_ROUTES,PERIODE));
 }
