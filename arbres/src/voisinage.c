@@ -964,6 +964,8 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		v=reinit_voins(g,v);
 		
 	}
+
+	
 	//Fin du parcours, on remet le meilleur ordre dans le graph, on calcul et on renvoie
 	cpy_orders(best_order,g,0);
 	reinit_delays(g);
