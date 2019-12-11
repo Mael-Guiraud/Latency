@@ -95,7 +95,7 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 
 	int position_tiree;
 	int nb_routes_placees = 0;
-	for(int i=1;i<=nb_routes;i++)
+	for(int i=1;i<=nb_routes+1;i++)
 	{
 		position_tiree = random_position(aller,retour,decalages[i],nb_routes,periode);
 		if(position_tiree != -1)
