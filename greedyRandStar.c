@@ -4,12 +4,12 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 100
-#define NB_ROUTES 50
-#define TAILLE_ROUTES 100
-#define NB_SIMUL 100
+#define PERIODE 10
+#define NB_ROUTES 6
+#define TAILLE_ROUTES 10
+#define NB_SIMUL 10000
 
-#define DEBUG 0
+#define DEBUG 1
 
 void affiche_solution(int * p, int * p2, int taille,int nb_routes_placees,int nb_routes)
 {
@@ -38,16 +38,13 @@ void affiche_star(int * decalages, int nb_routes)
 int compte_places_dispo(int *dispo,int * p, int * p2, int decalage, int taille,int periode)
 {
 	int nb_places_libres = 0;
-	for(int i=0;i<taille;i++)
+	for(int i=0;i<periode;i++)
 	{
-		if(p[i]==0)
-		{
-			if(p2[(i+decalage) % periode] == 0)
+		if(!p[i] && !p2[(i+decalage) % periode])
 			{
 				dispo[nb_places_libres]=i;
 				nb_places_libres++;
 			}
-		}
 	}
 	return nb_places_libres;
 }
@@ -95,18 +92,18 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 
 	int position_tiree;
 	int nb_routes_placees = 0;
-	for(int i=1;i<=nb_routes+1;i++)
+	for(int i=0;i<nb_routes;i++)
 	{
 		position_tiree = random_position(aller,retour,decalages[i],nb_routes,periode);
 		if(position_tiree != -1)
 		{
-			aller[position_tiree]=i;
-			retour[ (position_tiree+decalages[i])%periode] = i;
+			aller[position_tiree]=1;
+			retour[ (position_tiree+decalages[i])%periode] = 1;
 			nb_routes_placees++;
 		}
 		
 	}
-	if(DEBUG)
+	if(DEBUG && nb_routes_placees < nb_routes)
 	{
 		affiche_star(decalages,nb_routes);
 		affiche_solution(aller,retour,periode,nb_routes_placees,nb_routes);
