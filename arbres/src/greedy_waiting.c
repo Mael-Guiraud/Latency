@@ -279,7 +279,12 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 	{
 		a->all_routes_scheduled = 0;
 	}
-
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution n'est pas correcte Loaded greedy %d (error %d) ",mode,verifie_solution( g,message_size));
+		affiche_graph(g,P,stdout);
+		exit(82);
+	}
 	return a;
 	
 
@@ -485,8 +490,8 @@ Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int usel
 
 	if(!greedy_deadline(g, P, message_size))
 	{
-		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-		exit(47);
+		printf("Error, greedystatdeadline didnt find an order\n");
+		return NULL;
 	}
 	int t = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))

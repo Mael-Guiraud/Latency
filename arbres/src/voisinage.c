@@ -688,7 +688,8 @@ Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size, int tma
 	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-		exit(47);
+		v.route = -1;
+		return v;
 	}
 	
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
@@ -705,6 +706,10 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 	else
 		v=init_voisinage_greedy(v,g,P,message_size,tmax);
 
+	if(v.route == -1)
+	{
+		return NULL;
+	}
 	reinit_delays(g);
 	int ** orders = parcours_voisinage(g,P,message_size,v,INT_MAX);
 	reinit_delays(g);
@@ -919,7 +924,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-		exit(47);
+		return a;
 	}
 
 	a = assignment_with_orders(g,P,message_size,0);
@@ -964,6 +969,8 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		v=reinit_voins(g,v);
 		
 	}
+
+
 	//Fin du parcours, on remet le meilleur ordre dans le graph, on calcul et on renvoie
 	cpy_orders(best_order,g,0);
 	reinit_delays(g);

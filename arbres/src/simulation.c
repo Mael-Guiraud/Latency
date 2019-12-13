@@ -658,8 +658,8 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 6 ;
-	char * noms[] = {"BorneInf","loadedGreedyCollisions","GreedyDeadline","Descente","Taboo","DescenteX"};
+	int nb_algos = 5 ;
+	char * noms[] = {"BorneInf","GreedyDeadline","Descente","Taboo","DescenteX"};
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
@@ -689,6 +689,7 @@ void simuldistrib(int seed)
 	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
+		saut:
 		a = NULL;
 
 		g= init_graph_random_tree(STANDARD_LOAD);
@@ -710,20 +711,17 @@ void simuldistrib(int seed)
 					time[algo] = borneInf( g, P, message_size);	
 				break;
 				case 1:
-					a = loaded_greedy_collisions( g, P, message_size,20);
-				break;
-				case 2:
 					a =  greedy_deadline_assignment( g, P, message_size,0);
 				break;
-				case 3:
+				case 2:
 					a = descente( g, P, message_size,0);
 					nb_pas[0] += a->nb_routes_scheduled;
 				break;
-				case 4:
+				case 3:
 					a = taboo( g, P, message_size,100);
 					nb_pas[1] += a->nb_routes_scheduled;
 				break;
-				case 5:
+				case 4:
 					a = best_of_x( g, P, message_size,10);
 					nb_pas[2] += a->nb_routes_scheduled;
 				break;
@@ -735,15 +733,22 @@ void simuldistrib(int seed)
 
 				#pragma omp critical
 					res[algo][i]=time[algo];
-				if(a)
+
+				if(algo > 0){
+					if(!a)
+					{
+						goto saut;
+					}
 					free_assignment(a);
+				}
+					
 				a=NULL;
 				reset_periods(g,P);
 			
 		}
-		if((time[3] > time[2]) )
+		if((time[2] > time[1]) )
 			printf("La descente est moins bonne que l'algo greedy d'init \n");
-		if((time[4]>time[2]) )
+		if((time[3]>time[1]) )
 			printf("Le taboo est moins bon que l'algo greedy d'init \n");
 
 		for(int k=1;k<nb_algos;k++)
