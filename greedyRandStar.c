@@ -4,10 +4,10 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 100
-#define NB_ROUTES 90
-#define TAILLE_ROUTES 100
-#define NB_SIMUL 10000
+#define PERIODE 20
+#define NB_ROUTES 19
+#define TAILLE_ROUTES 10
+#define NB_SIMUL 1000
 
 #define DEBUG 0
 
@@ -112,6 +112,69 @@ int greedy_random_star(int periode, int nb_routes, int taille_max)
 	return nb_routes_placees;
 }
 
+
+int greedy_star(int periode, int nb_routes, int taille_max){
+	int aller[periode];
+	int retour[periode];
+	memset(aller,0,sizeof(int)*periode);
+	memset(retour,0,sizeof(int)*periode);
+	int * decalages = init_etoile(nb_routes,taille_max);
+
+	int nb_routes_placees = 0;
+	for(int i=0;i<nb_routes;i++)
+	{
+		int j;
+		for( j=0; j<periode && (aller[j] || retour[(j+decalages[i])%periode]); j++){}
+		if(j != periode){
+			aller[j]=1;
+			retour[ (j+decalages[i])%periode] = 1;
+			nb_routes_placees++;	
+		}
+	}
+	return nb_routes_placees;
+}
+
+
+
+int profit(int periode, int *aller, int *retour, int nb_routes,int *decalages, int current_route, int current_pos){
+	int res = 0;
+	for(int i = current_route + 1; i<nb_routes;i++){
+		res +=  retour[(current_pos + decalages[i])%periode] + aller[(current_pos + decalages[current_route] + periode -decalages[i])%periode];
+	}
+	return res;
+}
+
+
+int greedy_profit_star(int periode, int nb_routes, int taille_max){
+	int aller[periode];
+	int retour[periode];
+	memset(aller,0,sizeof(int)*periode);
+	memset(retour,0,sizeof(int)*periode);
+	int * decalages = init_etoile(nb_routes,taille_max);
+
+	int nb_routes_placees = 0;
+	for(int i=0;i<nb_routes;i++)
+	{
+		int max_profit = -1;
+		int max_pos = -1;
+		for(int j=0; j<periode; j++){
+			if(!aller[j] && !retour[(j+decalages[i])%periode]){
+				int temp = profit(periode,aller,retour,nb_routes,decalages,i,j);
+				if(temp > max_profit){
+					max_profit = temp;
+					max_pos = j;
+				}
+			}
+		}
+		if(max_pos != -1){
+			aller[max_pos]=1;
+			retour[ (max_pos+decalages[i])%periode] = 1;
+			nb_routes_placees++;	
+		}
+	}
+	return nb_routes_placees;
+}
+
 double prob_set(int n, int m){
 	double res = 1;
 	for(int i = 0; i < m-n; i++){
@@ -132,19 +195,21 @@ int main()
 {
 	srand(time(NULL));
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
-	int cmpt_sucess = 0;
+	int cmpt1 = 0,cmpt2 = 0, cmpt3 = 0;
 	long long moy_routes = 0;
-	int val;
+	int val1,val2,val3;
 	for(int i=0;i<NB_SIMUL;i++)
 	{
-		val = greedy_random_star(PERIODE,NB_ROUTES,TAILLE_ROUTES);
-		if(val == NB_ROUTES)
-		{
-			cmpt_sucess++;
-		}
-		moy_routes += val;
+		val1 = greedy_random_star(PERIODE,NB_ROUTES,TAILLE_ROUTES);
+		val2 = greedy_star(PERIODE,NB_ROUTES,TAILLE_ROUTES);
+		val3 = greedy_profit_star(PERIODE,NB_ROUTES,TAILLE_ROUTES);
+		cmpt1 += val1 == NB_ROUTES;
+		moy_routes += val1;
+		cmpt2 += val2 == NB_ROUTES;
+		cmpt3 += val3 == NB_ROUTES; 
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMUL);
 	}
-	printf("\nL'algorithme à réussi à placer toutes les routes %d fois sur %d (%lld routes placées en moyenne).\n",cmpt_sucess,NB_SIMUL,moy_routes/NB_SIMUL);
-	printf("Proba d'échec empirique : %f, théorique : %f\n", 1 - (cmpt_sucess/ (double)NB_SIMUL), prob_theo(NB_ROUTES,PERIODE));
+
+	printf("\nL'algorithme aléatoire à réussi à placer toutes les routes %d fois sur %d (%lld routes placées en moyenne).\n",cmpt1,NB_SIMUL,moy_routes/NB_SIMUL);
+	printf("Proba d'échec empirique aléatoire: %f, first fit %f, largest profit %f, théorique : %f\n", 1 - (cmpt1/ (double)NB_SIMUL),1 - (cmpt2/ (double)NB_SIMUL),1 - (cmpt3/ (double)NB_SIMUL), prob_theo(NB_ROUTES,PERIODE));
 }
