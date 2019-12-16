@@ -380,6 +380,11 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 
 
 }
+
+int time_before_next_inter()
+{
+	
+}
 void cpy_per(int * t , int * t2 ,int p)
 {
 	for(int i=0;i<p;i++)

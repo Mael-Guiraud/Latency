@@ -123,7 +123,7 @@ int borneInf(Graph g, int P, int message_size)
 			
 			{
 				free(perms);
-				return -1;
+				continue;
 			}
 			Per[k]=offset;
 			offset+=message_size;

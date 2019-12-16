@@ -95,7 +95,7 @@ debugstar: compil
 	valgrind --leak-check=full -v ./compil star
 
 profile: compil
-	valgrind --tool=callgrind -v ./compil test
+	valgrind --tool=callgrind -v ./compil simulDistrib
 
 cover: dirs  
 	lcov --directory . -c -o rapport.info
