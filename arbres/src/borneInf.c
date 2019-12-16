@@ -4,6 +4,7 @@
 #include "starSPALL.h"
 #include "treatment.h"
 #include "voisinage.h"
+#include "simons.h"
 #include <limits.h>
 /*
 typedef struct 
@@ -59,15 +60,9 @@ int  load_links_CL(Graph g,int CL)
 
 int borneInf(Graph g, int P, int message_size)
 {
+	
 
-	int offset ;
-	int current_route;
-	int dl;
-	int ok; 
-	int buff;
-	int max;
-	int min = INT_MAX;
-	offset = 0;
+
 	// On a l'arc le plus chargé
 	//int arc_id = load_links_CL(g,0);
 	int * t = load_links(g);
@@ -78,69 +73,39 @@ int borneInf(Graph g, int P, int message_size)
 
 	//On init le tableau des permutations
 
-	//On trie le tableau pour etre sur
-	tri_bulles_classique_croissant(g.arc_pool[arc_id].routes_id, taille_tab);
-	element_sjt * perms = init_sjt_tab(g.arc_pool[arc_id].routes_id, taille_tab);
-	long long facto=fact(taille_tab); // nombre de permutations
+	int release[taille_tab];
+	int deadline[taille_tab];
 
 	//Pour tout les ordres de routes :
-	for(int i=0;i<facto;i++)
+	for(int i=0;i<taille_tab;i++)
 	{
-		max =0 ;
-		offset = 0;
-		int Per[taille_tab];
-		for(int k=0;k<taille_tab;k++)
-		{
-			buff = 0;
-			current_route = perms[k].val;
-		
-			dl = route_length_untill_arc(g,current_route,&g.arc_pool[arc_id],FORWARD);
-			
-			if(dl < offset )
-			{
-				buff =  offset - dl;
-			}
-			else
-			{
-				offset = dl;
-			}
-			ok = 0;
-			for(int add =0;add<P;add++)
-			{
-
-				if(cols_check(Per,offset+add,message_size,P,k))
-				{
-					
-					buff += add;
-					offset += add;
-					ok = 1;
-					break;
-				}
-
-			}
-			
-			if(ok == 0)
-			
-			{
-				free(perms);
-				continue;
-			}
-			Per[k]=offset;
-			offset+=message_size;
-			if(route_length(g,current_route)*2 + buff > max)
-				max = route_length(g,current_route)*2 + buff ;
-			
-		}
-		if(max < min)
-			min = max;
-		
-		if(i!=facto-1)
-			algo_sjt(perms,taille_tab);//Nouvelle permutation
-		
+		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
+		//printf("%d \n",release[i]);
+		deadline[i] = 2* route_length(g,g.arc_pool[arc_id].routes_id[i]) - route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
 	}
-    free(perms);
+
+	int *res = FPT_PALL(release,deadline,taille_tab,message_size,P);
+	int max =0;
+	int taille_route;
+	if(res)
+	{	
+
+		for(int i=0;i<taille_tab;i++)
+		{
+			taille_route =  2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			
+			if(taille_route > max)
+				max = taille_route; 
+		}
+	}
+	else
+	{
+		return 0;
+	}
+
+    free(res);
 
     
-	return min;
+	return max;
 
 }

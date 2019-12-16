@@ -670,7 +670,13 @@ int route_length_with_buffers(Graph g,int route)
 	{
 		length += 2*g.routes[route][i]->length;
 		length += g.routes[route][i]->routes_delay_b[route];
+		if(g.routes[route][i]->routes_delay_b[route] < 0 )
+		{
+			exit(33);
+		}
 		length += g.routes[route][i]->routes_delay_f[route];
+		if( g.routes[route][i]->routes_delay_f[route]<0)
+			exit(34);
 	}
 	return length;
 }
@@ -810,10 +816,10 @@ int check_period(Arc * a,int P,int message_size)
 	}
 	if(nb_elems_b != nb_elems_f)
 	{
-
+		printf("retour fail nb elems\n");
 		return nb_elems_b;
 	}
-	//printf("retour nb elems\n");
+	printf("retour nb elems\n");
 	return nb_elems_b;
 
 }
@@ -828,7 +834,7 @@ int verifie_solution(Graph g,int message_size)
 			int val = check_period(&g.arc_pool[i],g.period,message_size);
 			if(val != g.arc_pool[i].nb_routes )
 			{
-				printf("Code de retour = %d\n",val);
+				printf("Code de retour = %d (nb_elems = %d)\n",val, g.arc_pool[i].nb_routes);
 				return 6;
 
 			}

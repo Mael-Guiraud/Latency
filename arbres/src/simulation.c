@@ -149,8 +149,8 @@ void test()
 	affiche_tab(tmp,g.arc_pool_size,f);
 	free(tmp);
 
-	printf("La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
-	fprintf(f,"La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
+//	printf("La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
+	//fprintf(f,"La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
 	printf("------- \n TESTING ALGORITHMS : \n");
 	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
@@ -709,6 +709,7 @@ void simuldistrib(int seed)
 			switch(algo){
 				case 0:
 					time[algo] = borneInf( g, P, message_size);	
+
 				break;
 				case 1:
 					a =  greedy_deadline_assignment( g, P, message_size,0);
@@ -729,6 +730,16 @@ void simuldistrib(int seed)
 				if((algo > 0))
 				{
 					time[algo] = travel_time_max_buffers(g);
+					/*printf("algo %d \n",algo);
+					int lenght=0;
+					for(int j=1;j<g.nb_routes;j++)
+					{
+						lenght = route_length_with_buffers(g,j);
+
+						printf("taille de la route %d = %d , %d\n",j,lenght,2*route_length(g,j));
+						
+						
+					}*/
 				}
 
 				#pragma omp critical
@@ -754,7 +765,11 @@ void simuldistrib(int seed)
 		for(int k=1;k<nb_algos;k++)
 		{
 			if(time[k]<time[0])
+			{
 				printf("On dépasse la borne inf, c'est chelou %d %d %d\n",k,time[k],time[0]);
+				exit(4);
+
+			}
 		}
 		
 		free_graph(g);

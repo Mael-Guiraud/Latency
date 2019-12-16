@@ -33,7 +33,7 @@ int indice_identique(int * t, int taille)
 
 void next(int * tab, int id)
 {
-	if(tab[id] == 2)
+	if(tab[id] == 1)
 	{
 		if(id==0)
 		{
@@ -53,7 +53,7 @@ int fin_vois(int * tab, int size)
 {
 	for(int i=0;i<size;i++)
 	{
-		if(tab[i] != 2)
+		if(tab[i] != 1)
 		{
 		
 			return 0;
@@ -366,25 +366,48 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 	{
 		if( (P[i]+message_size)%per < P[i]%per  ) // le message pi est a cheval sur deux periodes 
 		{
-			if( (offset%per <= (P[i]+message_size)%per)||( (offset+message_size)%per >= P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
-				return 0;
+			//if( (offset%per <= (P[i]+message_size)%per)||( (offset+message_size)%per >= P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
+			if(offset%per <= (P[i]+message_size)%per)
+			{
+				printf("1 %d\n",(P[i]+message_size)%per - offset%per);
+				return (P[i]+message_size)%per - offset%per ;
+			}	
+			if(( (offset+message_size)%per >= P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
+			{
+				printf("2 %d\n",per - (offset)%per + (P[i]+message_size)%per );
+				return per - (offset)%per + (P[i]+message_size)%per ;
+			}	
 		}
 		else
 		{
-			if(((offset%per >= P[i]%per) && ( offset%per <= (P[i]+message_size)%per) ) ||(( (offset+message_size)%per >= P[i]%per) && ( (offset+message_size)%per <= (P[i]+message_size)%per) )  )
-				return 0;
+			if((offset%per >= P[i]%per) && ( offset%per <= (P[i]+message_size)%per)  )
+			{
+				printf("3 %d\n",(P[i]+message_size)%per - offset%per);
+				return (P[i]+message_size)%per - offset%per ;
+			}	
+			if(( (offset+message_size)%per >= P[i]%per) && ( (offset+message_size)%per <= (P[i]+message_size)%per) )
+			{
+				if(offset%per > (P[i]+message_size)%per)
+				{
+					printf("4 %d\n",per - (offset)%per + (P[i]+message_size)%per );
+					return per - (offset)%per + (P[i]+message_size)%per ; 
+				}
+				else
+				{
+					printf("5 %d\n",(P[i]+message_size)%per - offset%per );
+					return (P[i]+message_size)%per - offset%per ;
+				}
+			}
 		}
 	}
-	return 1;
+
+	return 0;
 
 
 
 }
 
-int time_before_next_inter()
-{
-	
-}
+
 void cpy_per(int * t , int * t2 ,int p)
 {
 	for(int i=0;i<p;i++)
@@ -417,7 +440,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
 	int current_route;
 	int dl;
 
-	int ok;
+	//int ok;
 
  	//for each contention  level
  	for(int i=0;i<g.contention_level;i++)
@@ -480,7 +503,8 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  							g.arc_pool[j].routes_delay_b[current_route] =  0;
  						
  					}
- 					ok = 0;
+ 					//ok = 0;
+ 					/*
  					for(int add =0;add<P;add++)
  					{
 
@@ -503,7 +527,25 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  					{
  					
  						return a;
+ 					}*/
+ 					int check_value = 1;
+ 					int total_check = 0;
+ 					while(check_value)
+ 					{
+ 						check_value = cols_check(Per,offset+total_check,message_size,P,k);
+
+ 						total_check += check_value;
+ 						if(total_check >= P)
+ 						{
+ 							return a;
+ 						}
  					}
+ 					offset += total_check;
+ 					if(kind == FORWARD)
+ 						g.arc_pool[j].routes_delay_f[current_route] += total_check;
+ 					else
+ 						g.arc_pool[j].routes_delay_b[current_route] += total_check;
+
  					Per[k]=offset;
  					if(print)
  					{
