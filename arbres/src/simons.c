@@ -1413,8 +1413,8 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 
 
 	}
-	//printf("FPT premier = %d\n",premier);
-	//affichejobs(elems);
+	printf("FPT premier = %d\n",premier);
+	affichejobs(elems);
 	ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
 	if(ens == NULL)
 		{
@@ -1497,7 +1497,7 @@ int* rec_FPT(int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int
 	int *val_D=NULL;
 	if(profondeur == nbr_candidats)
 	{
-		//affiche_tab(subset,nbr_candidats);
+		affiche_tab(subset,nbr_candidats,stdout);
 		int routes[nbr_route];
 		for(int i=0;i<nbr_route;i++)
 			routes[i] = 0;
@@ -1576,13 +1576,13 @@ int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int
 				
 			
 		}
-		//printf("%d Candidats : \n",nbr_candidats);
+		printf("%d Candidats : \n",nbr_candidats);
 		for(int i=0;i<nbr_candidats;i++)
 		{
 			subset[i]=0;
-			//printf("%d -",candidats[i]);
+			printf("%d -",candidats[i]);
 		}
-		//printf("\n");
+		printf("\n");
 		//printf("%d \n",nbr_candidats);
 		/*
 		int subset[nbr_route];

@@ -816,10 +816,10 @@ int check_period(Arc * a,int P,int message_size)
 	}
 	if(nb_elems_b != nb_elems_f)
 	{
-		printf("retour fail nb elems\n");
+		//printf("retour fail nb elems\n");
 		return nb_elems_b;
 	}
-	printf("retour nb elems\n");
+	//printf("retour nb elems\n");
 	return nb_elems_b;
 
 }

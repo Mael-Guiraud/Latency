@@ -5,6 +5,7 @@
 #include "treatment.h"
 #include "greedy_waiting.h"
 #include "multiplexing.h"
+#include "hash.h"
 #include <string.h>
 #include "test.h"
 typedef struct{
@@ -367,34 +368,34 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 		if( (P[i]+message_size)%per < P[i]%per  ) // le message pi est a cheval sur deux periodes 
 		{
 			//if( (offset%per <= (P[i]+message_size)%per)||( (offset+message_size)%per >= P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
-			if(offset%per <= (P[i]+message_size)%per)
+			if(offset%per < (P[i]+message_size)%per)
 			{
-				printf("1 %d\n",(P[i]+message_size)%per - offset%per);
+				//printf("1 %d\n",(P[i]+message_size)%per - offset%per);
 				return (P[i]+message_size)%per - offset%per ;
 			}	
-			if(( (offset+message_size)%per >= P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
+			if(( (offset+message_size)%per > P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
 			{
-				printf("2 %d\n",per - (offset)%per + (P[i]+message_size)%per );
+				//printf("2 %d\n",per - (offset)%per + (P[i]+message_size)%per );
 				return per - (offset)%per + (P[i]+message_size)%per ;
 			}	
 		}
 		else
 		{
-			if((offset%per >= P[i]%per) && ( offset%per <= (P[i]+message_size)%per)  )
+			if((offset%per >= P[i]%per) && ( offset%per < (P[i]+message_size)%per)  )
 			{
-				printf("3 %d\n",(P[i]+message_size)%per - offset%per);
+				//printf("3 %d\n",(P[i]+message_size)%per - offset%per);
 				return (P[i]+message_size)%per - offset%per ;
 			}	
-			if(( (offset+message_size)%per >= P[i]%per) && ( (offset+message_size)%per <= (P[i]+message_size)%per) )
+			if(( (offset+message_size)%per > P[i]%per) && ( (offset+message_size)%per <= (P[i]+message_size)%per) )
 			{
 				if(offset%per > (P[i]+message_size)%per)
 				{
-					printf("4 %d\n",per - (offset)%per + (P[i]+message_size)%per );
+					//printf("4 %d\n",per - (offset)%per + (P[i]+message_size)%per );
 					return per - (offset)%per + (P[i]+message_size)%per ; 
 				}
 				else
 				{
-					printf("5 %d\n",(P[i]+message_size)%per - offset%per );
+					//printf("5 %d\n",(P[i]+message_size)%per - offset%per );
 					return (P[i]+message_size)%per - offset%per ;
 				}
 			}
@@ -870,7 +871,6 @@ int ordersequal(int**  cpy, Graph g)
 
 int jamais_vu(Trace t, Graph g)
 {
-	int cmpt = 0;
 	while(t)
 	{
 		if(ordersequal(t->order,g))
@@ -880,7 +880,7 @@ int jamais_vu(Trace t, Graph g)
 		}
 			
 		t= t->suiv;
-		cmpt ++;
+	
 	}
 	return 1;
 }
@@ -910,23 +910,25 @@ void free_trace(Trace t,int arcpoolsize)
 }
 
 
-Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
+Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace * hash_table,int sizehash)
 {
 
 	Assignment a=NULL;
 	
 	int min = INT_MAX;
-
+	int key;
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
-	for(int i=0;i<g.arc_pool_size*2;i++)
+	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		orders[i] = malloc(sizeof(int)*128);
+		orders[i] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
+		orders[i+g.arc_pool_size] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 	}
 	//printf("Nouveau parcours\n");
 	while(v.route != -1)
 	{
 		//printf("nouveau voisin \n");
-		while(!jamais_vu(t,g))
+		key = hash_graph(g,sizehash);
+		while(!jamais_vu(hash_table[key],g))
 		{
 			//printf("Voisin interdit \n");
 
@@ -935,9 +937,10 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
 			if(v.route == -1)
 			{
 				cpy_orders(orders,g,0);//on remet le graph optimal
-				t = ajouter_orders(t,orders,min);
-				return t;
+				hash_table[key] = ajouter_orders(hash_table[key],orders,min);
+				return hash_table[key];
 			}
+			key = hash_graph(g,sizehash);
 		}
 		a = assignment_with_orders(g,P,message_size,0);
 		if(a->all_routes_scheduled)
@@ -959,14 +962,19 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace t)
 		v= nouveau_voisin(v,g);
 	}
 	cpy_orders(orders,g,0);//on remet le graph optimal
-	t = ajouter_orders(t,orders,min);
-	return t;
+	key = hash_graph(g,sizehash);
+	hash_table[key] = ajouter_orders(hash_table[key],orders,min);
+	return hash_table[key];
 }
 Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 {
 	Voisin v;
 	Assignment a=NULL; 
-	
+	int sizehash = nb_steps*2;
+	Trace hash_table[sizehash];
+	FILE * f = fopen("../data/trace","w");
+	Trace t;
+	for(int i=0;i<nb_steps*2;i++)hash_table[i]=NULL;
 	
 	if(!greedy_deadline(g, P, message_size))
 	{
@@ -980,16 +988,18 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	int min = a->time;
 	reinit_delays(g);
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
-	for(int i=0;i<g.arc_pool_size*2;i++)
+
+	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		orders[i] = malloc(sizeof(int)*128);
+		orders[i] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
+		orders[i+g.arc_pool_size] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 	}
 	//aff_orders(orders,g);
 	cpy_orders(orders,g,1);
 
-	Trace t = NULL;
-	t = ajouter_orders(t,orders,a->time);
-	
+	int key = hash_graph(g,sizehash);
+	hash_table[key] = ajouter_orders(hash_table[key],orders,a->time);
+	fprintf(f,"%d %d \n",0,hash_table[key]->time);
 	free_assignment(a);
 	
 
@@ -1002,10 +1012,12 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	int nb_steps_better=1;
 	int ** best_order = orders;
 	//printf("Taboo \n");
+	
 	while(cmpt < nb_steps)
 	{
 		cmpt ++;
-		t= parcours_voisinage_tabou( g, P,  message_size, v,t);
+		t= parcours_voisinage_tabou( g, P,  message_size, v,hash_table,sizehash);
+		fprintf(f,"%d %d \n",cmpt,t->time);
 		//printf("step :%d best = %d \n",cmpt, t->time);
 		if(t->time<min)
 		{
@@ -1014,8 +1026,11 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 			nb_steps_better = cmpt;
 		}
 		v=reinit_voins(g,v);
+		fprintf(stdout,"\rstep %d/%d",cmpt,nb_steps);
+		fflush(stdout);
 		
 	}
+
 
 
 	//Fin du parcours, on remet le meilleur ordre dans le graph, on calcul et on renvoie
@@ -1031,15 +1046,13 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		exit(83);
 	}
 	//printf("%d nb step \n",nb_steps_better);
-	Trace tmp = t;
-	/*while(t)
+	
+	
+	for(int i=0;i<sizehash;i++)
 	{
-		printf(" Time = %d \n",t->time);
-		aff_orders(t->order,g);
-		t = t->suiv;
-	}*/
-	free_trace(tmp,g.arc_pool_size);
-
+		free_trace(hash_table[i],g.arc_pool_size);
+	}
+	fclose(f);
 	return a;
 
 }

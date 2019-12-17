@@ -149,8 +149,7 @@ void test()
 	affiche_tab(tmp,g.arc_pool_size,f);
 	free(tmp);
 
-//	printf("La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
-	//fprintf(f,"La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
+	printf("La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
 	printf("------- \n TESTING ALGORITHMS : \n");
 	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
@@ -174,7 +173,7 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
-	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,100000,NULL,&taboo,"taboo",f);
 	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
 	
 

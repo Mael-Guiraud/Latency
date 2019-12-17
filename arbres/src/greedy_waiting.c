@@ -309,12 +309,12 @@ Assignment loaded_greedy_collisions(Graph g, int P, int message_size, int tmax)
 
 int oderinarc(int* release, int * budget, int  P , int size,int message_size,int * order, int * delay,int * id,int * period)
 {
-	printf("ARc :");
+	/*printf("ARc :");
 	for(int i=0;i<size;i++)printf(" %d ",id[i]);printf("\n");
 		printf("Release :");
 	for(int i=0;i<size;i++)printf(" %d ",release[i]);printf("\n");
 		printf("Budget :");
-	for(int i=0;i<size;i++)printf(" %d ",budget[i]);printf("\n");
+	for(int i=0;i<size;i++)printf(" %d ",budget[i]);printf("\n");*/
 
 	int offset = 0;
 	//Recherche de la premiere route à arriver.
@@ -412,9 +412,9 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		int total_check = 0;
 		while(check_value)
 		{
-			printf("Check value for route %d offset %d \n",current_route,offset+total_check);
+			//printf("Check value for route %d offset %d \n",current_route,offset+total_check);
 			check_value = cols_check(Per,offset+total_check,message_size,P,i);
-			printf("check = %d \n ",check_value);
+			//printf("check = %d \n ",check_value);
 			total_check += check_value;
 			if(total_check >= P)
 			{

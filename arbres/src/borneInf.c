@@ -80,30 +80,30 @@ int borneInf(Graph g, int P, int message_size)
 	for(int i=0;i<taille_tab;i++)
 	{
 		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-		//printf("%d \n",release[i]);
+		printf("%d \n",release[i]);
 		deadline[i] = 2* route_length(g,g.arc_pool[arc_id].routes_id[i]) - route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
 	}
 
-	int *res = FPT_PALL(release,deadline,taille_tab,message_size,P);
+	//int *res = FPT_PALL(release,deadline,taille_tab,message_size,P);
 	int max =0;
 	int taille_route;
-	if(res)
-	{	
+	//if(res)
+	//{	
 
 		for(int i=0;i<taille_tab;i++)
 		{
-			taille_route =  2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
-			
+			taille_route =   2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],route_length(g,g.arc_pool[arc_id].routes_id[i]),2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
 			if(taille_route > max)
 				max = taille_route; 
 		}
-	}
+/*	}
 	else
 	{
 		return 0;
 	}
 
-    free(res);
+    free(res);*/
 
     
 	return max;
