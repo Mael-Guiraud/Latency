@@ -21,5 +21,7 @@ int hash_graph(Graph g,int size)
 		}
 		
 	}
+	if(key%size < 0)
+		return -(key%size);
 	return key%size; 
 }

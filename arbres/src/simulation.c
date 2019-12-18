@@ -173,7 +173,7 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
-	test_one_algo(g,P,message_size,100000,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,10000,NULL,&taboo,"taboo",f);
 	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
 	
 
@@ -718,7 +718,7 @@ void simuldistrib(int seed)
 					nb_pas[0] += a->nb_routes_scheduled;
 				break;
 				case 3:
-					a = taboo( g, P, message_size,100);
+					a = taboo( g, P, message_size,10000);
 					nb_pas[1] += a->nb_routes_scheduled;
 				break;
 				case 4:

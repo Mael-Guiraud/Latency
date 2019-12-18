@@ -80,7 +80,7 @@ int borneInf(Graph g, int P, int message_size)
 	for(int i=0;i<taille_tab;i++)
 	{
 		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-		printf("%d \n",release[i]);
+		//printf("%d \n",release[i]);
 		deadline[i] = 2* route_length(g,g.arc_pool[arc_id].routes_id[i]) - route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
 	}
 
