@@ -1413,8 +1413,8 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 
 
 	}
-	printf("FPT premier = %d\n",premier);
-	affichejobs(elems);
+	//printf("FPT premier = %d\n",premier);
+	//affichejobs(elems);
 	ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
 	if(ens == NULL)
 		{
@@ -1489,7 +1489,7 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 }
 
 //Fait l'arbre recursif avec tous les sous ensemble de routes et appel sur MLS avec la premiere route fixée
-int* rec_FPT(int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int periode, int premier, int* subset,int * candidats, int profondeur, int nbr_candidats)
+int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int periode, int premier, int* subset,int * candidats, int profondeur, int nbr_candidats)
 {
 	
 	
@@ -1497,7 +1497,7 @@ int* rec_FPT(int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int
 	int *val_D=NULL;
 	if(profondeur == nbr_candidats)
 	{
-		affiche_tab(subset,nbr_candidats,stdout);
+		//affiche_tab(subset,nbr_candidats,stdout);
 		int routes[nbr_route];
 		for(int i=0;i<nbr_route;i++)
 			routes[i] = 0;
@@ -1512,33 +1512,69 @@ int* rec_FPT(int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int
 		//printf("PArcours a droite, %d\n",profondeur);
 		subset[profondeur] = 0;
 		//affiche_tab(subset,nbr_candidats);
-		val_D =  rec_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats);
+		val_D =  rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats);
 		
-		if(val_D)// SI on ne trouve pas on essaye la branche soeur
-			return val_D;
+		//if(val_D)// SI on ne trouve pas on essaye la branche soeur
+		//	return val_D;
 		//printf("PArcours a gauche %d\n",profondeur);
 		subset[profondeur]= 1;
 		//affiche_tab(subset,nbr_candidats);
-		val_G =  rec_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats); 
-		return val_G;
+		val_G =  rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats); 
+		
+		int ming = INT_MAX;
+		int mind = INT_MAX;
+		int tmp;
+		if(!val_D)
+		{
+			return val_G;
+		}
+		if(!val_G)
+		{
+			return val_D;
+		}
+		for(int i=0;i<nbr_route;i++)
+		{
+			tmp = 2* route_length(g,ids[i]);
+			if( (tmp + val_D[i]) < mind)
+			{
+				ming = tmp + val_D[i];
+			}
+			if( (tmp + val_G[i]) < ming ) 
+			{
+				ming = tmp + val_G[i];
+			}
+		}
+		if(ming < mind)
+		{
+			free(val_D);
+			return val_G;	
+		}
+		else
+		{
+			free(val_G);
+			return val_D;	
+		}
 
 	}
 }
 
 
 //Les dates release, deadline et m_i sont calculées dans le graph de base, l'algo se charge de les normaliser
-int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode)
+int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode)
 {	
 
 	int *res=NULL;
+	int * returnvalue = NULL;
 
 	int arrivee[nbr_route];
 	int deadline[nbr_route];
 
 	// On cherche le nombre de routes avec la deadline qui sort de p
 	
-
+	int min = INT_MAX;
+	int best = INT_MAX;
 	int j = 0;
+			int tmp;
 	int nbr_candidats;
 	for(int premier=0;premier<nbr_route;premier++)
 	{
@@ -1576,13 +1612,13 @@ int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int
 				
 			
 		}
-		printf("%d Candidats : \n",nbr_candidats);
+		//printf("%d Candidats : \n",nbr_candidats);
 		for(int i=0;i<nbr_candidats;i++)
 		{
 			subset[i]=0;
-			printf("%d -",candidats[i]);
+		//	printf("%d -",candidats[i]);
 		}
-		printf("\n");
+		//printf("\n");
 		//printf("%d \n",nbr_candidats);
 		/*
 		int subset[nbr_route];
@@ -1596,18 +1632,37 @@ int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int
 			
 		}*/
 
-		res = rec_FPT(RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
+		res = rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
 		
-		
-
 		if(res)
 		{
-			return res;
+			min = INT_MAX;
+			for(int i=0;i<nbr_route;i++)
+			{
+				tmp = 2* route_length(g,ids[i]);
+				if( (tmp + res[i]) < min)
+				{
+					min = tmp + res[i];
+				}
+			
+			}
+
+			if(min < best)
+			{
+				if(returnvalue)
+					free(returnvalue);
+				returnvalue = res;	
+			}
+			else
+			{
+				free(res);
+			}
 		}
+		
 		
 				
 	}
 
 
-	return NULL;
+	return returnvalue;
 }

@@ -75,37 +75,65 @@ int borneInf(Graph g, int P, int message_size)
 
 	int release[taille_tab];
 	int deadline[taille_tab];
+	int ids[taille_tab];
 
+	int continuer = 1;
 	//Pour tout les ordres de routes :
 	for(int i=0;i<taille_tab;i++)
 	{
 		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
 		//printf("%d \n",release[i]);
-		deadline[i] = 2* route_length(g,g.arc_pool[arc_id].routes_id[i]) - route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
+		deadline[i] = 5*P;
+		ids[i]=g.arc_pool[arc_id].routes_id[i];
 	}
 
-	//int *res = FPT_PALL(release,deadline,taille_tab,message_size,P);
-	int max =0;
+	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
+	int min =INT_MAX;
 	int taille_route;
-	//if(res)
-	//{	
+	if(res)
+	{	
 
 		for(int i=0;i<taille_tab;i++)
 		{
-			taille_route =   2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
-			//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],route_length(g,g.arc_pool[arc_id].routes_id[i]),2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
-			if(taille_route > max)
-				max = taille_route; 
+			taille_route =  res[i]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
+			if(taille_route < min)
+				min = taille_route; 
 		}
-/*	}
+	}
 	else
 	{
 		return 0;
 	}
 
-    free(res);*/
+    free(res);
 
     
-	return max;
+	return min;
 
+}
+int borneInf2(Graph g, int P, int message_size)
+{
+	int * t = load_links(g);
+	int arc_id = t[0];
+	free (t);
+	
+	int taille_tab=g.arc_pool[arc_id].nb_routes;
+	int taille_route[taille_tab];
+	for(int i=0;i<taille_tab;i++)
+	{
+		taille_route[i] =  2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+	}
+	tri_bulles_classique_decroissant(taille_route,taille_tab);
+	int max = 0;
+	for(int i=0;i<taille_tab;i++)
+	{
+		//printf("%d \n",taille_route[i]);
+		if(max < taille_route[i]+i*message_size)
+		{
+			max = taille_route[i]+i*message_size;
+		}
+	}
+	//printf("\n");
+	return max;
 }

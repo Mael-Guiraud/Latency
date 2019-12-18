@@ -535,8 +535,6 @@ void tri_bulles_classique_croissant(int* tab,int taille)
 	int tmp;
 
 
-	int tabcpy[taille];
-	for(int i=0;i<taille;i++)tabcpy[i]=tab[i];
 
 	for(int i=taille-1;i>=1;i--)
 	{
@@ -544,7 +542,35 @@ void tri_bulles_classique_croissant(int* tab,int taille)
 		for(int j = 0;j<=i-1;j++)
 		{
 
-			if(tabcpy[j+1]<tabcpy[j])
+			if(tab[j+1]<tab[j])
+			{
+				tmp = tab[j+1];
+				tab[j+1]=tab[j];
+				tab[j]=tmp;
+				sorted = 0;
+			}
+		}
+		if(sorted){return;}
+	}
+
+}
+
+
+
+void tri_bulles_classique_decroissant(int* tab,int taille)
+{
+	int sorted;
+	int tmp;
+
+
+
+	for(int i=taille-1;i>=1;i--)
+	{
+		sorted = 1;
+		for(int j = 0;j<=i-1;j++)
+		{
+
+			if(tab[j+1]>tab[j])
 			{
 				tmp = tab[j+1];
 				tab[j+1]=tab[j];

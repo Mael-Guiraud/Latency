@@ -1,1 +1,1 @@
-int* FPT_PALL(int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode);
+int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode);

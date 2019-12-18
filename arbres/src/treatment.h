@@ -28,3 +28,4 @@ int route_length_with_buffers_forward(Graph g,int route);
 void tri_bulles_classique_croissant(int* tab,int taille);
 int verifie_solution(Graph g,int message_size);
 int route_length_untill_arc_without_delay(Graph g,int route, Arc * a,Period_kind kind);
+void tri_bulles_classique_decroissant(int* tab,int taille);

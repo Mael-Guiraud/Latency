@@ -170,7 +170,10 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 	{
 		compute_tabs(tab,m_i,release,deadline,g,P,message_size,tmax);
 		
-		res = FPT_PALL(release,deadline,g.nb_routes,message_size,P);
+
+		//DEUX PREMIERS PARAMETRES RAJOUTES , CODE A REFAIRE. CE SIMONS LA CHERCHE LE MEILLEUR DE TT LES RESULTATS
+		//ET NON JUSTE LE PREMIR RESULTAT OK
+		res = FPT_PALL(g,NULL,release,deadline,g.nb_routes,message_size,P);
 		if(res)
 		{	
 		

@@ -8,6 +8,7 @@
 #include "hash.h"
 #include <string.h>
 #include "test.h"
+#include <math.h>
 typedef struct{
 	int route;
 	int* pos;
@@ -1066,6 +1067,263 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	free(hash_table);
 	//printf("\n");
 	fclose(f);
+	return a;
+
+}
+//-----------------------------------------------
+
+
+Voisin Voisin_alea(Graph g)
+{
+	Voisin v;
+	int idtmp;
+	Period_kind kind;
+	int x;
+
+	//Generation du voisin aleatoire
+	v.route = rand()%g.nb_routes;
+	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+	for(int i=0;i<g.nb_levels[v.route];i++)
+	{
+		v.pos[i]=rand()%2;
+	}
+
+	//On echange dans la periode
+	for(int level=0;level<g.nb_levels[v.route];level++)
+	{
+		x=level;
+		kind = FORWARD;
+		if(level >= g.nb_levels[v.route]/2)
+		{
+			x=g.nb_levels[v.route]-level-1;
+			kind = BACKWARD;
+		}
+		//x contient le level de contention de l'arc, et kind le sens
+
+
+		//On cherche l'indice de au quel v.route est placée dans l'arc
+		idtmp = -1;
+		
+		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		{
+			if(kind == FORWARD)
+			{
+				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+			else
+			{
+				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+
+		}
+		if(idtmp ==-1)
+		{
+			printf("Error, indice not found (recuit, voisin alea).\n");exit(35);
+		}
+
+
+		if(v.pos[level] == 1)//permutation a gauche
+		{
+			if(kind == FORWARD)
+			{
+				echanger_gauche(g.contention[v.route][x]->routes_order_f,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+			else
+			{
+				echanger_gauche(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+		}
+		
+	}
+	
+	return v;
+}
+
+
+void remet_voisin(Graph g,Voisin v)
+{
+	
+	int idtmp;
+	Period_kind kind;
+	int x;
+
+	//On echange dans la periode
+	for(int level=0;level<g.nb_levels[v.route];level++)
+	{
+		x=level;
+		kind = FORWARD;
+		if(level >= g.nb_levels[v.route]/2)
+		{
+			x=g.nb_levels[v.route]-level-1;
+			kind = BACKWARD;
+		}
+		//x contient le level de contention de l'arc, et kind le sens
+
+
+		//On cherche l'indice de au quel v.route est placée dans l'arc
+		idtmp = -1;
+		
+		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		{
+			if(kind == FORWARD)
+			{
+				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+			else
+			{
+				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				{
+					idtmp = i;
+					break;
+				}
+			}
+
+		}
+		if(idtmp ==-1)
+		{
+			printf("Error, indice not found (recuit, reinit voisin ).\n");exit(35);
+		}
+
+
+		if(v.pos[level] == 1)//permutation a gauche
+		{
+			if(kind == FORWARD)
+			{
+				echanger_droite(g.contention[v.route][x]->routes_order_f,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+			else
+			{
+				echanger_droite(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
+			}
+		}
+		
+	}
+	free(v.pos);
+}
+int CritMetropolis(int delta, int t)
+{
+	if(t<=0)
+	{
+		return 0;
+	}
+	if(delta >= 0)
+	{
+		return 1;
+	}
+	else
+	{
+		float proba = (float)delta/(float)t;
+		float random = (float)rand() / (float)RAND_MAX;
+		if(random < expf(-proba))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+Assignment recuit(Graph g, int P, int message_size, int param)
+{
+	//Parametres du recuit
+	int nb_paliers = param;
+	int temperature = 5000;
+	float coeff= 0.95;
+	int seuil_arret = 1000;
+	float seuil_incr_cmpt = 0.10;
+
+	Assignment a=NULL;
+	if(!greedy_deadline(g, P, message_size))
+	{
+		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
+		return a;
+	}
+	
+	a = assignment_with_orders(g,P,message_size,0);
+	a->time = travel_time_max_buffers(g);
+	reinit_delays(g);
+	free_assignment(a);
+	int min = a->time;
+	int time_actuel = min;
+	int nb_moves;
+	float acceptance_rate;
+	Voisin v;
+	
+	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
+
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		orders[i] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
+		orders[i+g.arc_pool_size] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
+	}
+	int cmpt = 0;
+	while(cmpt < seuil_arret) //Condition d'arret à définir
+	{
+		nb_moves = 0;
+		for(int i=0;i<nb_paliers;i++)
+		{
+			v = Voisin_alea(g);
+			a = assignment_with_orders(g,P,message_size,0);
+			if(a->all_routes_scheduled)
+			{
+				a->time = travel_time_max_buffers(g);
+				if(CritMetropolis(a->time - time_actuel,temperature))//On swap sur le nouveau voisin.
+				{
+					time_actuel = a->time;
+					//Le graph a ete changé dans voisin alea, on a donc rien a faire
+
+					//Sauvegarde du mec le plus opti
+					if(a->time < min)
+					{
+						cpy_orders(orders,g,1);// de g vers orders
+						min = a->time;
+						cmpt = 0;
+					}
+					nb_moves++;
+					
+				}
+				else //Echec, on ne prend pas ce voisin, on remet le graph d'avant avant de tirer un nouveau voisin aleatoire
+				{
+					remet_voisin(g,v);
+				}
+			}//On a pas reussi a construire une solution, on remet le voisin d'avant
+			else
+			{
+				remet_voisin(g,v);
+			}
+			reinit_delays(g);
+			free_assignment(a);
+		}
+		acceptance_rate = (float)nb_moves/nb_paliers;
+		if(acceptance_rate < seuil_incr_cmpt)
+			cmpt++;
+		temperature = temperature * coeff;
+	}
+
+
+
+	//On prend la meilleure solution vue, et bye
+	cpy_orders(orders,g,0);
+	reinit_delays(g);
+	reset_periods(g,P);
+	a = assignment_with_orders(g,P,message_size,1);
+
+	a->time = travel_time_max_buffers(g);
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution n'est pas correcte recuit (error %d) ",verifie_solution( g,message_size));
+		exit(83);
+	}
 	return a;
 
 }
