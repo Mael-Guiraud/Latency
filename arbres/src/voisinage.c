@@ -1251,10 +1251,11 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 	
 	a = assignment_with_orders(g,P,message_size,0);
 	a->time = travel_time_max_buffers(g);
-	reinit_delays(g);
-	free_assignment(a);
+	
 	int min = a->time;
 	int time_actuel = min;
+	reinit_delays(g);
+	free_assignment(a);
 	int nb_moves;
 	float acceptance_rate;
 	Voisin v;
