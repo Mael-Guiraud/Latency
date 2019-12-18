@@ -4,8 +4,8 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 10
-#define NB_ROUTES 6
+#define PERIODE 20
+#define NB_ROUTES 17
 #define TAILLE_ROUTES 20
 #define NB_SIMUL 10000
 
@@ -118,12 +118,13 @@ double prob_set(int n, int m){
 	for(int i = 0; i < m-n; i++){
 		res*= ((double)(i + 2*n - m + 1 ))/((double)(n + i + 1));
 	}
+	printf("%f ",res);
 	return res;
 }
 
 double prob_theo(int n, int m){ //question, est-ce que faire le produit simplifie les termes ?
 	double res = 1;  
-	for(int i = m/2+1; i < n; i++){
+	for(int i = m/2; i < n; i++){
 		res *= (1-prob_set(i,m));
 	}
 	return res;
@@ -154,8 +155,8 @@ int main()
 {
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
-	statistique(PERIODE,NB_ROUTES, TAILLE_ROUTES,NB_SIMUL,seed,greedy_uniform,"greedy_uniform");
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_uniform,"greedy_uniform");
 	printf("Proba de réussite théorique de l'algo uniforme: %f \n",prob_theo(NB_ROUTES,PERIODE));
-	statistique(PERIODE,NB_ROUTES, TAILLE_ROUTES,NB_SIMUL,seed,greedy_first_fit,"first_fit");//ça n'est pas sur les memes entrees a cause du rand
-	statistique(PERIODE,NB_ROUTES, TAILLE_ROUTES,NB_SIMUL,seed,greedy_profit,"profit");//ça n'est pas sur les memes entrees a cause du rand
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_first_fit,"first_fit");//ça n'est pas sur les memes entrees a cause du rand
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_profit,"profit");//ça n'est pas sur les memes entrees a cause du rand
 }
