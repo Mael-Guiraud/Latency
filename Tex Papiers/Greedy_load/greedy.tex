@@ -132,35 +132,39 @@ A bit mor complex on the general graphs, proofs on the depth of the graph.
 Should take into account the length of the graph.
 
 
-\section{Above $1/2$}
-We show that we can go above $1/2$ of load using a two passes greedy algorithm.
-We use a two pass algorithm because it gives a better bound than a similar one pass
-greedy algorithm but mainly because it drastically simplifies the proof.
-We use the notion of potential of a route in a partial solution and we will show how
-to produce partial solutions with good potential, which can then be extended into a complete solution.
+\section{Above 1/2}
+
+
+There are easier cases, all routes are distinct or all routes are the same. There is a solution for load $1$ in these two cases. 
+With two distinct values, solution for load almost one. Insert a figur here.
+We  give a method which always finds a solution for load $1/2 + \epsilon$ as soon as a constant fraction of the routes are distinct. 
+
+First, if there are $2\epsilon P$ routes with the same shift,
+then load can $1/2 + \epsilon$ be easily attained. Sould be possible
+for $\epsilon P$ routes with the same value.
+
+
+To go above $1/2$ of load, we use a two pass greedy algorithm. It gives a better bound than a similar one pass greedy algorithm but it also drastically simplifies the proof.
+We use the notion of potential of a route in a partial solution and we show how to produce partial solutions with good potential, which can then be extended into a complete solution.
 
 \begin{definition}
 The potential of a route of shift $s$ in a partial solution (whether fixed or not in the partial solution),
 is the number of integers $i \in [P]$ such that $i$ is used in the forward window and $i+s \mod P$ is used in the backward window. We denote by Pot(S) the sum of potentials of the routes in the partial solution S.
 \end{definition} 
 
-Mettre un petit lemme qui dit qu'on peut toujours placer une route qui a un certain
-potentiel et expliquer que c'est ça qu'on veut utiliser.
-
 
 \begin{definition}
 The potential of a position $i$ in a partial solution is the number of routes of shift $s$ such that $i+s$ is used in the partial solution. 
 \end{definition}
 
-The potentials of the positions satisfy a simple invariant.
+The potentials of the positions satisfy the following simple invariant.
 \begin{lemma}\label{lemma:inv}
-The sum of potentials of all positions in a partial solution of size $k$ is $nk$.  
+The sum of potentials of all positions of the forward window in a partial solution of size $k$ is $nk$.  
 \end{lemma}
 
 We then link Pot(S) to the potential of the positions in the forward window.
 \begin{lemma}\label{lemma:pot_pos}
-The sum of potentials of all used positions in the forward window in a partial solution S is equal 
-to Pot(S).  
+The sum of potentials of all used positions in the forward window in a partial solution S is equal to Pot(S).  
 \end{lemma}
  
 
@@ -169,114 +173,73 @@ We partition the routes in three sets: $R_1$ the $\epsilon P$ routes of largest 
 routes placed in $S$ and not in $S_1$ and $R_3$ the free routes not in $R_1$. 
 
 We consider the partial solution $S'$ obtained by freeing the routes of $R_1$ in $S$.
-Then, $S'$ is extended into a complete solution by using any greedy algorithm, such as first fit, 
-using first the solutions of $R_3$ and finally $R_1$.
+Then, $S'$ is extended into a complete solution by using any greedy algorithm, such as first fit, using first the solutions of $R_3$ and finally $R_1$.
 
-\begin{lemma}\label{lemma:comb}
-Let $G$ be a weigthed bipartite graph $G$, with bipartition $(A,B)$. 
-If all vertices are of degree at least one then there is an edge of weigth
-at least the average of the weigths $A$ plus the average of the weigths of $B$.
+\begin{lemma}\label{lemma:improvement}
+We assume that there are at least $P/2$ distinct routes.
+Given a partial solution $S$ of size $k\leq P/4$, such that 
+$Pot(S) = \frac{k^2n}{2P}$, there is a free route which can be placed at some position, adding $kn/P+1$ of value.
 \end{lemma}
-Lemme faux, à mieux adapter au cas de la preuve. Plutot écrire un lemme qui dit 
-qu'on augmente le potentiel d'au moins blah !
+\begin{proof}
+
+By Lemma~\ref{lemma:pot_pos}, the sum of the potential of the used positions in $S_{k}$ is $Pot(S) = k^2n/2P$. Since there are $k$ used positions, their average value is $kn/2P$.
+By Lemma~\ref{lemma:inv}, the sum of potentials is $kn$, hence 
+the average value of a position is $kn/P$. As a consequence of these two facts, there is a free position of value more than the average $kn/P$.
+
+Since there are at least $P/2$ disctinct routes, and $k$ are used,
+there are at least $P/2 -k$ free distinct routes. Since $k \leq P/4$,
+there are more distinct routes avalaible than fixed route, hence any free position can be occupied by at least one free route.
+ 
+Hence we can always put a route on the free position of potential $\frac{kn}{P}$. Moreover, fixing a route add one to its own potential, which increases the potential of the partial solution by $kn/P+1$.
+\end{proof}
+
+Encore pas bon, on doit s'arrêter à $P/4$ et pas $P/2$
+pour garantir de toujours trouver une route qui couvre, 
+ce qui donne un gain de seulement $1/64$.
 
 \begin{theorem}
-The two-pass algorithm always solves positively our problem with load $1/2 + 1/18$, when all routes have a distinct shift.
+The two-pass algorithm always solves positively our problem with load $1/2 + 1/32$, when all routes have a distinct shift.
 \end{theorem}
 
-On peut etre plus clean en choisissant $k^2n/P$ mais le calcul est plus compliqué je crois.
 
 \begin{proof}
-We prove by induction on the size $k$ of the partial solution $S_k$ in the the first pass that 
-$Pot(S_k) \geq (k-1)^2n/P$. 
-The property is true for $k=1$. Assume now it is true for $k$ and we prove it for $k+1$.
-First, remark that extending $S_k$ into $S_{k+1}$ add to $Pot(S_k)$ the potential of the position in the forward and backward windows used by the new route plus one.
+Using Lemma~\ref{lemma:improvement} we can prove by induction on $k$ that for the partial solution $S_k$ with $k$ routes produced in the first pass of the algorithm, $Pot(S_k) \geq \frac{k^2n}{2P}$.  The property for $k=1$ is cleraly true. 
 
-First, we can assume that $Pot(S_k) < k^2n/P$, otherwise the property is proved since Pot is increasing
-with $k$. Hence by Lemma~\ref{lemma:pot_pos}, the sum of the potential of the used positions in $S_{k}$ 
-is less than $k^2n/P$. By Lemma~\ref{lemma:inv}, the sum of potentials of the free positions in the 
-forward window is at least $kn - k^2n/P = kn(1 - k/P)$. The average of potentials of the free forward positions is thus at least $kn/P$. The same argument can be made for free position of the backward window. 
+We now assume the property true for $S_k$. 
+We can always assume that $Pot(S) = \frac{k^2n}{2P}$, otherwise we put the additional value on some aribtrary free position and
+solve this modified instance (améliorer l'explication).
 
-Because all routes have distinct shifts there is a least one route which can be placed in any position
-of the forward and backward position. Hence, there is a route which adds to the potential at least
-$2kn/P$ by Lemma~\ref{lemma:comb} plus one because of itself. The algorithm selects the route which increases the potential the most, then $Pot(S_{k+1}) \geq 2k+1 + Pot(S_k) \geq k^2n$, which proves the induction.
+The algorithm selects the route which increases the potential the most. By Lemma~\ref{lemma:improvement}, we can improve the potential by $kn/P + 1$. Hence $Pot(S_{k+1}) \geq kn/P + 1 + Pot(S_k)$. $Pot(S_{k+1}) \geq kn/P + 1 + k^2n/2P \geq (k+1)^2n/2P$, which proves the induction.
 
-At the end of the first pass, we have a potential of $(P/2-1)^2n/P$, since $k=P/2$.
-The potential of a single route is bounded by $P/2$ since each placed route contribute at most one to its potential. We want to compute the minimum value $m$ of the $\epsilon P$ largest potentials. The case of minimum
-less than $m$ but maximal potential corresponds to $\epsilon P -1$ routes of potential $P/2$ and all other routes of potential $m-1$. Hence, $$(P/2-1)^2n/P \geq  (\epsilon P -1)P/2 + m(n-\epsilon P + 1)$$.
-
-We want $m$ to be $4\epsilon P$, hence we must satisfy the following equation:
-(je vire un 1 qui est pénible et qui peut être optimisé avant).
-$$ nP^2/4\geq 5/2 \epsilon P^2$$
-$$ 1/2 + \epsilon \geq 10\epsilon$$
-$$ \epsilon \leq 1/18$$
+At the end of the first pass, we have a potential of $(P/2)^2n/2P$, since $k=P/2$. We want that the best $\epsilon P$ routes to be of potential $2\epsilon P, 2\epsilon P +2,\dots ,4\epsilon P$.
+Sort all routes by decreasing potential and assume that the previous condition is not met, that is the $i$ routes in order
+of potential is of potential less than $4\epsilon P - 2i$. The potential of a single route is bounded by $P/2$ since each placed route contribute at most one to its potential. Therefore, the first
+$i$ routes are of potential at most $P/2$ and the following ones
+of potential at most $4\epsilon P - 2i$. Therefore the potential
+is less than $iP/2 + (4\epsilon P - 2i) (n -i)$. This function is decreasing for $i \leq \epsilon P$, hence the potential should be 
+less than $4\epsilon n$.
+ 
+ We know that the potential is at least $(P/2)^2n/2P$ and we want it to be larger than $4\epsilon P n$ so that the condition on the routes of largest potential is met.
+Hence we must satisfy the following equation:
+$$(P/2)^2n/2P \geq 4\epsilon P n$$
+$$ \epsilon \leq 1/32$$
 
 With this choice of $\epsilon$, all routes in $R_1$
-have potential at least $2\epsilon$ in $S'$. Hence when they are considered in the 
-second pass, they always can be placed.
-
+have potential at least $2\epsilon$ in $S'$. Hence when they are considered in the second pass, they always can be placed, which proves that the algorithm works.
 \end{proof}
 TODO: que peut-on dire quand il n'y a pas que des shifts distincts.
 Si on réapplique plusieurs fois la méthode, on obtient mieux, peut-être compliqué à calculer.
-On a pas besoin que tous les gars choisit soient à $2\epsilon$, seulement qu'ils soient à 
-$2,\dots,2\epsilon$. Est-ce que ça aide ? Je pense que oui et qu'on peut montrer qu'on a besoin
-que de la moitié du potentiel, petit lemme combinatoire supplémentaire qui donnerait $\epsilon = 1/10$. 
-% The potential of a position in the forward window is the number of 
-% routes which cannot be placed at this position. The definition is the same for the backward window.
-% The potential of a route is the number of position which are not usable because of both the forward and the backward window.
-% 
-% 
-% TODO: properly define the potential of a position, of a route. Relates both through a lemma 
-% showing that the sum of both is equal. 
-% Also a lemma which relates potential to the number of conflicts. 
-% 
-% We assume that all distances are different (if at least a constant fraction are, it is ok).
-% The greedy algorithm is as follows, for $n = (1/2 + \epsilon)P$ routes:
-% 
-% Let $S$ be the set of routes of potential $2\epsilon P$, intialized to $\emptyset$.
-% When a route is added to $S$, it is removed from the routes used to compute the potential of positions. 
-% If $|S| \geq \epsilon P$, the algorithm stops and succeeds. Indeed, it is enough to place the route 
-% out of $S$, which is always possible by any algorithm since there are less than $P/2$ of them.
-% Then the routes in  $S$ are of potential $2\epsilon P$, it means they have $2\epsilon P$ additional positions at which they can be placed. Hence, those routes can always be placed by any greedy algorithm. 
-% 
-% 
-% For $k < P/4$ routes already placed, the potential of a position $i$ on the backward windows 
-% is the number of yet unused routes of delay $d$ such that $i-d \mod P$ is used.
-% This potential corresponds to the number of routes for which placing a route at this position
-% remove only one possible offset instead of two.
-% On the backward windows select the unused position of largest potential and find a route which can be 
-% placed at this position, not in the best $\epsilon P - |S|$ routes. (ne pas faire de dufférence et prendre en dehors des $\epsilon P$ meilleurs, ne même pas s'occuper de ça ?)  
-% 
-% Proof it works: 
-% 
-% Since all distances are differents, when $k$ routes have been fixed, there are at least $n -k -k$ routes which can be placed at any position in the backward window. Since $\epsilon P$ free routes cannot be used because
-% the are of largest potential, we have $(1/2 + \epsilon)P - 2k - \epsilon P$ possible routes for a given position. This number is larger than $O$ as long as $k < P/4$, which means that the algorithm can work as described.
-% 
-% 
-% The two following lemmas are straigthforwards from the definition of potential.
-% \begin{lemma}
-% Given a partial solution, the sum of potential of used positions on the forward windows is equal to the 
-% sum of potential of the unused routes.  
-% \end{lemma}
-% \begin{lemma}
-% The sum of potential of all positions of the forward window for a partial solution of size $k$
-% is $k(n-k)$.
-% \end{lemma}
-% 
-% 
-% Assume that there is a free position, wich increases the global potential by at least $2/3$
-% of the average which is $k(1/2 - k)/n$. Then the global potential is a least $(2/3)\sum_{i=1}^{k}i(1/2 - i)/n$. On the other hand, if no position of at least $2/3$ the average is avalaible, then the global
-% potential is at least $1/3 k(1/2 - k)$. (to clean that, prove by induction that the potential is always larger than some value at step $k$).
-% If we can prove that when $k = P/4$, the potential is at least $2\epsilon n (1/2 + \epsilon)n$, then 
-% it implies that the algorithm has stopped before that point and it implies there is a solution.
-% We solve the equation lower bound on the potential larger than $2\epsilon n (1/2 + \epsilon)n$
-% to obtain a correct value on $\epsilon$.
-% 
-% 
-% 
-% The computation is not optimised at all. We win only on the backward windows but 
-% we should win as much on the forward windows. Several simplification in the bound (but of little impact).
-% Lose too much when dealing with only positions of potential lower than the average (can do better than $1/3 $ vs $2/3$).
+
+We can add the fact that all free routes should be of potential less than $2\epsilon$. Either they are in the group of largest poential, 
+and it decreases the necessary potential of the other ones by $P/2$
+each. Or they are not but if they are of potential $2\epsilon$,
+we can use them in the solution and again decrease the potential.
+The equation we get is thus $Pot(S) \geq 4\epsilon P^2/2 +2\epsilon^2 P$ and solving it gives a slightly better bound.
+
+With an algorithm up to $k=P/4$, we have $3/2 \epsilon P^2 + \epsilon^2 P^2$. Environ $1/100$...
+
+Travailler sur le potentiel global des routes est sans doute plus simple et efficace: on enlève à chaque placement de route un peu de potentiel et il faut garantir qu'on a assez pour terminer.
+
 
 \section{Algorithms for random instances}
 
@@ -286,8 +249,7 @@ We analyze the following process, called \textbf{Uniform Greedy} or UG.
 For each element in order, chose one admissible position
 uniformly at random. We analyze the probability that Uniform Greedy
 solve the problem, averaged over all possible instances. 
-It turns out that this probability, for a fixed load strictly less than
-one goes to zero when $m$ grows. 
+It turns out that this probability, for a fixed load strictly less than one goes to zero when $m$ grows. 
 
 Définir l'ensemble des solutions de taille $n$ parmi $m$.
 \begin{theorem}
@@ -322,7 +284,11 @@ Tradeoff between waiting time and load. Can we prove $0.5 + \epsilon$ load for $
 
 \section{Non greedy algorithm}
 
-Greedy + swap one element if necessary. 
+Greedy + swap one element if necessary. It can be used as the second step of the algorithm using potential. One can show that we use only the free routes and we swap if necessary. We show that, if the potential is at least $2\epsilon P n$, then at least one of any 
+$P-n$ elements has positive potential and can be moved. Such an operation lose at most $2n$ of potential. As a consequence, placing the last elements lose $2n\epsilon P$ in potential. Hence if the potential is more than $4\epsilon P n$, the lagorithms terminates.
+
+
+
 Can we guarantee a solution for a larger load ? Conjecture, yes for $\lambda = 2/3$. 
 Seems hard for group theoritic reason (how to avoid subgroups of Z/pZ which are a problem)
 

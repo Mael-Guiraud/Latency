@@ -109,6 +109,65 @@ int greedy_profit(entree e){
 	return greedy(e,profit);
 }
 
+
+
+int greedy_advanced(entree e)
+{
+	int *profit_route = calloc(e.nb_routes,sizeof(int));
+	int *profit_aller = calloc(e.periode,sizeof(int));
+	int *profit_retour = calloc(e.periode,sizeof(int));
+	int nb_routes_placees = 0;
+	
+
+	for(int i=0;i<e.nb_routes;i++)
+	{
+		int delta_profit = -e.nb_routes; //cannot be smallest thant that
+		//it evalutes the difference in profit with the previous step, should be
+		//positive most of the time
+		int max_pos = -1;
+		int max_route = -1;
+		for(int route = 0; route <= i; route++){
+			for(int pos = 0; pos< e.periode; pos++){
+				if(!e.aller[pos] && !e.retour[(pos + e.decalages[route])%e.periode]){
+					//if the route can be placed at this position
+					int temp_prof = profit_aller[pos] + 
+					profit_retour[(pos + e.decalages[route])%e.periode] -
+					profit_route[route];
+					if(temp_prof > delta_profit){
+						max_pos = pos;
+						max_route = route;
+						delta_profit = temp_prof;
+					}
+				}
+			}
+		}
+		if(max_pos != -1)
+		{
+			e.aller[max_pos]=1;
+			e.retour[ (max_pos+e.decalages[max_route])%e.periode] = 1;
+			nb_routes_placees++;
+			
+			//update the profit
+			for(int pos=0; pos < e.periode;pos++){//remove one for the position
+				//not profitable for route_max anymore
+				profit_retour[(e.decalages[max_route] + pos)%e.periode] -= e.aller[pos];
+				profit_aller[pos] -= e.retour[(e.decalages[max_route] + pos)%e.periode];
+			}
+			//add one because we use max_position now
+			for(int route=0; route < i; route++){//remove one for the position
+				//not profitable for route_max anymore
+				profit_retour[(e.decalages[route] + max_pos)%e.periode]++;
+				profit_aller[(-e.decalages[route] + max_pos + e.decalages[max_route]+e.periode)%e.periode]++ ;
+			}
+			//the used route is put in position i to not be used again
+			int temp = e.decalages[i];
+			e.decalages[i] = e.decalages[max_pos];
+			e.decalages[max_pos] = temp; 
+		}
+		
+	}
+	return nb_routes_placees;
+}
 //TODO: faire un truc qui optimise le profit en choissant la route à chaque étape et pas juste la
 //la position et en prenant en compte la perte liée au choix de la route
 
@@ -159,4 +218,6 @@ int main()
 	printf("Proba de réussite théorique de l'algo uniforme: %f \n",prob_theo(NB_ROUTES,PERIODE));
 	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_first_fit,"first_fit");//ça n'est pas sur les memes entrees a cause du rand
 	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_profit,"profit");//ça n'est pas sur les memes entrees a cause du rand
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");//ça n'est pas sur les memes entrees a cause du rand
+}
 }
