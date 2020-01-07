@@ -4,10 +4,10 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 20
-#define NB_ROUTES 17
-#define TAILLE_ROUTES 20
-#define NB_SIMUL 10000
+#define PERIODE 1000
+#define NB_ROUTES 900
+#define TAILLE_ROUTES 1000
+#define NB_SIMUL 100	
 
 #define DEBUG 0
 
@@ -31,6 +31,16 @@ void init_etoile(entree e, int taille_max)
 	memset(e.retour,0,sizeof(int)*e.periode);
 }
 
+void print_solution(int* aller, int *retour, int taille){
+	printf("\nAller :\n");
+	for(int i = 0; i < taille; i++){
+		printf("%d ",aller[i]);
+	}
+	printf("\n Retour : \n");
+	for(int i = 0; i < taille; i++){
+		printf("%d ",retour[i]);
+	}
+}
 
 int choix_uniforme(entree e, int route_courante){
 	int cmpt = 0;
@@ -109,8 +119,108 @@ int greedy_profit(entree e){
 	return greedy(e,profit);
 }
 
-//TODO: faire un truc qui optimise le profit en choissant la route à chaque étape et pas juste la
-//la position et en prenant en compte la perte liée au choix de la route
+//Pour évaluer le profit correctement, il faut gérer les répétitons,
+//mais comme ce bout de profit est un invariant qui ne dépend pas de quand on 
+//place la route, ne sert à rien
+/*int frequence(int val, int *tab, int taille){ //calcule la fréquence du premier élément dans le tableau
+	int cmpt = -1;
+	for(int i = 0; i < taille; i++){
+		cmpt += (val == tab[i]);
+	}
+	return cmpt;
+}
+*/
+
+int greedy_advanced(entree e)
+{
+	int *profit_route = calloc(e.nb_routes,sizeof(int));
+	int *profit_aller = calloc(e.periode,sizeof(int));
+	int *profit_retour = calloc(e.periode,sizeof(int));
+	
+	int nb_routes_placees = 0;
+	if(DEBUG){
+		printf("Instance : \n");
+		for(int i = 0; i<e.nb_routes; i++){
+			printf("%d ",e.decalages[i]);
+		}
+		printf("\n");	
+	}
+	for(int i=0;i<e.nb_routes;i++)
+	{
+		int delta_profit = -e.nb_routes; //cannot be smallest than that
+		//it evalutes the difference in profit with the previous step, should be
+		//positive most of the time
+		int max_pos = -1;
+		int max_route = -1;
+		for(int route = i; route < e.nb_routes; route++){
+			for(int pos = 0; pos< e.periode; pos++){
+				if(!e.aller[pos] && !e.retour[(pos + e.decalages[route])%e.periode]){
+					//if the route can be placed at this position
+					int temp_prof = profit_aller[pos] + 
+					profit_retour[(pos + e.decalages[route])%e.periode] -
+					profit_route[route];// + frequence(e.decalages[route],e.decalages+i, e.nb_routes -i);
+					if(temp_prof > delta_profit){
+						max_pos = pos;
+						max_route = route;
+						delta_profit = temp_prof;
+					}
+				}
+			}
+		}
+		if(DEBUG){
+			printf("\nDelta profit: %d, max pos: %d,max route: %d, decalage: %d\n",delta_profit, max_pos,max_route,e.decalages[max_route]);
+		}
+		if(max_pos != -1)
+		{
+			int max_pos_retour = (max_pos+e.decalages[max_route])%e.periode; 
+			for(int pos=0; pos < e.periode;pos++){//remove one for the positions
+				//not profitable for route_max anymore because it is fixed
+				profit_retour[(e.decalages[max_route] + pos)%e.periode] -= e.aller[pos];
+				profit_aller[pos] -= e.retour[(e.decalages[max_route] + pos)%e.periode];
+			}
+			e.aller[max_pos]=1;
+			e.retour[max_pos_retour] = 1;
+			nb_routes_placees++;
+			//the max_route is put in position i to not be used again
+			int temp = e.decalages[i];
+			e.decalages[i] = e.decalages[max_route];
+			e.decalages[max_route] = temp;
+			temp = profit_route[i];
+			profit_route[i] = profit_route[max_route];
+			profit_route[max_route] = temp;
+
+			//add one for each active position because we use max_position now
+			//update the corresponding routes
+			for(int route=i+1; route < e.nb_routes; route++){
+				profit_retour[(e.decalages[route] + max_pos)%e.periode]++;
+				profit_route[route] += e.retour[(e.decalages[route] + max_pos)%e.periode];
+				profit_aller[(-e.decalages[route] + max_pos_retour + e.periode)%e.periode]++ ;
+				profit_route[route] += e.aller[(-e.decalages[route] + max_pos_retour + e.periode)%e.periode];
+			}
+			
+			//affichage des profits
+				if(DEBUG){
+				printf("Profit aller: \n");
+				for(int i = 0; i < e.periode; i++){
+					printf("%d ",profit_aller[i]);
+				}
+				printf("\nProfit retour: \n");
+				for(int i = 0; i < e.periode; i++){
+					printf("%d ",profit_retour[i]);
+				}
+				printf("\nProfit route: \n");
+				for(int i = 0; i < e.nb_routes; i++){
+					printf("%d ",profit_route[i]);
+				}
+			}
+		}	
+		else{
+			return nb_routes_placees;
+		}
+	}
+	if(DEBUG) print_solution(e.aller,e.retour,e.periode);
+	return nb_routes_placees;
+}
 
 
 double prob_set(int n, int m){
@@ -118,7 +228,7 @@ double prob_set(int n, int m){
 	for(int i = 0; i < m-n; i++){
 		res*= ((double)(i + 2*n - m + 1 ))/((double)(n + i + 1));
 	}
-	printf("%f ",res);
+	//printf("%f ",res);
 	return res;
 }
 
@@ -159,4 +269,5 @@ int main()
 	printf("Proba de réussite théorique de l'algo uniforme: %f \n",prob_theo(NB_ROUTES,PERIODE));
 	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_first_fit,"first_fit");//ça n'est pas sur les memes entrees a cause du rand
 	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_profit,"profit");//ça n'est pas sur les memes entrees a cause du rand
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");//ça n'est pas sur les memes entrees a cause du rand
 }
