@@ -223,6 +223,11 @@ int greedy_advanced(entree e)
 }
 
 
+int swap(entree e)
+{
+	
+}
+
 double prob_set(int n, int m){
 	double res = 1;
 	for(int i = 0; i < m-n; i++){

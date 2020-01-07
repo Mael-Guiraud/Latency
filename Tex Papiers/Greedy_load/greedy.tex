@@ -49,11 +49,7 @@
 \title{Greedy algorithms for scheduling periodic message }
  
 
-% \author[1]{Dominique Barth}
 \author[1,2]{Ma\"el Guiraud}
-% \author[1]{Christian Cad\'er\'e}
-% \author[2]{Brice Leclerc}
-% \author[2]{Olivier Marc\'e}
 \author[1]{Yann Strozecki}
 \affil[1]{David Laboratory, UVSQ}
 \affil[2]{Nokia Bell Labs France}
@@ -64,79 +60,162 @@
 
 \begin{abstract}
 
-A recent trend in mobile networks is to centralize in distant data-centers  processing units which were attached to antennas until now. The main challenge is to guarantee that the latency of the periodic messages sent from the antennas to their processing units and back, fulfills protocol time constraints. The problem is then to propose a sending scheme from the antennas to their processing units and back without contention and buffer.
+A recent trend in mobile networks is to centralize in distant data-centers processing units which were attached to antennas until now. The main challenge is to guarantee that the latency of the periodic messages sent from the antennas to their processing units and back, fulfills protocol time constraints. The problem is then to propose a sending scheme from the antennas to their processing units and back without contention and buffer.
 
-We study a star shaped topology, where all contentions are on a single arc shared by all antennas. We present several greedy heuristic to solve \pazl. We study their experimental efficiency and we use them to prove that when the load of the network is less than $44\%$, there is always a solution to \pazl. We also prove that for random lengths of the arcs, most of the instances have a solution when the load is less than $45\%$.  
+We study both general networks and a simple but common star shaped topology, where all contentions are on a single arc shared by all antennas. For packet of arbitrary size, 
+we show that there is always a solution as soon as the load of the network is less than $1/2$. Moreover, we explain how we can restrict our study to packet of size $1$ without increasing the global latency. 
+
+For packet of size $1$, we prove that it is always possible to schedule them on a star shaped topology, when the load is less than $2/3$ using a polynomial time algorithm.
+Moreover, using a simple random greedy algorithm, we show that on average, almost all
+instances of a given load admit a solution.  
 \end{abstract}
 
 
 \section{Introduction}
 
+Lister les usages possibles: 
+sans retour mais de profondeur 2 ou plus. Sonar ? Train ?
+Réseau de capteurs communicant (industrie)
+
+Comparer à la litérature. Aller voir ce qu'on nous a cité sur l'ordonnancement périodique 
+et les trucs de train périodique qu'on a trouvé.
 
 \section{Model}
-Describe the general model, and objective to optimize: no buffering.
-It is a scheduling/packing problem, could call each element a task or just an element. 
-Notion of depth.
+Pas la peine de parler d'aller et de retour dans le modèle.
+Les sommets représentent les point de contention et les arêtes le
+temps pour aller au prochain point de contention.
+
+
+We model the network by a directed acyclic graph $G = (V,A)$. 
+The nodes of indegree zero are the sources of the data (the antenna)
+and the nodes of outdegree zero are the destination of the data (the data centers).
+There is a labeling $\Omega$ from $V$ to $\mathbb{N}$, such that for an arc $e = (u,v)$, $\Omega(e)$ represents the time a unit of data needs to go from $u$ to $v$. 
+
+Routes, routed network.
+
+The period is an integer denoted by $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. 
+
+Message, message size. Use of the ressources at each contention point.
+
+Route assignment.
+
+Collision. 
+
+(Conflict free) Periodic assignment. 
+
+Definition of the problem: Periodic routes assignment \pra.
+Dire que les arcs des sommets sources vers le premier sommet de contention
+ne changent rien par rapport à \pra et donc on peut les supposer à $0$.
+
+Notion of depth: depth 1 is trivial, complexity of depth 2 already NP hard. 
 
  + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. Notion of load.
 \cite{Guir1806:Deterministic}
 
 
-\section{Basic Algorithms}
+\section{Greedy Algorithms for large $\tau$}
 
-Notion of partial solution, how to extend it (and notation). All
-algorithms are greedy and most can work online. Once a route is placed,
+Notion of partial solution: a subset of the routes with their offsets fixed 
+
+ All algorithms build the solution incrementally, by fixing 
+
+ are greedy and most can work online. Once a route is placed,
 it is not changed, hence in a partial solution we are only interested in the 
-set of positions used in the backward and forward period. If $n$ tasks has been
+set of positions used in the backward and forward period. If $n$ tasks have been
 placed, we denote them by $x_1, \dots, x_n$ and $y_1,\dots,y_n$.
 
-\subsection{Depth one}
+\subsection{Star shaped network}
 
-Algorithm of increasing quality
+Présenter la structure, version la plus simple d'un graphe de profondeur $2$.
+Donnée comme un ensemble d'entiers $d_1,\dots,d_n$ qui correspondent 
+au poids pour chaque route de l'arc entre les deux points de contention.
+Étudié dans notre papier avec plein d'autre problèmes similaires ...
+Dire que c'est une variante périodique du 2 flow shop problem. 
 
-First fit, analyzed naively $n/4$, then better through compacity $n/3$.
 
-Meta interval, load of $n/3$.
+We present three greedy algorithms which try to find assignments for a star shaped
+network. We show that they \emph{always} find an assignment when the load 
+is small enough.
 
-First fit in order of the $d_i \mod \tau$ $n/2$, as good as naive first fit for 
-$\tau = 1$ (all alg degenerate to this one for $\tau =1$).
+The first one deal with the route in any order, and for each route it 
+tests all offsets from $0$ to $P$ until one do not create a collision.
+We call this algorithm \emph{First Fit}. A naïve analysis of the algorithm, 
+shows it always succeed for a load of $1/4$, since each packet placed forbid at most
+$2\tau -1$ offsets on each contention node. It turns out that the algorithm always
+create compact assignment (as defined in ), that is the packet of a route is always next
+to another one in one of the two contention nodes. Hence, the constraints are less stringent when placing a new route, as shown in the next theorem.
 
+\begin{theorem}
+First Fit always solves \pra positively on a star shaped network of load less than
+$1/3$. 
+\end{theorem}
+\begin{proof}
+Analyzed through compacity $1/3$.
+\end{proof}
+
+The second method is described  in .....
+The period is divided into meta-intervals of size $\tau$ and we only consider offsets
+for a route, such that its message uses exactly a meta-interval
+We call it Meta Fit, since it works as first fit, but using meta-intervals
+in the first contention node.
+\begin{theorem}[Citer]
+Meta Fit always solves \pra positively on a star shaped network of load less than $1/3$. 
+\end{theorem}
+
+Finally, a refinment of the previous method allows to obtain solutions
+a soon as the load is less than $1/2$. It is as good as the First Fit algorithm
+in the simpler case of $\tau = 1$. The routes are sorted according to  $d_i \mod \tau$.
+The we use Meta Fit on the instance, we call this variant Ordered Meta Fit.
+
+\begin{theorem}
+Ordered Meta Fit always solves \pra positively on a star shaped network of load less than $1/2$.
+\end{theorem}
+\begin{proof}
+
+\end{proof}
 \subsection{General graph}
 
-Use the coherent routing property.
-Algo first fit :$n/4$ for any $\tau$ and $P$, and any DAG of depth $k$. 
+Algo first fit en général.
+Si on utilise la coherent routing property.
+:$1/4$ for any $\tau$ and $P$, and any DAG of depth $k$. 
 
-Copy the results of the previous article and propose heuristics to chose among several positions/candidates (compacity heuristic).
 
 \subsection{Experimental results}
 
-Results better in practice: give the data
-Two heuristics to test:
+Results better in practice, the worst case is different from the 
+average case.
+Two additional heuristics to test:
 \begin{itemize}
 	\item  heuristic to build super compact assignment (among the compact assignments
 possible, chose the one which maximize the gain on the second bloc)
-	\item heuristic to maximize the free position of the remaining elements
+	\item heuristic to maximize the free position of the remaining elements, c'est l'idée
+	de la partie d'après
 \end{itemize}
 
-Quality of the results explained by the average analysis done later
+Quality of the results explained by the average analysis done later.
  
 
-\section{Why $\tau$ can be assumed to be one}
+\section{Why $\tau$ can be assumed to be one if we allow buffering}
 
 Rank the $d_i$ by value, and compute $d_i + d_n \mod \tau$.
 We allow buffering, but the worst time should not increase !
 Bufferize  each route during $\tau - (d_i + d_n \mod \tau)$.
 All routes have the same remainder mod $\tau$, can assume they are of 
 size one.
-A bit mor complex on the general graphs, proofs on the depth of the graph. 
+A bit more complicated on the general graphs, proofs on the depth of the graph. 
 Should take into account the length of the graph.
 
 
-\section{Above 1/2}
+\section{Above a load of 1/2}
 
 
-There are easier cases, all routes are distinct or all routes are the same. There is a solution for load $1$ in these two cases. With two distinct values, solution for load almost one. Insert a figure here, showing solutions
-for these cases.
+Expliquer que le genre de méthode utilisé dépend de toutes les routes,
+impossible en streaming, impossible de rajouter une route avec les mêmes garanties.
+Peut-être possible de faire un swap avec une autre route ?
+
+
+%There are easier cases, all routes are distinct or all routes are the same. There is a solution for load $1$ in these two cases. With two distinct values, solution for load almost one. Insert a figure here, showing solutions
+%for these cases.
 We  give a method which always finds a solution for load $1/2 + \epsilon$.
 
 
@@ -311,31 +390,20 @@ Could find an asymptotic online.
 Can we make the same argument for a deterministic algorithm?
 The not average version of the argument is the previous proof.
 
-\section{Greedy and delay}
-
-Tradeoff between waiting time and load. Can we prove $0.5 + \epsilon$ load for $f(\epsilon,n,\tau)$ waiting time ?  No idea yet.
-
 
 \section{Non greedy algorithm}
 
 Greedy + swap one element if necessary. It can be used as the second step of the algorithm using potential. One can show that we use only the free routes and we swap if necessary. We show that, if the potential is at least $2\epsilon P n$, then at least one of any 
-$P-n$ elements has positive potential and can be moved. Such an operation lose at most $2n$ of potential. As a consequence, placing the last elements lose $2n\epsilon P$ in potential. Hence if the potential is more than $4\epsilon P n$, the lagorithms terminates.
+$P-n$ elements has positive potential and can be moved. Such an operation lose at most $2n$ of potential. As a consequence, placing the last elements lose $2n\epsilon P$ in potential. Hence if the potential is more than $4\epsilon P n$, the algorithms terminates.
 
 
-
-Can we guarantee a solution for a larger load ? Conjecture, yes for $\lambda = 2/3$. 
-Seems hard for group theoritic reason (how to avoid subgroups of Z/pZ which are a problem)
 
 \section{Lower bounds}
 
 Example/family of examples for which some greedy alg fail.
 Example/family of examples with a given load such that there are no feasible solution.
 
-\section{$\NP$-hardness}
-
-Are we able to prove $\NP$-hardness ?
-
-% \bibliographystyle{ieeetr}
-% \bibliography{Sources}
+\bibliographystyle{ieeetr}
+ \bibliography{Sources}
 
 \end{document}
