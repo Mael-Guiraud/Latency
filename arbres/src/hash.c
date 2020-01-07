@@ -12,16 +12,14 @@ int hash_graph(Graph g,int size)
 		//printf("%d %d \n",decalage,val_reset);
 		for(int j=0;j<g.arc_pool[i].nb_routes;j++)
 		{
-			key = key+ (g.arc_pool[i].routes_order_f[j]<<(5*decalage));
+			key ^= g.arc_pool[i].routes_order_f[j]<<(5*decalage);
 			decalage++;
-			decalage = decalage%val_reset;
-			key = key + (g.arc_pool[i].routes_order_b[j]<<(5*decalage));
+			decalage = (decalage >= val_reset)?0:decalage;
+			key ^= g.arc_pool[i].routes_order_b[j]<<(5*decalage);
 			decalage++;
-			decalage = decalage%val_reset;
+			decalage = (decalage >= val_reset)?0:decalage;
 		}
 		
 	}
-	if(key%size < 0)
-		return -(key%size);
 	return key%size; 
 }

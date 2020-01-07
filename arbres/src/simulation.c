@@ -173,7 +173,7 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
-	//test_one_algo(g,P,message_size,10000,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,10000,NULL,&taboo,"taboo",f);
 	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 
 	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
@@ -686,6 +686,7 @@ void simuldistrib(int seed)
 	int time[nb_algos];
 	int res[nb_algos][NB_SIMULS];
 	float nb_pas[3];
+	
 	for(int i=0;i<3;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
@@ -694,7 +695,9 @@ void simuldistrib(int seed)
 		a = NULL;
 
 		g= init_graph_random_tree(STANDARD_LOAD);
-
+		int l = 2*longest_route(g);
+		
+		//printf("%d \n",longest_route);
 		if(FIXED_PERIOD_MOD)
 		{
 			if(PERIOD < load_max(g)*MESSAGE_SIZE)
@@ -709,23 +712,26 @@ void simuldistrib(int seed)
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
 				case 0:
-					time[algo] = borneInf( g, P, message_size);	
-
+					time[algo] = borneInf( g, P, message_size)-l;	
+					printf("%d longest_route\n",l);
 				break;
 				case 1:
-					time[algo] = borneInf2( g, P, message_size);	
+					time[algo] = borneInf2( g, P, message_size)-l;	
 				break;
 				case 2:
 					a = descente( g, P, message_size,0);
-					nb_pas[0] += a->nb_routes_scheduled;
+					if(a)
+						nb_pas[0] += a->nb_routes_scheduled;
 				break;
 				case 3:
 					a = taboo( g, P, message_size,100);
-					nb_pas[1] += a->nb_routes_scheduled;
+					if(a)
+						nb_pas[1] += a->nb_routes_scheduled;
 				break;
 				case 4:
 					a = best_of_x( g, P, message_size,10);
-					nb_pas[2] += a->nb_routes_scheduled;
+					if(a)
+						nb_pas[2] += a->nb_routes_scheduled;
 				break;
 				case 5:
 					a =  greedy_deadline_assignment( g, P, message_size,0);
@@ -733,7 +739,8 @@ void simuldistrib(int seed)
 				}
 				if((algo > 0))
 				{
-					time[algo] = travel_time_max_buffers(g);
+					if(a)
+						time[algo] = travel_time_max_buffers(g)-l;
 					/*printf("algo %d \n",algo);
 					int lenght=0;
 					for(int j=1;j<g.nb_routes;j++)
@@ -766,7 +773,7 @@ void simuldistrib(int seed)
 		if((time[3]>time[5]) )
 			printf("Le taboo est moins bon que l'algo greedy d'init \n");
 
-		for(int k=1;k<nb_algos;k++)
+		for(int k=2;k<nb_algos;k++)
 		{
 			if((time[k]<time[0]) || (time[k]<time[1]))
 			{

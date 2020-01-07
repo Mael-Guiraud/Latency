@@ -1237,9 +1237,9 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 {
 	//Parametres du recuit
 	int nb_paliers = param;
-	int temperature = 5000;
+	float temperature = 5000;
 	float coeff= 0.95;
-	int seuil_arret = 1000;
+	int seuil_arret = 10;
 	float seuil_incr_cmpt = 0.10;
 
 	Assignment a=NULL;
@@ -1268,12 +1268,15 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 		orders[i+g.arc_pool_size] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 	}
 	int cmpt = 0;
+	int nb_step = 0;
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
 		for(int i=0;i<nb_paliers;i++)
 		{
 			v = Voisin_alea(g);
+			nb_step++;
+
 			a = assignment_with_orders(g,P,message_size,0);
 			if(a->all_routes_scheduled)
 			{
@@ -1307,10 +1310,13 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 		}
 		acceptance_rate = (float)nb_moves/nb_paliers;
 		if(acceptance_rate < seuil_incr_cmpt)
+		{
 			cmpt++;
-		temperature = temperature * coeff;
+		}
+			
+		temperature *=  coeff;
 	}
-
+	printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
 
 	//On prend la meilleure solution vue, et bye
