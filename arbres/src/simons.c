@@ -1521,8 +1521,8 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 		//affiche_tab(subset,nbr_candidats);
 		val_G =  rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats); 
 		
-		int ming = INT_MAX;
-		int mind = INT_MAX;
+		int maxg = INT_MAX;
+		int maxd = INT_MAX;
 		int tmp;
 		if(!val_D)
 		{
@@ -1535,16 +1535,16 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 		for(int i=0;i<nbr_route;i++)
 		{
 			tmp = 2* route_length(g,ids[i]);
-			if( (tmp + val_D[i]) < mind)
+			if( (tmp + val_D[i]) > maxd)
 			{
-				ming = tmp + val_D[i];
+				maxd = tmp + val_D[i];
 			}
-			if( (tmp + val_G[i]) < ming ) 
+			if( (tmp + val_G[i]) > maxg ) 
 			{
-				ming = tmp + val_G[i];
+				maxg = tmp + val_G[i];
 			}
 		}
-		if(ming < mind)
+		if(maxg < maxd)
 		{
 			free(val_D);
 			return val_G;	
@@ -1571,7 +1571,7 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 
 	// On cherche le nombre de routes avec la deadline qui sort de p
 	
-	int min = INT_MAX;
+	int max = 0;
 	int best = INT_MAX;
 	int j = 0;
 			int tmp;
@@ -1636,18 +1636,18 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 		
 		if(res)
 		{
-			min = INT_MAX;
+			max = 0;
 			for(int i=0;i<nbr_route;i++)
 			{
 				tmp = 2* route_length(g,ids[i]);
-				if( (tmp + res[i]) < min)
+				if( (tmp + res[i]) > max)
 				{
-					min = tmp + res[i];
+					max = tmp + res[i];
 				}
 			
 			}
 
-			if(min < best)
+			if(max < best)
 			{
 				if(returnvalue)
 					free(returnvalue);

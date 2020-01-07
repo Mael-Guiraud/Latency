@@ -88,7 +88,7 @@ int borneInf(Graph g, int P, int message_size)
 	}
 
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
-	int min =INT_MAX;
+	int max =0;
 	int taille_route;
 	if(res)
 	{	
@@ -97,8 +97,8 @@ int borneInf(Graph g, int P, int message_size)
 		{
 			taille_route =  res[i]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 			//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
-			if(taille_route < min)
-				min = taille_route; 
+			if(taille_route > max)
+				max = taille_route; 
 		}
 	}
 	else
@@ -108,8 +108,8 @@ int borneInf(Graph g, int P, int message_size)
 
     free(res);
 
-    
-	return min;
+    printf("%d \n",max);
+	return max;
 
 }
 int borneInf2(Graph g, int P, int message_size)
@@ -120,20 +120,27 @@ int borneInf2(Graph g, int P, int message_size)
 	
 	int taille_tab=g.arc_pool[arc_id].nb_routes;
 	int taille_route[taille_tab];
+	int value_to_add=INT_MAX;
+	int tmp;
+
 	for(int i=0;i<taille_tab;i++)
 	{
-		taille_route[i] =  2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+		tmp = route_length_untill_arc_without_delay(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
+		if(tmp<value_to_add)
+		{
+			value_to_add = tmp;
+		}
+		taille_route[i] =  2* route_length(g,g.arc_pool[arc_id].routes_id[i])-tmp;
 	}
 	tri_bulles_classique_decroissant(taille_route,taille_tab);
 	int max = 0;
 	for(int i=0;i<taille_tab;i++)
 	{
-		//printf("%d \n",taille_route[i]);
 		if(max < taille_route[i]+i*message_size)
 		{
 			max = taille_route[i]+i*message_size;
 		}
 	}
-	//printf("\n");
-	return max;
+
+	return (max+value_to_add>2*longest_route(g))?max+value_to_add:2*longest_route(g));
 }
