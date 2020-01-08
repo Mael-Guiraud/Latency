@@ -24,9 +24,6 @@
 \usepackage[colorlinks=true,breaklinks=true,linkcolor=blue]{hyperref}
 
 
-\newcommand\rmatching{${\cal R}$-matching\xspace}
-\newcommand\mdelay{$\cal M$-delay\xspace}
-\newcommand\matchedgraph{{\bf matched graph}}
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
 
@@ -39,14 +36,9 @@
 
 % \renewcommand{\thefootnote}{\*}
 
-\newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
-\newcommand\pazl{\textsc{pazl}\xspace}
-\newcommand\pall{\textsc{pall}\xspace}
-\newcommand\bra{\textsc{bra}\xspace}
-\newcommand\pra{\textsc{pra}\xspace}
-\newcommand\minpra{\textsc{min-pra}\xspace}
-%opening
-\title{Greedy algorithms for scheduling periodic message }
+\newcommand\pma{\textsc{pma}\xspace}
+
+\title{Scheduling periodic messages and their answers on a single link}
  
 
 \author[1,2]{Ma\"el Guiraud}
@@ -60,14 +52,13 @@
 
 \begin{abstract}
 
-A recent trend in mobile networks is to centralize in distant data-centers processing units which were attached to antennas until now. The main challenge is to guarantee that the latency of the periodic messages sent from the antennas to their processing units and back, fulfills protocol time constraints. The problem is then to propose a sending scheme from the antennas to their processing units and back without contention and buffer.
+A recent trend in mobile networks is to centralize in distant data-centers processing units which were attached to antennas until now. The main challenge is to guarantee that the latency of the periodic messages sent from the antennas to their processing units and back, fulfills protocol time constraints. The problem we adress is to propose a sending scheme from the antennas to their processing units and back without contention and buffer.
 
-We study both general networks and a simple but common star shaped topology, where all contentions are on a single arc shared by all antennas. For packet of arbitrary size, 
-we show that there is always a solution as soon as the load of the network is less than $1/2$. Moreover, we explain how we can restrict our study to packet of size $1$ without increasing the global latency. 
+We focus on a simple but common star shaped topology, where all contentions are on a single arc shared used by all antennas. For messages of arbitrary size, we show that there is always a solution as soon as the load of the network is less than $ ?? $. Moreover, we explain how we can restrict our study to packet of size $1$ without increasing the global latency. 
 
-For packet of size $1$, we prove that it is always possible to schedule them on a star shaped topology, when the load is less than $2/3$ using a polynomial time algorithm.
+For message of size $1$, we prove that it is always possible to schedule them on a star shaped topology, when the load is less than $2/3$ using a polynomial time algorithm.
 Moreover, using a simple random greedy algorithm, we show that on average, almost all
-instances of a given load admit a solution.  
+instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
 \end{abstract}
 
 
@@ -76,109 +67,134 @@ instances of a given load admit a solution.
 Lister les usages possibles: 
 sans retour mais de profondeur 2 ou plus. Sonar ? Train ?
 Réseau de capteurs communicant (industrie)
+Logistique dans une usine (chaine avec différent produits)
 
 Comparer à la litérature. Aller voir ce qu'on nous a cité sur l'ordonnancement périodique 
 et les trucs de train périodique qu'on a trouvé.
 
-\section{Model}
-Pas la peine de parler d'aller et de retour dans le modèle.
-Les sommets représentent les point de contention et les arêtes le
-temps pour aller au prochain point de contention.
 
 
-We model the network by a directed acyclic graph $G = (V,A)$. 
-The nodes of indegree zero are the sources of the data (the antenna)
-and the nodes of outdegree zero are the destination of the data (the data centers).
-There is a labeling $\Omega$ from $V$ to $\mathbb{N}$, such that for an arc $e = (u,v)$, $\Omega(e)$ represents the time a unit of data needs to go from $u$ to $v$. 
+Mélanger l'introduction et le modèle. Voir comment c'est présenté dans two flow shop
 
-Routes, routed network.
+In this article, we model a very simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We chose to present here the simplest non trivial such network, 
+ for which we can still obtain some theoritical results. 
 
-The period is an integer denoted by $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. 
+The process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In our application, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. A message $i$ is caracterized by its 
+delay $d_i$. It means that if the message number $i$ goes through the link at time $t$, then it returns to it in the other direction at a time $t + d_i$. 
 
-Message, message size. Use of the ressources at each contention point.
-
-Route assignment.
-
-Collision. 
-
-(Conflict free) Periodic assignment. 
-
-Definition of the problem: Periodic routes assignment \pra.
-Dire que les arcs des sommets sources vers le premier sommet de contention
-ne changent rien par rapport à \pra et donc on peut les supposer à $0$.
-
-Notion of depth: depth 1 is trivial, complexity of depth 2 already NP hard. 
-
- + the simplified version for the star with a picture + a set of number $d_1,\dots,d_n$ and two values $P, \tau$. Notion of load.
-\cite{Guir1806:Deterministic}
+An offset of a message is a choice of time at which it arrives
+in the first contention point in the first period. Let us consider a message $i$
+of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first contention point and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second contention point. We say that two messages $i$ and $j$ collide if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $.
 
 
-\section{Greedy Algorithms for large $\tau$}
+We want to send all messages, so that they are no conflict in the common link.
+In other word, we look for a way to send the messages without using buffering and 
+hence limiting the latency to the physical length of the link. An assignment is a
+choice of an offset for each message such that \emph{no pair of message collide}.
 
-Notion of partial solution: a subset of the routes with their offsets fixed 
+We call Periodic Message Assignment or \pma the problem we solve in this article,
+which asks, given an instance of $n$ messages, a period $P$ and a message $\tau$ to find 
+an assignment or to decide there is none.
 
- All algorithms build the solution incrementally, by fixing 
+Ici donner un exemple d'instance et de solution, représenté graphiquement.
 
- are greedy and most can work online. Once a route is placed,
-it is not changed, hence in a partial solution we are only interested in the 
-set of positions used in the backward and forward period. If $n$ tasks have been
-placed, we denote them by $x_1, \dots, x_n$ and $y_1,\dots,y_n$.
+Complexity observation: not known, FPT in $n$, but a slight generalization is $\NP$-hard and
+we conjecture it is $\NP$-hard.
+We define a natural parameter of the  problem, \emph{the load}, which is equal
+to $n \tau /P$. Even if the general problem is certainly $\NP$-hard, we study \pma
+when the load is small enough. We are able to prove that for some value of the load
+(depending whether $\tau$ is one or not), there is always an assignment and it can be found in polynomial time.
 
-\subsection{Star shaped network}
+\section{Greedy Algorithms for Large Messages}
 
-Présenter la structure, version la plus simple d'un graphe de profondeur $2$.
-Donnée comme un ensemble d'entiers $d_1,\dots,d_n$ qui correspondent 
-au poids pour chaque route de l'arc entre les deux points de contention.
-Étudié dans notre papier avec plein d'autre problèmes similaires ...
-Dire que c'est une variante périodique du 2 flow shop problem. 
+An assignment is a function from the messages, represented by their indices in $[n]$
+to their offsets in $[P]$.  
+A partial assignment is a function defined from a subset $S$ of $[n]$ to $[P]$.
+We denote assignment and partial assignment by $A$. Moreover, if $A$ has domain 
+$S$, and $i \notin S$, we write $A(i \rightarrow v)$ for the function defined as 
+$A$ on $S$ and such that $A(i) = v$.
 
 
-We present three greedy algorithms which try to find assignments for a star shaped
-network. We show that they \emph{always} find an assignment when the load 
-is small enough.
+All presented algorithms build the solution incrementally, by growing the size of the domain
+of an assignment. Moreover, the algorithm of this section are greedy since once 
+an offset is chosen for a message, it is never changed.
 
-The first one deal with the route in any order, and for each route it 
-tests all offsets from $0$ to $P$ until one do not create a collision.
+\subsection{First fit}
+
+Bien expliquer que les messages de taille $\tau$
+genent de $2\tau -1$ sur le deuxième intervalle. 
+Ce qui explique que si on les place n'importe comment on a presque
+$1/4$ comme borne alors que si $\tau = 1$ on a $1/2$. Dans cette partie,
+on essaye de passer de $1/4$ à $1/2$.
+
+
+The first algorithms deals with the route in the order they are given:  for each route it 
+tests all offsets in $[P]$ until one do not create a collision with the current assignment.
 We call this algorithm \emph{First Fit}. A naïve analysis of the algorithm, 
 shows it always succeed for a load of $1/4$, since each packet placed forbid at most
 $2\tau -1$ offsets on each contention node. It turns out that the algorithm always
-create compact assignment (as defined in ), that is the packet of a route is always next
-to another one in one of the two contention nodes. Hence, the constraints are less stringent when placing a new route, as shown in the next theorem.
+create compact assignment (as defined in \cite{barth2018deterministic}), that is a message is always next to another one in one of the two contention nodes. Hence, the constraints are less stringent when placing a new route, as shown in the next theorem.
 
 \begin{theorem}
-First Fit always solves \pra positively on a star shaped network of load less than
+First Fit always solves \pma positively on instances of load less than
 $1/3$. 
 \end{theorem}
 \begin{proof}
 Analyzed through compacity $1/3$.
 \end{proof}
 
-The second method is described  in .....
+\subsection{Meta-intervals}
+
+The second method is described  in ..... and achieves the same bound using a different 
+method which will be used later.
 The period is divided into meta-intervals of size $\tau$ and we only consider offsets
 for a route, such that its message uses exactly a meta-interval
-We call it Meta Fit, since it works as first fit, but using meta-intervals
+We call it Meta Interval, since it works as first fit, but using meta-intervals
 in the first contention node.
 \begin{theorem}[Citer]
-Meta Fit always solves \pra positively on a star shaped network of load less than $1/3$. 
+Meta Interval always solves \pma positively on instances of load less than
+$1/3$.
 \end{theorem}
 
-Finally, a refinment of the previous method allows to obtain solutions
-a soon as the load is less than $1/2$. It is as good as the First Fit algorithm
-in the simpler case of $\tau = 1$. The routes are sorted according to  $d_i \mod \tau$.
-The we use Meta Fit on the instance, we call this variant Ordered Meta Fit.
+\subsection{Tuples and meta-intervals}
 
-\begin{theorem}
-Ordered Meta Fit always solves \pra positively on a star shaped network of load less than $1/2$.
-\end{theorem}
+Finally, we propose more complicated greedy algorithms which 
+always solves \pma for larger load. They rely on placing several routes at once,
+to maximize the compacity of the solution. We first describe the algorithm 
+which places pairs of routes and then explain how we can extend it by placing tuples
+of routes at the same time.
+
+We first prove a lemma which allows to assume that the period $P$ is a multiple of $\tau$.
+It makes easier the division of both periods into meta intervals of size $\tau$ and 
+simplify the presentation of the algorithm.
+
+\begin{lemma}
+Let us consider an instance with $n$ messages of size $\tau$ and period $P$,
+then there is an instance with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that an assignment of the second instance can be transformed into an assignment of the first.
+\end{lemma}
 \begin{proof}
-
+Let $P = m \tau + r$ with $r \leq \tau$. We define $P' = mP$, $d_{i}' = m d_i$ 
+and $\tau' = m \tau + r$. With this choice, we have $P' = m(m \tau + r) = m \tau'$.
+Consider an assignment $A'$ of the instance $P',\tau',(d_{0}',\dots,d_{n-1}')$.
+If we consider $\tau'' = m\tau$, then $A'$ is also an assignment for $P',\tau'',(d_{0}',\dots,d_{n-1}')$ since we only reduce the number of used position in each period. 
+Then we use a compactifcation procedure as in~\cite{barth2018deterministic} to obtain $A$ from $A'$ so that all positions of the messages in the first and second period
+are multiple of $m$. Hence, if we define $A$ as $A(i) = A'(i)$, we obtain a solution of the 
+original instance.
 \end{proof}
-\subsection{General graph}
+Pas sur que c'est nécessaire.
 
-Algo first fit en général.
-Si on utilise la coherent routing property.
-:$1/4$ for any $\tau$ and $P$, and any DAG of depth $k$. 
+We are interested in the remainder modulo $\tau$ of the delays of each message.
+We write $d_i = d_{i}'\tau + r_i$ and assume the messages are sorted by increasing $r_i$.
+A compact $2$-uple is a pair of messages $(i,j)$ such that we can put them
+next to each other in the second period using only meta-intervals in the second.
+Say that $i < j$, hence $r_i \leq r_j$ we denote by $g$ the gap between the two message.
+We have $d_{i}' = g + 1 + d_{j}' \mod P/\tau$ hence, we require that $v \neq 0$ so that
+there are no collision in the first period. 
 
+\begin{lemma}
+Given a set of $k^2$ messages, one can always build a compact $k$-uple
+from messages of this set. 
+\end{lemma}
 
 \subsection{Experimental results}
 
