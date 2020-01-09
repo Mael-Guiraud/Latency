@@ -11,6 +11,7 @@ All rights reserved.
 #include "config.h"
 #include "structs.h"
 #include "treatment.h"
+#include "test.h"
 /*
 #include "struct.h"
 #include "operations.h"
@@ -1372,11 +1373,11 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 	debut_periode_retour = arrivee[premier];
 	decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
 		
-	
-	/*printf("____ \n");
-	affiche_tab(arrivee,nbr_route);
-	affiche_tab(deadline,nbr_route);
-	affiche_tab(subset,nbr_route);
+	/*
+	printf("____ \n");
+	affiche_tab(arrivee,nbr_route,stdout);
+	affiche_tab(deadline,nbr_route,stdout);
+	affiche_tab(subset,nbr_route,stdout);
 	*/
 	for(int i=0;i<nbr_route;i++)
 	{
@@ -1388,18 +1389,17 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 	}
 	/*
 	printf("apres \n");
-	affiche_tab(arrivee,nbr_route);
-	affiche_tab(deadline,nbr_route);
-	printf("\n");
-	exit(32);
-	*/
+	affiche_tab(arrivee,nbr_route,stdout);
+	affiche_tab(deadline,nbr_route,stdout);
+	printf("\n");*/
+	
 
 	date=arrivee[premier];
 
 
 	elems = init_element();
 	deadline_periode = arrivee[premier] + periode;
-	//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
+	//printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
 	for(int j=0;j<nbr_route;j++)
 	{
 		if(j != premier)
@@ -1483,6 +1483,7 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 		}
 
 	}*/
+
 	return w_i;
 	
 
@@ -1509,7 +1510,7 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 	}
 	else
 	{
-		//printf("PArcours a droite, %d\n",profondeur);
+	//	printf("PArcours a droite, %d\n",profondeur);
 		subset[profondeur] = 0;
 		//affiche_tab(subset,nbr_candidats);
 		val_D =  rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats);
@@ -1521,8 +1522,8 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 		//affiche_tab(subset,nbr_candidats);
 		val_G =  rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,profondeur+1,nbr_candidats); 
 		
-		int maxg = INT_MAX;
-		int maxd = INT_MAX;
+		int maxg = 0;
+		int maxd = 0;
 		int tmp;
 		if(!val_D)
 		{
@@ -1544,14 +1545,17 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 				maxg = tmp + val_G[i];
 			}
 		}
+	
 		if(maxg < maxd)
 		{
 			free(val_D);
+			printf(" retour %d\n",maxg);
 			return val_G;	
 		}
 		else
 		{
 			free(val_G);
+			printf(" retour %d\n",maxd);
 			return val_D;	
 		}
 
@@ -1627,11 +1631,9 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 		for(int i=0;i<nbr_route;i++)
 		{
 			subset[i]=0;
-			candidats[i] = i;
-				
-			
+			candidats[i] = i;		
 		}*/
-
+		printf("Premier =%d \n",premier);
 		res = rec_FPT(g,ids,RELEASE,DEADLINE,nbr_route,taille_paquet,periode,premier,subset,candidats,0,nbr_candidats);
 		
 		if(res)
@@ -1646,12 +1648,14 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 				}
 			
 			}
-
+			printf("max = %d best = %d \n",max,best);
 			if(max < best)
 			{
 				if(returnvalue)
 					free(returnvalue);
 				returnvalue = res;	
+				best = max;
+				printf("return = %p \n",res);
 			}
 			else
 			{
@@ -1660,9 +1664,9 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 		}
 		
 		
-				
+	
 	}
-
+	printf("return  = %p\n",returnvalue);
 
 	return returnvalue;
 }

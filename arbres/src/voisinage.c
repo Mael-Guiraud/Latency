@@ -1212,20 +1212,22 @@ void remet_voisin(Graph g,Voisin v)
 	}
 	free(v.pos);
 }
-int CritMetropolis(int delta, int t)
+int CritMetropolis(int delta, float t)
 {
 	if(t<=0)
 	{
 		return 0;
 	}
-	if(delta >= 0)
+	if(delta <= 0)
 	{
 		return 1;
 	}
 	else
 	{
-		float proba = (float)delta/(float)t;
+
+		float proba = (float)delta/t;
 		float random = (float)rand() / (float)RAND_MAX;
+		//printf("on va la quand meme ?%d %f  %f %f %f\n",delta, t,proba,random, expf(-proba));
 		if(random < expf(-proba))
 		{
 			return 1;
@@ -1237,9 +1239,9 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 {
 	//Parametres du recuit
 	int nb_paliers = param;
-	float temperature = 5000;
-	float coeff= 0.95;
-	int seuil_arret = 10;
+	float temperature = 10000.0;
+	float coeff= 0.99;
+	int seuil_arret = 3;
 	float seuil_incr_cmpt = 0.10;
 
 	Assignment a=NULL;
@@ -1272,6 +1274,7 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
+		printf("Tour\n");
 		for(int i=0;i<nb_paliers;i++)
 		{
 			v = Voisin_alea(g);
@@ -1283,6 +1286,8 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 				a->time = travel_time_max_buffers(g);
 				if(CritMetropolis(a->time - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
+					if(time_actuel != a->time)
+						nb_moves++;
 					time_actuel = a->time;
 					//Le graph a ete changé dans voisin alea, on a donc rien a faire
 
@@ -1293,7 +1298,7 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 						min = a->time;
 						cmpt = 0;
 					}
-					nb_moves++;
+					
 					
 				}
 				else //Echec, on ne prend pas ce voisin, on remet le graph d'avant avant de tirer un nouveau voisin aleatoire
@@ -1309,8 +1314,10 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 			free_assignment(a);
 		}
 		acceptance_rate = (float)nb_moves/nb_paliers;
+		printf("rate %f \n",acceptance_rate);
 		if(acceptance_rate < seuil_incr_cmpt)
 		{
+			printf("trop bas \n");
 			cmpt++;
 		}
 			

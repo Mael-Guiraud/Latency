@@ -83,7 +83,7 @@ int borneInf(Graph g, int P, int message_size)
 	{
 		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
 		//printf("%d \n",release[i]);
-		deadline[i] = 5*P;
+		deadline[i] = release[i]+2*P;
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
 	}
 
@@ -96,7 +96,7 @@ int borneInf(Graph g, int P, int message_size)
 		for(int i=0;i<taille_tab;i++)
 		{
 			taille_route =  res[i]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
-			//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
+			printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
 			if(taille_route > max)
 				max = taille_route; 
 		}
@@ -112,11 +112,9 @@ int borneInf(Graph g, int P, int message_size)
 	return max;
 
 }
-int borneInf2(Graph g, int P, int message_size)
+int borneInf2_core(Graph g, int P, int message_size,int arc_id)
 {
-	int * t = load_links(g);
-	int arc_id = t[0];
-	free (t);
+	
 	
 	int taille_tab=g.arc_pool[arc_id].nb_routes;
 	int taille_route[taille_tab];
@@ -142,5 +140,19 @@ int borneInf2(Graph g, int P, int message_size)
 		}
 	}
 
-	return (max+value_to_add>2*longest_route(g))?max+value_to_add:2*longest_route(g));
+	return (max+value_to_add>2*longest_route(g))?max+value_to_add:2*longest_route(g);
+}
+int borneInf2(Graph g, int P, int message_size)
+{
+	int * t = load_links(g);
+	int max = 0;
+	int tmp;
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		tmp = borneInf2_core(g,P,message_size,t[i]);
+		if(tmp>max)
+			max = tmp;
+	}
+	free (t);
+	return max;
 }
