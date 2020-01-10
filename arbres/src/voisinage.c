@@ -811,6 +811,8 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		printf("La solution n'est pas correcte descente (error %d) ",verifie_solution( g,message_size));
 		exit(82);
 	}
+	affiche_graph(g,P,stdout);
+
 	a->time = travel_time_max_buffers(g);
 
 	a->nb_routes_scheduled = nb_d;

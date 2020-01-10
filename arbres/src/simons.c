@@ -1427,7 +1427,7 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 	a_free = ens;
 	
 	
-	//affiche_ensemble(ens);printf("\n");
+	affiche_ensemble(ens);printf("\n");
 	//printf("Fin FPT \n");
 	transforme_waiting(ens,fin);
 
@@ -1448,9 +1448,9 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 	libereens(a_free);
 	freeelems(elems);
 
-	//affiche_tab(w_i,nbr_route);
+	affiche_tab(w_i,nbr_route,stdout);
 	//printf("simons wi\n");affiche_tab(w_i,nbr_route);
-	//affiche_solution(g,taille_paquet,m_i,w_i);
+	
 	/*
 		int retour[nbr_route];
 		for(int i=0;i<nbr_route;i++)

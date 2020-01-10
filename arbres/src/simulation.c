@@ -76,6 +76,14 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 	free_assignment(a);
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
 	fprintf(f,"Reseting periods ...\n");
+
+		int borninf =borneInf(g,P,message_size);
+	printf("La borne inf pour ce graph est :%d \n",borninf);
+
+	if(borninf >travel_time_max_buffers(g))
+	{
+		exit(49);
+	}
 	reset_periods(g,P);
 }
 void test()
@@ -149,7 +157,7 @@ void test()
 	affiche_tab(tmp,g.arc_pool_size,f);
 	free(tmp);
 
-	printf("La borne inf pour ce graph est :%d \n",borneInf(g,P,message_size));
+
 	printf("------- \n TESTING ALGORITHMS : \n");
 	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
@@ -173,8 +181,8 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
-	//test_one_algo(g,P,message_size,10000,NULL,&taboo,"taboo",f);
-	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
+	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
+	//test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 
 	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
 	
@@ -712,11 +720,11 @@ void simuldistrib(int seed)
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
 				case 0:
-					//time[algo] = borneInf( g, P, message_size)-l;	
-					//printf("%d longest_route\n",l);
+					time[algo] = borneInf( g, P, message_size);	
+					printf("%d longest_route\n",l);
 				break;
 				case 1:
-					time[algo] = borneInf2( g, P, message_size)-l;	
+					time[algo] = borneInf2( g, P, message_size);	
 				break;
 				case 2:
 					a = descente( g, P, message_size,0);
@@ -740,7 +748,11 @@ void simuldistrib(int seed)
 				if((algo > 1))
 				{
 					if(a)
-						time[algo] = travel_time_max_buffers(g)-l;
+						time[algo] = travel_time_max_buffers(g);
+					else
+					{
+						printf("il n'y a pas de solutions-------------------\n");
+					}
 					/*printf("algo %d \n",algo);
 					int lenght=0;
 					for(int j=1;j<g.nb_routes;j++)
@@ -778,6 +790,7 @@ void simuldistrib(int seed)
 			if((time[k]<time[0]) || (time[k]<time[1]))
 			{
 				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d\n",k,time[k],time[0],time[1]);
+				
 				exit(4);
 
 			}
