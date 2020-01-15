@@ -209,17 +209,35 @@ form a compact pair.
 We call compact pairs the following greedy algorithm. From the $n$ routes in order,
 we build a sequence of at least $n/3 $compact pairs using Lemma~\ref{lemma:pair_find}. Then they are scheduled in order using meta offsets. When there a no free meta offset for some pair, the remaining routes are scheduled as in Meta Offset.
 
+Donner le lemme général + définition de compact tuple, c'est plus simple.
+Faire un dessin avec un compact k uple + la zone interdite pour un k' uple (selon qu'il soit ou pas de reste plus grand) en tant que preuve du lemme.
+
 \begin{lemma}\label{lemma:pair_forbid}
-A compact pair forbid blah messages 
+A compact pair forbid in the second period four meta offsets for another compact pair to be scheduled.
 \end{lemma}
 
 \begin{theorem}
 Compact pairs always solves \pma positively on instances of load less than
-$ $.
+$3/8$.
 \end{theorem}
 \begin{proof}
-What is the number of forbiden offsets when $l$ pairs have been scheduled.
+The number of forbiden offsets when $n_2$ pairs have been scheduled is:
+$$ 4 n_2 + 4 n_2 = 8 n_2.$$
 
+Hence, the first phase can continue while the number of forbidden offset
+is less than $m$, hence $n_2$ is at least $m/8$.
+In the second phase, a compact pair forbid $3$ meta offsets in the 
+second period and two in the first. 
+If we denote by $n_1$ the number of messages scheduled in the second phase,
+we have the following number of forbiden offsets:
+$$ n_2*5 + n_1*3.$$
+The algorithm can always schedule messages when this number is less than $m$,
+hence $$ n_2*5 + n_1*3 \geq m$$
+$$ n_1 \geq \frac{8m - 5m }{24}$$
+$$n_1 \geq \frac{1}{8}$$
+
+The number of routes scheduled is thus at least $2n_2 + n_1$,
+which is $\frac{3}{8}$.
 \end{proof}
 
 
@@ -228,11 +246,14 @@ On places des $k$-uples compact tant qu'on peut, puis des $k-1$ uples
 et ce jusqu'à $1$.
 
 \begin{theorem}
+Compact tuples always solves \pma positively on instances of load less than
+$4/10$.
 \end{theorem}
 \begin{proof}
 Un lemme comme \ref{lemma:pair_find} pour dire qu'on peut constituer des pairs.
 Un lemme comme \ref{lemma:pair_forbid} pour dire combien un $k$-uple gêne 
-un $l$-uple qu'on vut placer: $l+k+1$ et même $l+k$ si le $l$ uple est après le $k$ uple.
+un $l$-uple qu'on veut placer: $l+k+1$ et même $l+k$ si le $l$ uple est après le $k$ uple.
+Il suffit de commencer à $10$.
 \end{proof}
 
 
@@ -263,16 +284,55 @@ Utile pour les arguments qui montrent qu'en moyenne on
 réussit pour une charge $1$, se transfert pour charge $1$.
 
 
-\subsection{Reduction from large message using buffering}
-Rank the $d_i$ by value, and compute $d_i + d_n \mod \tau$.
-We allow buffering, but the worst time should not increase !
-Bufferize  each route during $\tau - (d_i + d_n \mod \tau)$.
-All routes have the same remainder mod $\tau$, can assume they are of 
-size one.
+\subsection{Reduction from large message to small messages using buffering}
 
-Plusieurs méthodes qui peuvent couter $\tau$ au pire des cas, ou moins en moyenne.
-Si toutes les routes mettent le même temps pour arrive au premier
-point de contention, c'est facile.
+Possibility of buffering the route during a time $b$: change $d_i$ to $d_i + b$. 
+Form of tradeoff between latency (more latency implies smaller message size implies
+solution with higher load).
+
+
+All messages are buffered enough time so that their $d_i$ have the same
+remainder modulo $\tau$. It costs at most $\tau$ of buffering (which is not
+good in our application but not horrible either). We can choose the longest 
+route as reference, hence that route cost zero. 
+If all distances are of $d_i$ a multiple of $\tau$, we have an
+easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$.
+
+
+We can do the same kind of transformation by buffering all 
+messages, so that the $d_i$ are multiples of $\tau / k$. The cost in term
+of latency would be $\tau / k$ but the reduction yields message of size $k$.
+For small size of messages, it is easy to get better algorithm (in particular for $\tau =1$
+as we show in the next section).
+\begin{theorem}
+Compact pairs on instances with $\tau =2$ always solves \pma positively on instances of load less than $4/9$.
+\end{theorem}
+\begin{proof}
+We assume w.l.o.g that there are less message with even $d_i$ than odd $d_i$.
+We schedule compact pairs of messages with even $d_i$, then we schedule single message with 
+even $d_i$. The worst case is when there is the same number of the two type of messages.
+The number of forbidden offsets for $n$ scheduled messages is bounded by 
+$$ n/2 (1 + 3/2) + n/2(1 + 1). $$
+
+Hence, we can always schedule messages when $n \leq (4/9)m$.
+
+\end{proof}
+
+
+If we want to optimise for the average latency, we win a factor of two as we now explain.
+
+Define the average buffer time for a choice of reference: B(t). 
+If we sum the $B(t)$ for $t=0$ to $\tau-1$, the contribution of each message 
+will be $\sum_{i=0}^{\tau-1} i$. Hence, the sum of the $B(t)$ is 
+$n P (P-1)/2$. There is at least one term of the sum less than the average,
+hence there is a $t_0$ such that $B(t_0) \leq n (\tau-1)/2$. In other word, the average
+delay for the message is less than $\tau/2$.
+
+
+
+Finally, solution with no buffering but which doubles the load. 
+
+
 
 \section{Going Above Load of 1/2 for messages of size one}
 
@@ -458,12 +518,10 @@ Could find an asymptotic online.
 Can we make the same argument for a deterministic algorithm?
 The not average version of the argument is the previous proof.
 
+Show that we can find a solution for load $1/2 - \epsilon$, even for large 
+$\tau$ if $n$ is large enough, using the trnasformation without buffering.
 
-\section{Non greedy algorithm}
-
-Greedy + swap one element if necessary. It can be used as the second step of the algorithm using potential. One can show that we use only the free routes and we swap if necessary. We show that, if the potential is at least $2\epsilon P n$, then at least one of any 
-$P-n$ elements has positive potential and can be moved. Such an operation lose at most $2n$ of potential. As a consequence, placing the last elements lose $2n\epsilon P$ in potential. Hence if the potential is more than $4\epsilon P n$, the algorithms terminates.
-
+\section{Experimental results for $\tau = 1$}
 
 
 \section{Lower bounds}

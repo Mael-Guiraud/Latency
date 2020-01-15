@@ -25,8 +25,10 @@ int main(int argc, char **argv){
 		for(int j = k; j > i ; j--){
 			val += message_number[j] * (i*j + i + j +1) / j;
 		}
-		message_number[i] =  (1 - val) / (i + 2 + (double)1/i);
+		message_number[i] =  (1 - val) / (i + 2 + (double)1/i); //+ (double)1/i pour plus que 3 seulement?
 	}
+	//calcul pour 2 à part ?
+
 	//calcul de message_number[1] de manière plus précise
 	double val = 0;
 		for(int j = k; j > 1 ; j-- ){
