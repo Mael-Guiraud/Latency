@@ -80,16 +80,16 @@ int coreBorneInf(Graph g, int P, int message_size,int budget)
 	int deadline[taille_tab];
 	int ids[taille_tab];
 
-
+	printf("BUDGETABCD = %d \n",budget);
 	for(int i=0;i<taille_tab;i++)
 	{
-		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-		//printf("(%d ",release[i]);
-		deadline[i] = 2*release[i]+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i])+message_size;
+		release[i] = route_length_untill_arc_without_delay(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
+		printf("(%d ",release[i]);
+		deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 		
-			//printf("%d ",deadline[i]);	
+		printf("%d (%d + %d - %d)",deadline[i],release[i],budget,route_length(g,g.arc_pool[arc_id].routes_id[i]));	
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
-		//printf("%d)\n",ids[i]);
+		printf("%d)\n",ids[i]);
 	}
 
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
@@ -129,6 +129,7 @@ int borneInf(Graph g, int P, int message_size)
 	{
 		milieu =min+ (max - min ) / 2;
 		tmp = coreBorneInf(g,P,message_size,milieu);
+		printf("-------------------------------------------abc %d %d \n",tmp,milieu);
 		if(tmp)
 		{
 			max = milieu;
@@ -153,6 +154,7 @@ int borneInf(Graph g, int P, int message_size)
 	if(!res)
 	{
 		printf(" TRES Etrange, on aurait du trouver un resultat avec la dichotomie\n");
+		exit(45);
 	}
 	return res;
 }

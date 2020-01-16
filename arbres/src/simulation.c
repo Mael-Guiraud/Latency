@@ -727,6 +727,7 @@ void simuldistrib(int seed)
 					time[algo] = borneInf2( g, P, message_size);	
 				break;
 				case 2:
+					printf("DESCENTE \n\n\n\n\n\n\n\n\n");
 					a = descente( g, P, message_size,0);
 					if(a)
 						nb_pas[0] += a->nb_routes_scheduled;
