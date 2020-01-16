@@ -58,7 +58,7 @@ int  load_links_CL(Graph g,int CL)
 	return id[0];
 }
 
-int borneInf(Graph g, int P, int message_size)
+int coreBorneInf(Graph g, int P, int message_size,int budget)
 {
 	
 
@@ -70,21 +70,26 @@ int borneInf(Graph g, int P, int message_size)
 	free (t);
 
 	int taille_tab=g.arc_pool[arc_id].nb_routes;
-
+	/*printf("\n\n\n\nArc le plus chargé : %d routes \n routes sur l'arc \n",taille_tab);
+	for(int i=0;i<taille_tab;i++)
+		printf("%d ",g.arc_pool[arc_id].routes_id[i]);
+	printf("\n");*/
 	//On init le tableau des permutations
 
 	int release[taille_tab];
 	int deadline[taille_tab];
 	int ids[taille_tab];
 
-	int continuer = 1;
-	//Pour tout les ordres de routes :
+
 	for(int i=0;i<taille_tab;i++)
 	{
 		release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-		//printf("%d \n",release[i]);
-		deadline[i] = release[i]+2*P;
+		//printf("(%d ",release[i]);
+		deadline[i] = 2*release[i]+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i])+message_size;
+		
+			//printf("%d ",deadline[i]);	
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
+		//printf("%d)\n",ids[i]);
 	}
 
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
@@ -103,14 +108,53 @@ int borneInf(Graph g, int P, int message_size)
 	}
 	else
 	{
+		printf("no res  %d \n", budget);
 		return 0;
 	}
 
     free(res);
 
-    printf("%d \n",max);
+    //printf("%d \n",max);
 	return max;
 
+}
+int borneInf(Graph g, int P, int message_size)
+{
+	int min = 2*longest_route(g);
+	int max = min +P;
+	int milieu;
+	int res=0;
+	int tmp;
+	while(min != max)
+	{
+		milieu =min+ (max - min ) / 2;
+		tmp = coreBorneInf(g,P,message_size,milieu);
+		if(tmp)
+		{
+			max = milieu;
+			res = tmp;
+		}
+		else
+		{
+			
+			if(min == max -1)
+			{
+				if(!res)
+				{
+					printf("Etrange, on aurait du trouver un resultat avec la dichotomie\n");
+					exit(44);
+				}
+				return res;
+			}
+			min = milieu;
+		}
+		
+	}	
+	if(!res)
+	{
+		printf(" TRES Etrange, on aurait du trouver un resultat avec la dichotomie\n");
+	}
+	return res;
 }
 int borneInf2_core(Graph g, int P, int message_size,int arc_id)
 {

@@ -4,6 +4,7 @@
 #include "structs.h"
 #include "treatment.h"
 #include "greedy_waiting.h"
+#include "data_treatment.h"
 #include "multiplexing.h"
 #include "hash.h"
 #include <string.h>
@@ -811,9 +812,25 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		printf("La solution n'est pas correcte descente (error %d) ",verifie_solution( g,message_size));
 		exit(82);
 	}
-	affiche_graph(g,P,stdout);
+
 
 	a->time = travel_time_max_buffers(g);
+
+	char buf[128];
+	char buf_dot[128];
+	char* nom = "test";
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,a,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 
 	a->nb_routes_scheduled = nb_d;
 	return a;

@@ -79,7 +79,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 
 		int borninf =borneInf(g,P,message_size);
 	printf("La borne inf pour ce graph est :%d \n",borninf);
-
+	printf("%d %d -------------------------\n",borninf,travel_time_max_buffers(g) );
 	if(borninf >travel_time_max_buffers(g))
 	{
 		exit(49);
@@ -128,7 +128,7 @@ void test()
 	printf("	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
 	printf("	Fixed tmax     : ");if(TMAX_MOD){printf("ON ");}else{printf("OFF");}printf("| TMAX = %d .\n",tmax);
 	if(longest_route(g)*2 > TMAX)
-			printf(YEL "WARNING! TMAX is higher than the longest route. \n" RESET);
+			printf(YEL "WARNING! TMAX is lower than the longest route. \n" RESET);
 	printf("	Message size   : %d .\n",message_size);
 	printf("	Routes Synch   : ");if(SYNCH){printf("ON ");}else{printf("OFF ");}printf("\n");
 
@@ -179,9 +179,9 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy,"LoadedGreedy",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&descente,"Descente",f);*/
-	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);*/
+	test_one_algo(g,P,message_size,0,NULL,&descente,"Descente",f);
+	//test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
 	//test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 
 	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
@@ -667,7 +667,7 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 6 ;
+	int nb_algos = 3 ;
 	char * noms[] = {"BorneInfSimons","BorneInfSort","Descente","Taboo","DescenteX","GreedyDeadline"};
 
 	srand(seed);

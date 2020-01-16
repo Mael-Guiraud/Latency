@@ -313,7 +313,7 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 					if(a->offset_forward[i] == -1)
 						sprintf(str,"%s",RED_FAIL);
 					else
-						sprintf(str,"%s",COLORS[i]);
+						sprintf(str,"%s",COLORS[i%NB_COLORS]);
 						
 					fprintf(f,"%d [shape = \"circle\",label=<<font color=\"%s\">%d</font><font color=\"black\">(%d)</font>>]\n",vertex_id,str,a->offset_forward[i],g.routes[i][j]->bbu_dest);
 					vertex_id++;
@@ -421,7 +421,7 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 					if(a->offset_backward[i] == -1)
 						sprintf(str,"%s",RED_FAIL);
 					else
-						sprintf(str,"%s",COLORS[i]);
+						sprintf(str,"%s",COLORS[i%NB_COLORS]);
 						
 					fprintf(f,"%d [shape = \"circle\",label=<<font color=\"%s\">%d</font><font color=\"black\">(%d)</font>>]\n",vertex_id,str,i,g.routes[i][j]->bbu_dest);
 					vertex_id++;
