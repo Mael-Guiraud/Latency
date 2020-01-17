@@ -721,13 +721,13 @@ void simuldistrib(int seed)
 			switch(algo){
 				case 0:
 					time[algo] = borneInf( g, P, message_size);	
-					printf("%d longest_route\n",l);
+					//printf("%d longest_route\n",l);
 				break;
 				case 1:
 					time[algo] = borneInf2( g, P, message_size);	
 				break;
 				case 2:
-					printf("DESCENTE \n\n\n\n\n\n\n\n\n");
+					//printf("DESCENTE \n\n\n\n\n\n\n\n\n");
 					a = descente( g, P, message_size,0);
 					if(a)
 						nb_pas[0] += a->nb_routes_scheduled;
@@ -750,10 +750,7 @@ void simuldistrib(int seed)
 				{
 					if(a)
 						time[algo] = travel_time_max_buffers(g);
-					else
-					{
-						printf("il n'y a pas de solutions-------------------\n");
-					}
+					
 					/*printf("algo %d \n",algo);
 					int lenght=0;
 					for(int j=1;j<g.nb_routes;j++)

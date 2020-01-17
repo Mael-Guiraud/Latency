@@ -502,13 +502,13 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
 	int offset ;
 	int current_route;
 	int dl;
-
+/*
 	int * t = load_links(g);
 	int arc_id = t[0];
 	free (t);
 	
 
-	int datefirst;
+	int datefirst;*/
 	//int ok;
 
  	//for each contention  level
@@ -530,7 +530,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  		{
  			offset = 0;
  			int Per[g.arc_pool[j].nb_routes];
- 			int subset[g.arc_pool[j].nb_routes];
+ 			//int subset[g.arc_pool[j].nb_routes];
  			if(g.arc_pool[j].contention_level == CL)
  			{
  				/*printf("Routes sur l'arc : %d\n",kind);
@@ -557,13 +557,13 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  					{
  						dl += route_length_with_buffers_forward(g, current_route);
  					}
- 					if(kind == FORWARD)
+ 					/*if(kind == FORWARD)
 	 					if(offset == 0)
 	 					{
 	 
 	 						datefirst = dl;
 	 						
-	 					}
+	 					}*/
  					//printf("Route %d release %d \n",current_route,dl);
  					if(dl < offset )
  					{
@@ -620,6 +620,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  						}
  					}
  					offset += total_check;
+ 					/*
  					if(kind == FORWARD)
 	 					if(j==arc_id)
 	 					{
@@ -632,7 +633,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
 	 							subset[k] = 0;
 	 						}
 	 					}
- 					
+ 					*/
  					if(kind == FORWARD)
  						g.arc_pool[j].routes_delay_f[current_route] += total_check;
  					else
@@ -652,7 +653,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
 
  					//printf("%d ",current_route);printf("\n");
  				}
- 					if(print)
+ 					/*if(print)
  					{
  						if(kind == FORWARD)
  						{
@@ -709,7 +710,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  						}
  						
  						
- 					}
+ 					}*/
  				
 
  			}
