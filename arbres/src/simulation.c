@@ -667,7 +667,7 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 3 ;
+	int nb_algos = 6 ;
 	char * noms[] = {"BorneInfSimons","BorneInfSort","Descente","Taboo","DescenteX","GreedyDeadline"};
 
 	srand(seed);
