@@ -1420,7 +1420,7 @@ int* simons_FPT(Graph g,int* RELEASE,int* ids, int * DEADLINE, int  nbr_route, i
 	ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
 	if(ens == NULL)
 		{
-			printf("Pas trouvé !!!!\n");
+			//printf("Pas trouvé !!!!\n");
 			free(w_i);
 			return NULL;
 		}

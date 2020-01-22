@@ -955,7 +955,7 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		free_assignment(a);
 	reinit_delays(g);
 	reset_periods(g,P);
-	printf("APPEL \n");
+	//printf("APPEL \n");
 	a = assignment_with_orders(g,P,message_size,1);
 	if(verifie_solution( g,message_size))
 	{
@@ -965,7 +965,7 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 
 
 	a->time = travel_time_max_buffers(g);
-
+/*
 	char buf[128];
 	char buf_dot[128];
 	char* nom = "test";
@@ -980,7 +980,7 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}*/
 
 	/*if(travel_time_max_buffers(g) < DEBUGTMP)
 	{
