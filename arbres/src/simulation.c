@@ -745,6 +745,7 @@ void simuldistrib(int seed)
 				case 5:
 					a =  greedy_deadline_assignment( g, P, message_size,0);
 				break;
+				
 				}
 				if((algo > 1))
 				{

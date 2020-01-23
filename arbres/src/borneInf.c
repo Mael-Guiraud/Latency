@@ -58,16 +58,14 @@ int  load_links_CL(Graph g,int CL)
 	return id[0];
 }
 
-int coreBorneInf(Graph g, int P, int message_size,int budget)
+int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id)
 {
 	
 
 
 	// On a l'arc le plus chargé
 	//int arc_id = load_links_CL(g,0);
-	int * t = load_links(g);
-	int arc_id = t[0];
-	free (t);
+
 
 	int taille_tab=g.arc_pool[arc_id].nb_routes;
 	/*printf("\n\n\n\nArc le plus chargé : %d routes \n routes sur l'arc \n",taille_tab);
@@ -118,6 +116,20 @@ int coreBorneInf(Graph g, int P, int message_size,int budget)
 	return max;
 
 }
+int borneInfall_arcs(Graph g, int P, int message_size, int budget)
+{
+	int * t = load_links(g);
+	int max = 0;
+	int tmp;
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		tmp = coreBorneInf(g,P,message_size,budget,t[i]);
+		if(tmp>max)
+			max = tmp;
+	}
+	free (t);
+	return max;
+}
 int borneInf(Graph g, int P, int message_size)
 {
 	int min = 2*longest_route(g);
@@ -128,7 +140,7 @@ int borneInf(Graph g, int P, int message_size)
 	while(min != max)
 	{
 		milieu =min+ (max - min ) / 2;
-		tmp = coreBorneInf(g,P,message_size,milieu);
+		tmp = borneInfall_arcs(g,P,message_size,milieu);
 		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
 		if(tmp)
 		{

@@ -14,7 +14,9 @@
 typedef struct{
 	int route;
 	int* pos;
+	//int period;
 } Voisin;
+
 
 int indice_identique(int * t, int taille)
 {
