@@ -121,6 +121,7 @@ it is relevant to have $\tau > 1$ when the transmission time of a single message
 
 
 A partial assignment $A$ is a function defined from a subset $S$ of $[n]$ to $[P]$.
+We say that $|S|$, the cardinal of the domain of $A$, is its \emph{size}.
 We say that a message in $S$ is \emph{scheduled} (by $A$), and a message not in $S$ is \emph{unscheduled}. We only consider partial assignments such that no pair of messages of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the message $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, the function defined as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
 All presented algorithms build the assignment incrementally, by growing the size of the domain of a partial assignment. Moreover, the algorithm of this section are greedy since once an offset is chosen for a message, it is never changed.
@@ -233,7 +234,7 @@ with each of the two messages which form a compact pair. On the second period, w
 Hence, we have established that at the end of the first phase, the partial solution $A$
 satisfies $Fmo_2(A) \leq 8n_2$. This first phase continue while there is possible offsets for compact pairs, which is the case when $Fmo_2(A) \leq m$, that is while $n_2 \leq m/8$.
 In the second phase, a compact pair forbids $3$ meta offsets in the 
-second period and $2$ in the first. Hence, if we let $n_1$ be the number of messages scheduled in the second phase to give the assignment $A$, we have $Fom(A) \leq n_2*5 + n_1*3.$. 
+second period and $2$ in the first. Hence, if we let $n_1$ be the number of messages scheduled in the second phase to give the assignment $A$, we have $Fmo(A) \leq n_2*5 + n_1*3$. 
 The algorithm can always schedule messages when $Fmo(A)$ is less than $m$, thus
 $$ n_2*5 + n_1*3 \geq m$$
 $$ n_1 \geq \frac{8m - 5m }{24}$$
@@ -327,24 +328,20 @@ Ici un dessin pour expliquer la technique
 \subsection{Reduction  using buffering}
 
 We have presented our problem with a single degree of freedom by message: its
-offset. We could also allow to buffer a message $i$ during a time $b$ between the two contention points, which means changing $d_i$ to $d_i + b$. The quality of the obtained solution is worst since we add 
-Form of tradeoff between latency (more latency implies smaller message size implies
-solution with higher load).
+offset. We could also allow to buffer a message $i$ during a time $b$ between the two contention points, which means changing $d_i$ to $d_i + b$. The quality of the obtained solution is worst since the buffering add latency to the messages. We now describe how we can make a tradeoff between the added latency and the size of the messages, knwowing that smaller messages helps to schedule instances with higher load.
 
 
 All messages are buffered enough time so that their $d_i$ have the same
 remainder modulo $\tau$. It costs at most $\tau$ of buffering, which is not
-very good in practice, but much better than the theoritical upper bound. We can choose the longest route as reference, hence that route cost zero. 
-If all distances have $d_i$ a multiple of $\tau$, we have an
+so good for random instances (see~\cite{barth2018deterministic} for algorithms optimizing the latency), but much better than the theoritical upper bound of $P$ which allows to always find an assignment. We can choose the message with the longes route as reference remainder, hence that message needs zero buffering. However, the message with the second longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. When all delays are changed so that $d_i$ is a multiple of $\tau$, we have an
 easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$.
 
 We can do the same kind of transformation by buffering all 
-messages, so that the $d_i$ are multiples of $\tau / k$. The cost in term
-of latency is then at most $\tau / k$ but the reduction yields message of size $k$.
-For small size of messages, it is easy to get better algorithm (in particular for $\tau =1$
-as we show in the next section).
+messages, so that $d_i$ is a multiple of $\tau / k$. The cost in term
+of latency is then at most $\tau / k$ but the reduction yields messages of size $k$.
+For small size of messages, it is easy to get better algorithm for \pma, in particular for $\tau =1$ as we show in the next section.
 \begin{theorem}
-Compact pairs on instances with $\tau =2$ always solves \pma positively on instances of load less than $4/9$.
+Compact Pairs on instances with $\tau =2$ always solves \pma positively on instances of load less than $4/9$.
 \end{theorem}
 \begin{proof}
 We assume w.l.o.g that there are less message with even $d_i$ than odd $d_i$.
@@ -356,21 +353,19 @@ Hence, we can always schedule messages when $n \leq (4/9)m$.
 \end{proof}
 
 
-If we want to optimise our reduction to $\tau=1$ for the average added latency, we win a factor of two as we now explain.
-Define the average buffer time for a choice of reference: B(t). 
-If we sum the $B(t)$ for $t=0$ to $\tau-1$, the contribution of each message 
-will be $\sum_{i=0}^{\tau-1} i$. Hence, the sum of the $B(t)$ is 
-$n P (P-1)/2$. There is at least one term of the sum less than the average,
+If we do the previous reduction to the case $\tau=1$ while optimizing for the average added latency, we win a factor of two. The only degree of freedom in the reduction is the choice of the reference remainder (all other delays are modified to have the same remainder).
+Define the average buffer time for a choice $t$ of reference by $B(t)$. 
+If we sum $B(t)$ for $t=0$ to $\tau-1$, the contribution of each message 
+will be $\sum_{i=0}^{\tau-1} i$. Since there are $n$ messages, the sum of the $B(t)$ for all $t$ is $n \tau (\tau-1)/2$. There is at least one term of the sum less than the average,
 hence there is a $t_0$ such that $B(t_0) \leq n (\tau-1)/2$. In other word, the average
-delay for the message is less than $\tau/2$.
+delay for a message, with this choice of reference is less than $\tau/2$.
 
 
 \section{Going Above Load of 1/2 for messages of size one}
 
-Any greedy algorithm finds a solution to \pma when the load is less than $1/2$ since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. 
-We give a method which always finds a solution for load $1/2 + \epsilon$.
+When $\tau = 1$, \emph{any greedy algorithm} finds a solution to \pma when the load is less than $1/2$ since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We now give a method which always finds a solution for load of $1/2 + \epsilon$.
 
-To go above $1/2$ of load, we use a two-pass algorithm. In the second pass, a greedy algorithm is used to schedule (or reschedule) a subsets of the messages, selected because they have less conflicts with the already scheduled messages. The first pass is not greedy, since we allow to change a scheduled message, but we could us a greedy first
+To go above $1/2$ of load, we use a two-pass algorithm. In the second pass, a greedy algorithm is used to schedule (or reschedule) a subsets of the messages, selected because they have less conflicts with the already scheduled messages. The first pass is not greedy, since we allow to change a scheduled message, but we could use a greedy first
 pass or even a single pass greedy algorithm to go over $1/2$. However, the proofs are much harder to write and the $\epsilon$ for which they hold is much smaller.
 
 \begin{definition}
@@ -378,14 +373,17 @@ The potential of a message of delay $d$, for a partial assignment $A$
 is the number of integers $i \in [P]$ such that $i$ is used in the first period and $i+d \mod P$ is used in the second period. We denote $by Pot(A)$ the sum of potentials of all messages in the instance for $A$.
 \end{definition} 
 
+We are counting farovable configurations for the messages in terms of forbiden offsets.
+Indeed, when $i$ is used in the first period and $i+d \mod P$ is used in the second period,
+then the same offset is forbidden \emph{twice} for a message of delay $d$.
 
 \begin{definition}
-The potential of a position $i$ of the first period, for a partial assignment $A$, is the number of messages of delay $d$ such that $i+d \mod P$ is used by a route scheduled by $A$. 
+The potential of a position $i$, for a partial assignment $A$, is the number of messages of delay $d$ such that $i+d \mod P$ is used by a route scheduled by $A$. 
 \end{definition}
 
 By construction, the potentials of the positions satisfy the following simple invariant.
 \begin{lemma}\label{lemma:inv}
-The sum of potentials of all positions of the forward window in a partial assignment of size $k$ is $nk$.  
+The sum of potentials of all positions for a partial with $k$ scheduled messages is $nk$.  
 \end{lemma}
 
 We then link $Pot(A)$ to the potential of the positions in the first period.
@@ -395,36 +393,28 @@ The sum of potentials of all positions in the first period used by routes schedu
 \end{lemma}
  
 
-We now describe the algorithm to solve our problem with load $1/2 + \epsilon$. The first pass assign routes in any
-greedy manner, until it cannot assign some route anymore. Then, it applies some procedure described later which 
-remove a route from the solution and add anther one. If at some point this procedure fails, it stops.
-When this algorithm stops, it can be shown that the potential of the obtained partial solution is larger
-than some value. Then, we select $R$ the set of the $\epsilon P$ routes of largest potential. The routes in $R$ and in the partial solution are removed, then the free routes not in $R$ are added to the partial solution and 
-finally the route in $R$ are added, using any greedy algorithm.
+We now describe the algorithm to solve our problem with load $1/2 + \epsilon$. The first pass schedules messages so that the $Pot(A)$ increases fast enough whih the number 
+of scheduled messages. At the end of this step, it can be shown that the potential of the obtained partial solution is larger than some value. Then, we select $R$ the set of the $\epsilon P$ messages of largest potential. The messages in $R$ and in the partial solution are removed, then, using any greedy algorithm, the unscheduled messages not in $R$ and the messages in $R$ are added to the partial solution.
 
 \subsection{Swap and potential improvement}
 
 
-Let $S$ be some partial solution of size $k$ and let $r$ be a free route of shift $s$. 
-Assume that $r$ cannot be used to extend $S$. The swap operation is the following: 
-select a free position $p$, remove the route of position $p+s$ in the forward window 
-of $S$ and add $r$ at position $p$ in the forward window. We denote this operation by $Swap(r,p,S)$.
+Let $A$ be some partial solution of size $k$ and let $i$ be an unscheduled message of delay  $d$. 
+Assume that $i$ cannot be used to extend $A$. The swap operation is the following: 
+select a free position $p$ in the first period, remove the message which uses the position $p+d$ in the second period from $A$ and add $i$ to $A$ with offset $p$. We denote this operation by $Swap(i,p,A)$.
 
 \begin{lemma}
-Let $S$ be some partial solution of size $k$ and let $r$ be a free route of shift $s$. 
-If $r$ cannot be used to extend $S$, then either $Pot(Swap(r,p,S)) > Pot(S)$ or 
-$Pot(S) \geq kn/2$.
+Let $A$ be some partial solution of size $k$ and let $i$ be an unscheduled message. If $i$ cannot be used to extend $S$, then either $Pot(A) \geq kn/2$ or there is a $p$ such that $Pot(Swap(i,p,A)) > Pot(A)$.
 \end{lemma}
 
 \begin{proof}\label{swap}
-The positions in the forward window can be partitionned into two part: $P_{u}$ the positions used in the forward windows and $P_{f}$ the positions unused in the forward windows.
-Let us denote by $V_f$ the value of the positions in $P_f$ and by $V_u$ the potential of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partitions the positions, we have $V_f + V_u = kn$.
+The positions in the first period can be partitionned into two part: $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
+Let us denote by $V_f$ the sum of the potential of the positions in $P_f$ and by $V_u$ the sum of the potentials of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partitions the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
-By hypothesis, since $r$ cannot be placed, for all $p \in P_{f}$, $p+s$ is used in the backward window. We now define a function $F$ which associates to $p \in P_{f}$ the position $p'$ such that there is a route $r'$ in $S$ placed at $p'$ in the forward window and at $p+s$ in the backward window. The function $F$ is an injection from $P_{f}$ to $P_u$. Rmeark now that if we compare $Swap(r,p,S)$ to $S$, on the backward window nothing changes. 
-Hence the potential of each position in the forward window is the same. Hence, doing the operation $Swap(r,p,S)$ add to $Pot(S)$ the potential of the position $p$ and removes the potential of position $F(p)$. 
-Assume now, to prove our lemma, that for all $p$, $Pot(Swap(r,p,S)) \leq Pot(S)$. It implies that 
-$V_f \leq V'_u \leq V_u$ and by Lemma~\ref{lemma:inv} we have $V_f \leq Pot(S)$.
-Since $V_f + Pot(S) = kn$, we have that $Pot(S) \geq kn/2$.
+By hypothesis, since $i$ cannot be scheduled, for all $p \in P_{f}$, $p+d_i$ is used in the second period. We now define the function $F$ which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d$ in the second period, that is $A(j) + d_j = p + d \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark now that, if we compare $Swap(i,p,A)$ to $A$, on the second period the positions are used. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ add to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
+Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Hence,
+since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$.
+Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
 
 
@@ -460,21 +450,26 @@ Since $V_f + Pot(S) = kn$, we have that $Pot(S) \geq kn/2$.
 
 
 We give an analysis of the algorithm, showing that it works for some value
-of $\epsilon$. We will later show that some refinments of this algorithm: a better selection of the 
-values added in the second step, the possibility to repeat the first step to guarantee a higher potential
-yields a better $\epsilon$.
+of $\epsilon$. To obtain a better $\epsilon$, we will later show some refinments of this algorithm: a better selection of the values added in the second step, the possibility to repeat the first step to guarantee a higher potential.
 
 
 \begin{theorem}
-The two-pass algorithm solves positively our problem with load $1/2 + 1/16$.
+The two steps algorithm solves positively our problem with load $1/2 + 1/16$.
 \end{theorem}
 
 \begin{proof}
- The first pass of the algorithm guarantes that we obtain a partial solution 
- $S$ of size $k$ such that $Pot(S) \geq kn/2$ by Lemma~\ref{lemma:swap}. 
- Moreover, $k \geq P/2$ since one can always place $P/2$ routes with a greedy algorithm.
+ The first step of the algorithm guarantes that we obtain a partial solution 
+ $A$ of size $k$ such that $Pot(A) \geq kn/2$ by Lemma~\ref{lemma:swap}. 
+Moreover, we can assume $k \geq P/2$ since one can always schedule $P/2$ routes with any greedy algorithm.
  
-At the end of the first pass, we have a potential of at least $Pn/4$ and we select the $\epsilon P$ routes of largest potential. They must be of potential at least $2\epsilon P, 2\epsilon P +2,\dots ,4\epsilon P$.
+At the end of the first step, we have a potential of at least $Pn/4$ and we select the $\epsilon P$ routes of largest potential. We want them to be of potential at least $2\epsilon P, 2\epsilon P +2,\dots ,4\epsilon P$. 
+
+En supposant ça, expliquer pour quoi l'algo marche. 
+Puis régler le epsilon pour que ça marche.
+
+
+
+
 Sort all routes by decreasing potential and assume that the previous condition is not met, that is the $i$th route in order of potential is of potential less than $4\epsilon P - 2i$. The potential of a single route is bounded by $P/2$ since each placed route contribute at most one to its potential. Therefore, the first
 $i$ routes are of potential at most $P/2$ and the following ones of potential at most $4\epsilon P - 2i$. Therefore the potential is less than $iP/2 + (4\epsilon P - 2i) (n -i)$. This function is decreasing for $i \leq \epsilon P$, hence the potential should be less than $4\epsilon P n$.
  
