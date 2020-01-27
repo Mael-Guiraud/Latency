@@ -720,11 +720,11 @@ void simuldistrib(int seed)
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
 				case 0:
-					time[algo] = borneInf( g, P, message_size);	
+					time[algo] = borneInf( g, P, message_size)-l;	
 					//printf("%d longest_route\n",l);
 				break;
 				case 1:
-					time[algo] = borneInf2( g, P, message_size);	
+					time[algo] = borneInf2( g, P, message_size)-l;	
 				break;
 				case 2:
 					//printf("DESCENTE \n\n\n\n\n\n\n\n\n");
@@ -745,12 +745,12 @@ void simuldistrib(int seed)
 				case 5:
 					a =  greedy_deadline_assignment( g, P, message_size,0);
 				break;
-				
+
 				}
 				if((algo > 1))
 				{
 					if(a)
-						time[algo] = travel_time_max_buffers(g);
+						time[algo] = travel_time_max_buffers(g)-l;
 					
 					/*printf("algo %d \n",algo);
 					int lenght=0;
@@ -783,7 +783,13 @@ void simuldistrib(int seed)
 			printf("La descente est moins bonne que l'algo greedy d'init \n");
 		if((time[3]>time[5]) )
 			printf("Le taboo est moins bon que l'algo greedy d'init \n");
-
+		if((time[1]>time[0]) )
+		{
+			printf("Pb de born inf la les garcons %d %d %d\n",time[0]+l,time[1]+l,l);
+			print_graphvitz(g,"../view/view.dot");
+			affiche_graph(g,P,stdout);
+			exit(45);
+		}
 		for(int k=2;k<nb_algos;k++)
 		{
 			if((time[k]<time[0]) || (time[k]<time[1]))

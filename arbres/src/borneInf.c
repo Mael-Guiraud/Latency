@@ -116,21 +116,8 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id)
 	return max;
 
 }
-int borneInfall_arcs(Graph g, int P, int message_size, int budget)
-{
-	int * t = load_links(g);
-	int max = 0;
-	int tmp;
-	for(int i=0;i<g.arc_pool_size;i++)
-	{
-		tmp = coreBorneInf(g,P,message_size,budget,t[i]);
-		if(tmp>max)
-			max = tmp;
-	}
-	free (t);
-	return max;
-}
-int borneInf(Graph g, int P, int message_size)
+
+int borneInfDicho(Graph g, int P, int message_size,int arcid)
 {
 	int min = 2*longest_route(g);
 	int max = min +P;
@@ -140,7 +127,7 @@ int borneInf(Graph g, int P, int message_size)
 	while(min != max)
 	{
 		milieu =min+ (max - min ) / 2;
-		tmp = borneInfall_arcs(g,P,message_size,milieu);
+		tmp = coreBorneInf(g,P,message_size,milieu,arcid);
 		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
 		if(tmp)
 		{
@@ -169,6 +156,25 @@ int borneInf(Graph g, int P, int message_size)
 		exit(45);
 	}
 	return res;
+}
+int borneInf(Graph g, int P, int message_size)
+{
+	int * t = load_links(g);
+	int max = 0;
+	int tmp;
+	
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		tmp = borneInfDicho(g,P,message_size,t[i]);
+	
+		if(tmp>max)
+		{
+			max = tmp;
+			
+		}
+	}
+	free (t);
+	return max;
 }
 int borneInf2_core(Graph g, int P, int message_size,int arc_id)
 {
@@ -205,11 +211,24 @@ int borneInf2(Graph g, int P, int message_size)
 	int * t = load_links(g);
 	int max = 0;
 	int tmp;
+	//printf("BORNE2 2\n");
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
 		tmp = borneInf2_core(g,P,message_size,t[i]);
+		//printf("arc %d red %d \n routes on arc :",i,tmp);
+		/*for(int j=0;j<g.arc_pool[t[i]].nb_routes;j++)
+		{
+			printf("%d - ",g.arc_pool[t[i]].routes_id[j]);
+		}
+		printf("\n");*/
 		if(tmp>max)
+		{
 			max = tmp;
+			//printf("--------------NEW MAX ");
+		}
+		//printf("\n");
+
+			
 	}
 	free (t);
 	return max;

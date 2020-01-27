@@ -14,9 +14,19 @@
 typedef struct{
 	int route;
 	int* pos;
+	int * bool_p;
 	//int period;
 } Voisin;
 
+void init_vois(int * tab, int size)
+{
+	for(int i=0;i<size;i++)
+	{
+		tab[i] =0;
+
+	}
+
+}
 
 int indice_identique(int * t, int taille)
 {
@@ -54,6 +64,52 @@ void next(int * tab, int id)
 		tab[id]++;
 	}
 }
+int fin_vois(int * tab, int size)
+{
+	for(int i=0;i<size;i++)
+	{
+		if(tab[i] != 1)
+		{
+		
+			return 0;
+		}
+	}
+	return 1;
+
+}
+int fin_vois2(int * tab, int* bool_p,int size)
+{
+	for(int i=0;i<size;i++)
+	{
+		if(tab[i] != 1)
+		{
+		
+			return 0;
+		}
+		if(bool_p[i]!= 1)
+			return 0;
+	}
+	return 1;
+
+}
+void next2(int * tab,int * bool_p, int id)
+{
+	if(tab[id] == 1)
+	{
+
+		if(fin_vois(bool_p,id))
+		{
+			tab[id]=0;
+			next(tab,id-1);
+			init_vois(bool_p,id)
+		}
+		
+	}
+	else
+	{
+		tab[id]++;
+	}
+}
 
 int fin_vois(int * tab, int size)
 {
@@ -68,15 +124,7 @@ int fin_vois(int * tab, int size)
 	return 1;
 
 }
-void init_vois(int * tab, int size)
-{
-	for(int i=0;i<size;i++)
-	{
-		tab[i] =0;
 
-	}
-
-}
 void echanger_gauche(int * tab, int size, int id)
 {
 	int tmp;

@@ -35,7 +35,7 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel
@@ -44,4 +44,4 @@
 //for logs 
 #define SHOW_EVERY 100
 
-#define NB_POINTS 10
+#define NB_POINTS 20
