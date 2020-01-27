@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include "structs.h"
+#include "config.h"
 #include "treatment.h"
 #include "greedy_waiting.h"
 #include "data_treatment.h"
@@ -15,8 +16,11 @@ typedef struct{
 	int route;
 	int* pos;
 	int * bool_p;
-	//int period;
 } Voisin;
+typedef struct{
+	int delay;
+	int new_offset;
+} retval;
 
 void init_vois(int * tab, int size)
 {
@@ -101,29 +105,23 @@ void next2(int * tab,int * bool_p, int id)
 		{
 			tab[id]=0;
 			next(tab,id-1);
-			init_vois(bool_p,id)
+			init_vois(bool_p,id);
 		}
 		
 	}
 	else
 	{
-		tab[id]++;
-	}
-}
-
-int fin_vois(int * tab, int size)
-{
-	for(int i=0;i<size;i++)
-	{
-		if(tab[i] != 1)
+		if(fin_vois(bool_p,id))
 		{
-		
-			return 0;
+			tab[id]++;
+			init_vois(bool_p,id);
 		}
+		
 	}
-	return 1;
-
+	next(bool_p,id);
 }
+
+
 
 void echanger_gauche(int * tab, int size, int id)
 {
@@ -179,8 +177,25 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 			kind = BACKWARD;
 		}
 		//x contient le level de contention de l'arc, et kind le sens
-
-
+	for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		{
+			if(kind == FORWARD)
+			{
+				if(g.contention[v.route][x]->routes_order_f[i] <0)
+					g.contention[v.route][x]->routes_order_f[i] = -g.contention[v.route][x]->routes_order_f[i];
+				if(g.contention[v.route][x]->routes_order_f[i] == INT_MAX)
+					g.contention[v.route][x]->routes_order_f[i] = 0;
+			}
+			else
+			{
+				if(g.contention[v.route][x]->routes_order_b[i] <0)
+					g.contention[v.route][x]->routes_order_b[i] = -g.contention[v.route][x]->routes_order_b[i];
+				if(g.contention[v.route][x]->routes_order_b[i] == INT_MAX)
+					g.contention[v.route][x]->routes_order_b[i] = 0;
+			}
+			
+		}
+		
 		//On cherche l'indice de au quel v.route est placée dans l'arc
 		idtmp = -1;
 		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
@@ -232,22 +247,49 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 			}
 		}
 	}
-	if(fin_vois(v.pos,g.nb_levels[v.route]))//Nouvelle route
+	if(VOISINAGE == 0)
 	{
-		v.route++;
-		free(v.pos);
-		if(v.route >= g.nb_routes)
+		if(fin_vois(v.pos,g.nb_levels[v.route]))//Nouvelle route
 		{
-			v.route = -1;
+			v.route++;
+			free(v.pos);
+			if(v.route >= g.nb_routes)
+			{
+				v.route = -1;
 
-			return v;
+				return v;
+			}
+			v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+			v.bool_p =NULL;
+			init_vois(v.pos,g.nb_levels[v.route]);
 		}
-		v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
-		init_vois(v.pos,g.nb_levels[v.route]);
+		else
+		{
+			next(v.pos,g.nb_levels[v.route]-1);
+		}
 	}
 	else
 	{
-		next(v.pos,g.nb_levels[v.route]-1);
+		if(fin_vois2(v.pos,v.bool_p,g.nb_levels[v.route]))//Nouvelle route
+		{
+			v.route++;
+			free(v.pos);
+			free(v.bool_p);
+			if(v.route >= g.nb_routes)
+			{
+				v.route = -1;
+
+				return v;
+			}
+			v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+			v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);
+			init_vois(v.pos,g.nb_levels[v.route]);
+			init_vois(v.bool_p,g.nb_levels[v.route]);
+		}
+		else
+		{
+			next2(v.pos,v.bool_p,g.nb_levels[v.route]-1);
+		}
 	}
 	
 
@@ -315,6 +357,31 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				echanger_droite(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
 			}
 		}
+
+		if(VOISINAGE)
+		{
+			if(kind == FORWARD)
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX;
+					else
+						g.contention[v.route][x]->routes_order_f[idtmp]= -g.contention[v.route][x]->routes_order_f[idtmp];
+				}
+			}
+			else
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX;
+					else
+						g.contention[v.route][x]->routes_order_b[idtmp]= -g.contention[v.route][x]->routes_order_b[idtmp];
+				}
+			}
+		}
+		
 	}
 	
 	return v;
@@ -372,6 +439,14 @@ Voisin init_voisinage(Graph g, Voisin v)
 	}
 	v.route =0;
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+	if(VOISINAGE)
+	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);;
+		init_vois(v.bool_p,g.nb_levels[v.route]);
+	}
+	else
+	{
+		v.bool_p = NULL;
+	}
 	init_vois(v.pos,g.nb_levels[v.route]);
 
 	return v;
@@ -379,6 +454,14 @@ Voisin init_voisinage(Graph g, Voisin v)
 Voisin reinit_voins(Graph g, Voisin v)
 {
 	v.route =0;
+	if(VOISINAGE)
+	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);;
+		init_vois(v.bool_p,g.nb_levels[v.route]);
+	}
+	else
+	{
+		v.bool_p = NULL;
+	}
 	v.pos= malloc(sizeof(int)* g.nb_levels[v.route]);
 	init_vois(v.pos,g.nb_levels[v.route]);
 
@@ -780,6 +863,243 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
 	return a;
 
 }
+int trouver_premier(int* orders, int nb)
+{
+	for(int i=0;i<nb;i++)
+	{
+		if(orders[i]>=0)
+			return orders[i];
+	}
+	if(orders[0] == INT_MAX)
+	{
+		return 0;
+	}
+	else
+		return orders[0];
+}
+retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int bool_p)
+{
+	int old_offset = offset;
+	int decalage = 0;
+	retval r;
+	//On decale les dates pour etre dans la bonne periode
+	while( (r_t > (begin+P))||(r_t < begin) )
+	{
+		if(r_t>(begin+P))
+		{
+			decalage -= P;
+			begin +=P;
+			offset += P;
+		}
+		else
+		{
+			decalage += P;
+			begin -=P;
+			offset -= P;
+		}
+	}
+	//On est dans la premiere periode
+
+	if(bool_p == 0)
+	{
+		if(offset>r_t)
+		{
+			r.delay = offset-r_t;
+			r.new_offset = old_offset+message_size;
+		}
+		else
+		{
+			r.delay = 0;
+			r.new_offset = r_t+decalage;
+		}
+	}
+	else // periode suivante
+	{
+		offset+=P;
+		r.delay = offset - r_t;
+		r.new_offset = old_offset+message_size;
+	}
+	return r;
+}
+Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
+{
+
+	Assignment a = malloc(sizeof(struct assignment));
+	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+
+	a->nb_routes_scheduled = 0;
+	a->all_routes_scheduled = 0;
+	Period_kind kind;
+	int CL;
+	int offset ;
+	int current_route;
+
+
+ 	for(int i=0;i<g.contention_level;i++)
+ 	{
+ 		offset = 0;
+ 		if(i<g.contention_level/2)
+ 		{	
+ 			CL = i;
+ 			kind = FORWARD;
+ 		}
+ 		else
+ 		{
+ 			CL = g.contention_level-i-1;
+ 			kind = BACKWARD;
+ 		}
+
+ 		for(int j=0;j<g.arc_pool_size;j++)
+ 		{
+ 			offset = 0;
+ 			int Per[g.arc_pool[j].nb_routes];
+ 			//int subset[g.arc_pool[j].nb_routes];
+ 			if(g.arc_pool[j].contention_level == CL)
+ 			{
+ 				int premier ;
+ 				if(kind == FORWARD)
+ 					premier = trouver_premier(g.arc_pool[j].routes_order_f,g.arc_pool[j].nb_routes);
+ 				else
+ 					premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
+ 				int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
+ 				int bool_p;
+ 				if(kind == BACKWARD)
+ 				{
+ 					begin += route_length_with_buffers_forward(g, premier);
+ 				}
+ 				offset = begin+message_size;
+ 				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
+ 				{
+ 					
+
+
+ 					if(kind == FORWARD)
+ 					{
+ 						if(g.arc_pool[j].routes_order_f[k] >= 0)
+ 						{
+ 							if(g.arc_pool[j].routes_order_f[k] != premier)
+ 							{
+ 								current_route = g.arc_pool[j].routes_order_f[k];
+ 								bool_p = 0;
+ 							}
+ 							else
+ 								current_route = -1;
+ 						}
+ 						else
+ 						{
+ 							if(g.arc_pool[j].routes_order_f[k] == INT_MAX)
+ 							{
+ 								if(premier!=0)
+ 								{
+ 									current_route = 0;
+ 								}
+ 								else
+ 								{
+ 									current_route = -1;
+ 								}
+ 							}
+ 							else
+ 							{
+ 								if(-g.arc_pool[j].routes_order_f[k] != premier)
+ 								{
+ 									current_route = -g.arc_pool[j].routes_order_f[k];
+ 								}
+ 								else
+ 								{
+ 									current_route = -1;
+ 								}
+ 							}
+ 							bool_p = 1;
+ 						}
+ 					}
+ 					else
+ 					{
+ 						if(g.arc_pool[j].routes_order_b[k] >= 0)
+ 						{
+ 							if(g.arc_pool[j].routes_order_b[k] != premier)
+ 							{
+ 								current_route = g.arc_pool[j].routes_order_b[k];
+ 								bool_p = 0;
+ 							}
+ 							else
+ 								current_route = -1;
+ 						}
+ 						else
+ 						{
+ 							if(g.arc_pool[j].routes_order_b[k] == INT_MAX)
+ 							{
+ 								if(premier!=0)
+ 								{
+ 									current_route = 0;
+ 								}
+ 								else
+ 								{
+ 									current_route = -1;
+ 								}
+ 							}
+ 							else
+ 							{
+ 								if(-g.arc_pool[j].routes_order_b[k] != premier)
+ 								{
+ 									current_route = -g.arc_pool[j].routes_order_b[k];
+ 								}
+ 								else
+ 								{
+ 									current_route = -1;
+ 								}
+ 							}
+ 							bool_p = 1;
+ 						}
+ 					}
+ 					if(current_route == -1)
+ 						continue;
+
+ 					int r_t = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
+ 					if(kind == BACKWARD)
+ 					{
+ 						r_t += route_length_with_buffers_forward(g, current_route);
+ 					}
+ 					retval r = calcul_delay(begin,offset,P,r_t,message_size,bool_p);
+ 					if(kind == FORWARD)
+ 						g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
+ 					else
+ 						g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
+ 					offset = r.new_offset;
+ 					if(offset > begin+P)
+ 					{
+ 						return a;
+ 					}
+ 					if(print)
+ 					{
+ 					
+ 						if(kind == FORWARD)
+ 							fill_Per(g.arc_pool[j].period_f, current_route, offset, message_size,P);
+ 						else
+ 							fill_Per(g.arc_pool[j].period_b, current_route, offset, message_size,P);
+ 					}
+
+ 				}
+ 					
+
+ 			}
+ 		}
+
+ 	}
+ 	for(int i=0;i<g.nb_routes;i++)
+ 	{
+ 		a->offset_forward[i] = 0;
+ 		a->offset_backward[i] = route_length_with_buffers_forward(g, i);
+ 		a->waiting_time[i]=0;
+ 	}
+	a->all_routes_scheduled = 1;
+	a->nb_routes_scheduled = g.nb_routes;
+
+
+	return a;
+
+}
 
 void reinit_delays(Graph g)
 {
@@ -942,7 +1262,16 @@ Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size, int tma
 	}
 	
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+	if(VOISINAGE)
+	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);;
+		init_vois(v.bool_p,g.nb_levels[v.route]);
+	}
+	else
+	{
+		v.bool_p = NULL;
+	}
 	init_vois(v.pos,g.nb_levels[v.route]);
+	
 	v.route=0;
 	return v;
 }
@@ -1245,6 +1574,14 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
 	init_vois(v.pos,g.nb_levels[v.route]);
+	if(VOISINAGE)
+	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);;
+		init_vois(v.bool_p,g.nb_levels[v.route]);
+	}
+	else
+	{
+		v.bool_p = NULL;
+	}
 	v.route=0;
 	
 	int cmpt = 0;
@@ -1312,9 +1649,21 @@ Voisin Voisin_alea(Graph g)
 	//Generation du voisin aleatoire
 	v.route = rand()%g.nb_routes;
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
+
 	for(int i=0;i<g.nb_levels[v.route];i++)
 	{
 		v.pos[i]=rand()%2;
+	}
+	if(VOISINAGE)
+	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);;
+		for(int i=0;i<g.nb_levels[v.route];i++)
+		{
+			v.bool_p[i]=rand()%2;
+		}
+	}
+	else
+	{
+		v.bool_p = NULL;
 	}
 
 	//On echange dans la periode
@@ -1370,6 +1719,31 @@ Voisin Voisin_alea(Graph g)
 				echanger_gauche(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
 			}
 		}
+
+
+		if(VOISINAGE)
+		{
+			if(kind == FORWARD)
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX;
+					else
+						g.contention[v.route][x]->routes_order_f[idtmp]= -g.contention[v.route][x]->routes_order_f[idtmp];
+				}
+			}
+			else
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX;
+					else
+						g.contention[v.route][x]->routes_order_b[idtmp]= -g.contention[v.route][x]->routes_order_b[idtmp];
+				}
+			}
+		}
 		
 	}
 	
@@ -1397,6 +1771,26 @@ void remet_voisin(Graph g,Voisin v)
 		//x contient le level de contention de l'arc, et kind le sens
 
 
+		//Vu qu'on remmet comme avant on vire le fait qu'il puisse y avoir un nombre negatif(ou le nombre de route a la place de -0)
+		//Ca n'arrive normalement jamais quand on est dans l'ancien voisinage.
+		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
+		{
+			if(kind == FORWARD)
+			{
+				if(g.contention[v.route][x]->routes_order_f[i] <0)
+					g.contention[v.route][x]->routes_order_f[i] = -g.contention[v.route][x]->routes_order_f[i];
+				if(g.contention[v.route][x]->routes_order_f[i] == INT_MAX)
+					g.contention[v.route][x]->routes_order_f[i] = 0;
+			}
+			else
+			{
+				if(g.contention[v.route][x]->routes_order_b[i] <0)
+					g.contention[v.route][x]->routes_order_b[i] = -g.contention[v.route][x]->routes_order_b[i];
+				if(g.contention[v.route][x]->routes_order_b[i] == INT_MAX)
+					g.contention[v.route][x]->routes_order_b[i] = 0;
+			}
+			
+		}
 		//On cherche l'indice de au quel v.route est placée dans l'arc
 		idtmp = -1;
 		

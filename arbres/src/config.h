@@ -45,3 +45,6 @@
 #define SHOW_EVERY 100
 
 #define NB_POINTS 20
+
+
+#define VOISINAGE 0
