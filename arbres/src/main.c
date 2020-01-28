@@ -25,8 +25,8 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"test"))
 	{
-		while(1)
-			test();
+		
+		test();
 	}
 	if(!strcmp(argv[1],"onos"))
 	{

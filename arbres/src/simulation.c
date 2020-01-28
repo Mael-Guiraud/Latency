@@ -796,7 +796,7 @@ void simuldistrib(int seed)
 			{
 				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d\n",k,time[k],time[0],time[1]);
 				
-				exit(4);
+				//exit(4);
 
 			}
 		}
