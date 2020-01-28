@@ -172,7 +172,6 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 	int idtmp;
 	Period_kind kind;
 	int x;
-	printf("Entrée dans la fonction nouveau voisin\n");
 	//On remet comme avant
 	for(int level=0;level<g.nb_levels[v.route];level++)
 	{
@@ -185,18 +184,7 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 		}
 		//x contient le level de contention de l'arc, et kind le sens
 
-		printf(" route %d level%d x %d kind %d\n Avant : ",v.route,level,x,kind);
-		if(kind == FORWARD)
-			for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-			{
-				printf("%d ",g.contention[v.route][x]->routes_order_f[i]);
-			}
-		else
-			for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-			{
-				printf("%d ",g.contention[v.route][x]->routes_order_b[i]);
-			}
-			printf("\n");
+
 
 	for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
 		{
@@ -271,21 +259,10 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				echanger_droite(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
 			}
 		}
-		printf("Apres remise à 0 : ");
-		if(kind == FORWARD)
-			for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-			{
-				printf("%d ",g.contention[v.route][x]->routes_order_f[i]);
-			}
-		else
-			for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-			{
-				printf("%d ",g.contention[v.route][x]->routes_order_b[i]);
-			}
-			printf("\n");
+
 	}
 	
-	printf("\n Fin Remise à 0\n");
+
 	if(VOISINAGE == 0)
 	{
 		if(fin_vois(v.pos,g.nb_levels[v.route]))//Nouvelle route
@@ -312,7 +289,7 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 
 		if(fin_vois2(v.pos,v.bool_p,g.nb_levels[v.route]))//Nouvelle route
 		{
-			printf("On change de route \n");
+	
 			v.route++;
 			free(v.pos);
 			free(v.bool_p);
@@ -349,18 +326,7 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 
 		//On cherche l'indice au quel v.route est placée dans l'arc
 		idtmp = -1;
-		printf("Changement pos route %d level%d x %d kind %d avant :",v.route,level,x,kind);
-			if(kind == FORWARD)
-				for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-				{
-					printf("%d ",g.contention[v.route][x]->routes_order_f[i]);
-				}
-			else
-				for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-				{
-					printf("%d ",g.contention[v.route][x]->routes_order_b[i]);
-				}
-				printf("\n");
+
 		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
 		{
 			if(kind == FORWARD)
@@ -432,32 +398,10 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				echanger_droite(g.contention[v.route][x]->routes_order_b,g.contention[v.route][x]->nb_routes , idtmp);
 			}
 		}
-		printf("Apres : ");
-			if(kind == FORWARD)
-				for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-				{
-					printf("%d ",g.contention[v.route][x]->routes_order_f[i]);
-				}
-			else
-				for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-				{
-					printf("%d ",g.contention[v.route][x]->routes_order_b[i]);
-				}
-				printf("\n");
+	
 	
 		idtmp = -1;
-			printf("changement period - route %d level%d x %d kind %d avant : ",v.route,level,x,kind);
-				if(kind == FORWARD)
-					for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-					{
-						printf("%d ",g.contention[v.route][x]->routes_order_f[i]);
-					}
-				else
-					for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-					{
-						printf("%d ",g.contention[v.route][x]->routes_order_b[i]);
-					}
-					printf("\n");
+
 		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
 			{
 				if(kind == FORWARD)
@@ -501,7 +445,6 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				}
 
 			}
-		printf("\n");
 		if(idtmp ==-1)
 		{
 			printf("Error, indice not found.\n");exit(37);
@@ -538,19 +481,7 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				}
 			}
 		}
-		printf(" Après : ");
-			if(kind == FORWARD)
-				for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-				{
-					printf("%d ",g.contention[v.route][x]->routes_order_f[i]);
-				}
-			else
-				for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-				{
-					printf("%d ",g.contention[v.route][x]->routes_order_b[i]);
-				}
-				printf("\n");
-		printf("\n Fin level\n");
+
 		
 	}
 	
@@ -1055,6 +986,7 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 	int old_offset = offset;
 	int decalage = 0;
 	retval r;
+
 	//On decale les dates pour etre dans la bonne periode
 	while( (r_t > (begin+P))||(r_t < begin) )
 	{
@@ -1083,7 +1015,7 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 		else
 		{
 			r.delay = 0;
-			r.new_offset = r_t+decalage;
+			r.new_offset = r_t+decalage+message_size;
 		}
 	}
 	else // periode suivante
@@ -1092,6 +1024,7 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 		r.delay = offset - r_t;
 		r.new_offset = old_offset+message_size;
 	}
+	
 	return r;
 }
 Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
@@ -1137,14 +1070,26 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  				else
  					premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
  			
- 				printf("Premier = %d \n",premier);
+ 			
  				int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
  				int bool_p;
  				if(kind == BACKWARD)
  				{
  					begin += route_length_with_buffers_forward(g, premier);
  				}
+ 				if(kind == FORWARD)
+ 					g.arc_pool[j].routes_delay_f[premier] =  0;
+ 				else
+ 					g.arc_pool[j].routes_delay_b[premier] =  0;
  				offset = begin+message_size;
+ 				if(print)
+ 				{
+ 				
+ 					if(kind == FORWARD)
+ 						fill_Per(g.arc_pool[j].period_f, premier, offset-message_size, message_size,P);
+ 					else
+ 						fill_Per(g.arc_pool[j].period_b, premier, offset-message_size, message_size,P);
+ 				}
  				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
  				{
  					
@@ -1245,16 +1190,16 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  					offset = r.new_offset;
  					if(offset > begin+P)
  					{
- 						printf("Ca a débordé, on quitte");
+ 						//printf("Ca a débordé, on quitte");
  						return a;
  					}
  					if(print)
  					{
  					
  						if(kind == FORWARD)
- 							fill_Per(g.arc_pool[j].period_f, current_route, offset, message_size,P);
+ 							fill_Per(g.arc_pool[j].period_f, current_route, offset-message_size, message_size,P);
  						else
- 							fill_Per(g.arc_pool[j].period_b, current_route, offset, message_size,P);
+ 							fill_Per(g.arc_pool[j].period_b, current_route, offset-message_size, message_size,P);
  					}
 
  				}
@@ -1474,13 +1419,14 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 	Assignment a=NULL;
 	if(!orders)
 	{
-
+/*
 		Assignment a = malloc(sizeof(struct assignment));
 		a->offset_forward = malloc(sizeof(int)*g.nb_routes);
 		a->offset_backward = malloc(sizeof(int)*g.nb_routes);
 		a->waiting_time = malloc(sizeof(int)*g.nb_routes);
 		a->nb_routes_scheduled = nb_d;
 		a->all_routes_scheduled = 0;
+	*/
 		return a;
 	}
 	
@@ -1571,13 +1517,21 @@ Assignment best_of_x(Graph g, int P, int message_size,int tmax)
 	
 	for(int i=0;i<tmax;i++)
 	{
-
 		a = descente(g,P,message_size,1);
-		if(a->time < prev )
-			best = a;
-		else
-			free_assignment(a);
+		if(a)
+		{
+			if(a->time < prev )
+			{
+				printf("a->time %d\n ",a->time);
+				best = a;
+			}
+				
+			else
+				free_assignment(a);
+		}
+		
 	}
+
 	return best;
 }
 
@@ -1670,6 +1624,7 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace * 
 		orders[i] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 		orders[i+g.arc_pool_size] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 	}
+	cpy_orders(orders,g,1);
 	//printf("Nouveau parcours\n");
 	while(v.route != -1)
 	{
@@ -1746,8 +1701,14 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		a= assignment_with_orders_vois1(g,P,message_size,0);
 	else
 		a = assignment_with_orders(g,P,message_size,0);
-	a->time = travel_time_max_buffers(g);
-
+	if(a->all_routes_scheduled)
+		a->time = travel_time_max_buffers(g);
+	else
+	{
+		free_assignment(a);
+		return NULL;
+	}
+		
 	int min = a->time;
 	reinit_delays(g);
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
@@ -1762,7 +1723,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 
 	int key = hash_graph(g,sizehash);
 	hash_table[key] = ajouter_orders(hash_table[key],orders,a->time);
-	fprintf(f,"%d %d \n",0,hash_table[key]->time);
+	//fprintf(f,"%d %d \n",0,hash_table[key]->time);
 	free_assignment(a);
 	
 	v.route=0;
