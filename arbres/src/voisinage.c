@@ -365,18 +365,41 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 		{
 			if(kind == FORWARD)
 			{
-				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				if(v.route == 0)
 				{
-					idtmp = i;
-					break;
+					if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == INT_MAX))
+					{
+						idtmp = i;
+						break;
+					}
 				}
+				else
+				{
+					if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == -v.route))
+					{
+						idtmp = i;
+						break;
+					}
+				}
+				
 			}
 			else
 			{
-				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				if(v.route == 0)
 				{
-					idtmp = i;
-					break;
+					if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == INT_MAX))
+					{
+						idtmp = i;
+						break;
+					}
+				}
+				else
+				{
+					if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == -v.route))
+					{
+						idtmp = i;
+						break;
+					}
 				}
 			}
 
@@ -436,44 +459,54 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 					}
 					printf("\n");
 		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-		{
-			if(kind == FORWARD)
 			{
-				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				if(kind == FORWARD)
 				{
-					idtmp = i;
-					break;
+					if(v.route == 0)
+					{
+						if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == INT_MAX))
+						{
+							idtmp = i;
+							break;
+						}
+					}
+					else
+					{
+						if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == -v.route))
+						{
+							idtmp = i;
+							break;
+						}
+					}
+					
 				}
-			}
-			else
-			{
-				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				else
 				{
-					idtmp = i;
-					break;
+					if(v.route == 0)
+					{
+						if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == INT_MAX))
+						{
+							idtmp = i;
+							break;
+						}
+					}
+					else
+					{
+						if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == -v.route))
+						{
+							idtmp = i;
+							break;
+						}
+					}
 				}
-			}
 
-		}
+			}
 		printf("\n");
 		if(idtmp ==-1)
 		{
 			printf("Error, indice not found.\n");exit(37);
 		}
-		if(kind == FORWARD)
-		{
-			if(g.contention[v.route][x]->routes_order_f[idtmp] != v.route )
-			{
-				printf("GROS PB La ! ");exit(65);
-			}
-		}
-		else
-		{
-			if(g.contention[v.route][x]->routes_order_b[idtmp] != v.route )
-			{
-				printf("GROS PB La ! ");exit(68);
-			}
-		}
+
 		if(VOISINAGE)
 		{
 			if(kind == FORWARD)
@@ -481,7 +514,12 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				if(v.bool_p[level]==1)
 				{
 					if(v.route == 0 )
-						g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX;
+					{
+						if(g.contention[v.route][x]->routes_order_f[idtmp]== INT_MAX)
+							g.contention[v.route][x]->routes_order_f[idtmp]=0;
+						else
+							g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX;
+					}	
 					else
 						g.contention[v.route][x]->routes_order_f[idtmp]= -g.contention[v.route][x]->routes_order_f[idtmp];
 				}
@@ -491,7 +529,10 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 				if(v.bool_p[level]==1)
 				{
 					if(v.route == 0 )
-						g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX;
+						if(g.contention[v.route][x]->routes_order_b[idtmp]== INT_MAX)
+							g.contention[v.route][x]->routes_order_b[idtmp]=0;
+						else
+							g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX;
 					else
 						g.contention[v.route][x]->routes_order_b[idtmp]= -g.contention[v.route][x]->routes_order_b[idtmp];
 				}
@@ -1187,7 +1228,7 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  							bool_p = 1;
  						}
  					}
- 					
+
  					if(current_route == -1)
  						continue;
 
