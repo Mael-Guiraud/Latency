@@ -308,7 +308,6 @@ A bound on $n_i$ can be computed, since $A$ can be extended while $Fmo_j(A) < m$
 \end{proof}
 
 
-
 \subsection{Experimental results}
 
 Results better in practice, the worst case is different from the 
@@ -441,7 +440,7 @@ Assume that $i$ cannot be used to extend $A$. The swap operation is the followin
 select a free position $p$ in the first period, remove the message which uses the position $p+d$ in the second period from $A$ and add $i$ to $A$ with offset $p$. We denote this operation by $Swap(i,p,A)$.
 
 \begin{lemma}
-Let $A$ be some partial solution of size $k$ and let $i$ be an unscheduled message. If $i$ cannot be used to extend $S$, then either $Pot(A) \geq kn/2$ or there is a $p$ such that $Pot(Swap(i,p,A)) > Pot(A)$.
+Let $A$ be some partial solution of size $k$ and let $i$ be an unscheduled message. If $i$ cannot be used to extend $A$, then either $Pot(A) \geq kn/2$ or there is a $p$ such that $Pot(Swap(i,p,A)) > Pot(A)$.
 \end{lemma}
 
 \begin{proof}\label{lemma:swap}
@@ -449,6 +448,7 @@ The positions in the first period can be partitionned into two part: $P_{u}$ the
 Let us denote by $V_f$ the sum of the potential of the positions in $P_f$ and by $V_u$ the sum of the potentials of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partitions the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
 By hypothesis, since $i$ cannot be scheduled, for all $p \in P_{f}$, $p+d_i$ is used in the second period. We now define the function $F$ which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d$ in the second period, that is $A(j) + d_j = p + d \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark now that, if we compare $Swap(i,p,A)$ to $A$, on the second period the positions are used. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ add to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
+
 Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Hence,
 since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$.
 Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
@@ -458,14 +458,10 @@ Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \subsection{The Swap Algorithm}
 
 
-We now describe the algorithm to solve \pma with load $1/2 + \epsilon$. The first two step schedule messages so that the $Pot(A)$ is large enough. Then, it produces a set of messages $R$ in the following way: select the message of largest potential
-not in $R$, add it to $R$ and remove it if necessary from the partial assignment. Then schedule or swap any unscheduled message until the potential is as large as before adding the previous message to $R$. When $R$ is of size $\epsilon P$ stops
-this process. Finally, using any greedy algorithm, the messages in $R$ are scheduled.
+We now describe the algorithm, called Swap algorithm, to solve \pma with load $1/2 + \epsilon$. The first two step schedule messages so that the $Pot(A)$ is large enough. Then, it produces a set of messages $R$ in the following way: select the message of largest potential
+not in $R$, add it to $R$ and remove it if necessary from the partial assignment. Then schedule or swap any unscheduled message until the potential is as large as before adding the previous message to $R$. When $R$ is of size $\epsilon P$ stops this process. Finally, using any greedy algorithm, the messages in $R$ are scheduled.
 
-
-We give an analysis of the algorithm, showing that it works for some value
-of $\epsilon$. To obtain a better $\epsilon$, we will later show some refinments of this algorithm: a better selection of the values added in the second step, the possibility to repeat the first step to guarantee a higher potential.
-
+We now give an analysis of the algorithm, showing that it works for some value of $\epsilon$. 
 
 \begin{theorem}
 The two steps algorithm solves positively \pma for instances with $\tau =1$ and load $1/2 + 1/16$.
@@ -475,13 +471,15 @@ The two steps algorithm solves positively \pma for instances with $\tau =1$ and 
  In the first step of the algorithm, we use any greedy algorithm which always schedules
  at least $k \geq P/2$ messages. In the second step, we obtain a partial assignment $A$ of size $k$ such that $Pot(A) \geq kn/2$ by Lemma~\ref{lemma:swap}. Hence, $Pot(A)$ is at least $Pn/4$.
  
-
+Now in the next step, we select messages to add them to $R$. Since we select the message of highest potential,
+it must be of potential higher than the average potential, that is $P/4$. Even when messages are removed from the partial 
+assignment the value $Pot(A) > Pn/4$ is guaranteed by scheduling unscheduled messages and swaping exactly as in the first two steps. Remark that when a message is unscheduled  
 
 At the end of the first step, we have a partial assignment $A$ and $Pot(A)$ is at least $Pn/4$. We select $R$ the set of $\epsilon P$ messages of largest potential. We assume they are of potential at least $2\epsilon P, 2\epsilon P +2,\dots ,4\epsilon P$ and show that the algorithm finds an assignment. Removing a message from $A$ remove at most $2$ to the 
 potential of each other message. Hence, if we remove the routes in $R$ scheduled by $A$, the potential of the routes decreases by at most $2\epsilon P$. Hence, when scheduling the elements of $R$ in the second step, they are of potential at least $0, 2,\dots ,2\epsilon P$.
 By definition of the potential of a message, the number of possible offsets for an unscheduled route when there are $l$ scheduled routes is equal to $m - 2l$ plus its potential. Hence, the number of possible offsets is always positive when scheduling the messages in the order of their potential and the algorithms builds an assignment.
 
-Now, we determine $\epsilon$ such that are of potential at least $2\epsilon P, 2\epsilon P +2,\dots ,4\epsilon P$. Sort all messages by decreasing potential and assume that the previous condition is not met, that is the $i$th route in order of potential is of potential less than $4\epsilon P - 2i$. The potential of a single message is bounded by $P/2$ since each scheduled message contribute at most one to its potential. Therefore, the first
+Now, we determine $\epsilon$ such that the messages selected in $R$ are of potential at least $2\epsilon P, 2\epsilon P +2, \dots, 4\epsilon P$. Sort all messages by decreasing potential and assume that the previous condition is not met, that is the $i$th route in order of potential is of potential less than $4\epsilon P - 2i$. The potential of a single message is bounded by $P/2$ since each scheduled message contribute at most one to its potential. Therefore, the first
 $i$ routes are of potential at most $P/2$ and the following ones of potential at most $4\epsilon P - 2i$. Therefore the potential is less than $iP/2 + (4\epsilon P - 2i) (n -i)$. This function is decreasing for $i \leq \epsilon P$, hence the potential should be less than $4\epsilon P n$.
  
  For the algorithm to succeed, we want the potential to be larger than $4\epsilon P n$ so that the condition on the routes of largest potential is met.
