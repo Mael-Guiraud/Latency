@@ -107,7 +107,7 @@ We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. 
 \begin{figure}
 %\begin{minipage}[c]{.5\linewidth}
 \centering
-\includegraphics[scale=0.35]{network}
+\includegraphics[scale=0.35]{network.pdf}
 %\end{minipage}
 %\begin{minipage}[c]{.5\linewidth}
 \centering
@@ -435,9 +435,12 @@ delay for a message, with this choice of reference is less than $\tau/2$.
 
 When $\tau = 1$, \emph{any greedy algorithm} finds a solution to \pma when the load is less than $1/2$ since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We now give a method which always finds a solution for load of $1/2 + \epsilon$.
 
-To go above $1/2$ of load, we use an algorithm with three steps (which can be repeated to 
-imrpve the algorithm). In the first step, any method is used to build the largest possible
-partial assignment. Then, in a second step we allow to exchange scheduled messages with unscheduled ones to improve some global measure. In the last step, a subset of messages is selected because they have less conflicts with the already scheduled messages. This subset is then scheduled by any greedy algorithm. The algorithm is not greedy, since we allow to exchange a scheduled message with an unscheduled one and it requires to know all messages in advance. We could use a greedy second step or even a single pass greedy algorithm to go over $1/2$ of load using the same ideas. However, the proofs are more complicated and the $\epsilon$ for which they hold is much smaller.
+To go above $1/2$ of load, we use an algorithm wich optimizes a potential measuring how many offsets 
+are avalaible for all messages, scheduled or not. We schedule messages while possible with any greedy algorithm.
+Then, when all unscheduled messages have no free offset, we use a swap operation defined later, 
+which improves the potential. When the potential is high enough, it garantees that there are two messages whose offset can be exchanged so that a new message can be scheduled. 
+
+ The algorithm is not greedy, since we allow to exchange a scheduled message with an unscheduled one. It cannot work online, since it requires to know all messages in advance. 
 
 \begin{definition}
 The potential of a message of delay $d$, for a partial assignment $A$
@@ -485,11 +488,11 @@ Let $A$ be some partial solution of size $s$ and let $i$ be an unscheduled messa
 Assume that $i$ cannot be used to extend $A$. The swap operation is the following: 
 select a free position $p$ in the first period, remove the message which uses the position $p+d$ in the second period from $A$ and add $i$ to $A$ with offset $p$. We denote this operation by $Swap(i,p,A)$.
 
-\begin{lemma}
+\begin{lemma}\label{lemma:swap}
 Let $A$ be some partial solution of size $k$ and let $i$ be an unscheduled message. If $i$ cannot be used to extend $A$, then either $Pot(A) \geq kn/2$ or there is a $p$ such that $Pot(Swap(i,p,A)) > Pot(A)$.
 \end{lemma}
 
-\begin{proof}\label{lemma:swap}
+\begin{proof}
 The positions in the first period can be partitionned into two part: $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
 Let us denote by $V_f$ the sum of the potential of the positions in $P_f$ and by $V_u$ the sum of the potentials of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partitions the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
@@ -500,17 +503,20 @@ since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(
 Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
 
+Consider an assignment of size $n' = (1/2 + \epsilon')P$, the potential of a message is at least $2\epsilon' P$. 
+Moreover, a message which cannot be scheduled is of potential exactly  $2\epsilon' P$. Hence, the potential of 
+any assignment of size $n'$ is at least $2\epsilon' P n $. Hence, the method of Lemma~\ref{lemma:swap} will guarantee a better potential for $2\epsilon' P n <  nn'/2$, that is $\epsilon' < 1/6$. Hence, any algorithm relying on this potential
+cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$.
 
 \subsection{The Swap Algorithm}
 
 
-We now describe the algorithm, called Swap algorithm, to solve \pma with load $1/2 + \epsilon$. The first two step schedule messages so that the $Pot(A)$ is large enough. Then, it produces a set of messages $R$ in the following way: select the message of largest potential
-not in $R$, add it to $R$ and remove it if necessary from the partial assignment. Then schedule or swap any unscheduled message until the potential is as large as before adding the previous message to $R$. When $R$ is of size $\epsilon P$ stops this process. Finally, using any greedy algorithm, the messages in $R$ are scheduled.
+We now precisely describe the \emph{Swap} algorithm. It schedules unscheduled messages while possible and then applies Swap operations while it increases the potential. At this point, if it has scheduled $n' = (1/2 + \epsilon')P$ messages, it selects the $\epsilon'P + 1$ of largest potential and temporarily remove them from the assignment. Then any remaining message is scheduled, which is possible since there are less than $P/2$ scheduled messages. Then the messages of largest potential are added back to the assignment using their orignal offset, except one or two which are in conflict with the newly scheduled message. If these two messages can be scheduled somewhere else the algorithm continues repeating the same steps otherwise it fails. 
 
-We now give an analysis of the algorithm, showing that it works for some value of $\epsilon$. 
+We now give an analysis of the algorithm, showing that it always works for some value of $\epsilon$. 
 
 \begin{theorem}
-The two steps algorithm solves positively \pma for instances with $\tau =1$ and load $1/2 + 1/16$.
+The Swap algorithm solves positively \pma for instances with $\tau =1$ and load $1/2 + $.
 \end{theorem}
 
 \begin{proof}
