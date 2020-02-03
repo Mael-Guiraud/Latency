@@ -392,7 +392,7 @@ to $A'(i) + 2\tau -1$ in the first period and $A'(i) + d_{i} - (d_{i} \mod 2\tau
 Ici un dessin pour expliquer la technique
 
 
-\subsection{Reduction  using buffering}
+\subsection{Reduction using buffering}
 
 We have presented our problem with a single degree of freedom by message: its
 offset. We could also allow to buffer a message $i$ during a time $b$ between the two contention points, which means changing $d_i$ to $d_i + b$. The quality of the obtained solution is worst since the buffering add latency to the messages. We now describe how we can make a tradeoff between the added latency and the size of the messages, knwowing that smaller messages helps to schedule instances with higher load.
@@ -412,7 +412,7 @@ Compact Pairs on instances with $\tau =2$ always solves \pma positively on insta
 \end{theorem}
 \begin{proof}
 We assume w.l.o.g that there are less message with even $d_i$ than odd $d_i$.
-We schedule compact pairs of messages with even $d_i$, then we schedule single message with even $d_i$. The worst case is when there is the same number of the two types of messages.
+We schedule compact pairs of messages with even $d_i$, then we schedule single message with odd $d_i$. The worst case is when there is the same number of the two types of messages.
 The number of forbidden offsets for $n$ scheduled messages is bounded by 
 $$ n/2 (1 + 3/2) + n/2(1 + 1).$$
 Hence, we can always schedule messages when $n \leq (4/9)m$.
@@ -430,6 +430,8 @@ delay for a message, with this choice of reference is less than $\tau/2$.
 \section{Going Above Load of 1/2 for messages of size one}
 
 When $\tau = 1$, \emph{any greedy algorithm} finds a solution to \pma when the load is less than $1/2$ since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We now give a method which always finds a solution for load of $1/2 + \epsilon$.
+
+\subsection{Deterministic algorithm}
 
 To go above $1/2$ of load, we use an algorithm wich optimizes a potential measuring how many offsets are avalaible for all messages, scheduled or not. We schedule messages while possible with any greedy algorithm.
 Then, when all unscheduled messages have no free offset, we use a swap operation defined later, which improves the potential. When the potential is high enough, it garantees that there are two messages whose offset can be changed so that a new message can be scheduled. 
@@ -474,7 +476,7 @@ The sum of potentials of all positions for a partial assignment with $k$ schedul
  As a consequence of this lemma, $Pot(A) \leq nk$ and in the algorithm we 
  propose, we guarantee to obtain at last half this value by using an exchange mechanism described in the next subsection.
 
-\subsection{Swap and potential improvement}
+\paragraph{Swap and potential improvement}
 
 
 Let $A$ be some partial solution of size $s$ and let $i$ be an unscheduled message of delay $d$. 
@@ -496,80 +498,64 @@ since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(
 Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
 
-Consider an assignment of size $n' = (1/2 + \epsilon')P$, the potential of a message is at least $2\epsilon' P$. 
-Moreover, a message which cannot be scheduled is of potential exactly  $2\epsilon' P$. Hence, the potential of 
-any assignment of size $n'$ is at least $2\epsilon' P n $. Hence, the method of Lemma~\ref{lemma:swap} will guarantee a better potential for $2\epsilon' P n <  nn'/2$, that is $\epsilon' < 1/6$. Hence, any algorithm relying on this potential
-cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$.
+Consider an assignment of size $n' = (1/2 + \epsilon')P$, and a message of delay $d$.
+If we consider all $n'$ used offsets $o$ and all times time $o+d$ in the second period, 
+then $o$ and $o+d$ are both used for at least $n' - (P -n') = 2\epsilon' P$ values of $o$.
+The potential of a message is then larger than $2\epsilon' P$ and when it cannot be scheduled
+it is also less or equal to $2\epsilon' P$, that is equal to $2\epsilon' P$.
+
+Hence, the potential of any assignment of size $n'$ is at least $2\epsilon' P n $. As a consequence, the method of Lemma~\ref{lemma:swap} will guarantee a non trivial potential for $2\epsilon' P n <  nn'/2$, that is $\epsilon' < 1/6$. Any algorithm relying on this potential
+cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$ or we should either improve on the Swap method or its analysis. In particular, $2\epsilon P$ positions in $P_{u}$
+are not taken into account, and could help improve the analysis.
 
 \subsection{The Swap Algorithm}
 
 
-We now precisely describe the \emph{Swap} algorithm. It schedules unscheduled messages while possible and then applies Swap operations while it increases the potential. At this point, if it has scheduled $n' = (1/2 + \epsilon')P$ messages, it selects the $\epsilon'P + 1$ of largest potential and temporarily remove them from the assignment. Then any remaining message is scheduled, which is possible since there are less than $P/2$ scheduled messages. Then the messages of largest potential are added back to the assignment using their orignal offset, except one or two which are in conflict with the newly scheduled message. If these two messages can be scheduled somewhere else the algorithm continues repeating the same steps otherwise it fails. 
-
-We now give an analysis of the algorithm, showing that it always works for some value of $\epsilon$. 
+We now precisely describe the \emph{Swap} algorithm. It schedules unscheduled messages while possible and then applies Swap operations while it increases the potential. When the potential is maximal, it tries to schedule a new message by moving one or two scheduled messages to new offsets. If it fails to find such messages the algorithm stops, otherwise 
+it continues repeating the same steps.
+We now give an analysis of the algorithm, showing that it always works for a load small enough.
 
 \begin{theorem}
-The Swap algorithm solves positively \pma for instances with $\tau =1$ and load $1/2 + $.
+The Swap algorithm solves positively \pma for instances with $\tau =1$ and load $1/2 + (\sqrt{5}/2 -1) \approx 0,618$.
 \end{theorem}
 
 \begin{proof}
- In the first step of the algorithm, we use any greedy algorithm which always schedules
- at least $k \geq P/2$ messages. In the second step, we obtain a partial assignment $A$ of size $k$ such that $Pot(A) \geq kn/2$ by Lemma~\ref{lemma:swap}. Hence, $Pot(A)$ is at least $Pn/4$.
- 
-Now in the next step, we select messages to add them to $R$. Since we select the message of highest potential,
-it must be of potential higher than the average potential, that is $P/4$. Even when messages are removed from the partial 
-assignment the value $Pot(A) > Pn/4$ is guaranteed by scheduling unscheduled messages and swaping exactly as in the first two steps. Remark that when a message is unscheduled  
+We determine for which value of $n$, the number of messages, the Swap algorithm
+always work. We need only to study the case when $n-1$ messages are scheduled by $A$
+and we try to schedule the last one, since the intermediate steps are easier to realize. 
 
-At the end of the first step, we have a partial assignment $A$ and $Pot(A)$ is at least $Pn/4$. We select $R$ the set of $\epsilon P$ messages of largest potential. We assume they are of potential at least $2\epsilon P, 2\epsilon P +2,\dots ,4\epsilon P$ and show that the algorithm finds an assignment. Removing a message from $A$ remove at most $2$ to the 
-potential of each other message. Hence, if we remove the routes in $R$ scheduled by $A$, the potential of the routes decreases by at most $2\epsilon P$. Hence, when scheduling the elements of $R$ in the second step, they are of potential at least $0, 2,\dots ,2\epsilon P$.
-By definition of the potential of a message, the number of possible offsets for an unscheduled route when there are $l$ scheduled routes is equal to $m - 2l$ plus its potential. Hence, the number of possible offsets is always positive when scheduling the messages in the order of their potential and the algorithms builds an assignment.
+Assume now that the unscheduled message is of delay $d$. We consider the pair 
+of times in the first and second period $(o,o+d)$ for $o \in [P]$. Since the message
+cannot be scheduled, there are three cases. First, $o$ is unused in the first period but $o+d$ is used in the second period. Since there are $n-1$ scheduled messages, there are $P-n+1$ such value of $o$. If a message using the time $o+d$ in the second period can be scheduled elsewhere, so that the unscheduled message can use offset $o$, then the algorithm succeds.
+Otherwise the message has no possible offsets, which means its potential is equal to $2(\epsilon P -1)$.
+The second case is symmetric: $o$ is used in the first period but $o+d$ is unused in the second period. 
+Finally, we have the case $o$ is used in the first period and $o+d$ is used in the second period.  There are $2(\epsilon P -1)$ such values of $o$. If the two messages using times 
+$o$ and $o+d$ can be rescheduled so that offset $o$ can be used fo the unscheduled message,
+then the algorithm succeeds. This is always possible when one message is of potential at least $2\epsilon P -1$ and the other of potential at least $2\epsilon P + 1$. Since a message is of potential is more than $2(\epsilon P -1)$ and at most $n-1$, it is satisfied when the sum of the two potentials is at least $2(\epsilon P -1) + n$.
 
-Now, we determine $\epsilon$ such that the messages selected in $R$ are of potential at least $2\epsilon P, 2\epsilon P +2, \dots, 4\epsilon P$. Sort all messages by decreasing potential and assume that the previous condition is not met, that is the $i$th route in order of potential is of potential less than $4\epsilon P - 2i$. The potential of a single message is bounded by $P/2$ since each scheduled message contribute at most one to its potential. Therefore, the first
-$i$ routes are of potential at most $P/2$ and the following ones of potential at most $4\epsilon P - 2i$. Therefore the potential is less than $iP/2 + (4\epsilon P - 2i) (n -i)$. This function is decreasing for $i \leq \epsilon P$, hence the potential should be less than $4\epsilon P n$.
- 
- For the algorithm to succeed, we want the potential to be larger than $4\epsilon P n$ so that the condition on the routes of largest potential is met.
-Hence we must satisfy the following equation:
- $$Pn/4 \geq 4\epsilon P n.$$
- $$ \epsilon \leq 1/16.$$
+If we assume that the algorithm was unable to schedule the last message, the previous analysis gives us a bound on twice $Pot(A)$: 
+$$ 2Pot(A) \leq 2(P-n+1) 2(\epsilon P -1) + 2(\epsilon P -1)(2(\epsilon P -1) + n) $$
+$$ Pot(A) \leq (\epsilon P -1) (P + n)$$
+By Lemma~\ref{lemma:swap}, we know that $Pot(A) \geq n(n-1)/2$, hence 
+the algorithm must succeed when
+$$n(n-1)/2 >  (\epsilon P -1) (P + n).$$
+By developping, we have a second degree expression in $\epsilon$.
+$$1/4 - 2\epsilon - \epsilon ^2 \geq  0.$$
+Solving this equation yields $\epsilon \leq \sqrt{5}/2 -1$.
 \end{proof}
 
-By repeating the whole algorithm, while the obtained potential increases,
-we can garantee a solution for larger load as stated in the next theorem.
-
-\begin{theorem}
-There is a polynomial time algorithm which solves positively \pma for instances with $\tau =1$ and load $2/3$. 
-\end{theorem}
-\begin{proof}
-Écrire l'équation qui dit que réappliquer l'algo améliore le potentiel pour voir jusqu'ou
-ça va -> 2/3
-
-\end{proof}
-Pour améliorer les résultats on peut répéter l'algo de swap une fois qu'on a obtenu 
-au moins $(1/2 + \epsilon)P$ routes placées, pour obtenir $n^2/2$ en potentiel. 
-On doit alors avoir $n^2/2 \geq 4\epsilon P n$, ce qui donne $\epsilon \leq 1/14$.
-Si on veut pousser la technique plus loin, il faut améliorer la borne sur le potentiel.
-Au lieu de prendre les $\epsilon P$ plus grandes routes, on prend pour $i$ de $1$
-à $\epsilon P$ la route de plus petit potentiel supérieur à $2 \epsilon P$ et 
-pour qu'elle existe, il suffit que le potentiel soit supérieur à $2\epsilon P (n -i)$.
-À vérifier, si à un moment tout est de potentiel $2 \epsilon P$ au moins, alors 
-c'est facile de conclure. On obtient alors $\epsilon \leq 1/6$, ce qui donne un algo
-dès que la charge est inférieure à $2/3$.
-
-Autre possibilité, améliorer le potentiel en obtenant plus que la moyenne, en jouant notemment sur la symétrie Backward et Forward.
 
 Expliquer les nombreuses raisons pourquoi ça marche mieux en pratique.
 
 
 
 
-\section{Algorithms for random instances}
+\subsection{Random Algorithm for Random Instances}
 
-\paragraph{$\tau = 1$}
-
-We analyze the following process, called \textbf{Uniform Greedy} or UG.
-For each element in order, chose one admissible position
-uniformly at random. We analyze the probability that Uniform Greedy
-solve the problem, averaged over all possible instances. 
+We would like to understand better the behaviour of our algorithms
+on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Uniform Greedy}: for each message in order, chose one possible offset
+uniformly at random. We analyze the expectation that Uniform Greedy
+solves the problem, averaged over all random choices \emph{and all possible instances}. 
 It turns out that this probability, for a fixed load strictly less than one goes to zero when $m$ grows. 
 
 Définir l'ensemble des solutions de taille $n$ parmi $m$.
