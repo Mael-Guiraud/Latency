@@ -74,13 +74,11 @@
 
 \begin{abstract}
 
-Cloud-RAN is a recent architecture for mobile networks where the processing units are located in 
- in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol time constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a sending scheme of these periodic messages without contention nor buffering.
+Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol time constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a sending scheme of these periodic messages without contention nor buffering.
 
 We focus on a simple but common star shaped topology, where all contentions are on a single arc shared by all antennas. For messages of arbitrary size, we show that there is always a solution as soon as the load of the network is less than $40\%$. Moreover, we explain how we can restrict our study to message of size $1$ without increasing too much the global latency. 
 
-For message of size $1$, we prove that it is always possible to schedule them, when the load is less than $58\%$ \todo{tu m'a dis 63 au telephone non ? -> ça change tout le temps, je mettrais la vrai valeur quand j'aurai fini la preuve} using a polynomial time algorithm. Moreover, using a simple random greedy algorithm, we show that almost all
-instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
+For message of size $1$, we prove that it is always possible to schedule them, when the load is less than $61\%$  using a polynomial time algorithm. Moreover, using a simple random greedy algorithm, we show that almost all instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
 \end{abstract}
 
 \todo{est-ce qu'on parle des protocols qui imposent la latence, ou au moins mettre les refs ? Dans l'abstract ou dans l'intro ? -> dans l'intro}
@@ -102,7 +100,7 @@ Mélanger l'introduction et le modèle. Voir comment c'est présenté dans two f
 In this article, we model a very simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
 
 The time is discretized and the process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In our application, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time it requires to send it through some contention point of the network.
-We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. A message $i$ is caracterized by its delay $d_i$. It means that if the message number $i$ goes in the link at time $t$, then it returns to it in the other direction at a time $t + d_i$. 
+We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. A message $i$ is caracterized by its delay $d_i$. It means that if the message number $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. 
 \begin{center}
 \begin{figure}
 %\begin{minipage}[c]{.5\linewidth}
@@ -136,40 +134,41 @@ We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. 
 \end{tikzpicture}
 }
 %\end{minipage}
-\caption{An example of network with two contention points}
+\caption{An example of a network with two contention points}
 \end{figure}
 \end{center}
 
-Since the process we describe is periodic, we chose any interval of $P$ unit of time.
+Since the process we describe is periodic, we may consider any interval of $P$ units of time.
 Describing the messages going through the two contention points during such an interval
-completely define the periodic process. We call the representation of the interval
+completely defines the periodic process. We call the representation of the interval
 of time in the first contention point the \emph{first period} and the \emph{second period}
 for the second contention point.
 
 An \emph{offset} of a message is a choice of time at which it arrives
 at the first contention point. Let us consider a message $i$
-of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. We say that two messages $i$ and $j$ collide if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $.
+of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. We say that two messages $i$ and $j$ collide if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$) we say that message $i$ uses time $t$ in the first period (resp. in the second period).
 
 We want to send all messages, so that they are no collision in the common link.
 In other word, we look for a way to send the messages without using buffering and 
-hence limiting the latency to the physical length of the link. An assignment is a
+hence limiting the latency to the physical length of the links. An assignment is a
 choice of an offset for each message such that \emph{no pair of message collide}.
 Formally, an \emph{assignment} is a function from the messages, represented by their indices in $[n]$ to their offsets in $[P]$.  
 
 We call Periodic Message Assignment or \pma the problem we study in this article,
-which asks, given an instance of $n$ messages, a period $P$ and a size $\tau$ to find 
+which asks, given an instance of $n$ messages, a period $P$ and a size $\tau$, to find 
 an assignment or to decide there is none.
 \begin{figure}
 \begin{center}
 \includegraphics[scale=0.7]{instance}
 \end{center}
-\caption{An instance oof \pma ($3$ messages, $P= 10$ and $\tau = 2$) and one of its assignments}
+\caption{An instance of \pma ($3$ messages, $P= 10$ and $\tau = 2$) and one of its assignments}
 \end{figure}
+
 The complexity of \pma is not known. However, we have proven that when parametrized by
 $n$ the number of messages, the problem is \FPT~\cite{barth2018deterministic}.
-A slight generalization of \pma, with several contention points but each message only goes through two as in \pma is \NP-hard~\cite{barth2018deterministic}. If the the link is not bidirectional, that is there is a single contention point and each message goes through it twice, it is also \NP-hard~\cite{}. Hence, we conjecture that \pma is \NP-hard.
+A slight generalization of \pma, with several contention points but each message only going through two of them (as in \pma) is \NP-hard~\cite{barth2018deterministic}. If the shared link is not bidirectional, that is there is a single contention point and each message goes through it twice, it is also \NP-hard~\cite{orman1997complexity}. Hence, we conjecture that \pma is \NP-hard.
 
-To overcome the hardness, we study \pma in this article when the load of the system is small enough. The \emph{load} is defined as the number of unit of time used in a period by messages in a contention point divided by the period. Hence the load is equal to $n\tau /P$.
+To overcome the hardness, we study \pma in this article when the load of the system is small enough. The \emph{load} is defined as the number of units of time used in a period by all messages divided by the period. Hence the load is equal to $n\tau /P$.
 Our aim is to prove that for small load, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm.
 
 
@@ -186,7 +185,7 @@ We say that a message in $S$ is \emph{scheduled} (by $A$), and a message not in 
 All presented algorithms build the assignment incrementally, by growing the size of the domain of a partial assignment. Moreover, the algorithm of this section are greedy since once an offset is chosen for a message, it is never changed.
 
 
-\subsection{First fit}
+\subsection{First Fit}
 
 
 Assume that for some partial assignment $A$, the message $i$ has offset $o$: it uses all times from $o$ to $o + \tau -1$ in the first period. If a message $j$ is scheduled with some offset $o'$ before $o$, then the last time it uses in the first period is $o'+\tau-1$ and it should be less than $o$, which implies that $o' \leq o - \tau + 1$. If $o'$ is larger than $o$, to avoid collision between messages $j$ and $i$, it should be larger or equal to $o+ \tau$. Hence the message $i$ forbids $2\tau -1$ offsets for messages still not scheduled because of this use of time in the first period. The same reasonning can be done for the second period, wich again forbids $2\tau -1$ offsets. Hence, if $|S|$ messages are already scheduled, then $|S|(4\tau -2)$ offsets are forbidden for the an unscheduled messages. Note that this is an upper bound on the number of forbidden offsets, since the same offset can be forbidden because of a message on the first and also on the second period.
@@ -198,8 +197,7 @@ it is the maximum over all values of $d_i$ of $|\left\{ o \in [P] \mid A[i \rig
 
 The first algorithm deals with the route in the order they are given:  for each unscheduled route it tests all offsets from $0$ to $P-1$ until one do not create a collision with the current assignment.
 We call this algorithm \emph{First Fit}. Remark that if $Fo(A) < P$, then whatever the delay of the route we want to extend $A$ with, it is possible to find an offset. Since $Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, First Fit (or any greedy algorithm) will always succed when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
-It turns out that First Fit always create compact assignments (as defined in~\cite{barth2018deterministic}), that is a message is always next to another one in one of the two period. Hence, we can prove a better bound on $Fo(A)$, when $A$ is built by First Fit, which implies the following theorem.
-
+It turns out that First Fit always create compact assignments (as defined in~\cite{barth2018deterministic}), that is a message is always next to another one in one of the two period. Hence, we can prove a better bound on $Fo(A)$, when $A$ is built by First Fit, as stated in the following theorem.
 
 \begin{theorem}
 First Fit always solves \pma positively on instances of load less than $1/3$. 
@@ -212,9 +210,9 @@ which proves the induction and the theorem.
 \end{proof}
 
 
-\subsection{Meta-intervals}
+\subsection{Meta-Offset}
 
-The second method is described  in~\cite{barth2018deterministic} and achieves the same bound on the load using a different method which is also be used in the more involved algorithms
+The second method is described  in~\cite{barth2018deterministic} and achieves the same bound on the load using a different method which is also used in the more involved algorithms
 of the next section.
 The idea is to restrict the possible offsets at which messages can be scheduled. It seems counter-intuitive, since it decreases artificially the number of possible offsets to schedule new messages. However, it allows to reduce the number of forbidden offsets, when the algorithm is designed accordingly. A \emph{meta-offset} is an offset of value $i\tau$,
 with $i$ an integer from $0$ to $P / \tau$. We call Meta-Offset the greedy algorithm
@@ -233,13 +231,11 @@ $1/3$.
 \subsection{Tuples and meta-intervals}
 
 We now propose a more involved family of greedy algorithms which 
-solves \pma positively for larger loads. We try to combine the good properties of the two previous algorithms: the compacity of the solutions of the first one and the use of meta-offsets of the second algorithm to reduce collisions on the first period.
-The idea is to schedule several messages at once, using meta-offsets, to maximize the compacity of the obtained solution. 
-
+solves \pma positively for larger loads. We try to combine the good properties of the two previous algorithms: the compacity of the solutions of First Fit and the use of meta-offsets to reduce collisions on the first period. The idea is to schedule several messages at once, using meta-offsets, to maximize the compacity of the obtained solution. 
 
 We first describe the algorithm which places pairs of routes and then explain quickly how we can extend it by placing tuples of messages instead of pairs.
 
-We first needs a lemma which allows to assume that the period $P$ is a multiple of $\tau$, 
+We first need a lemma which allows to assume that the period $P$ is a multiple of $\tau$, 
 which makes the analysis of our algorithms much simpler and tighter. It only changes the load
 from $n \tau / P$ to at most $n (\tau +1)/ P$: the difference is less than $n /P < 1/\tau$,
 and is very small for large $\tau$.
@@ -279,9 +275,8 @@ then we are done. If not, then by definition $d_{1}' = 1 + d_{2}' = 1 + d_{3}'$.
 \end{proof}
 
 We call \emph{Compact Pairs} the following greedy algorithm. From the $n$ routes in order
-of increasing $r_i$, we build a sequence of at least $n/3$ compact pairs using Lemma~\ref{lemma:pair_find}. They are then scheduled in the order they have been built using meta-offsets only. If at some point all compact pair are scheduled or the current one cannot be scheduled, the remaining messages are scheduled as in Meta-Offset. The analysis of the algorithm relies on the evaluation the number of forbidden meta-offsets. In the first phase
-of the algorithm, one should evaluate the number of forbidden offsets when scheduling a compact pair, that we denote by $Fmo_2(A)$. In the second phase, we need to evaluate 
-$Fmo(A)$. A compact pair only forbids three offsets in the second period instead of four if the two messages are scheduled independently, which explains the improvement from Meta Offset. We first give a simple lemma justified by Figure~\ref{fig:forbidenmeta}, which allows to bound this number.
+of increasing $r_i$, we build a sequence of at least $n/3$ compact pairs using Lemma~\ref{lemma:pair_find}. They are then scheduled in the order they have been built using meta-offsets only. If at some point all compact pairs are scheduled or the current one cannot be scheduled, the remaining messages are scheduled as in Meta-Offset. The analysis of the algorithm relies on the evaluation the number of forbidden meta-offsets. In the first phase of the algorithm, one should evaluate the number of forbidden offsets when scheduling a compact pair, that we denote by $Fmo_2(A)$. In the second phase, we need to evaluate 
+$Fmo(A)$. A compact pair only forbids three offsets in the second period instead of four if the two messages are scheduled independently, which explains the improvement from Meta Offset. We first give a simple lemma justified by Figure~\ref{fig:forbidenmeta}, which allows to bound $Fmo_2(A)$ and to lower bound the number of scheduled compact pairs.
 
 \begin{lemma}\label{lemma:pair_forbid}
 A compact pair already scheduled by Compact Pair forbid at most four meta offsets in the second period to another compact pair when it is scheduled by Compact Pair.
@@ -292,26 +287,26 @@ Compact Pairs always solves \pma positively on instances of load less than
 $3/8$.
 \end{theorem}
 \begin{proof}
-Let us denote by $n_2$ the number of compact pairs scheduled in the algorithm.
-If we want to schedule a new pair, the position of the $2n_2$ messages on the first
+Let us denote by $n_2$ the number of compact pairs scheduled at some point of 
+the first phase. When scheduling a new pair, the position of the $2n_2$ messages on the first
 period forbid $4n_2$ offsets for a compact pair. Indeed, each scheduled message can collide
 with each of the two messages which form a compact pair. On the second period, we can use Lemma~\ref{lemma:pair_forbid} to bound the number of forbiden offsets by $4n_2$. 
-Hence, we have established that at the end of the first phase, the partial solution $A$
+Hence, we have established that during the first phase, the partial solution $A$
 satisfies $Fmo_2(A) \leq 8n_2$. This first phase continue while there is possible offsets for compact pairs, which is the case when $Fmo_2(A) \leq m$, that is while $n_2 \leq m/8$.
 In the second phase, a compact pair forbids $3$ meta offsets in the 
 second period and $2$ in the first. Hence, if we let $n_1$ be the number of messages scheduled in the second phase to give the assignment $A$, we have $Fmo(A) \leq n_2*5 + n_1*3$. 
 The algorithm can always schedule messages when $Fmo(A)$ is less than $m$, thus
 $$ n_2*5 + n_1*3 \geq m$$
 $$ n_1 \geq \frac{8m - 5m }{24}$$
-$$n_1 \geq \frac{1}{8}$$
+$$n_1 \geq \frac{m}{8}$$
 
 The number of routes scheduled is thus at least $2n_2 + n_1$,
 which is $\frac{3}{8}m$. Remark that we need to be able to schedule two third of the messages as compact pairs, which is possible by Lemma~\ref{lemma:pair_find}. Therefore an assignment is always produced when the load is less then $\frac{3}{8}$.
 \end{proof}
 
 The algorithm can be improved by forming compact tuples instead of compact pairs.
-A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ (with $r_{i_1},\dots,r_{i_k}$)  increasing, for which meta offsets can be chosen so that there is no collision and
-the messages in the second period are in the order $i_1,\dots,i_k$, two consecutive messages $i,j$ have offset $o$ and $o + r_j -r_i + \tau$.
+A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ (with $r_{i_1},\dots,r_{i_k}$ increasing), for which meta-offsets can be chosen so that there is no collision,
+the messages in the second period are in order $i_1,\dots,i_k$ and two consecutive messages $i_{l},i_{l+1}$ use the times $o$ and $o + r_{i_{l+1}} -r_{i_{l}} + \tau$ in the second period.
 
 
 \todo{Un dessin du cas des pairs serait plus clair effectivement, avec du coup la paire rouge qui a des restes strictement
@@ -345,14 +340,15 @@ $j$-tuple. If the remainder of the messages in the $j$-tuples are larger than in
 
 The first fact garantees there are compact $k$-tuples, if there are enough messages,
 hence $n$ should be larger than $k^3/3$.
-The second one allows to estimate how many $i$-tuple for $i$ equal $k$ down to $1$ can be scheduled by bounding $Fmo_i(A)$, the number of forbiden meta-offsets when placing $i$-tuple in the algorithm.
+The second one allows to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $Fmo_i(A)$, the number of forbiden meta-offsets when placing $i$-tuple in the algorithm.
 If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
-we have the following equation:  $$ Fmo_j(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
+we have the following equation:  $$ Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
 The equation for $n_1$ is slightly better: 
 $$ Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
-A bound on $n_i$ can be computed, since $A$ can be extended while $Fmo_j(A) < m$. A numerical computation of the $n_i$'s shows that the algorithm always find a solution when the load is less than $4/10$.
+A bound on $n_i$ can be computed, since $A$ can be extended while $Fmo_i(A) < m$. A numerical computation of the $n_i$'s shows that the algorithm always finds a solution when the load is less than $4/10$.
 \end{proof}
 
+Mettre le code en annexe ? Mettre un lien vers le code car on a aussi les expériences.
 
 \subsection{Experimental results}
 
@@ -435,12 +431,10 @@ delay for a message, with this choice of reference is less than $\tau/2$.
 
 When $\tau = 1$, \emph{any greedy algorithm} finds a solution to \pma when the load is less than $1/2$ since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We now give a method which always finds a solution for load of $1/2 + \epsilon$.
 
-To go above $1/2$ of load, we use an algorithm wich optimizes a potential measuring how many offsets 
-are avalaible for all messages, scheduled or not. We schedule messages while possible with any greedy algorithm.
-Then, when all unscheduled messages have no free offset, we use a swap operation defined later, 
-which improves the potential. When the potential is high enough, it garantees that there are two messages whose offset can be exchanged so that a new message can be scheduled. 
+To go above $1/2$ of load, we use an algorithm wich optimizes a potential measuring how many offsets are avalaible for all messages, scheduled or not. We schedule messages while possible with any greedy algorithm.
+Then, when all unscheduled messages have no free offset, we use a swap operation defined later, which improves the potential. When the potential is high enough, it garantees that there are two messages whose offset can be changed so that a new message can be scheduled. 
 
- The algorithm is not greedy, since we allow to exchange a scheduled message with an unscheduled one. It cannot work online, since it requires to know all messages in advance. 
+ The algorithm is not greedy, since we allow to exchange a scheduled message with an unscheduled one. It cannot work online, since it requires to know all delays of the messages in advance. 
 
 \begin{definition}
 The potential of a message of delay $d$, for a partial assignment $A$
@@ -449,16 +443,15 @@ is the number of integers $i \in [P]$ such that $i$ is used in the first period 
 
 The potential of a message counts favorable configurations in terms of forbiden offsets.
 Indeed, when $i$ is used in the first period and $i+d \mod P$ is used in the second period,
-then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential 
-of a message is related to the number of possible offsets as stated in the following lemma. 
+then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
 
 \begin{lemma}
 Given a partial assignment $A$ of size $s$, and an unscheduled message of potential 
-$p$, there are $p - 2l$ possible offsets which can be used to schedule it while extending $A$.
+$v$, there are $P - 2s + v$ possible offsets which can be used to schedule it while extending $A$.
 \end{lemma}
 
 For our algorithm, we need a global measure of the quality of a partial assignment, 
-that we try to increase in the first step of our algorithm. 
+that we try to increase when the algorithm fail to schedule new messages. 
 We call our measure \emph{the potential of an assignment} and we denote it by $Pot(A)$, it is the sum of potentials for $A$ of all messages in the instance.
 
 Instead of decomposing this global potential as a sum over the messages, it can be understood
@@ -486,14 +479,14 @@ The sum of potentials of all positions for a partial assignment with $k$ schedul
 
 Let $A$ be some partial solution of size $s$ and let $i$ be an unscheduled message of delay $d$. 
 Assume that $i$ cannot be used to extend $A$. The swap operation is the following: 
-select a free position $p$ in the first period, remove the message which uses the position $p+d$ in the second period from $A$ and add $i$ to $A$ with offset $p$. We denote this operation by $Swap(i,p,A)$.
+select a free position $p$ in the first period, remove the message which uses the position $p+d$ in the second period from $A$ and extend $A$ by $i$ with offset $p$. We denote this operation by $Swap(i,p,A)$.
 
 \begin{lemma}\label{lemma:swap}
 Let $A$ be some partial solution of size $k$ and let $i$ be an unscheduled message. If $i$ cannot be used to extend $A$, then either $Pot(A) \geq kn/2$ or there is a $p$ such that $Pot(Swap(i,p,A)) > Pot(A)$.
 \end{lemma}
 
 \begin{proof}
-The positions in the first period can be partitionned into two part: $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
+The positions in the first period can be partitionned into two parts: $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
 Let us denote by $V_f$ the sum of the potential of the positions in $P_f$ and by $V_u$ the sum of the potentials of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partitions the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
 By hypothesis, since $i$ cannot be scheduled, for all $p \in P_{f}$, $p+d_i$ is used in the second period. We now define the function $F$ which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d$ in the second period, that is $A(j) + d_j = p + d \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark now that, if we compare $Swap(i,p,A)$ to $A$, on the second period the positions are used. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ add to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
