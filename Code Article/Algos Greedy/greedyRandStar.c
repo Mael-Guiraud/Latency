@@ -228,6 +228,15 @@ int swap(entree e)
 	
 }
 
+//a programmer: first fit sur tous les messages non placés
+//a programmer: evaluation d'une solution
+//a programmer evaluation de tous les swaps possibles efficaces (calculer les valeurs de chaque position)
+//a programmer: faire un swap
+//a programmer, placer une route en en déplacant une ou deux
+// a programmer algo qui combine tout
+//on peut sans doute garder la structure entrée, mais ajouter un tableau
+//des messages avec leur offset ou -1 s'ils ne sont pas placés
+
 double prob_set(int n, int m){
 	double res = 1;
 	for(int i = 0; i < m-n; i++){

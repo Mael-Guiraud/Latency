@@ -544,56 +544,83 @@ $$1/4 - 2\epsilon - \epsilon ^2 \geq  0.$$
 Solving this equation yields $\epsilon \leq \sqrt{5}/2 -1$.
 \end{proof}
 
-
-Expliquer les nombreuses raisons pourquoi ça marche mieux en pratique.
-
-
-
+Ça marche mieux en pratique car analyse du potentiel trop imprécis.
+Idée pour virer plus de 2 routes, est-ce la peine ?
+En moyenne ça marche bien aussi, car à la fois le potentiel global
+est plus haut et la distribution du potentiel sur les messages est plus 
+variée. 
 
 \subsection{Random Algorithm for Random Instances}
 
 We would like to understand better the behaviour of our algorithms
-on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Uniform Greedy}: for each message in order, chose one possible offset
-uniformly at random. We analyze the expectation that Uniform Greedy
-solves the problem, averaged over all random choices \emph{and all possible instances}. 
-It turns out that this probability, for a fixed load strictly less than one goes to zero when $m$ grows. 
+on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Uniform Greedy}: for each message in order, choose one of the possible offsets
+uniformly at random. 
 
-Définir l'ensemble des solutions de taille $n$ parmi $m$.
-\begin{theorem}
-Given an instance of size $n$ uniformly at random UG
-produces a solution uniformly at random or fail.
-\end{theorem}
-\begin{proof}
-Regarder mes notes partielles pour compléter ça.
-\end{proof}
-
-Let us denote by $P(m,n)$ the probability that UG fails at the $n_th$
-steps assuming it has not failed before.
+We analyze Uniform Greedy over random instances: we assume that all messages have 
+their delays drawn independently and uniformly in $[m]$.
+We compute the probality of success of the algorithm over all random choices of the algorithm \emph{and all possible instances}. 
+It turns out that this probability, for a fixed load strictly less than one goes to one when $m$ grows. 
+For a given assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, a trace of an assignment is a pair of subsets of $[m]$ of size $n$. We now show that these traces are produced uniformly.
 
 \begin{theorem}
-We have $$P(m,n) = \frac{\binom{n}{2n-m}}{\binom{m}{n}}.$$
-In particular, $P(m,n) \leq f(\lambda)^m$, where $f(\lambda) < 1$.
+The distribution of traces of assignments produced by Uniform Greedy when it succeeds, from instances drawn uniformly at random, is also uniform.
 \end{theorem}
 \begin{proof}
-Probability independent of the shift of the $n$ element, can say it is $0$.
-It is the probability that two sets of size $n$ in $[m]$ are of union $[m]$.
-It is the same as the probability that it contains a given set of size $m-n$.
-Could find an asymptotic online.
+We prove that by induction on $n$ the number of messages. It is clear for $n=1$,
+since the delay of the first message is uniformly drawn and all offsets can be used.
+Assume now the theorem for some $n>1$. Uniform Greedy, by induction hypothesis has produced
+uniform traces from the first $n$ messages.  Hence we should prove that, if we draw the delay
+of the $n+1^{th}$ message randomly, extending a trace randomly produces a random distribution on the traces of size $n+1$.
+ If we draw an offset uniformly at random and then
+extend the trace by scheduling the last message at this offset or fail, the distribution over
+the traces of size $n+1$ is the same, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since 
+they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
 \end{proof}
 
-Can we make the same argument for a deterministic algorithm?
-The not average version of the argument is the previous proof.
+Let us denote by $\Pr(m,n)$ the probability that Uniform Greedy fails at the $n^{th}$
+step assuming it has not failed before.
 
-Show that we can find a solution for load $1/2 - \epsilon$, even for large 
-$\tau$ if $n$ is large enough, using the trnasformation without buffering.
+\begin{lemma}\label{lemma:proba_success}
+$$\Pr(m,n) = \frac{\binom{n}{2(n-1)-m}}{\binom{m}{n-1}}.$$
+\end{lemma}
+\begin{proof}
+The probability to fail is independent of the delay of the $n^{th}$
+message. Indeed, if we consider the operation which add one to all used elements
+in the second periods is a bijection on the set of traces of size $n-1$, and it corresponds to removing one to the delay of the $n^{th}$ message. We assume that the delay is zero.
+
+Let $S_1$ be the set of used times in the first period by the $n-1$ first messages
+and $S_2$ the set of used times in the second period. We can assume that $S_1$ is fixed, since all subsets of the first period are equiprobable and because $S_2$ is independent from $S_1$. There is no possible offset for the $n^{th}$ message, if and only if $S_1 \cup S_2 = [m]$. It means that $S_2$ has been drawn such that it contains $[m] \setminus S_1$. 
+The probability to draw a set of size $n-1$ which contains $m-n + 1$ fixed elements is 
+ $$\frac{\binom{n}{2(n-1)-m}}{\binom{m}{n-1}}.$$
+
+
+\end{proof}
+
+From Lemma~\ref{lemma:proba_success}, we can derive the probability 
+of success of Uniform Greedy by a simple product. 
+
+\begin{theorem}
+The probability over all instances with $n$ messages and period $m$ that Uniform Greedy solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
+\end{theorem}
+
+If we fix the load $\lambda$, which satisfies $n = \lambda m$, we can bound 
+$P(m,n)$ using Stirling formula. We obtain for some constant $C$, 
+that $$P(m,n) \leq C \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^m.$$
+We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$
+The derivative of $f$ is strictly positive for $1/2 \lambda < 1$ and $f(1) = 1$, hence 
+$f(\lambda) < 1$ when $\lambda < 1$. The probability that Uniform Greedy is bounded 
+by $C \lambda m f(\lambda)^m$, whose limit is zero when $m$ goes to infinity. 
+It explains why Uniform Greedy is good for large $m$. 
 
 \section{Experimental results for $\tau = 1$}
 
 
-\section{Lower bounds}
+%\section{Lower bounds}
 
-Example/family of examples for which some greedy alg fail.
-Example/family of examples with a given load such that there are no feasible solution.
+%Pour m=6, on peut toujours placer 5 éléments, que dire pour plus grand ?
+%Remarque si tous les delais sont différents, on peut les placer  
+%Example/family of examples for which some greedy alg fail.
+%Example/family of examples with a given load such that there are no feasible solution.
 
 \bibliographystyle{ieeetr}
  \bibliography{Sources}
