@@ -222,20 +222,97 @@ int greedy_advanced(entree e)
 	return nb_routes_placees;
 }
 
-
-int swap(entree e)
-{
-	
+int all_fit(entree e, int *offsets){
+	int res = 1;
+	for(int i = 0; i < e.nb_routes; i++){
+		if(offsets[i] != -1){
+			int pos = first_fit(e,i);
+			if(pos != -1){
+				offsets[i] = pos;
+				e.aller[pos]=1;
+				e.retour[ (pos+e.decalages[i])%e.periode] = 1;
+			}
+			else{
+				res = 0;
+			}	
+		}
+	}
+	return res; //return wether the procedure find all solutions or not
 }
 
-//a programmer: first fit sur tous les messages non placés
-//a programmer: evaluation d'une solution
-//a programmer evaluation de tous les swaps possibles efficaces (calculer les valeurs de chaque position)
-//a programmer: faire un swap
-//a programmer, placer une route en en déplacant une ou deux
-// a programmer algo qui combine tout
-//on peut sans doute garder la structure entrée, mais ajouter un tableau
-//des messages avec leur offset ou -1 s'ils ne sont pas placés
+int eval_pos(entree e, int pos){
+	int val = 0;	
+	for(int i = 0; i < e.nb_routes; i++){
+		val += e.retour[(pos + e.decalages[i])%e.periode];
+	}
+	return val;
+}
+
+int first_unscheduled(int size, int *offsets){//select the first unscheduled route
+	int route;
+	for(route = 0; route < size && offsets[route]>=0; route++){}
+		return route;
+}
+
+int improve_potential(entree e, int *offsets)
+{
+	int route = first_unscheduled(e.nb_routes,offsets);
+	for(route = 0; route < e.nb_routes && offsets[route]>=0; route++){}
+	
+	//look for the first permutation which increases the potential
+	for(int i = 0; i < e.periode; i++){
+		if(!e.aller[i] && e.retour[(i + e.decalages[route]) % e.periode]){
+			int route_to_remove;//find the index of the route to remove
+			for(route_to_remove = 0; route_to_remove < e.nb_routes && 
+			(offsets[route_to_remove] + e.decalages[route_to_remove]) % e.periode == 
+			(i + e.decalages[route]) % e.periode; route_to_remove++){}	
+			if(eval_pos(e,route) > eval_pos(e,route_to_remove)){
+				e.aller[i] = 1;
+				e.aller[offsets[route_to_remove]] = -1;
+				offsets[route_to_remove] = -1;
+				offsets[route] = i;
+				return 1;//success, the potential has been improved
+			}		
+		}
+	}
+	return 0;
+}
+
+int exchange(entree e, int *offsets, int route){//try to find an offset for route
+	//such that any route moved because of that can be rescheduled
+	int route1,route2;
+	for(int i = 0; i < e.periode; i++){
+		int route1,route2;
+		if(!e.aller[i] || !e.retour[(i + e.decalages[route])%e.periode]){
+			//first case, only one route to move
+			if(!e.aller[i]){
+				route1 =;
+			}
+			else{
+				route1 =;
+			}
+		}
+		else{//second case, two routes to move
+			route1=;
+			route2=;
+		}
+
+	}
+	return 0;
+}
+
+int swap(entree e){
+	int *offsets = malloc(sizeof(int)*e.nb_routes);
+	for(int i = 0; i < e.nb_routes; i++){
+		offsets[i] = -1;
+	}
+	while(1){
+		if(all_fit(e,offsets)) return 1;
+		while(improve_potential(e,offsets)){}//improve the potential as much as possible
+		if (!exchange(e, offsets, first_unscheduled(e.nb_routes,offsets))) return 0;
+	}
+}
+
 
 double prob_set(int n, int m){
 	double res = 1;
