@@ -5,9 +5,9 @@
 #include <string.h>
 
 #define PERIODE 100
-#define NB_ROUTES 90
+#define NB_ROUTES 99
 #define TAILLE_ROUTES 100
-#define NB_SIMUL 10000	
+#define NB_SIMUL 100
 
 #define DEBUG 0
 
@@ -40,6 +40,7 @@ void print_solution(int* aller, int *retour, int taille){
 	for(int i = 0; i < taille; i++){
 		printf("%d ",retour[i]);
 	}
+	printf("\n");
 }
 
 int choix_uniforme(entree e, int route_courante){
@@ -222,19 +223,48 @@ int greedy_advanced(entree e)
 	return nb_routes_placees;
 }
 
+int schedule(entree e, int*offsets, int route){//schedule the route at the first possible position
+	int pos = first_fit(e,route);
+	if(pos != -1){
+		offsets[route] = pos;
+		e.aller[pos]=1;
+		e.retour[ (pos+e.decalages[route])%e.periode] = 1;
+		return 1;
+	}
+	return 0;
+}
+
+void unschedule(entree e, int *offsets, int route){//remove the route from the partial solution
+
+	if(offsets[route] == -1) {
+		printf("unscheduled une route non scheduled : %d\n",route);
+		printf("Offsets");
+		for(int i=0; i < e.nb_routes; i++) printf("%d ",offsets[i]);
+		printf("\nDecalages");
+		for(int i=0; i < e.nb_routes; i++) printf("%d ",e.decalages[i]);
+		print_solution(e.aller,e.retour,e.periode);
+
+	}
+	if(route <0 || route >= e.nb_routes) printf("un probleme \n");
+	e.aller[offsets[route]] = 0;
+	e.retour[(offsets[route]+e.decalages[route])%e.periode] = 0;
+	offsets[route] = -1;
+}
+
+void test_sol(entree e, int *offsets){//test that offsets correspond to traces
+	for(int i = 0; i < e.nb_routes; i++){
+		if(offsets[i] == -1 || !e.aller[offsets[i]] || !e.retour[(offsets[i]+e.decalages[i])%e.periode]){
+			print_solution(e.aller,e.retour,e.periode);
+		}  
+	}
+	//should test that no time is used twice
+}
+
 int all_fit(entree e, int *offsets){
 	int res = 1;
 	for(int i = 0; i < e.nb_routes; i++){
-		if(offsets[i] != -1){
-			int pos = first_fit(e,i);
-			if(pos != -1){
-				offsets[i] = pos;
-				e.aller[pos]=1;
-				e.retour[ (pos+e.decalages[i])%e.periode] = 1;
-			}
-			else{
-				res = 0;
-			}	
+		if(offsets[i] == -1){
+			res &= schedule(e,offsets,i);
 		}
 	}
 	return res; //return wether the procedure find all solutions or not
@@ -262,8 +292,8 @@ int route_from_first_period(entree e, int *offsets, int pos){
 
 int route_from_second_period(entree e, int *offsets, int pos){
 	int i;
-	for(i = 0; i < e.nb_routes && 
-			((offsets[i] + e.decalages[i]) % e.periode) != pos; i++){}
+	for(i = 0; i < e.nb_routes &&
+	 (offsets[i] == -1 ||((offsets[i] + e.decalages[i]) % e.periode) != pos); i++){}
 	return i;
 }
 
@@ -273,12 +303,13 @@ int improve_potential(entree e, int *offsets)
 	
 	//look for the first permutation which increases the potential
 	for(int i = 0; i < e.periode; i++){
-		if(!e.aller[i] && e.retour[(i + e.decalages[route]) % e.periode]){
-			int route_to_remove = route_from_second_period(e,offsets,(i + e.decalages[route]) % e.periode);	
+		int pos_retour = (i + e.decalages[route]) % e.periode;
+		if(!e.aller[i] && e.retour[pos_retour]){
+			int route_to_remove = route_from_second_period(e,offsets, pos_retour);	
 			if(eval_pos(e,route) > eval_pos(e,route_to_remove)){
+				unschedule(e,offsets,route_to_remove);
 				e.aller[i] = 1;
-				e.aller[offsets[route_to_remove]] = 0;
-				offsets[route_to_remove] = -1;
+				e.retour[pos_retour] = 1;
 				offsets[route] = i;
 				return 1;//success, the potential has been improved
 			}		
@@ -290,59 +321,78 @@ int improve_potential(entree e, int *offsets)
 int exchange(entree e, int *offsets, int route){//try to find an offset for route
 	//such that any route moved because of that can be rescheduled
 	int route1,route2;
-	for(int i = 0; i < e.periode; i++){//first case, empty position in the first period
-		if(!e.aller[i]){
+	for(int i = 0; i < e.periode; i++){//first case, empty position in the second period
+		int pos_retour = (i + e.decalages[route])%e.periode;
+		if(!e.retour[pos_retour]){
 			route1 = route_from_first_period(e, offsets, i);
 			//remove route1
-			int temp = offsets[route1];
-			e.aller[temp]=0;
+			unschedule(e,offsets,route1);
 			e.aller[i] = 1;
-			offsets[route1]= -1;
+			e.retour[pos_retour]=1;
 			offsets[route] = i;
-			int pos = first_fit(e,route1);
-			if(pos != -1){
-				e.aller[pos] = 1;
-				offsets[route1] = pos;
-				e.retour[(pos + e.decalages[route1])%e.periode] = 1;
-				return 1;
+			if(schedule(e,offsets,route1)){
+				return 1;//success the route has been rescheduled
 			}
-			else{//route1 cannot be moved, hence we rollback the changes
-				offsets[route1]= temp;
-				e.aller[temp]=1;
-				e.aller[i] = 0;
+			else{//route1 cannot be moved, we rollback the changes
+				offsets[route1]= i;
+				e.retour[(i + e.decalages[route1])%e.periode] = 1;
+				e.retour[pos_retour] = 0;
 				offsets[route] = -1;
 			}
 		}
 	}
-	for(int i = 0; i < e.periode; i++){//second case, empty position in the second period
+	for(int i = 0; i < e.periode; i++){//second case, empty position in the first period
 		int pos_retour = (i + e.decalages[route])%e.periode;
-		if(!e.retour[pos_retour]){
+		if(!e.aller[i]){
 			route1 = route_from_second_period(e, offsets, pos_retour);
 			//remove route1
-			e.retour[pos_retour] = 1;
-			e.retour[(i + e.decalages[route1])%e.periode] = 0;
-			offsets[route1]= -1;
+			int temp = offsets[route1];
+			unschedule(e,offsets,route1);
+			e.aller[i] = 1;
+			e.retour[pos_retour]=1;
 			offsets[route] = i;
-			int pos = first_fit(e,route1);
-			if(pos != -1){
-				e.aller[pos] = 1;
-				offsets[route1] = pos;
-				e.retour[(pos + e.decalages[route1])%e.periode] = 1;
-				return 1;
+			if(schedule(e,offsets,route1)){
+				return 1;//success the route has been rescheduled
 			}
-			else{//route1 cannot be moved, hence we rollback the changes
-				offsets[route1]= i;
+			else{//route1 cannot be moved, we rollback the changes
+				offsets[route1]= temp;
 				offsets[route] = -1;
-				e.aller[pos_retour]=0;
-				e.retour[(i + e.decalages[route1])%e.periode] = 1;
-				
+				e.aller[temp] = 1;
+				e.aller[i]=0;
 			}
 		}
 	}
 	for(int i = 0; i < e.periode; i++){//third case, both routes should move
 		int pos_retour = (i + e.decalages[route])%e.periode;
 		if(e.aller[i] && e.retour[pos_retour]){
-
+			route1 = route_from_first_period(e, offsets, i);
+			route2 = route_from_second_period(e, offsets, pos_retour);
+			//remove route1 and 2
+			int temp = offsets[route2];
+			if(route1 == route2) continue;
+			unschedule(e,offsets,route1);
+			unschedule(e,offsets,route2);//unschedule ecrit à -1
+			e.aller[i] = 1;
+			e.retour[pos_retour]=1;
+			offsets[route] = i;
+			if(schedule(e,offsets,route1)){
+				if(schedule(e,offsets,route2)){
+					return 1;//the two routes have been rescheduled
+				}
+				unschedule(e,offsets,route1);
+			}
+			if(schedule(e,offsets,route2)){//try to schedule in the order route2 then route1
+				if(schedule(e,offsets,route1)){
+					return 1;//the two routes have been rescheduled
+				}
+				unschedule(e,offsets,route2);
+			}
+			//remove route and reschedule both route1 and route2 at their original position
+			offsets[route] = -1;
+			offsets[route1] = i;
+			offsets[route2] = temp;
+			e.aller[temp] = 1;
+			e.retour[(i + e.decalages[route1])%e.periode] = 1;
 		}
 	}
 	return 0;
@@ -354,11 +404,11 @@ int swap(entree e){
 		offsets[i] = -1;
 	}
 	while(1){
-		if(all_fit(e,offsets)) return 1;
+		if(all_fit(e,offsets)) {test_sol(e,offsets);return e.nb_routes;}
 		while(improve_potential(e,offsets)){}//improve the potential as much as possible
-		if(all_fit(e,offsets)) return 1;//try to add routes again now the potential has been improved
+		if(all_fit(e,offsets)) {test_sol(e,offsets);return e.nb_routes;}//try to add routes again now the potential has been improved
 										//this can only improve the potential again
-		if (!exchange(e, offsets, first_unscheduled(e.nb_routes,offsets))) return 0;
+		if (!exchange(e, offsets, first_unscheduled(e.nb_routes,offsets))) return 0;//should write the number of scheduled routes
 		//try to schedule a route by moving other routes, if it fails, the algorithm fails
 	}
 }
@@ -406,9 +456,11 @@ int main()
 {
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_uniform,"greedy_uniform");
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_uniform,"greedy_uniform"); //ça n'est pas sur les memes entrees a cause du rand
 	printf("Proba de réussite théorique de l'algo uniforme: %f \n",prob_theo(NB_ROUTES,PERIODE));
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_first_fit,"first_fit");//ça n'est pas sur les memes entrees a cause du rand
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_profit,"profit");//ça n'est pas sur les memes entrees a cause du rand
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");//ça n'est pas sur les memes entrees a cause du rand
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_first_fit,"first_fit");
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_profit,"profit");
+	//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
+	//algo bugué, ne marche pas pour 50%
+	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,swap,"swap");
 }
