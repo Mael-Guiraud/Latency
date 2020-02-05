@@ -4,10 +4,10 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 1000
-#define NB_ROUTES 900
-#define TAILLE_ROUTES 1000
-#define NB_SIMUL 100	
+#define PERIODE 100
+#define NB_ROUTES 90
+#define TAILLE_ROUTES 100
+#define NB_SIMUL 10000	
 
 #define DEBUG 0
 
@@ -254,21 +254,30 @@ int first_unscheduled(int size, int *offsets){//select the first unscheduled rou
 		return route;
 }
 
+int route_from_first_period(entree e, int *offsets, int pos){
+	int i;
+	for( i = 0; i < e.nb_routes && offsets[i] != pos; i++){}
+	return i;
+}
+
+int route_from_second_period(entree e, int *offsets, int pos){
+	int i;
+	for(i = 0; i < e.nb_routes && 
+			((offsets[i] + e.decalages[i]) % e.periode) != pos; i++){}
+	return i;
+}
+
 int improve_potential(entree e, int *offsets)
 {
 	int route = first_unscheduled(e.nb_routes,offsets);
-	for(route = 0; route < e.nb_routes && offsets[route]>=0; route++){}
 	
 	//look for the first permutation which increases the potential
 	for(int i = 0; i < e.periode; i++){
 		if(!e.aller[i] && e.retour[(i + e.decalages[route]) % e.periode]){
-			int route_to_remove;//find the index of the route to remove
-			for(route_to_remove = 0; route_to_remove < e.nb_routes && 
-			(offsets[route_to_remove] + e.decalages[route_to_remove]) % e.periode == 
-			(i + e.decalages[route]) % e.periode; route_to_remove++){}	
+			int route_to_remove = route_from_second_period(e,offsets,(i + e.decalages[route]) % e.periode);	
 			if(eval_pos(e,route) > eval_pos(e,route_to_remove)){
 				e.aller[i] = 1;
-				e.aller[offsets[route_to_remove]] = -1;
+				e.aller[offsets[route_to_remove]] = 0;
 				offsets[route_to_remove] = -1;
 				offsets[route] = i;
 				return 1;//success, the potential has been improved
@@ -281,22 +290,60 @@ int improve_potential(entree e, int *offsets)
 int exchange(entree e, int *offsets, int route){//try to find an offset for route
 	//such that any route moved because of that can be rescheduled
 	int route1,route2;
-	for(int i = 0; i < e.periode; i++){
-		int route1,route2;
-		if(!e.aller[i] || !e.retour[(i + e.decalages[route])%e.periode]){
-			//first case, only one route to move
-			if(!e.aller[i]){
-				route1 =;
+	for(int i = 0; i < e.periode; i++){//first case, empty position in the first period
+		if(!e.aller[i]){
+			route1 = route_from_first_period(e, offsets, i);
+			//remove route1
+			int temp = offsets[route1];
+			e.aller[temp]=0;
+			e.aller[i] = 1;
+			offsets[route1]= -1;
+			offsets[route] = i;
+			int pos = first_fit(e,route1);
+			if(pos != -1){
+				e.aller[pos] = 1;
+				offsets[route1] = pos;
+				e.retour[(pos + e.decalages[route1])%e.periode] = 1;
+				return 1;
 			}
-			else{
-				route1 =;
+			else{//route1 cannot be moved, hence we rollback the changes
+				offsets[route1]= temp;
+				e.aller[temp]=1;
+				e.aller[i] = 0;
+				offsets[route] = -1;
 			}
 		}
-		else{//second case, two routes to move
-			route1=;
-			route2=;
+	}
+	for(int i = 0; i < e.periode; i++){//second case, empty position in the second period
+		int pos_retour = (i + e.decalages[route])%e.periode;
+		if(!e.retour[pos_retour]){
+			route1 = route_from_second_period(e, offsets, pos_retour);
+			//remove route1
+			e.retour[pos_retour] = 1;
+			e.retour[(i + e.decalages[route1])%e.periode] = 0;
+			offsets[route1]= -1;
+			offsets[route] = i;
+			int pos = first_fit(e,route1);
+			if(pos != -1){
+				e.aller[pos] = 1;
+				offsets[route1] = pos;
+				e.retour[(pos + e.decalages[route1])%e.periode] = 1;
+				return 1;
+			}
+			else{//route1 cannot be moved, hence we rollback the changes
+				offsets[route1]= i;
+				offsets[route] = -1;
+				e.aller[pos_retour]=0;
+				e.retour[(i + e.decalages[route1])%e.periode] = 1;
+				
+			}
 		}
+	}
+	for(int i = 0; i < e.periode; i++){//third case, both routes should move
+		int pos_retour = (i + e.decalages[route])%e.periode;
+		if(e.aller[i] && e.retour[pos_retour]){
 
+		}
 	}
 	return 0;
 }
@@ -309,7 +356,10 @@ int swap(entree e){
 	while(1){
 		if(all_fit(e,offsets)) return 1;
 		while(improve_potential(e,offsets)){}//improve the potential as much as possible
+		if(all_fit(e,offsets)) return 1;//try to add routes again now the potential has been improved
+										//this can only improve the potential again
 		if (!exchange(e, offsets, first_unscheduled(e.nb_routes,offsets))) return 0;
+		//try to schedule a route by moving other routes, if it fails, the algorithm fails
 	}
 }
 
