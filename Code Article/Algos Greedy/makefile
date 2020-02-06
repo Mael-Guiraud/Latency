@@ -10,7 +10,7 @@ all: compil run gnuplot
 
 
 compil:
-	$(CC) longsmessages.c -fopenmp -o longsmess 
+	$(CC) longsmessages.c -fopenmp -o longsmess -O3
 
 run: longsmess
 	./longsmess
