@@ -81,26 +81,68 @@ We focus on a simple but common star shaped topology, where all contentions are 
 For message of size $1$, we prove that it is always possible to schedule them, when the load is less than $61\%$  using a polynomial time algorithm. Moreover, using a simple random greedy algorithm, we show that almost all instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
 \end{abstract}
 
-\todo{est-ce qu'on parle des protocols qui imposent la latence, ou au moins mettre les refs ? Dans l'abstract ou dans l'intro ? -> dans l'intro}
-
 \section{Introduction}
 
-Lister les usages possibles: 
-sans retour mais de profondeur 2 ou plus. Sonar ? Train ?
-Réseau de capteurs communicant (industrie)
-Logistique dans une usine (chaine avec différent produits)
+Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU) in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
+Our aim is to operate a C-RAN on a low-cost shared switched network. 
+The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without using a buffer}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
-Comparer à la litérature. Aller voir ce qu'on nous a cité sur l'ordonnancement périodique 
-et les trucs de train périodique qu'on a trouvé.
-Dire que c'est du scheduling : contention point = machine et message = task.
+Solutions existantes -> bof
+ Statistical multiplexing even with a large bandwidth does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
+
+Mettre ici notre travail sur un anneau ou sur un seul lien mais avec du délai possible.
+Un peu comme du wormhole ou on ferait un routage préalable SDN pour éviter les buffers et passer l délai
+à 0.
+
+Généralisation du problème.
+Probleme avec des messages periodiques back and forth:
+, for instance any sensor network which must periodically
+transmit informations to some gateway. 
+Sonar
+Wormhole mais dire la différence.
 
 
-Mélanger l'introduction et le modèle. Voir comment c'est présenté dans two flow shop
+En général, n'importe quel problème avec periode est fixée: probleme de scheduling
+comme two flow shop. Des applications similaires ou il n'y a pas de réponse mais un
+réseau plus compliqué de profondeur $2$ ou plus. 
 
-In this article, we model a very simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
+Logistic in an assembly line or a transport network going through an assembly line can also be scheduled
+periodically, so that no buffering is used (hence no storage is necessary). 
+Train networks also need periodic timetable, where the period is fixed to ensure some service, and the routes 
+used by each train is also usually fixed. Here, there is no answer to deal with, but the networks can be more complicated and
+have several contention points. 
 
-The time is discretized and the process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In our application, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time it requires to send it through some contention point of the network.
-We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. A message $i$ is caracterized by its delay $d_i$. It means that if the message number $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. 
+
+
+
+
+Autres travaux avec une approche similaire
+Periodic mais ici on ne peut pas toucher à la periode
+Approche des allemands, autrichien par prog lineaire
+
+
+
+
+     
+The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
+The problem \pma on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing}
+with the additional constraint of periodicity. To our knowledge, all periodic scheduling problems are quite different from \pma.
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem correspond to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
+
+
+
+\subsection{Organization of the paper}
+
+
+
+
+
+\section{Model}
+
+
+In this article, we model a simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
+
+The time is discretized and the process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In our application, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time needed to send a message through some contention point of the network, here a shared link. We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its delay $d_i$. It means that if the message number $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. 
 \begin{center}
 \begin{figure}
 %\begin{minipage}[c]{.5\linewidth}
@@ -138,8 +180,8 @@ We denote by $n$ the number of messages, which are numeroted from $0$ to $n-1$. 
 \end{figure}
 \end{center}
 
-Since the process we describe is periodic, we may consider any interval of $P$ units of time.
-Describing the messages going through the two contention points during such an interval
+Since the process we describe is periodic, we may consider any interval of $P$ units of time
+to represent the state of our system. Describing the messages going through the two contention points during such an interval
 completely defines the periodic process. We call the representation of the interval
 of time in the first contention point the \emph{first period} and the \emph{second period}
 for the second contention point.
@@ -148,13 +190,13 @@ An \emph{offset} of a message is a choice of time at which it arrives
 at the first contention point. Let us consider a message $i$
 of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. We say that two messages $i$ and $j$ collide if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$) we say that message $i$ uses time $t$ in the first period (resp. in the second period).
 
-We want to send all messages, so that they are no collision in the common link.
+We want to send all messages, so that they are no collision in the shared link.
 In other word, we look for a way to send the messages without using buffering and 
 hence limiting the latency to the physical length of the links. An assignment is a
 choice of an offset for each message such that \emph{no pair of message collide}.
 Formally, an \emph{assignment} is a function from the messages, represented by their indices in $[n]$ to their offsets in $[P]$.  
 
-We call Periodic Message Assignment or \pma the problem we study in this article,
+We call Periodic Message Assignment or \pma the problem studied in this article,
 which asks, given an instance of $n$ messages, a period $P$ and a size $\tau$, to find 
 an assignment or to decide there is none.
 \begin{figure}
@@ -168,8 +210,8 @@ The complexity of \pma is not known. However, we have proven that when parametri
 $n$ the number of messages, the problem is \FPT~\cite{barth2018deterministic}.
 A slight generalization of \pma, with several contention points but each message only going through two of them (as in \pma) is \NP-hard~\cite{barth2018deterministic}. If the shared link is not bidirectional, that is there is a single contention point and each message goes through it twice, it is also \NP-hard~\cite{orman1997complexity}. Hence, we conjecture that \pma is \NP-hard.
 
-To overcome the hardness, we study \pma in this article when the load of the system is small enough. The \emph{load} is defined as the number of units of time used in a period by all messages divided by the period. Hence the load is equal to $n\tau /P$.
-Our aim is to prove that for small load, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm.
+To overcome the hardness, we study \pma in this article when the load of the system is small enough. The \emph{load} is defined as the number of units of time used in a period by all messages divided by the period. Hence the load is equal to $n\tau /P$. Our aim is to prove that, for small load, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm.
+
 
 
 \section{Greedy Algorithms for Large Messages}
