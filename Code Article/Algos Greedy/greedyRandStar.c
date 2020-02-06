@@ -252,12 +252,22 @@ void unschedule(entree e, int *offsets, int route){//remove the route from the p
 }
 
 void test_sol(entree e, int *offsets){//test that offsets correspond to traces
+	int * aller = calloc(e.periode,sizeof(int));
+	int * retour = calloc(e.periode,sizeof(int));
+	//construction à partir des offsets
 	for(int i = 0; i < e.nb_routes; i++){
-		if(offsets[i] == -1 || !e.aller[offsets[i]] || !e.retour[(offsets[i]+e.decalages[i])%e.periode]){
-			print_solution(e.aller,e.retour,e.periode);
-		}  
+		if(offsets[i] == -1 ) 
+		{
+			printf("offset à -1\n");
+		}
+		else{
+			aller[offsets[i]]++;
+			retour[(offsets[i] + e.decalages[i])%e.periode]++;
+		}
 	}
-	//should test that no time is used twice
+	for(int i = 0; i < e.periode; i++){
+		if(e.aller[i] != aller[i] || e.retour[i]!= retour[i]) printf("Incohérence offset/trace \n");
+	}
 }
 
 int all_fit(entree e, int *offsets){
