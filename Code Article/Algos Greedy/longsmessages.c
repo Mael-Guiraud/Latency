@@ -8,9 +8,9 @@
 #define MESSAGE_SIZE 1000
 #define PERIOD 100000
 #define STEP 1
-#define ROUTES_SIZE_MAX 10000
+#define ROUTES_SIZE_MAX 100000
 #define NB_SIMULS 400
-#define PARALLEL 1
+#define PARALLEL 0
 
 int * random_graph(int nb_routes,int size_route)
 {
@@ -57,10 +57,12 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 		{
 			if(offset%per < (P[i]+message_size)%per)
 			{
+				//printf("PI CHEVAL Collision debut avec %d retour %d",P[i],(P[i]+message_size)%per - offset%per );
 				return (P[i]+message_size)%per - offset%per ;
 			}	
 			if(( (offset+message_size)%per > P[i]%per) ||( (offset)%per >= P[i]%per) ||( (offset+message_size)%per <= (P[i]+message_size)%per) )
 			{
+				//printf("PI CHEVAL Collision fin avec %d",P[i],per - (offset)%per + (P[i]+message_size)%per);
 				return per - (offset)%per + (P[i]+message_size)%per ;
 			}	
 		}
@@ -68,16 +70,19 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 		{
 			if((offset%per >= P[i]%per) && ( offset%per < (P[i]+message_size)%per)  )
 			{
+				//printf("OFFSET CHEVAL collistion avec %d  retour %d \n",P[i],(P[i]+message_size)%per - offset%per);
 				return (P[i]+message_size)%per - offset%per ;
 			}	
 			if(( (offset+message_size)%per > P[i]%per) && ( (offset+message_size)%per <= (P[i]+message_size)%per) )
 			{
 				if(offset%per > (P[i]+message_size)%per)
 				{
+					//printf("Offset normal collisions avec%d retour %d\n",P[i],per - (offset)%per + (P[i]+message_size)%per);
 					return per - (offset)%per + (P[i]+message_size)%per ; 
 				}
 				else
 				{
+					//printf("Collision avec %d retour %d \n",P[i],(P[i]+message_size)%per - offset%per );
 					return (P[i]+message_size)%per - offset%per ;
 				}
 			}
@@ -87,43 +92,103 @@ int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 	return 0;
 
 }
+int verifie_solution(int * aller, int * retour,int message_size,int nb_routes)
+{
+	for(int i=0;i<nb_routes;i++)
+	{
+		for(int j=0;j<nb_routes;j++)
+		{
+			if(i!=j)
+			{
+				if(abs(aller[i]-aller[j])<message_size)
+				{
+					printf(" pb aller i %d j %d val |%d - %d| = %d",i,j,aller[i],aller[j],abs(aller[i]-aller[j]));
+					return 0;
+				}
+				if(abs(retour[i]-retour[j])<message_size)
+				{
+					printf(" pb retour i %d j %d val |%d - %d| = %d",i,j,retour[i],retour[j],abs(retour[i]-retour[j]));
+					return 0;
+				}
+			}
+		
+		}
+	}
+	return 1;
+}
+int first_fit_core(int*aller,int*retour,int begin,int* graph,int nb_routes,int period,int message_size,int debug)
+{
+	int nb_routes_ok=0;
+	int out;
+	for(int i=begin;i<nb_routes;i++)
+	{
+		if(graph[i] != -1)
+		{
+			int check_value = 1;
+			int offset = 0;
+			out  = 0;
+			while(check_value)
+			{
+				check_value = cols_check(aller,offset,message_size,period,nb_routes_ok+begin);
+				int tmp= check_value;
+				//printf("%d ",check_value);
+				check_value += cols_check(retour,offset+check_value+graph[i],message_size,period,nb_routes_ok+begin);
+				//printf ("%d \n",check_value-tmp);
+				offset += check_value;
+				if(offset >= period)
+				{
+					out = 1;
+					break;
+				}
+			}
+			//si on a pas trouvé d'offset pour cette route, on passe a la suivante
+			if(out)
+				continue;
+			if(debug)
+			{
+				printf("rajout de offset %d, decalage = %d id = %d\n",offset,graph[i],i);
+			
+			}
+			aller[nb_routes_ok+begin]=offset;
+			retour[nb_routes_ok+begin]=(offset+graph[i])%period;
+			nb_routes_ok++;
+			if(debug)
+			{
+					printf("\n aller  \n");
+					for(int k=0;k<nb_routes_ok+begin;k++)
+						{printf("%d ",aller[k]);}printf("\n");
+					printf("retour \n");
+					for(int k=0;k<nb_routes_ok+begin;k++)
+						{printf("%d ",retour[k]);}printf("\n");
+			}
+		}
+		
+		
+	}
+	
+
+
+	return nb_routes_ok;
+}
 int first_fit(int* graph,int nb_routes,int period,int message_size)
 {
 	int aller[nb_routes] ;
 	int retour[nb_routes] ;
-	int out;
+	
 	for(int i=0;i<nb_routes;i++)
 	{
 		aller[i]=0;
 		retour[i]=0;
 	}
-	int nb_routes_ok=0;
-	for(int i=0;i<nb_routes;i++)
-	{
-		int check_value = 1;
-		int offset = 0;
-		out  = 0;
-		while(check_value)
-		{
-			check_value = cols_check(aller,offset,message_size,period,nb_routes_ok);
-			check_value += cols_check(retour,offset+check_value+graph[i],message_size,period,nb_routes_ok);
-			offset += check_value;
-			if(offset >= period)
-			{
-				out = 1;
-				break;
-			}
-		}
-		//si on a pas trouvé d'offset pour cette route, on passe a la suivante
-		if(out)
-			continue;
-		aller[nb_routes_ok]=offset;
-		retour[nb_routes_ok]=offset+graph[i];
-		nb_routes_ok++;
-		
-	}
+	int nb_ok = first_fit_core(aller,retour,0,graph,nb_routes,period,message_size,0);
 
-	return nb_routes_ok;
+	if(!verifie_solution(aller,retour,message_size,nb_ok))
+	{
+		printf("Error verifie solution first fit \n") ;
+		exit(3);
+		}
+	return nb_ok;
+	
 }
 int min(int a, int b){
 	return (a<b)?a:b;
@@ -142,16 +207,27 @@ int trouve_plus_proche_supp(int *t, int n, int size,int message_size,int period,
 			if(maxtmp > t[i]-message_size)
 				maxtmp = t[i]-message_size;
 		}
+
+		//CAS hyper particulier ou on à tout pile une place pour mettre le message
+		if(t[i]-message_size==n)
+		{
+			return 1;
+		}
 	}
 	
 	if(maxtmp == INT_MAX)
 	{
 		if(type == 0)//A l'aller
 		{
-			return period-n;
+			return period-n+mini-message_size;
 		}
 		else
 		{
+			//toujours cas particulier mais modulo
+			if(period-n+mini-message_size == 0)
+			{
+				return 1;
+			}
 			return min(period-n+mini-message_size,period-n+decalage);
 		}
 		
@@ -232,7 +308,7 @@ int random_offset(int *graph,int nb_routes,int period,int message_size)
 	{
 		nb_eligible = 0;
 		int offset = 0;
-		//printf("nouvelle route \n");
+		//printf("nnouvelle route %d decalage %d\n",i,graph[i]);
 		//phase init
 		tmp2=1;
 		tmp3=1;
@@ -252,13 +328,19 @@ int random_offset(int *graph,int nb_routes,int period,int message_size)
 			
 		}
 		if(out)
-			break;
+		{
+			//printf("0 places dispo apres scan debut\n");
+			continue;
+		}
+		
+	
 		while(offset < period)
 		{
+			//On est deja placé à une position eligible si on est ici
 			tmp = prochain_occup(aller,retour,offset,nb_routes_ok,period,message_size,graph[i]);
 			nb_eligible += tmp;
-			/*printf("\noffset %d \n",offset);
-			for(int k=0;k<nb_routes_ok;k++)
+			//printf("\noffset %d nb eligible %d\n",offset,nb_eligible);
+		/*	for(int k=0;k<nb_routes_ok;k++)
 				{printf("%d ",aller[k]);}printf("\n");
 			printf("offset_retour %d \n",offset+graph[i]);
 			for(int k=0;k<nb_routes_ok;k++)
@@ -295,13 +377,14 @@ int random_offset(int *graph,int nb_routes,int period,int message_size)
 		//printf("%d %d %d\n",nb_eligible,offset,nb_routes_ok);
 		if(nb_eligible == 0)
 		{
+			//printf("NB eligible = %d \n",nb_eligible);
 			continue;
 		}
 		chosen_offset = rand()%nb_eligible;
 		nb_eligible = 0;
 		offset = 0;
 		
-	//	printf("%d choosen\n",chosen_offset);
+		//printf("%d choosen\n",chosen_offset);
 		tmp2=1;
 		tmp3=1;
 		out = 0;
@@ -320,7 +403,10 @@ int random_offset(int *graph,int nb_routes,int period,int message_size)
 			
 		}
 		if(out)
-			break;
+		{
+			//printf("Scan second 0 places dispo \n");
+			continue;
+		}
 		out = 0;
 		while(offset < period)
 		{
@@ -353,13 +439,15 @@ int random_offset(int *graph,int nb_routes,int period,int message_size)
 			}
 			
 		}
-		
+	//	printf("Apres sortie boucle 2, offset%d \n",offset);
 		if(out)
 		{	
 			aller[nb_routes_ok]=offset;
 			retour[nb_routes_ok]=(offset+graph[i])%period;
 			nb_routes_ok++;
+			graph[i]=-1;
 		}
+
 			
 		else
 		{
@@ -371,6 +459,17 @@ int random_offset(int *graph,int nb_routes,int period,int message_size)
 
 		
 	}
+	if( first_fit_core(aller,retour,nb_routes_ok,graph,nb_routes,period,message_size,1))
+	{
+		printf("First fit arrive a rajouter une route, c'est étrange. %d %d\n",nb_eligible,verifie_solution(aller,retour,message_size,nb_routes_ok+1));
+		
+		exit(4);
+	}
+	if(!verifie_solution(aller,retour,message_size,nb_routes_ok))
+	{
+		printf("Error verifie solution RandomOffset\n") ;
+		exit(3);
+		}
 	
 	return nb_routes_ok;
 }
@@ -444,10 +543,15 @@ int meta_offset(int *graph,int nb_routes,int period,int message_size)
 		if(out)
 			continue;
 		aller[nb_routes_ok]=offset;
-		retour[nb_routes_ok]=offset+graph[i];
+		retour[nb_routes_ok]=(offset+graph[i])%period;
 		nb_routes_ok++;
 		
-	}
+	}	
+	if(!verifie_solution(aller,retour,message_size,nb_routes_ok))
+	{
+		printf("Error verifie solution MetaOffset\n") ;
+		exit(4);
+		}
 	
 	return nb_routes_ok;
 }
@@ -469,9 +573,11 @@ int main()
 	for(int i=0;i<nb_algos;i++)
 	{
 		sprintf(buf,"%s.plot",noms[i]);
+		printf("Opening %s ...",buf);
 		f[i] = fopen(buf,"w");
 		if(!f[i])perror("Error while opening file\n");
 		success[i]=0.0;
+		printf("OK\n");
 	}
 
 
@@ -517,6 +623,7 @@ int main()
 		}
 		for(int algo=0;algo<nb_algos;algo++)
 		{
+
 			fprintf(f[algo],"%d %f\n",i,(success[algo]/nb_simuls)*100);
 		}
 		printf("\n");
