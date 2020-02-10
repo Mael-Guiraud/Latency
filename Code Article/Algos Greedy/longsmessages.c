@@ -8,8 +8,8 @@
 #define MESSAGE_SIZE 1000
 #define PERIOD 100000
 #define STEP 1
-#define ROUTES_SIZE_MAX 100000
-#define NB_SIMULS 400
+#define ROUTES_SIZE_MAX 1000
+#define NB_SIMULS 1000
 #define PARALLEL 1
 
 int * random_graph(int nb_routes,int size_route)
@@ -905,7 +905,7 @@ int main(int argc,char * argv[])
 	int tmp;
 	int nb_algos = 6;
 	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","SuperCompact","Paires","MetaOffsetPaires"};
-	/*char buf[256];
+	char buf[256];
 	FILE * f[nb_algos];
 	float success[nb_algos];
 	for(int i=0;i<nb_algos;i++)
@@ -918,7 +918,7 @@ int main(int argc,char * argv[])
 		printf("OK\n");
 	}
 
-	for(int i=33;i<=nb_routes;i++)
+	for(int i=1;i<=nb_routes;i++)
 	{
 		
 
@@ -978,7 +978,7 @@ int main(int argc,char * argv[])
 	for(int i=0;i<nb_algos;i++)
 	{
 		fclose(f[i]);
-	}*/
+	}
 	print_gnuplot( noms,  nb_algos,period, message_size,nb_routes);
 	return 0;
 		
