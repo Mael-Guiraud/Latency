@@ -83,31 +83,18 @@ For message of size $1$, we prove that it is always possible to schedule them, w
 \section{Introduction}
 
 Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU) in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network. 
-The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
  Statistical multiplexing even with a large bandwidth does not satisfies the latency requirements of C-RAN~\cite{dominique2018deterministic,barth2018deterministic}. The current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point, an RRH on one side and a BBU on the other side is connected through direct fiber or full optical switches. This eliminates all contentions since each message has its own link, but it is extremely expensive and do not scale in the case of a mobile network composed of about $10,000$ base stations. 
 
-Our approach relies on computing beforhand a \emph{periodic and deterministic} sending scheme, which avoids all contention.
- The deterministic approach has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
+The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which avoids all contention. The deterministic approach has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
+
+
 Recently several solutions for computing schedules for time sensitive networks has been proposed, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic}, SMT solver~\cite{dos2019tsnsched} or heuristics and FPT algorithms~\cite{barth2018deterministic}.
 
 Dire que dans nos papiers précédents on a étudié un problème un peu plus général (surtout cette topologie et possiblité de délai), dans les autres papiers concurrents on a des modèles plus compliqués mais seulement des heuristiques sans garantie de performance ni de complexité. 
 Dans ce papier, le modèle le plus simple mais des garanties de solution opti et de polynomialité sous condition de charge raisonnable.
 
-
-The algorithmic problem studied in the present article, called Periodic Message Assignment or \pma, is the following: choose an offset (departure time) for each message, so that it goes through two contention points when they are free, with a fixed intermediate delay between them. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing}. The originality of our problem comes from the periodicity, which makes the constraints different: messages from consecutive periods can interact. The objective is classically to minimize the makespan, or schedule length, in the simple periodic variant we present here, we need only to find a periodic schedule (which automatically minimizes the makespan of the process). 
- To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
-Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic}, while our problem corresponds to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
-
-
-
-Sonar
-Wormhole mais dire la différence.
-
-
-En général, n'importe quel problème avec periode est fixée: probleme de scheduling
-comme two flow shop. Des applications similaires ou il n'y a pas de réponse mais un
-réseau plus compliqué de profondeur $2$ ou plus. 
+Dire que d'autres papiers existent pour les autres applis (sonar, trains, réseau de capteurs, logistique)
 
 
 Time critical network in a car or a plane -> sensor on peut mettre les trucs des allemands/autrichien.
@@ -120,7 +107,14 @@ Trains: problèmes avec des précédences du coup bcp plus compliqué (toujours 
 
 
 
-     
+The algorithmic problem studied in the present article, called Periodic Message Assignment or \pma, is the following: choose an offset (departure time) for each message, so that it goes through two contention points when they are free, with a fixed intermediate delay between them. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing}. The originality of our problem comes from the periodicity, which makes the constraints different: messages from consecutive periods can interact. The objective is classically to minimize the makespan, or schedule length, in the simple periodic variant we present here, we need only to find a periodic schedule (which automatically minimizes the makespan of the process). 
+ To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic}, while our problem corresponds to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
+
+Sinon problème plus compliqué avec des précédences (trains périodiques, nos méthodes ne passent pas).
+Ajouter des bouts du paragraphe suivant.
+
+
 The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
 The problem \pma on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing}
 with the additional constraint of periodicity.
@@ -602,7 +596,7 @@ of the $n+1^{th}$ message randomly, extending the trace by a random possible off
 Let us denote by $\Pr(m,n)$ the probability that Uniform Greedy fails at the $n^{th}$
 step assuming it has not failed before.
 
-\begin{lemma}\label{lemma:proba_success}
+\begin{lemma}\label{lemma:proba_fail}
 $$\Pr(m,n) = \frac{\binom{n}{2(n-1)-m}}{\binom{m}{n-1}}.$$
 \end{lemma}
 \begin{proof}
@@ -616,7 +610,7 @@ The probability to draw a set of size $n-1$ which contains $m-n + 1$ fixed eleme
  $$\frac{\binom{n}{2(n-1)-m}}{\binom{m}{n-1}}.$$
 \end{proof}
 
-From Lemma~\ref{lemma:proba_success}, we can derive the probability 
+From Lemma~\ref{lemma:proba_fail}, we can derive the probability 
 of success of Uniform Greedy by a simple product. 
 
 \begin{theorem}
@@ -626,9 +620,9 @@ The probability over all instances with $n$ messages and period $m$ that Uniform
 If we fix the load $\lambda$, which satisfies $n = \lambda m$, we can bound 
 $P(m,n)$ using Stirling formula. We obtain for some constant $C$, 
 that $$P(m,n) \leq C \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^m.$$
-We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$
-The derivative of $f$ is strictly positive for $1/2 \lambda < 1$ and $f(1) = 1$, hence 
-$f(\lambda) < 1$ when $\lambda < 1$. The probability that Uniform Greedy is bounded 
+We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
+The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
+$f(\lambda) < 1$ when $\lambda < 1$. The probability that Uniform Greedy fails is bounded 
 by $C \lambda m f(\lambda)^m$, whose limit is zero when $m$ goes to infinity. 
 It explains why Uniform Greedy is good for large $m$. 
 
