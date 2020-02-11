@@ -1,6 +1,7 @@
 #include "structs.h"
 #include "treatment.h"
 #include "voisinage.h"
+#include "config.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
@@ -422,6 +423,17 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			}
 		}
 		offset += total_check;
+		if(VOISINAGE)
+		{
+			if(offset >= period)
+			{
+				if(id[current_route] == 0)
+					order[i]= INT_MAX;
+				else
+					order[i] = -order[i];
+			}	
+		}
+		
 		delay[id[current_route]] += total_check;
 
 
