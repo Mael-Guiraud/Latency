@@ -5,12 +5,12 @@
 #include <string.h>
 #include <limits.h>
 #include <omp.h>
-#define MESSAGE_SIZE 10
-#define PERIOD 100
-#define ROUTES_SIZE_MAX 100
+#define MESSAGE_SIZE 1000
+#define PERIOD 15000
+#define ROUTES_SIZE_MAX 1000
 #define NB_SIMULS 1000
 #define PARALLEL 1
-
+#define EXHAUSTIVE_SEARCH 1
 int * random_graph(int nb_routes,int size_route)
 {
 	int * graph;
@@ -1114,7 +1114,7 @@ int search(int * return_time,int route_number, int period,int message_size){
   	}
   	free(fw);
   	free(bw);
-  	return return_value?1:-1;
+  	return return_value?route_number:0;
 }
 
 int main(int argc,char * argv[])
@@ -1127,8 +1127,13 @@ int main(int argc,char * argv[])
 	int nb_routes = PERIOD / message_size;
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
-	int tmp;
+	
 	int nb_algos = 6;
+	if(EXHAUSTIVE_SEARCH)
+		nb_algos++;
+	int tmp[nb_algos];
+
+		//Toujours mettre exhaustivesearch en derniere
 	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","SuperCompact","Paires","MetaOffsetPaires","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
@@ -1163,50 +1168,46 @@ int main(int argc,char * argv[])
 				
 				switch(algo){
 					case 0:
-						tmp =  first_fit(graph,i,period,message_size);
+						tmp[algo] =  first_fit(graph,i,period,message_size);
 						
 						break;
 					case 1:
 						
-						tmp = meta_offset(graph,i,period,message_size);
+						tmp[algo] = meta_offset(graph,i,period,message_size);
 						break;
 					case 2:
-						tmp = random_offset(graph,i,period,message_size);
+						tmp[algo] = random_offset(graph,i,period,message_size);
 
 						break;
 					case 3:
-						tmp = super_compact(graph,i,period,message_size);
+						tmp[algo] = super_compact(graph,i,period,message_size);
 						break;
 					case 4:
-						tmp = pair(graph,i,period,message_size);
+						tmp[algo] = pair(graph,i,period,message_size);
 						break;
 					case 5:
-						tmp = pair_meta_offset(graph,i,period,message_size);
+						tmp[algo] = pair_meta_offset(graph,i,period,message_size);
 						break;
 					case 6:
-						tmp = search(graph,i,period,message_size);
+						tmp[algo] = search(graph,i,period,message_size);
 						break;
 					}
-					if(algo < 6)
-					{
-						if(tmp == i)
+					
+						if(tmp[algo] == i)
 							#pragma omp atomic
 								success[algo]++;
-					}
-					else{
-						if(tmp == 1)
-							success[algo]++;
-					}
+					
+					
 					
 						
 			}
-			if(nb_algos >= 7)
+			if(EXHAUSTIVE_SEARCH)
 			{
-				for(int k = 0;k<6;k++)
+				for(int k = 0;k<nb_algos-1;k++)
 				{
-					if(success[k] && (!success[6]))
+					if( (tmp[k]==i) && (!tmp[nb_algos-1]))
 					{
-						printf("Pas possible algo %s %f %f\n",noms[k],success[k],success[6]);
+						printf("Pas possible algo %s %d %d\n",noms[k],tmp[k],tmp[nb_algos-1]);
 						exit(9);
 					}	
 				}

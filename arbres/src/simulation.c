@@ -668,7 +668,7 @@ void simuldistrib(int seed)
 {
 	
 	int nb_algos = 6 ;
-	char * noms[] = {"BorneInfSimons","BorneInfSort","Descente","Taboo","DescenteX","GreedyDeadline"};
+	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons"};
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
@@ -717,9 +717,10 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
+			a= NULL;
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
-				case 0:
+				case 5:
 					time[algo] = borneInf( g, P, message_size)-l;	
 					//printf("%d longest_route\n",l);
 				break;
@@ -742,15 +743,32 @@ void simuldistrib(int seed)
 					if(a)
 						nb_pas[2] += a->nb_routes_scheduled;
 				break;
-				case 5:
+				case 0:
 					a =  greedy_deadline_assignment( g, P, message_size,0);
+					if(!a)
+					{
+						free_graph(g);
+						goto saut;
+					}
 				break;
 
 				}
-				if((algo > 1))
+
+
+				if(a)
 				{
-					if(a)
-						time[algo] = travel_time_max_buffers(g)-l;
+					time[algo] = travel_time_max_buffers(g)-l;
+					//printf("algo %d time %d \n",algo,time[algo]);	
+					free_assignment(a);
+				}
+					
+				else
+				{
+					if((algo != 1) && (algo != 5))
+					{
+						time[algo] = time[0];
+					}
+				}
 					
 					/*printf("algo %d \n",algo);
 					int lenght=0;
@@ -762,39 +780,37 @@ void simuldistrib(int seed)
 						
 						
 					}*/
-				}
+				
+				//printf("Algo %d a = %p \n",algo,a);
+			
 
-				#pragma omp critical
-					res[algo][i]=time[algo];
-
-				if(algo > 1){
-					if(!a)
-					{
-						goto saut;
-					}
-					free_assignment(a);
-				}
+		
+				
 					
-				a=NULL;
 				reset_periods(g,P);
 			
 		}
-		if((time[2] > time[5]) )
-			printf("La descente est moins bonne que l'algo greedy d'init \n");
-		if((time[3]>time[5]) )
-			printf("Le taboo est moins bon que l'algo greedy d'init \n");
-		if((time[1]>time[0]) )
+		for(int algo = 0;algo<nb_algos;algo++)
 		{
-			printf("Pb de born inf la les garcons %d %d %d\n",time[0]+l,time[1]+l,l);
+				#pragma omp critical
+					res[algo][i]=time[algo];
+		}
+		if((time[2] > time[0]) )
+			printf("La descente est moins bonne que l'algo greedy d'init  %d %d\n",time[0],time[2]);
+		if((time[3]>time[0]) )
+			printf("Le taboo est moins bon que l'algo greedy d'init \n");
+		if((time[1]>time[5]) )
+		{
+			printf("Pb de born inf  simons %d calcul %d lenght %d\n",time[5]+l,time[1]+l,l);
 			print_graphvitz(g,"../view/view.dot");
 			affiche_graph(g,P,stdout);
 			exit(45);
 		}
 		for(int k=2;k<nb_algos;k++)
 		{
-			if((time[k]<time[0]) || (time[k]<time[1]))
+			if((time[k]<time[5]) || (time[k]<time[1]))
 			{
-				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d\n",k,time[k],time[0],time[1]);
+				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d\n",k,time[k],time[5],time[1]);
 				
 				//exit(4);
 
