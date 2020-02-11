@@ -5,12 +5,12 @@
 #include <string.h>
 #include <limits.h>
 #include <omp.h>
-#define MESSAGE_SIZE 1000
-#define PERIOD 10000
-#define ROUTES_SIZE_MAX 10000
+#define MESSAGE_SIZE 10
+#define PERIOD 1000
+#define ROUTES_SIZE_MAX 1000
 #define NB_SIMULS 1000
 #define PARALLEL 1
-#define EXHAUSTIVE_SEARCH 1
+#define EXHAUSTIVE_SEARCH 0
 int * random_graph(int nb_routes,int size_route)
 {
 	int * graph;
@@ -920,12 +920,13 @@ void print_gnuplot(char ** algos, int nb_algos,int period, int tau,int nb_messag
 	
 	fprintf(f_GPLT,"set term postscript color solid\n"
 
-	"set title \"Performance of different algorithms for PAZL tau = %d , P = %d , nbroutes = %d\"\n"
-	"set xlabel \"Nb routes\" \n"
+	//"set title \"Performance of different algorithms for PAZL tau = %d , P = %d , nbroutes = %d\"\n"
+		"set notitle\n"
+	"set xlabel \"Load\" \n"
 	//"set xtics 10\n" 
 
 	"set key bottom left \n"
-	"set ylabel \"Success rate\"\n"
+	"set ylabel \"Success rate (%%)\"\n"
 	"set output '| ps2pdf - success_period%d_tau%d_nb-mess_%d.pdf'\nreplot\n",tau,period,nb_messages,period,tau,nb_messages);
 	fclose(f_GPLT);
 	
@@ -1128,13 +1129,13 @@ int main(int argc,char * argv[])
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
 	
-	int nb_algos = 5;
+	int nb_algos = 4;
 	if(EXHAUSTIVE_SEARCH)
 		nb_algos++;
 	int tmp[nb_algos];
 
 		//Toujours mettre exhaustivesearch en derniere
-	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","SuperCompact","CompactPairs","ExhaustiveSearch"};
+	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","CompactPairs","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	float success[nb_algos];
@@ -1148,7 +1149,7 @@ int main(int argc,char * argv[])
 		printf("OK\n");
 	}
 
-	for(int i=3;i<=nb_routes;i++)
+	for(int i=33;i<=nb_routes;i++)
 	{
 		
 
@@ -1179,16 +1180,16 @@ int main(int argc,char * argv[])
 						tmp[algo] = random_offset(graph,i,period,message_size);
 
 						break;
-					case 3:
+					/*case 3:
 						tmp[algo] = super_compact(graph,i,period,message_size);
 						break;
-					/*case 4:
+					case 4:
 						tmp[algo] = pair(graph,i,period,message_size);
 						break;*/
-					case 4:
+					case 3:
 						tmp[algo] = pair_meta_offset(graph,i,period,message_size);
 						break;
-					case 5:
+					case 4:
 						tmp[algo] = search(graph,i,period,message_size);
 						break;
 					}
@@ -1219,7 +1220,8 @@ int main(int argc,char * argv[])
 		}
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
-			fprintf(f[algo],"%d %f \n",i,success[algo]);
+			fprintf(f[algo],"%2f %f \n",(float)i/nb_routes,success[algo]*100/nb_simuls);
+			fprintf(stdout,"%2f %f \n",(float)i/nb_routes,success[algo]*100/nb_simuls);
 		}
 
 	}
