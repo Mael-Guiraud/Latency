@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define PERIODE 100
-#define NB_ROUTES 99
+#define NB_ROUTES 100
 #define TAILLE_ROUTES 100
 #define NB_SIMUL 100
 
@@ -442,12 +442,12 @@ double prob_theo(int n, int m){ //question, est-ce que faire le produit simplifi
 }
 
 
-void statistique(int periode, int nb_routes, int taille_max, int nb_simul, int seed, int (algo)(entree),char* name){
+float statistique(int periode, int nb_routes, int taille_max, int nb_simul, int seed, int (algo)(entree),char* name){
 
 	srand(seed);
 	entree e;
 	e.periode = PERIODE;
-	e.nb_routes = NB_ROUTES;
+	e.nb_routes = nb_routes;
 	e.aller = malloc(sizeof(int)*e.periode);
 	e.retour = malloc(sizeof(int)*e.periode);
 	e.decalages = malloc(sizeof(int)*e.nb_routes);
@@ -458,19 +458,77 @@ void statistique(int periode, int nb_routes, int taille_max, int nb_simul, int s
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMUL);
 	}
 	printf("Algo %s: %f réussite\n",name, (double)success/(double)nb_simul);
+	float return_value = (double)success/(double)nb_simul;
 	free(e.aller); free(e.retour); free(e.decalages);
+	return return_value;
 }
 
 
+void print_gnuplot(char ** algos, int nb_algos)
+{
+
+	char buf[64];
+	sprintf(buf,"success.gplt");
+	FILE* f_GPLT = fopen(buf,"w");
+	
+	if(!f_GPLT){perror("Opening gplt file failure\n");exit(2);}
+
+	for(int i=0;i<nb_algos;i++)
+	{
+		if(i>0)
+		{
+			fprintf(f_GPLT,"re");
+		}	
+		fprintf(f_GPLT,"plot '%s.plot' using 1:2 with lines title \"%s\" \n",algos[i],algos[i]);
+	}
+
+	
+	fprintf(f_GPLT,"set term postscript color solid\n"
+
+	//"set title \"Performance of different algorithms for PAZL tau = %d , P = %d , nbroutes = %d\"\n"
+		"set notitle\n"
+	"set xlabel \"Nb routes\" \n"
+	//"set xtics 10\n" 
+
+	"set key bottom left \n"
+	"set ylabel \"Success rate\"\n"
+	"set output '| ps2pdf - success_tau1.pdf'\nreplot\n");
+	fclose(f_GPLT);
+	
+
+}
 int main()
 {
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_uniform,"greedy_uniform"); //ça n'est pas sur les memes entrees a cause du rand
-	printf("Proba de réussite théorique de l'algo uniforme: %f \n",prob_theo(NB_ROUTES,PERIODE));
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_first_fit,"first_fit");
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_profit,"profit");
-	//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
-	//algo bugué, ne marche pas pour 50%
-	statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,swap,"swap");
+		//Toujours mettre exhaustivesearch en derniere
+	int nb_algos = 5;
+	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap"};
+	char buf[256];
+	FILE * f[nb_algos];
+	for(int i=0;i<nb_algos;i++)
+	{
+		sprintf(buf,"%s.plot",noms[i]);
+		printf("Opening %s ...",buf);
+		f[i] = fopen(buf,"w");
+		if(!f[i])perror("Error while opening file\n");
+		printf("OK\n");
+	}
+	for(int i=0;i<NB_ROUTES;i++)
+	{
+		printf("%d Routes \n",i);
+		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
+		fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i,PERIODE));
+		fprintf(f[2],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_first_fit,"FirstFit"));
+		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_profit,"Profit"));
+		//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
+		//algo bugué, ne marche pas pour 50%
+		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,swap,"Swap"));
+	}
+	for(int i=0;i<nb_algos;i++)
+	{
+		fclose(f[i]);
+	}
+	print_gnuplot( noms,  nb_algos);
+	return 0;
 }

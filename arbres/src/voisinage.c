@@ -1853,18 +1853,41 @@ Voisin Voisin_alea(Graph g)
 		{
 			if(kind == FORWARD)
 			{
-				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				if(v.route == 0)
 				{
-					idtmp = i;
-					break;
+					if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == INT_MAX))
+					{
+						idtmp = i;
+						break;
+					}
 				}
+				else
+				{
+					if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == -v.route))
+					{
+						idtmp = i;
+						break;
+					}
+				}
+				
 			}
 			else
 			{
-				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				if(v.route == 0)
 				{
-					idtmp = i;
-					break;
+					if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == INT_MAX))
+					{
+						idtmp = i;
+						break;
+					}
+				}
+				else
+				{
+					if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == -v.route))
+					{
+						idtmp = i;
+						break;
+					}
 				}
 			}
 
@@ -1875,6 +1898,31 @@ Voisin Voisin_alea(Graph g)
 		}
 
 
+	
+
+		if(VOISINAGE)
+		{
+			if(kind == FORWARD)
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX-g.contention[v.route][x]->routes_order_f[idtmp];
+					else
+						g.contention[v.route][x]->routes_order_f[idtmp]= -g.contention[v.route][x]->routes_order_f[idtmp];
+				}
+			}
+			else
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX-g.contention[v.route][x]->routes_order_b[idtmp];
+					else
+						g.contention[v.route][x]->routes_order_b[idtmp]= -g.contention[v.route][x]->routes_order_b[idtmp];
+				}
+			}
+		}
 		if(v.pos[level] == 1)//permutation a gauche
 		{
 			if(kind == FORWARD)
@@ -1887,30 +1935,6 @@ Voisin Voisin_alea(Graph g)
 			}
 		}
 
-
-		if(VOISINAGE)
-		{
-			if(kind == FORWARD)
-			{
-				if(v.bool_p[level]==1)
-				{
-					if(v.route == 0 )
-						g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX;
-					else
-						g.contention[v.route][x]->routes_order_f[idtmp]= -g.contention[v.route][x]->routes_order_f[idtmp];
-				}
-			}
-			else
-			{
-				if(v.bool_p[level]==1)
-				{
-					if(v.route == 0 )
-						g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX;
-					else
-						g.contention[v.route][x]->routes_order_b[idtmp]= -g.contention[v.route][x]->routes_order_b[idtmp];
-				}
-			}
-		}
 		
 	}
 	
@@ -1937,27 +1961,6 @@ void remet_voisin(Graph g,Voisin v)
 		}
 		//x contient le level de contention de l'arc, et kind le sens
 
-
-		//Vu qu'on remmet comme avant on vire le fait qu'il puisse y avoir un nombre negatif(ou le nombre de route a la place de -0)
-		//Ca n'arrive normalement jamais quand on est dans l'ancien voisinage.
-		for(int i=0;i<g.contention[v.route][x]->nb_routes;i++)
-		{
-			if(kind == FORWARD)
-			{
-				if(g.contention[v.route][x]->routes_order_f[i] <0)
-					g.contention[v.route][x]->routes_order_f[i] = -g.contention[v.route][x]->routes_order_f[i];
-				if(g.contention[v.route][x]->routes_order_f[i] == INT_MAX)
-					g.contention[v.route][x]->routes_order_f[i] = 0;
-			}
-			else
-			{
-				if(g.contention[v.route][x]->routes_order_b[i] <0)
-					g.contention[v.route][x]->routes_order_b[i] = -g.contention[v.route][x]->routes_order_b[i];
-				if(g.contention[v.route][x]->routes_order_b[i] == INT_MAX)
-					g.contention[v.route][x]->routes_order_b[i] = 0;
-			}
-			
-		}
 		//On cherche l'indice de au quel v.route est placée dans l'arc
 		idtmp = -1;
 		
@@ -1965,18 +1968,41 @@ void remet_voisin(Graph g,Voisin v)
 		{
 			if(kind == FORWARD)
 			{
-				if(g.contention[v.route][x]->routes_order_f[i] == v.route)
+				if(v.route == 0)
 				{
-					idtmp = i;
-					break;
+					if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == INT_MAX))
+					{
+						idtmp = i;
+						break;
+					}
 				}
+				else
+				{
+					if((g.contention[v.route][x]->routes_order_f[i] == v.route) || (g.contention[v.route][x]->routes_order_f[i] == -v.route))
+					{
+						idtmp = i;
+						break;
+					}
+				}
+				
 			}
 			else
 			{
-				if(g.contention[v.route][x]->routes_order_b[i] == v.route)
+				if(v.route == 0)
 				{
-					idtmp = i;
-					break;
+					if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == INT_MAX))
+					{
+						idtmp = i;
+						break;
+					}
+				}
+				else
+				{
+					if((g.contention[v.route][x]->routes_order_b[i] == v.route) || (g.contention[v.route][x]->routes_order_b[i] == -v.route))
+					{
+						idtmp = i;
+						break;
+					}
 				}
 			}
 
@@ -1987,6 +2013,31 @@ void remet_voisin(Graph g,Voisin v)
 		}
 
 
+		
+
+		if(VOISINAGE)
+		{
+			if(kind == FORWARD)
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_f[idtmp]=INT_MAX-g.contention[v.route][x]->routes_order_f[idtmp];
+					else
+						g.contention[v.route][x]->routes_order_f[idtmp]= -g.contention[v.route][x]->routes_order_f[idtmp];
+				}
+			}
+			else
+			{
+				if(v.bool_p[level]==1)
+				{
+					if(v.route == 0 )
+						g.contention[v.route][x]->routes_order_b[idtmp]=INT_MAX-g.contention[v.route][x]->routes_order_b[idtmp];
+					else
+						g.contention[v.route][x]->routes_order_b[idtmp]= -g.contention[v.route][x]->routes_order_b[idtmp];
+				}
+			}
+		}
 		if(v.pos[level] == 1)//permutation a gauche
 		{
 			if(kind == FORWARD)

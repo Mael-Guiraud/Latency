@@ -1,6 +1,6 @@
 // CONFIG OF THE TOPOLOGY
 
-#define MAX_LENGTH 10000
+#define MAX_LENGTH 700
 #define MESSAGE_SIZE 10000
 #define NB_BBU 2
 #define NB_COLLISIONS 3
@@ -47,4 +47,4 @@
 #define NB_POINTS 20
 
 
-#define VOISINAGE 0
+#define VOISINAGE 1
