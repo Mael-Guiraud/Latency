@@ -6,8 +6,8 @@
 #include <limits.h>
 #include <omp.h>
 #define MESSAGE_SIZE 1000
-#define PERIOD 15000
-#define ROUTES_SIZE_MAX 1000
+#define PERIOD 10000
+#define ROUTES_SIZE_MAX 10000
 #define NB_SIMULS 1000
 #define PARALLEL 1
 #define EXHAUSTIVE_SEARCH 1
@@ -1128,13 +1128,13 @@ int main(int argc,char * argv[])
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
 	
-	int nb_algos = 6;
+	int nb_algos = 5;
 	if(EXHAUSTIVE_SEARCH)
 		nb_algos++;
 	int tmp[nb_algos];
 
 		//Toujours mettre exhaustivesearch en derniere
-	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","SuperCompact","Paires","MetaOffsetPaires","ExhaustiveSearch"};
+	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","SuperCompact","CompactPairs","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	float success[nb_algos];
@@ -1182,13 +1182,13 @@ int main(int argc,char * argv[])
 					case 3:
 						tmp[algo] = super_compact(graph,i,period,message_size);
 						break;
-					case 4:
+					/*case 4:
 						tmp[algo] = pair(graph,i,period,message_size);
-						break;
-					case 5:
+						break;*/
+					case 4:
 						tmp[algo] = pair_meta_offset(graph,i,period,message_size);
 						break;
-					case 6:
+					case 5:
 						tmp[algo] = search(graph,i,period,message_size);
 						break;
 					}
