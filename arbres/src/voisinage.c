@@ -499,6 +499,7 @@ void random_ordre(int * tab, int size)
 		tab[random+i] = tab[i];
 		tab[i] = tmp; 
 	}
+
 }
 Voisin init_voisinage(Graph g, Voisin v)
 {
@@ -541,7 +542,7 @@ Voisin init_voisinage(Graph g, Voisin v)
 	v.route =0;
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
 	if(VOISINAGE)
-	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);;
+	{	v.bool_p = malloc(sizeof(int)* g.nb_levels[v.route]);
 		init_vois(v.bool_p,g.nb_levels[v.route]);
 	}
 	else
@@ -1520,14 +1521,20 @@ Assignment best_of_x(Graph g, int P, int message_size,int tmax)
 		a = descente(g,P,message_size,1);
 		if(a)
 		{
-			if(a->time < prev )
-			{
-				printf("a->time %d\n ",a->time);
-				best = a;
-			}
+			
+				if(a->time < prev )
+				{
+					//printf("a->time %d\n ",a->time);
+					best = a;
+				}
+					
+				else
+				{
+					free_assignment(a);
+				}
+					
+		
 				
-			else
-				free_assignment(a);
 		}
 		
 	}
@@ -1628,6 +1635,7 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace * 
 	//printf("Nouveau parcours\n");
 	while(v.route != -1)
 	{
+
 		//printf("nouveau voisin \n");
 		key = hash_graph(g,sizehash);
 		while(!jamais_vu(hash_table[key],g))
