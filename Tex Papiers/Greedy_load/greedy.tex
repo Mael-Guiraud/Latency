@@ -89,12 +89,19 @@ Next generations of mobile network architectures evolve toward centralized radio
 The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which avoids all contention. The deterministic approach has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
 
 
-Recently several solutions for computing schedules for time sensitive networks has been proposed, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic}, SMT solver~\cite{dos2019tsnsched} or heuristics and FPT algorithms~\cite{barth2018deterministic}.
 
-Dire que dans nos papiers précédents on a étudié un problème un peu plus général (surtout cette topologie et possiblité de délai), dans les autres papiers concurrents on a des modèles plus compliqués mais seulement des heuristiques sans garantie de performance ni de complexité. 
-Dans ce papier, le modèle le plus simple mais des garanties de solution opti et de polynomialité sous condition de charge raisonnable.
+We chose to study here the most simple variation of the periodic scheduling problem, 
+and to bound the load of the shared link used by all messages 
 
-Dire que d'autres papiers existent pour les autres applis (sonar, trains, réseau de capteurs, logistique)
+The algorithmic problem studied in the present article, called Periodic Message Assignment or \pma, is the following: choose an offset (departure time) for each message, so that it goes through two contention points when they are free, with a fixed intermediate delay between them. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing}. The originality of our problem comes from the periodicity, which makes the constraints different: messages from consecutive periods can interact. The objective is classically to minimize the makespan, or schedule length, in the simple periodic variant we present here, we need only to find a periodic schedule (which automatically minimizes the makespan of the process). 
+ To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic}, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. In train scheduling, 
+
+
+In previous articles of the authors, variants of this problem using buffers are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with minimal latency. More complex problems of computing schedules for time sensitive networks has been solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoritical guarantes on the quality of the produced solutions. 
+
++ les autres types d'application imaginables sonar,(train : cas général avec précédence), (allocation de frequence, bandwith ou route -> pas de périodicité).
+et pourquoi c'est différent. 
 
 
 Time critical network in a car or a plane -> sensor on peut mettre les trucs des allemands/autrichien.
@@ -107,27 +114,19 @@ Trains: problèmes avec des précédences du coup bcp plus compliqué (toujours 
 
 
 
-The algorithmic problem studied in the present article, called Periodic Message Assignment or \pma, is the following: choose an offset (departure time) for each message, so that it goes through two contention points when they are free, with a fixed intermediate delay between them. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing}. The originality of our problem comes from the periodicity, which makes the constraints different: messages from consecutive periods can interact. The objective is classically to minimize the makespan, or schedule length, in the simple periodic variant we present here, we need only to find a periodic schedule (which automatically minimizes the makespan of the process). 
- To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
-Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic}, while our problem corresponds to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
-
-Sinon problème plus compliqué avec des précédences (trains périodiques, nos méthodes ne passent pas).
-Ajouter des bouts du paragraphe suivant.
-
-
 The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
 The problem \pma on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing}
 with the additional constraint of periodicity.
 
 
 
-\subsection{Organization of the paper}
+\paragraph{Organization of the paper}
+
+In Sec.~\ref{sec:model}, we present the model and the problem \pma. In Sec.~\ref{sec:large},
+we present several greedy algorithms and prove that they always find a solution to \pma for increasing load. Then, we illustrate their good performances on random inputs in Sec.~\ref{sec:perf_large}. It turns out that the message size can be assumed to be one for a small price in latency, as explained in Sec.~\ref{sec:reduction}. Hence, we develop a deterministic and a probabilistic algorithm for this special case in Sec.~\ref{sec:small}, which works for much higher loads and we illustrate their performances on random input in Sec.~\ref{sec:perf_small}.
 
 
-
-
-
-\section{Model}
+\section{Model}\label{sec:model}
 
 
 In this article, we model a simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
@@ -204,7 +203,7 @@ To overcome the hardness, we study \pma in this article when the load of the sys
 
 
 
-\section{Greedy Algorithms for Large Messages}
+\section{Greedy Algorithms for Large Messages} \label{sec:large}
 
 In this section, we study the case of large messages. When modelizing real problems,
 it is relevant to have $\tau > 1$ when the transmission time of a single message is large with regard to its delay.
@@ -373,7 +372,7 @@ Dire aussi que la contrainte de former des tuples fait que ça ne marche théori
 par exemple n=333 pour le résultat qu'on donne avec des 10-uples. Mais on peut utiliser des méthodes
 plus raffinées pour améliorer la borne et en pratique, il n'y a pas de problème sur des entrées aléatoires.
 
-\subsection{Experimental results}
+\subsection{Experimental Results} \label{sec:perf_large}
 
 Results better in practice, the worst case is different from the 
 average case.
@@ -397,9 +396,8 @@ Meilleure idée ?
 
 Quality of the results partially explained by the average analysis done later.
  
-\todo{tout lu dans les détails jusqu'ici, je m'attaque au code, je ne touche pas a la partie d'après  sur le tex car tu travailles dessus}
 
-\section{Reduction from large message to message of size one}
+\section{From Large Message to Message of Size one}\label{sec:reduction}
 
 In this section, we explain how we can restrict ourselves to the study of \pma
 with small $\tau$ and even $\tau = 1$ if we are willing to accept some buffering in our original problem or if we increase the load.
@@ -451,7 +449,7 @@ hence there is a $t_0$ such that $B(t_0) \leq n (\tau-1)/2$. In other word, the 
 delay for a message, with this choice of reference is less than $(\tau -1)/2$.
 
 
-\section{Going Above Load of 1/2 for messages of size one}
+\section{Messages of Size One} \label{sec:small}
 
 When $\tau = 1$, \emph{any greedy algorithm} finds a solution to \pma when the load is less than $1/2$ since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We now give a method which always finds a solution for load of $1/2 + \epsilon$.
 
@@ -501,7 +499,7 @@ The sum of potentials of all positions for a partial assignment with $k$ schedul
  As a consequence of this lemma, $Pot(A) \leq nk$ and in the algorithm we 
  propose, we guarantee to obtain at last half this value by using an exchange mechanism described in the next subsection.
 
-\paragraph{Swap and potential improvement}
+\paragraph{Swap and Potential Improvement}
 
 
 Let $A$ be some partial solution of size $s$ and let $i$ be an unscheduled message of delay $d$. 
@@ -530,7 +528,7 @@ it is also less or equal to $2\epsilon' P$, that is equal to $2\epsilon' P$.
 Hence, the potential of any assignment of size $n'$ is at least $2\epsilon' P n $. As a consequence, the method of Lemma~\ref{lemma:swap} will guarantee a non trivial potential for $2\epsilon' P n <  nn'/2$, that is $\epsilon' < 1/6$. Any algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$ or we should either improve on the Swap method or its analysis. In particular, $2\epsilon P$ positions in $P_{u}$
 are not taken into account, and could help improve the analysis.
 
-\subsection{The Swap Algorithm}
+\paragraph{The Swap Algorithm}
 
 
 We now precisely describe the \emph{Swap} algorithm. It schedules unscheduled messages while possible and then applies Swap operations while it increases the potential. When the potential is maximal, it tries to schedule a new message by moving one or two scheduled messages to new offsets. If it fails to find such messages the algorithm stops, otherwise 
@@ -626,7 +624,7 @@ $f(\lambda) < 1$ when $\lambda < 1$. The probability that Uniform Greedy fails i
 by $C \lambda m f(\lambda)^m$, whose limit is zero when $m$ goes to infinity. 
 It explains why Uniform Greedy is good for large $m$. 
 
-\section{Experimental results for $\tau = 1$}
+\subsection{Experimental results} \label{sec:perf_small}
 
 
 \section{Conclusion}
