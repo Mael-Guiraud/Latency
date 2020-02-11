@@ -452,6 +452,7 @@ Voisin nouveau_voisin(Voisin v,Graph g)
 
 		if(VOISINAGE)
 		{
+
 			if(kind == FORWARD)
 			{
 				if(v.bool_p[level]==1)
@@ -2031,7 +2032,7 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 	float temperature = 10000.0;
 	float coeff= 0.99;
 	int seuil_arret = 3;
-	float seuil_incr_cmpt = 0.10;
+	float seuil_incr_cmpt = 0.02;
 
 	Assignment a=NULL;
 	if(!greedy_deadline(g, P, message_size))
@@ -2044,7 +2045,7 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 	else
 		a = assignment_with_orders(g,P,message_size,0);
 	a->time = travel_time_max_buffers(g);
-	
+	 
 	int min = a->time;
 	int time_actuel = min;
 	reinit_delays(g);
@@ -2060,17 +2061,18 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 		orders[i] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 		orders[i+g.arc_pool_size] = malloc(sizeof(int)*g.arc_pool[i].nb_routes);
 	}
+	cpy_orders(orders,g,1);// de g vers orders
 	int cmpt = 0;
 	int nb_step = 0;
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
-		printf("Tour\n");
+		//printf("Tour\n");
 		for(int i=0;i<nb_paliers;i++)
 		{
 			v = Voisin_alea(g);
 			nb_step++;
-
+			//aff_orders(orders,g);
 			if(VOISINAGE)
 				a= assignment_with_orders_vois1(g,P,message_size,0);
 			else
@@ -2108,20 +2110,24 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 			free_assignment(a);
 		}
 		acceptance_rate = (float)nb_moves/nb_paliers;
-		printf("rate %f \n",acceptance_rate);
+		//printf("rate %f \n",acceptance_rate);
 		if(acceptance_rate < seuil_incr_cmpt)
 		{
-			printf("trop bas \n");
+			//printf("trop bas \n");
 			cmpt++;
 		}
 			
 		temperature *=  coeff;
 	}
-	printf("Temperature %f, nb_step %d \n",temperature,nb_step);
+	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
 
-	//On prend la meilleure solution vue, et bye
+	//On prend la meilleure solution vue
+	//printf("Avant--------------------------------------------------------\n");
+	//aff_orders(orders,g);
 	cpy_orders(orders,g,0);
+	//printf("Apres ------------------------------------------------------------\n");
+//aff_orders(orders,g);
 	reinit_delays(g);
 	reset_periods(g,P);
 	if(VOISINAGE)

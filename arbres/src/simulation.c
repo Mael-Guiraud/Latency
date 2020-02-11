@@ -180,9 +180,9 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);*/
-	test_one_algo(g,P,message_size,0,NULL,&descente,"Descente",f);
-	//test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
-	//test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
+	//test_one_algo(g,P,message_size,0,NULL,&descente,"Descente",f);
+	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
+	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 
 	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
 	
@@ -667,8 +667,8 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 6 ;
-	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons"};
+	int nb_algos = 7 ;
+	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons","Recuit"};
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
@@ -751,14 +751,21 @@ void simuldistrib(int seed)
 						goto saut;
 					}
 				break;
-
+				case 6:
+					a = recuit( g, P, message_size,1000);
+					break;
 				}
 
 
 				if(a)
 				{
-					time[algo] = travel_time_max_buffers(g)-l;
-					//printf("algo %d time %d \n",algo,time[algo]);	
+					if(algo == 4)
+					{
+						time[algo] = a->time;
+					}
+					else
+						time[algo] = travel_time_max_buffers(g)-l;	
+
 					free_assignment(a);
 				}
 					
@@ -810,7 +817,7 @@ void simuldistrib(int seed)
 		{
 			if((time[k]<time[5]) || (time[k]<time[1]))
 			{
-				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d\n",k,time[k],time[5],time[1]);
+				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d lenght %d\n",k,time[k],time[5],time[1],l);
 				
 				//exit(4);
 
