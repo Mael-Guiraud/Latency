@@ -523,7 +523,7 @@ int main()
 		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_profit,"Profit"));
 		//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
 		//algo bugué, ne marche pas pour 50%
-		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,swap,"Swap"));
+		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,swap,"Swap"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{

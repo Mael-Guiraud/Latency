@@ -5,9 +5,9 @@
 #include <string.h>
 #include <limits.h>
 #include <omp.h>
-#define MESSAGE_SIZE 10
-#define PERIOD 1000
-#define ROUTES_SIZE_MAX 1000
+#define MESSAGE_SIZE 100000
+#define PERIOD 10000000
+#define ROUTES_SIZE_MAX 10000000
 #define NB_SIMULS 1000
 #define PARALLEL 1
 #define EXHAUSTIVE_SEARCH 0
@@ -1221,7 +1221,7 @@ int main(int argc,char * argv[])
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
 			fprintf(f[algo],"%2f %f \n",(float)i/nb_routes,success[algo]*100/nb_simuls);
-			fprintf(stdout,"%2f %f \n",(float)i/nb_routes,success[algo]*100/nb_simuls);
+	
 		}
 
 	}
