@@ -131,7 +131,7 @@ we present several greedy algorithms and prove that they always find a solution 
 \section{Model}\label{sec:model}
 
 
-In this article, we model a simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
+In this article, we model a simple network (see fig.~\ref{fig:model}) in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
 
 The time is discretized and the process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In our application, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time needed to send a message through some contention point of the network, here a shared link. We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its delay $d_i$. It means that if the message number $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. 
 \begin{center}
@@ -168,6 +168,7 @@ The time is discretized and the process we consider is periodic of fixed integer
 }
 %\end{minipage}
 \caption{An example of a network with two contention points}
+\label{fig:model}
 \end{figure}
 \end{center}
 
@@ -184,7 +185,7 @@ of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 
 We want to send all messages, so that they are no collision in the shared link.
 In other word, we look for a way to send the messages without using buffering and 
 hence limiting the latency to the physical length of the links. An assignment is a
-choice of an offset for each message such that \emph{no pair of message collide}.
+choice of an offset for each message such that \emph{no pair of message collide}, as shown in fig.~\ref{fig:assignment}.
 Formally, an \emph{assignment} is a function from the messages, represented by their indices in $[n]$ to their offsets in $[P]$.  
 
 We call Periodic Message Assignment or \pma the problem studied in this article,
@@ -195,6 +196,7 @@ an assignment or to decide there is none.
 \includegraphics[scale=0.7]{instance}
 \end{center}
 \caption{An instance of \pma ($3$ messages, $P= 10$ and $\tau = 2$) and one of its assignments}
+\label{fig:assignment}
 \end{figure}
 
 The complexity of \pma is not known. However, we have proven that when parametrized by
@@ -273,13 +275,13 @@ Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and 
 Let $P = m \tau + r$ with $r \leq \tau$. We define the instance $I'$ as follows: $P' = mP$, $d_{i}' = m d_i$ and $\tau' = m \tau + r$. With this choice, we have $P' = m(m \tau + r) = m \tau'$.
 Consider an assignment $A'$ of the instance $I'$.
 If we let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions.
-We then use a compactification procedure as in~\cite{barth2018deterministic}. The first message is positionned at offset zero. The first time it uses in the second period is a multiple of $m$ since its delay is by definition a multiple of $m$. Then, all other messages are translated to the left by removing increasing integers to their offsets, until there is a collision. It guarantees that some message is in contact with the first one on the first or second period,  which implies that its offset is a multiple of $m$. This procedure can be repeated until we get some solution $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Hence, if we define $A$ as $A(i) = A''(i)/m$, we obtain an assignment of $I$.
+We then use a compactification procedure as in~\cite{barth2018deterministic}. The first message is positioned at offset zero. The first time it uses in the second period is a multiple of $m$ since its delay is by definition a multiple of $m$. Then, all other messages are translated to the left by removing increasing integers to their offsets, until there is a collision. It guarantees that some message is in contact with the first one on the first or second period,  which implies that its offset is a multiple of $m$. This procedure can be repeated until we get some solution $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Hence, if we define $A$ as $A(i) = A''(i)/m$, we obtain an assignment of $I$.
 \end{proof}
 
 From now on, we always assume that $P = m\tau$ and the load is then $n/m$.
 We are interested in the remainder modulo $\tau$ of the delays of each message.
 We write $d_i = d_{i}'\tau + r_i$ and assume from now on that messages are sorted by increasing $r_i$.
-A \emph{compact pair} is a pair of messages $(i,j)$ with $i < j$ such that we can put them
+A \emph{compact pair}, as show in fig.~\ref{fig:compactpair} is a pair of messages $(i,j)$ with $i < j$ such that we can put them
 next to each other in the second period using meta-offsets.
 We have $r_i \leq r_j$ since $i < j$. We denote by $g$ the gap between the two messages in the first period, that we define by $d_{i}' = g + 1 + d_{j}' \mod m$. We require that $g \neq 0$ so that there are no collision in the first period if we schedule these two messages such that the difference of their offsets is the gap. 
 
@@ -289,6 +291,7 @@ We have $r_i \leq r_j$ since $i < j$. We denote by $g$ the gap between the two m
 \includegraphics[scale=0.7]{compact_pair}
 \end{center}
 \caption{Representation of a compact pair scheduled using meta-offsets}
+\label{fig:compactpair}
 \end{figure}
 
 \begin{lemma}\label{lemma:pair_find}
@@ -452,12 +455,12 @@ Consider the message $i$ with offset $A'(i)$, it uses all times between $A'(i)$ 
 \subsection{Reduction using buffering}
 
 We have presented our problem with a single degree of freedom by message: its
-offset. We could also allow to buffer a message $i$ during a time $b$ between the two contention points, which means changing $d_i$ to $d_i + b$. The quality of the obtained solution is worst since the buffering add latency to the messages. We now describe how we can make a tradeoff between the added latency and the size of the messages, knwowing that having smaller messages helps to schedule instances with higher load.
+offset. We could also allow to buffer a message $i$ during a time $b$ between the two contention points, which means changing $d_i$ to $d_i + b$. The quality of the obtained solution is worst since the buffering add latency to the messages. We now describe how we can make a tradeoff between the added latency and the size of the messages, knowing that having smaller messages helps to schedule instances with higher load.
 
 
 All messages are buffered enough time so that their $d_i$ have the same
 remainder modulo $\tau$. It costs at most $\tau$ of buffering, which is not
-so good for random instances (see~\cite{barth2018deterministic} for algorithms optimizing the latency), but much better than the theoritical upper bound of $P$ which allows to always find an assignment. We can choose the message with the longest route as reference remainder, hence that message needs zero buffering. However, the message with the second longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. When all delays are changed so that $d_i$ is a multiple of $\tau$, we have an easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$.
+so good for random instances for algorithms optimizing the latency), but much better than the theoretical upper bound of $P$ which allows to always find an assignment  (see~\cite{barth2018deterministic}. We can choose the message with the longest route as reference remainder, hence that message needs zero buffering. However, the message with the second longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. When all delays are changed so that $d_i$ is a multiple of $\tau$, we have an easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$.
 
 We can do the same kind of transformation by buffering all 
 messages, so that $d_i$ is a multiple of $\tau / k$. The cost in term
