@@ -5,12 +5,12 @@
 #include <string.h>
 #include <limits.h>
 #include <omp.h>
-#define MESSAGE_SIZE 100000
-#define PERIOD 10000000
-#define ROUTES_SIZE_MAX 10000000
-#define NB_SIMULS 1000
+#define MESSAGE_SIZE 1000
+#define PERIOD 10000
+#define ROUTES_SIZE_MAX 10000
+#define NB_SIMULS 10000
 #define PARALLEL 1
-#define EXHAUSTIVE_SEARCH 0
+#define EXHAUSTIVE_SEARCH 1
 int * random_graph(int nb_routes,int size_route)
 {
 	int * graph;
@@ -927,7 +927,7 @@ void print_gnuplot(char ** algos, int nb_algos,int period, int tau,int nb_messag
 
 	"set key bottom left \n"
 	"set ylabel \"Success rate (%%)\"\n"
-	"set output '| ps2pdf - success_period%d_tau%d_nb-mess_%d.pdf'\nreplot\n",tau,period,nb_messages,period,tau,nb_messages);
+	"set output '| ps2pdf - success_period%d_tau%d_nb-mess_%d.pdf'\nreplot\n",period,tau,nb_messages);
 	fclose(f_GPLT);
 	
 
@@ -1149,7 +1149,7 @@ int main(int argc,char * argv[])
 		printf("OK\n");
 	}
 
-	for(int i=33;i<=nb_routes;i++)
+	for(int i=3;i<=nb_routes;i++)
 	{
 		
 

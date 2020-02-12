@@ -7,7 +7,7 @@
 #define PERIODE 100
 #define NB_ROUTES 100
 #define TAILLE_ROUTES 100
-#define NB_SIMUL 100
+#define NB_SIMUL 10000
 
 #define DEBUG 0
 
@@ -487,11 +487,11 @@ void print_gnuplot(char ** algos, int nb_algos)
 
 	//"set title \"Performance of different algorithms for PAZL tau = %d , P = %d , nbroutes = %d\"\n"
 		"set notitle\n"
-	"set xlabel \"Nb routes\" \n"
+	"set xlabel \"Load\" \n"
 	//"set xtics 10\n" 
 
 	"set key bottom left \n"
-	"set ylabel \"Success rate\"\n"
+	"set ylabel \"Success rate(%%)\"\n"
 	"set output '| ps2pdf - success_tau1.pdf'\nreplot\n");
 	fclose(f_GPLT);
 	
@@ -514,11 +514,11 @@ int main()
 		if(!f[i])perror("Error while opening file\n");
 		printf("OK\n");
 	}
-	for(int i=0;i<NB_ROUTES;i++)
+	for(int i=50;i<NB_ROUTES;i++)
 	{
 		printf("%d Routes \n",i);
 		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
-		fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i,PERIODE));
+		//fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i,PERIODE));
 		fprintf(f[2],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_first_fit,"FirstFit"));
 		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_profit,"Profit"));
 		//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
