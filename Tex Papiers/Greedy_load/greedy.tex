@@ -98,20 +98,20 @@ Either the aim is to minimize the number of processors on which the periodic tas
 a fixed period and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard), they usually allow for some delay and most of the work is devising good algorithms using branch and bound, mixed integer programming, genetic algorithms \dots~\cite{lusby2011railway}
 
 
-In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks has been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoritical guarantes on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside a car or a plane, or logistic problems in production lines.
+In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks has been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantes on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside a car or a plane, or logistic problems in production lines.
 
 
 
 \paragraph{Organization of the paper}
 
 In Sec.~\ref{sec:model}, we present the model and the problem \pma. In Sec.~\ref{sec:large},
-we present several greedy algorithms and prove that they always find a solution to \pma for increasing load. Then, we illustrate their surprisingly good performances on random inputs in Sec.~\ref{sec:perf_large}. It turns out that the message size can be assumed to be one for a small price in added latency, as explained in Sec.~\ref{sec:reduction}. Hence, we develop a deterministic and a probabilistic algorithm for this special case in Sec.~\ref{sec:small}, which works for much higher loads and we illustrate their performances on random inputs in Sec.~\ref{sec:perf_small}.
+we present several greedy algorithms and prove that they always find a solution to \pma for increasing load. Then, we illustrate their surprisingly good performances on random inputs in Sec.~\ref{sec:perf_large}. It turns out that the message size can be assumed to be one for a small price in added latency, as explained in Sec.~\ref{sec:reduction}. Hence, we develop a deterministic and a probabilistic algorithm for this special case in Sec.~\ref{sec:small}, which work for much higher loads than the algorithms for large message size and we illustrate their performances on random inputs in Sec.~\ref{sec:perf_small}.
 
 
 \section{Model}\label{sec:model}
 
 
-In this article, we model a simple network (see fig.~\ref{fig:model}) in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoritical results. 
+In this article, we model a simple network (see fig.~\ref{fig:model}) in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoretical results. 
 
 The time is discretized and the process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In the C-RAN network we model, represented in Fig.\ref{fig:model}, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time needed to send a message through some contention point of the network, here a link shared by all antennas. We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its delay $d_i$. It means that if the message number $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. 
 \begin{center}
@@ -348,7 +348,7 @@ $$ Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
 A bound on $n_i$ can be computed, since $A$ can be extended while $Fmo_i(A) < m$. A numerical computation of the $n_i$'s shows that the algorithm always finds a solution when the load is less than $4/10$.
 \end{proof}
 
-The code computing the $n_i$ can be found on the author's website.
+The code computing the $n_i$ can be found on the author's website at \url{https://yann-strozecki.github.io/}.
 To make the algorithm Compact $10$-tuples work, we need to have enough messages to be able to
 produce enough compact $10$-tuples. Theoretically, we need more than $333$ messages. This bound can be improved
 by a better algorithm to find compact tuples than the one described in Lemma~\ref{lemma:uple_find}. On random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and we can just build the tuples greedily. Therefore, for random instances, forming compact $k$-uples is almost never a problem and the algorithm works even for small $n$.
@@ -356,19 +356,18 @@ by a better algorithm to find compact tuples than the one described in Lemma~\re
 \subsection{Experimental Results} \label{sec:perf_large}
 
 We present results of simulations of the algorithms presented above, to experimentally assess their performance on
-random instances. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+random instances. The implementation in C of these algorithms can be found on the author's website at \url{https://yann-strozecki.github.io/}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
 
 The algorithms we consider are the following:
 \begin{itemize}
 	\item First Fit
 	\item Meta Offset
 	\item Compact Pair
-	\item Random Offset (see Sec.~\ref{sec:small})
+	\item Greedy Uniform (see Sec.~\ref{sec:small})
 	\item Exact Resolution using an algorithm from~\cite{dominique2018deterministic}  
 \end{itemize}
 
-On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the theoretical best value given by the exact resolution is only available in the experiment with at most $10$ messages. The code used to generate these figures can be found on the author website.
-
+On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the theoretical best value given by the exact resolution is only available in the experiment with at most $10$ messages. 
 \begin{figure}
 \begin{center}
 \includegraphics[scale=0.3]{100messBig}
@@ -393,10 +392,10 @@ On a regular laptop, all algorithms terminates in less than a second when solvin
 \label{fig:10mess}
 \end{figure}
 
-For the tree sets of parameters, the algorithms have the same relative performances. Meta Offset and Random offset
+For the tree sets of parameters, the algorithms have the same relative performances. Meta Offset and Greedy Uniform
 perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
 less than $1/2$ while it is easy to build an instance of \pma of load $1/3 +\epsilon$ which makes them fail. 
-The difference between the worst case analysis and the average case analysis is explained for Random Offset in Sec.~\ref{sec:small}.
+The difference between the worst case analysis and the average case analysis is explained for Greedy Uniform in Sec.~\ref{sec:small}.
 
 First Fit performs better than Meta Offset while they have the same worst case.  Compact Pair, which is the best theoretically also performs the best in the experiments, always finding assignments for load of 
 $0.6$. As Shown in Fig.\ref{fig:100messBig} and Fig.\ref{fig:100messSmall}, it appears that the size of the messages have little impact on the success rate of the algorithms. Comparing Fig.\ref{fig:10mess} and Fig.\ref{fig:100messBig} shows that with more messages, the transition between success rate of $1$ to a success rate of $0$ is faster.
@@ -588,28 +587,28 @@ works for larger load.
 \subsection{Random Algorithm for Random Instances}
 
 We would like to understand better the behaviour of our algorithms
-on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Uniform Greedy}: for each message in order, choose one of the possible offsets uniformly at random and use it to extend the partial assignment. 
+on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Greedy Uniform}: for each message in order, choose one of the possible offsets uniformly at random and use it to extend the partial assignment. 
 
-We analyze Uniform Greedy over random instances: we assume that all messages have 
-their delays drawn independently and uniformly in $[m]$. We compute the probability of success of Uniform Greedy over all random choices of the algorithm \emph{and all possible instances}. 
+We analyze Greedy Uniform over random instances: we assume that all messages have 
+their delays drawn independently and uniformly in $[m]$. We compute the probability of success of Greedy Uniform over all random choices of the algorithm \emph{and all possible instances}. 
 It turns out that this probability, for a fixed load strictly less than one, goes to one when $m$ grows. 
 For a given assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, a trace of an assignment is a pair of subsets of $[m]$ of size $n$. We now show that these traces are produced uniformly.
 
 \begin{theorem}
-The distribution of traces of assignments produced by Uniform Greedy when it succeeds, from instances drawn uniformly at random, is also uniform.
+The distribution of traces of assignments produced by Greedy Uniform when it succeeds, from instances drawn uniformly at random, is also uniform.
 \end{theorem}
 \begin{proof}
 We prove that by induction on $n$ the number of messages. It is clear for $n=1$,
 since the delay of the first message is uniformly drawn and all offsets can be used.
-Assume now the theorem true for some $n>1$. Uniform Greedy, by induction hypothesis has produced
+Assume now the theorem true for some $n>1$. Greedy Uniform, by induction hypothesis has produced
 uniform traces from the first $n$ messages.  Hence we should prove that, if we draw the delay
 of the $n+1^{th}$ message randomly, extending the trace by a random possible offset produces a random distribution on the traces of size $n+1$. 
 
- If we draw an offset uniformly at random (among all $m$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces Uniform Greedy. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
+ If we draw an offset uniformly at random (among all $m$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces Greedy Uniform. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
 \end{proof}
 
-Let $\Pr(m,n)$ be the probability that Uniform Greedy fails at the $n^{th}$
-step assuming it has not failed before.
+
+Let $\Pr(m,n)$ be the probability that Greedy Uniform fails at the $n^{th}$ step assuming it has not failed before.
 
 \begin{lemma}\label{lemma:proba_fail}
 $$\Pr(m,n) = \frac{\binom{n}{2(n-1)-m}}{\binom{m}{n-1}}.$$
@@ -626,10 +625,10 @@ The probability to draw a set of size $n-1$ which contains $m-n + 1$ fixed eleme
 \end{proof}
 
 From Lemma~\ref{lemma:proba_fail}, we can derive the probability 
-of success of Uniform Greedy by a simple product. 
+of success of Greedy Uniform by a simple product. 
 
 \begin{theorem}\label{theorem:uniform}
-The probability over all instances with $n$ messages and period $m$ that Uniform Greedy solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
+The probability over all instances with $n$ messages and period $m$ that Greedy Uniform solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
 \end{theorem}
 
 If we fix the load $\lambda$, which satisfies $n = \lambda m$, we can bound 
@@ -637,9 +636,9 @@ $P(m,n)$ using Stirling formula. We obtain for some constant $C$,
 that $$P(m,n) \leq C \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^m.$$
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
 The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
-$f(\lambda) < 1$ when $\lambda < 1$. The probability that Uniform Greedy fails is bounded 
+$f(\lambda) < 1$ when $\lambda < 1$. The probability that Greedy Uniform fails is bounded 
 by $C \lambda m f(\lambda)^m$, whose limit is zero when $m$ goes to infinity. 
-It explains why Uniform Greedy is good for large $m$. 
+It explains why Greedy Uniform is good for large $m$. 
 
 \subsection{Experimental results} \label{sec:perf_small}
 
@@ -657,8 +656,9 @@ The evaluated algorithms are:
 	\item Exact Resolution
 \end{itemize}
 
-Again, the success rate on random instances is much better than what we obtain in our worst case 
-analysis: all algorithms succeed on all instances when the load is less than $0.64$. The algorithm Greedy Uniform behaves exactly as proved in Theorem~\ref{theorem:uniform}. The performances of Swap and of its simpler variant Greedy Potential, which optimizes the potential in a greedy way, are much better than First Fit or Greedy Uniform. Amazingly, Swap always finds an assignment when the load is less than $0.95$, but it is not always able of finding an assignment when there is one.
+As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than the worst case analysis.
+In Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. Greedy Uniform behaves exactly as proved in Theorem~\ref{theorem:uniform}, with a very small variance. The performances of Swap and of its simpler variant Greedy Potential, which optimizes the potential in a greedy way, are much better than First Fit or Greedy Uniform. Amazingly, Swap always finds an assignment when the load is less than $0.95$. Swap is extremely close to Exact Resolution, but it fails 
+to find some assignments for load $0.9$ and $1$, as shown in Fig.~\ref{fig:tau1-10mes}.
 
 \begin{figure}
 \begin{center}
@@ -668,10 +668,18 @@ analysis: all algorithms succeed on all instances when the load is less than $0.
 \label{fig:tau1}
 \end{figure}
 
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.3]{tau110}
+\end{center}
+\caption{Success rate for $\tau = 1$ and $P=10$}
+\label{fig:tau1-10mess}
+\end{figure}
+
 \section{Conclusion}
 
 In this article, we have proved that there is always a solution to \pma and that it can be found in polynomial time 
-for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoretically for Uniform Greedy.
+for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoretically for Greedy Uniform.
 Hence, we can use the simple algorithms presented here to schedule C-RAN messages \emph{without buffer nor additional latency}, if we are willing to use only half the bandwidth of the shared link. 
 
 Many questions on \pma are still unresolved, the first one being its complexity.
