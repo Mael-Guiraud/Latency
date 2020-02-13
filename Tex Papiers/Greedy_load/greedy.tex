@@ -367,7 +367,7 @@ The algorithms we consider are the following:
 	\item First Fit
 	\item Meta Offset
 	\item Compact Pair
-	\item Random Offset (see Sec.~\ref{sec:small})
+	\item Greedy Uniform (see Sec.~\ref{sec:small})
 	\item Exact Resolution using an algorithm from~\cite{dominique2018deterministic}  
 \end{itemize}
 
@@ -592,27 +592,27 @@ works for larger load.
 \subsection{Random Algorithm for Random Instances}
 
 We would like to understand better the behaviour of our algorithms
-on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Uniform Greedy}: for each message in order, choose one of the possible offsets uniformly at random and use it to extend the partial assignment. 
+on instances drawn uniformly at random. To this aim, we analyze the following algorithm, called \textbf{Greedy Uniform}: for each message in order, choose one of the possible offsets uniformly at random and use it to extend the partial assignment. 
 
-We analyze Uniform Greedy over random instances: we assume that all messages have 
-their delays drawn independently and uniformly in $[m]$. We compute the probability of success of Uniform Greedy over all random choices of the algorithm \emph{and all possible instances}. 
+We analyze Greedy Uniform over random instances: we assume that all messages have 
+their delays drawn independently and uniformly in $[m]$. We compute the probability of success of Greedy Uniform over all random choices of the algorithm \emph{and all possible instances}. 
 It turns out that this probability, for a fixed load strictly less than one, goes to one when $m$ grows. 
 For a given assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, a trace of an assignment is a pair of subsets of $[m]$ of size $n$. We now show that these traces are produced uniformly.
 
 \begin{theorem}
-The distribution of traces of assignments produced by Uniform Greedy when it succeeds, from instances drawn uniformly at random, is also uniform.
+The distribution of traces of assignments produced by Greedy Uniform when it succeeds, from instances drawn uniformly at random, is also uniform.
 \end{theorem}
 \begin{proof}
 We prove that by induction on $n$ the number of messages. It is clear for $n=1$,
 since the delay of the first message is uniformly drawn and all offsets can be used.
-Assume now the theorem true for some $n>1$. Uniform Greedy, by induction hypothesis has produced
+Assume now the theorem true for some $n>1$. Greedy Uniform, by induction hypothesis has produced
 uniform traces from the first $n$ messages.  Hence we should prove that, if we draw the delay
 of the $n+1^{th}$ message randomly, extending the trace by a random possible offset produces a random distribution on the traces of size $n+1$. 
 
- If we draw an offset uniformly at random (among all $m$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces Uniform Greedy. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
+ If we draw an offset uniformly at random (among all $m$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces Greedy Uniform. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
 \end{proof}
 
-Let us denote by $\Pr(m,n)$ the probability that Uniform Greedy fails at the $n^{th}$
+Let us denote by $\Pr(m,n)$ the probability that Greedy Uniform fails at the $n^{th}$
 step assuming it has not failed before.
 
 \begin{lemma}\label{lemma:proba_fail}
@@ -630,10 +630,10 @@ The probability to draw a set of size $n-1$ which contains $m-n + 1$ fixed eleme
 \end{proof}
 
 From Lemma~\ref{lemma:proba_fail}, we can derive the probability 
-of success of Uniform Greedy by a simple product. 
+of success of Greedy Uniform by a simple product. 
 
 \begin{theorem}\label{theorem:uniform}
-The probability over all instances with $n$ messages and period $m$ that Uniform Greedy solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
+The probability over all instances with $n$ messages and period $m$ that Greedy Uniform solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
 \end{theorem}
 
 If we fix the load $\lambda$, which satisfies $n = \lambda m$, we can bound 
@@ -641,9 +641,9 @@ $P(m,n)$ using Stirling formula. We obtain for some constant $C$,
 that $$P(m,n) \leq C \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^m.$$
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
 The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
-$f(\lambda) < 1$ when $\lambda < 1$. The probability that Uniform Greedy fails is bounded 
+$f(\lambda) < 1$ when $\lambda < 1$. The probability that Greedy Uniform fails is bounded 
 by $C \lambda m f(\lambda)^m$, whose limit is zero when $m$ goes to infinity. 
-It explains why Uniform Greedy is good for large $m$. 
+It explains why Greedy Uniform is good for large $m$. 
 
 \subsection{Experimental results} \label{sec:perf_small}
 
@@ -672,10 +672,18 @@ analysis: all algorithms succeed on all instances when the load is less than $0.
 \label{fig:tau1}
 \end{figure}
 
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.3]{tau110}
+\end{center}
+\caption{Success rate for $\tau = 1$ and $P=10$}
+\label{fig:tau1-10mess}
+\end{figure}
+
 \section{Conclusion}
 
 In this article, we have proved that there is always a solution to \pma and that it can be found in polynomial time 
-for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoritically for Uniform Greedy.
+for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoritically for Greedy Uniform.
 Hence, we can use the simple algorithms presented here to schedule C-RAN messages \emph{without buffer nor additional latency}, if we are willing to use only half the bandwith of the shared link. 
 
 Many questions on \pma are still unresolved, the first one being its complexity.
