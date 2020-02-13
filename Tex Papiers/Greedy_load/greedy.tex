@@ -632,7 +632,7 @@ The probability to draw a set of size $n-1$ which contains $m-n + 1$ fixed eleme
 From Lemma~\ref{lemma:proba_fail}, we can derive the probability 
 of success of Uniform Greedy by a simple product. 
 
-\begin{theorem}
+\begin{theorem}\label{theorem:uniform}
 The probability over all instances with $n$ messages and period $m$ that Uniform Greedy solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
 \end{theorem}
 
@@ -648,27 +648,47 @@ It explains why Uniform Greedy is good for large $m$.
 \subsection{Experimental results} \label{sec:perf_small}
 
 
+We present results of simulations of the algorithms of the previous section, to experimentally assess their performance on
+random instances. The settings are as in Sec.~\ref{sec:perf_large}, with $\tau = 1$.
+The evaluated algorithms are:
+
+\begin{itemize}
+	\item First Fit
+	\item Greedy Uniform 
+	\item Greedy Potential, it schedules the messages in arbitrary order, choosing the possible offset which 
+	maximizes the potential of the unscheduled messages
+	\item Swap 
+	\item Exact Resolution
+\end{itemize}
+
+Again, the success rate one random instances is much better than what we obtain in our worst case 
+analysis: all algorithms succeed on all instances when the load is less than $0.64$. The algorithm Greedy Uniform behaves exactly as proved in Theorem~\ref{theorem:uniform}. The performances of Swap and of its simpler variant Greedy Potential, which optimizes the potential in a greedy way, are much better than First Fit or Greedy Uniform. Amazingly, Swap always finds an assignment when the load is less than $0.95$, but it is not always able of finding an assignment when there is one.
+
 \begin{figure}
 \begin{center}
 \includegraphics[scale=0.3]{success_tau1}
 \end{center}
-\caption{Performance evaluation of algorithms when $\tau = 1$}
+\caption{Success rate for $\tau = 1$ and $P=100$}
 \label{fig:tau1}
 \end{figure}
 
 \section{Conclusion}
 
-Résultats:  théorique, on peut faire mieux que 1/3 pour tau>1 et 1/2 pour tau =1.
-En pratique les algos marchent extrémement bien, donc si on garantit un peu de marge
-dans les liens partagées, tout va bien se passer et on peut se passer des algos plus compliqués 
-et avec du (tout petit) délai et des buffers de notre papier précédent. 
+In this article, we have proved that there is always a solution to \pma and that it can be found in polynomial time 
+for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoritically for Uniform Greedy.
+Hence, we can use the simple algorithms presented here to schedule C-RAN messages \emph{without buffer nor additional latency}, if we are willing to use only half the bandwith of the shared link. 
 
-Ouverture: algo aléatoire pour tau grand en formant de grands trains.
-Analyse en moyenne des algos pour tau = 1
-Preuve de NP complétude. Adaptation des algos au cas de contrainte sur les points de contention
-plus grosse.
-Recherche de borne inférieur pour les algos, et dans l'absolu.
-Taille variable des paquets pour représenter des utilisations différentes du réseau.
+Many questions on \pma are still unresolved, the first one being its complexity.
+Moreover, we plan to adapt the Swap algorithm to the case $\tau > 1$. While the potential
+can be defined in the same way, it is not yet clear that it would help as much in this setting.
+We could also analyze the behaviour of the presented algorithms over random instances in the case $\tau > 1$.
+For instance, it is possible to form very long compact tuples over random instances and we could
+use that to obtain an algorithm which works with high probability for load less than $0.5$. 
+First Fit or Meta Offset can easily adapted to network topologies with more than a single link
+and analysed, but we could also try to adapt Compact Tuples and Swap.
+Finally, to capture networks carrying several types of messages, it would be interesting to allow for different message sizes, which makes methods using meta-offsets seemingly useless.
+
+
 
 %\section{Lower bounds}
 

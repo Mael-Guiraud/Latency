@@ -4,10 +4,10 @@
 #include <time.h>
 #include <string.h>
 
-#define PERIODE 20
-#define NB_ROUTES 20
-#define TAILLE_ROUTES 20
-#define NB_SIMUL 100
+#define PERIODE 100
+#define NB_ROUTES 100
+#define TAILLE_ROUTES 100
+#define NB_SIMUL 10000
 
 #define DEBUG 0
 
@@ -438,13 +438,13 @@ void test_sol(entree e, int *offsets){//test that offsets correspond to traces
 }
 
 int all_fit(entree e, int *offsets){
-	int res = 1;
+	int res = 0;
 	for(int i = 0; i < e.nb_routes; i++){
 		if(offsets[i] == -1){
-			res &= schedule(e,offsets,i);
+			res += schedule(e,offsets,i);
 		}
 	}
-	return res; //return wether the procedure find all solutions or not
+	return res; //return the number of scheduled solutions
 }
 
 int eval_pos(entree e, int pos){
@@ -580,14 +580,33 @@ int swap(entree e){
 	for(int i = 0; i < e.nb_routes; i++){
 		offsets[i] = -1;
 	}
+	int scheduled_message = 0;
 	while(1){
-		if(all_fit(e,offsets)) {test_sol(e,offsets);return e.nb_routes;}
-		while(improve_potential(e,offsets)){}//improve the potential as much as possible
-		if(all_fit(e,offsets)) {test_sol(e,offsets);return e.nb_routes;}//try to add routes again now the potential has been improved
+		scheduled_message += all_fit(e,offsets);
+		if(scheduled_message == e.nb_routes) return e.nb_routes;
+		int progress = 1;
+		while(progress){ //alternate first fit and improve potential while no of the two methods change the assignment
+			while(improve_potential(e,offsets)){}//improve the potential as much as possible
+			progress = all_fit(e,offsets); //progress is the number of message scheduled by all fit
+			scheduled_message+= progress;
+			if(scheduled_message == e.nb_routes) return e.nb_routes;
+		}
+		
+
+		//if(all_fit(e,offsets) == e.nb) {test_sol(e,offsets);return e.nb_routes;}
+		//while(improve_potential(e,offsets)){}//improve the potential as much as possible
+		//if(all_fit(e,offsets)) {test_sol(e,offsets);return e.nb_routes;}//try to add routes again now the potential has been improved
 										//this can only improve the potential again
-		if (!exchange(e, offsets, first_unscheduled(e.nb_routes,offsets))) return 0;//should write the number of scheduled routes
-		//try to schedule a route by moving other routes, if it fails, the algorithm fails
+		
+		if (scheduled_message < e.nb_routes && !exchange(e, offsets, first_unscheduled(e.nb_routes,offsets))){
+			break;
+		}
+		else{
+			scheduled_message++;
+		}
+		//try to schedule a route, if there is one left by moving other routes, if it fails, the algorithm finishes
 	}
+	return scheduled_message;
 } 
 
 int recsearch(entree e){
@@ -673,8 +692,8 @@ int main()
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
 		//Toujours mettre exhaustivesearch en derniere
-	int nb_algos = 6;
-	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap","ExhaustiveSearch"};
+	int nb_algos = 5;
+	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap"};//,"ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	for(int i=0;i<nb_algos;i++)
@@ -686,7 +705,7 @@ int main()
 		printf("OK\n");
 	}
 	float success = 0.0;
-	for(int i=1;i<NB_ROUTES;i++)
+	for(int i=1;i<=NB_ROUTES;i++)
 	{
 		printf("%d Routes \n",i);
 		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
@@ -697,7 +716,7 @@ int main()
 		//algo bugué, ne marche pas pour 50%
 		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,swap,"Swap"));
 
-		fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
+		//fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{
