@@ -58,10 +58,10 @@
 %En français
 %Ordonnancement de messages périodiques et de leurs réponses sur un lien partagé
 \begin{abstract}
-Le Cloud-RAN est une nouvelle architecture de réseau mobile dans laquelle les unités de calcul, traditionnellement installées au pieds des antennes, sont déportées dans des data-centers distants. Dans ces conditions, pour respecter des contraintes liées aux protocoles 4G et 5G, il faut minimiser la latence des messages périodiques envoyés par les antennes
-à leurs unités de calcul. Nous essayons donc ici de trouver des plans périodiques de transmission des messages qui ne nécessitent pas de buffer et donc de latence supplémentaire.
+Le Cloud-RAN est une nouvelle architecture de réseau mobile dans laquelle les unités de calcul, traditionnellement installées au pied des antennes, sont déportées dans des centres de données distants. Pour respecter des contraintes liées aux protocoles 4G et 5G, il faut alors minimiser la latence de messages périodiques envoyés par les antennes
+à leurs unités de calcul, puis des unités de calcul vers les antennes. Nous essayons donc ici de trouver des plans périodiques de transmission des messages qui ne nécessitent pas de buffer et donc de latence supplémentaire.
 
-Dans cet article nous étudions un lien partagé par toutes les antennes. Pour des messages arbitrairement grand, nous montrons qu'il existe toujours un plan de transmission des messages si la charge du réseau est inférieure à $40\%$.  Pour les messages de taille $1$, nous donnons un algorithme en temps polynomial qui trouve un plan de transmission pour des charges jusqu'à $61\%$. De plus, en analysant un algorithme aléatoire glouton, pour n'importe quelle charge, presque toutes les instances avec suffisamment de messages ont une solution, ce qui explique pourquoi les algorithmes gloutons présentés dans l'article marchent si bien en pratique.
+Dans cet article nous étudions un lien partagé par toutes les antennes. Pour des messages arbitrairement grand, nous montrons qu'il existe toujours un plan de transmission des messages si la charge du réseau est inférieure à $40\%$.  Pour les messages de taille $1$, nous donnons un algorithme en temps polynomial qui trouve un plan de transmission pour des charges jusqu'à $61\%$. De plus, en analysant un algorithme aléatoire glouton, pour n'importe quelle charge donnée, presque toutes les instances ont une solution, ce qui explique pourquoi les algorithmes gloutons présentés dans l'article marchent si bien en pratique.
 \end{abstract}
 
 
@@ -77,10 +77,9 @@ Dans cet article nous étudions un lien partagé par toutes les antennes. Pour d
 
 Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and the total cost of ownership. A challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network. Statistical multiplexing even with a large bandwidth does not satisfies the latency requirements of C-RAN~\cite{barth2018deterministic}. The current solution~\cite{tayq2017real} is to use dedicated circuits for the fronthaul but it does not scale in the case of a mobile network composed of about $10,000$ base stations. 
 
-The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time for latency due to the physical length of the routes in the network, and allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention. 
+The question we address is the following: \emph{is it possible to schedule periodic messages on a shared bidirectional link without using buffers}? Eliminating this source of latency leaves us with more time for latency due to the physical length of the routes in the network, and allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention during the message's trip from the antenna to the data center and back. 
 
-We now formally describe our model and problem.
-The time is discretized and the process we consider is periodic of fixed integer period $P$. In the C-RAN network we model, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time needed to send a message through some contention point of the network, here a link shared by all antennas. We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its delay $d_i$: if $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. Since the process we describe is periodic, we may consider any interval of $P$ units of time
+The time is discretized and the process we consider is periodic of fixed integer period $P$. In the C-RAN network we model, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time needed to send a message through some contention point of the network, here a link shared by all antennas. We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its delay $d_i$: if $i$ arrives at the link at time $t$, then it goes to its processing unit and returns to the other end of the link on its way back at time $t + d_i$. Since the process we describe is periodic, we may consider any interval of $P$ units of time
 to represent the state of our system. Describing the messages going through the two contention points during such an interval completely defines the periodic process. We call the representation of the interval of time in the first contention point the \emph{first period} and the \emph{second period} for the second contention point.
 
 An \emph{offset} of a message is a choice of time at which it arrives
@@ -99,7 +98,7 @@ an assignment or to decide there is none.
 
 
 \includegraphics[scale=0.25]{network}
-\caption{An example of a network}
+\caption{A C-RAN network over a shared link}
 \label{fig:network}
 \end{minipage}
 \begin{minipage}[c]{.5\linewidth}
@@ -114,12 +113,12 @@ an assignment or to decide there is none.
 
 \end{minipage}
 \end{figure}
-In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{barth2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks, such as sensor networks inside a car or a plane, have been practically solved~\cite{nayak2017incremental,steiner2018traffic}. 
+In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{barth2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme with zero additional latency. More complex problems of computing schedules for time sensitive networks, such as sensor networks inside a car or a plane, have been practically solved~\cite{nayak2017incremental,steiner2018traffic}. 
 
-The complexity of \pma is not yet known but slight variations are \NP-hard~\cite{barth2018deterministic}.  Hence, we conjecture that \pma is \NP-hard.
-To overcome this supposed hardness, we study \pma when the load of the system is small enough. The \emph{load} is defined as the number of units of time used in a period by all messages divided by the period: $n\tau /P$. Our aim is to prove that, for small load, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm.
+The complexity of \pma is not yet known but slight variations are \NP-hard~\cite{barth2018deterministic}.  Hence, we conjecture that \pma is also \NP-hard. To overcome this supposed hardness, we study \pma when the load of the system is small enough. The \emph{load} is defined as the number of units of time used in a period by all messages divided by the period: $n\tau /P$. Our aim is to prove that, for small load, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm.
 
-All details, proofs, experiments lacking in this article can be found in~\cite{}.
+All details, proofs, experiments lacking in this article can be found in the long version: "Scheduling periodic messages on a shared link"
+on arXiv.
 
 \section{Greedy Algorithms for Large Messages} \label{sec:large}
 
@@ -175,15 +174,15 @@ Let $A$ be some partial assignment of size $k$ and let $i$ be an unscheduled mes
 \end{lemma}
 
 The \emph{Swap} algorithm is as follows: Schedule unscheduled messages while possible and then apply Swap operations while it increases the potential. When the potential is maximal, it tries to schedule a new message by moving one or two scheduled messages to new offsets. If it fails to find such messages the algorithm stops, otherwise it repeats the same steps. 
+Amazingly, in experiments over random instances, Swap always finds an assignment when the load is less than $0.95$, but it is not always able to find assignments obtained by an exact resolution. 
 
 \begin{theorem}
 The Swap algorithm solves positively \pma for instances with $\tau =1$ and load $1/2 + (\sqrt{5}/2 -1) \approx 0,618$.
 \end{theorem}
 
-Amazingly, in experiments Swap always finds an assignment when the load is less than $0.95$, but it is not always able to find assignments obtained by an exact resolution. 
 
 We would like to understand better the behaviour of our algorithms
-on instances drawn uniformly at random. To this aim, we analyze \textbf{Greedy Uniform}: for each message in order, choose one of the possible offsets uniformly at random and use it to extend the partial assignment. We compute the probability of success of Greedy Uniform over all random choices of the algorithm \emph{and all possible instances}. For a given assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, a trace of an assignment is a pair of subsets of $[m]$ of size $n$.
+on instances drawn uniformly at random. To this aim, we analyze \textbf{Greedy Uniform}: for each message in order, choose one of the possible offsets uniformly at random and use it to extend the partial assignment. We compute the probability of success of Greedy Uniform over all random choices of the algorithm \emph{and all possible instances}. We are only interested in the trace of an assignment: the set of times used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, a trace of an assignment is a pair of subsets of $[m]$ of size $n$.
 
 \begin{theorem}
 The distribution of traces of assignments produced by Greedy Uniform when it succeeds, from instances drawn uniformly at random, is also uniform.
@@ -196,7 +195,7 @@ The probability over all instances with $n$ messages and period $m$ that Greedy 
 \end{theorem}
 
 Let $\lambda$, be the load, we can prove using Stirling formula that
-$P(m,n) C \lambda m f(\lambda)^m$ with $f(\lambda) < 1$. Thus, the probability that Greedy Uniform fails goes to $0$ when $m$ grows. 
+$P(m,n) \leq C \lambda m f(\lambda)^m$ with $f(\lambda) < 1$. Thus, the probability that Greedy Uniform fails goes to $0$ when $m$ grows. 
 
 %\section{Lower bounds}
 
