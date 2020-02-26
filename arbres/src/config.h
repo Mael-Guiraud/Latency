@@ -1,10 +1,10 @@
 // CONFIG OF THE TOPOLOGY
 
-#define MAX_LENGTH 700
+#define MAX_LENGTH 20000
 #define MESSAGE_SIZE 10000
 #define NB_BBU 2
 #define NB_COLLISIONS 3
-#define NB_ROUTES_PER_FLOW 1
+#define NB_ROUTES_PER_FLOW 5
 #define PROBA 0.5
 
 //Mod synch or not
@@ -14,7 +14,6 @@
 #define LOAD_MIN 0.3
 #define LOAD_MAX 1
 #define LOAD_GAP 0.1
-
 
 // CONFIG OF THE SIMULATIONS FOR ALGORITHMS WITH WAITING TIME
 #define MARGIN_MIN 8000

@@ -761,7 +761,7 @@ void simuldistrib(int seed)
 				{
 					if(algo == 4)
 					{
-						time[algo] = a->time;
+						time[algo] = a->time-l;
 					}
 					else
 						time[algo] = travel_time_max_buffers(g)-l;	
