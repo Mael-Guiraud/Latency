@@ -2081,9 +2081,9 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 	//Parametres du recuit
 	int nb_paliers = param;
 	float temperature = 10000.0;
-	float coeff= 0.99;
-	int seuil_arret = 3;
-	float seuil_incr_cmpt = 0.02;
+	float coeff= 0.90;
+	int seuil_arret = 100;
+	float seuil_incr_cmpt = 0.001;
 
 	Assignment a=NULL;
 	if(!greedy_deadline(g, P, message_size))
