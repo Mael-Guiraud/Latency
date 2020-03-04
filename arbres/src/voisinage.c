@@ -1064,14 +1064,16 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  			offset = 0;
  			int Per[g.arc_pool[j].nb_routes];
  			//int subset[g.arc_pool[j].nb_routes];
+ 			//printf("ARc %d CL %d \n",j,g.arc_pool[j].contention_level);
  			if(g.arc_pool[j].contention_level == CL)
  			{
+ 				//printf("ARc %d %d routes\n",j,g.arc_pool[j].nb_routes);
  				int premier ;
  				if(kind == FORWARD)
  					premier = trouver_premier(g.arc_pool[j].routes_order_f,g.arc_pool[j].nb_routes);
  				else
  					premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
- 			
+ 				//printf("premier %d \n",premier);
  			
  				int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
  				int bool_p;
@@ -1099,6 +1101,7 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
 
  					if(kind == FORWARD)
  					{
+ 						//printf("arcpoolforward %d \n",g.arc_pool[j].routes_order_f[k]);
  						if((g.arc_pool[j].routes_order_f[k] >= 0)&&(g.arc_pool[j].routes_order_f[k] != INT_MAX))
  						{
  							if(g.arc_pool[j].routes_order_f[k] != premier)
@@ -1138,6 +1141,7 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  					}
  					else
  					{
+ 						//printf("arcpoolbackward %d \n",g.arc_pool[j].routes_order_b[k]);
  						if((g.arc_pool[j].routes_order_b[k] >= 0)&&(g.arc_pool[j].routes_order_b[k] != INT_MAX))
  						{
  							if(g.arc_pool[j].routes_order_b[k] != premier)
@@ -1175,21 +1179,23 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  							bool_p = 1;
  						}
  					}
-
+ 					//printf("currentourte %d boolp %d \n",current_route, bool_p);
  					if(current_route == -1)
  						continue;
-
+ 					//printf("route %d \n",current_route);
  					int r_t = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
  					if(kind == BACKWARD)
  					{
  						r_t += route_length_with_buffers_forward(g, current_route);
  					}
+ 					//printf("rt %d offset %d\n",r_t,offset);
  					retval r = calcul_delay(begin,offset,P,r_t,message_size,bool_p);
  					if(kind == FORWARD)
  						g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
  					else
  						g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
  					offset = r.new_offset;
+ 					// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
  					if(offset > begin+P)
  					{
  						//printf("Ca a débordé, on quitte");

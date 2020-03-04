@@ -22,6 +22,7 @@
 #include <math.h>
 #include <limits.h>
 #include "borneInf.h"
+#include "fpt.h"
 
 
 
@@ -181,10 +182,11 @@ void test()
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);*/
 	//test_one_algo(g,P,message_size,0,NULL,&descente,"Descente",f);
-	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
-	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
-
-	//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
+//	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
+//	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
+test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
+	printf("FPT = %d \n",rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size));
+	
 	
 
 

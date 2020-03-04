@@ -4,9 +4,18 @@
 #include <string.h>
 #include "structs.h"
 #include "color.h"
+//"blue3","brown4","chartreuse","darkorchid4","gold1","magenta1","chocolate1",
+					//	"deepskyblue", "darkorange4", "green4","deeppink","black","gray30"
 
-const char* COLORS[NB_COLORS] = {"blue3","brown4","chartreuse","darkorchid4","gold1","magenta1","chocolate1",
-						"deepskyblue", "darkorange4", "green4","deeppink","black","gray30"  };
+const char* COLORS[NB_COLORS] = {"blue1","brown1","chartreuse1","darkorchid1","gold1","magenta1","chocolate1",
+						"deepskyblue1", "darkorange1", "green1","deeppink1","gray1","gray31",
+						"blue2","brown2","chartreuse2","darkorchid2","gold2","magenta2","chocolate2",
+						"deepskyblue2", "darkorange2", "green2","deeppink2","gray2","gray32",
+						"blue3","brown3","chartreuse3","darkorchid3","gold3","magenta3","chocolate3",
+						"deepskyblue3", "darkorange3", "green3","deeppink3","gray3","gray33",
+						"blue4","brown4","chartreuse4","darkorchid4","gold4","magenta4","chocolate4",
+						"deepskyblue4", "darkorange4", "green4","deeppink4","gray4","gray34",
+						  };
 const char * RED_FAIL = "red";
 
 void print_gnuplot(char * outputname,char ** files, int nb_files, char* title, char * xlabel, char** ylabel)

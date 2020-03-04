@@ -12,29 +12,65 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size);
 //Fait l'arbre recursif avec tous les sous ensemble de routes 
 int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int profondeur)
 {
+
 	int val_D;
 	int val_G;
 	int nb_routes = g.arc_pool[arcid].nb_routes;
 	int retour;
+	//printf("Arc %d kind %d profondeur %d(%droutes)\n",arcid,kind,profondeur,nb_routes);
 	Assignment a;
 	if(profondeur == nb_routes)
 	{
+		/*printf("arcid %d nbroutes %d kind %d order :",arcid,g.arc_pool[arcid].nb_routes,kind);
+		if(kind == FORWARD)
+			for(int i=0;i<g.arc_pool[arcid].nb_routes;i++)printf("%d ",g.arc_pool[arcid].routes_order_b[i]);
+		else
+			for(int i=0;i<g.arc_pool[arcid].nb_routes;i++)printf("%d ",g.arc_pool[arcid].routes_order_b[i]);
+		printf("\n");*/
 		if((arcid == g.nb_bbu + g.nb_collisions-1)&&(kind == BACKWARD))
 		{	
+			//printf("Calcul assingment \n");
+
 			a = assignment_with_orders_vois1(g, P, message_size, 0);
 			retour = travel_time_max_buffers(g);
-			free_assignment(a);
-			return retour;
+			if(a->all_routes_scheduled)
+			{
+
+				free_assignment(a);
+				//printf("REtour %d \n",retour);
+				//exit(12);
+				return retour;
+			}
+			else
+			{
+				//printf("REtour INTMAX \n");
+				//exit(13);
+				free_assignment(a);
+				return INT_MAX;
+
+			}
+			
+			
 		}
 		else
 		{
 			if(arcid == 0)
 			{
+				//printf("Repart backward \n");
 				return  rec_arcs(g,g.nb_bbu,BACKWARD,P,message_size);
 			}
 			else
 			{
-				return rec_arcs(g,arcid-1,kind,P,message_size);
+				if(kind == FORWARD)
+				{
+					//printf("Enfonce forward \n");
+					return rec_arcs(g,arcid-1,kind,P,message_size);
+				}
+				else
+				{
+					//printf("remonte backward\n");
+					return rec_arcs(g,arcid+1,kind,P,message_size);
+				}
 			}
 		}
 		
@@ -58,6 +94,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				g.arc_pool[arcid].routes_order_f[profondeur] = -g.arc_pool[arcid].routes_order_f[profondeur];
 				g.arc_pool[arcid].routes_order_b[profondeur] = -g.arc_pool[arcid].routes_order_b[profondeur];
 			}
+			//printf("Modif %d \n",g.arc_pool[arcid].routes_order_b[profondeur]);
 		}
 		else
 		{
@@ -71,6 +108,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				{
 					g.arc_pool[arcid].routes_order_f[profondeur] = -g.arc_pool[arcid].routes_order_f[profondeur];
 				}
+				//printf("Modif %d \n",g.arc_pool[arcid].routes_order_f[profondeur]);
 			}
 			else
 			{
@@ -83,6 +121,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					g.arc_pool[arcid].routes_order_b[profondeur] = -g.arc_pool[arcid].routes_order_b[profondeur];
 				}
 			}
+			//printf("Modif %d \n",g.arc_pool[arcid].routes_order_b[profondeur]);
 		}
 		
 		val_G =  rec_orders(g,arcid,kind,message_size,P,profondeur+1);
@@ -133,19 +172,23 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size)
 {
+	//printf("RECARCS arc %d kind %d \n",arcid,kind);
 	element_sjt * permuts = init_sjt(g.arc_pool[arcid].nb_routes);
 	int min = INT_MAX;
 	int returnvalue;
+	
 	long long facto=fact(g.arc_pool[arcid].nb_routes);
+	
+
 	int tab[g.arc_pool[arcid].nb_routes];
 	for(int j=0;j<g.arc_pool[arcid].nb_routes;j++)
 	{
-		tab[j]=g.arc_pool[arcid].routes_id[j];
+				tab[j]=g.arc_pool[arcid].routes_id[j];
 	}
 	//Pour tout les ordres de routes :
 	for(int i=0;i<facto;i++)
 	{
-		
+	
 		for(int j=0;j<g.arc_pool[arcid].nb_routes;j++)
 		{
 			if(arcid < NB_BBU)
@@ -165,14 +208,14 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size)
 				}
 			}
 		}
-		
-		returnvalue = rec_orders(g, arcid, FORWARD,  message_size,  P,0);
+		//print_tab(permuts,g.arc_pool[arcid].nb_routes);
+		returnvalue = rec_orders(g, arcid, kind,  message_size,  P,0);
 		if(returnvalue < min)
 			min = returnvalue;
 		if(i!=facto-1)
-			algo_sjt(permuts,g.nb_routes);
+			algo_sjt(permuts,g.arc_pool[arcid].nb_routes);
 	}
+	free(permuts);
 	return min;
 }
 
-//rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size);
