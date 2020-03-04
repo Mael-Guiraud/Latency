@@ -1,0 +1,1 @@
+int rec_arcs(Graph g,int arcid,periode_kind kind, int P, int message_size);
