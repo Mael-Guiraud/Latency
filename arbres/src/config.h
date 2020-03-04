@@ -46,4 +46,4 @@
 #define NB_POINTS 20
 
 
-#define VOISINAGE 1
+#define VOISINAGE 0
