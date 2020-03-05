@@ -1,5 +1,6 @@
 run: compile 
 	./test
+	gnuplot success.gplt
 
 compile: greedyRandStar.c
 	gcc -o test -O2 -Wall greedyRandStar.c 
@@ -10,3 +11,5 @@ valgrind:
 	
 clean:
 	rm -f test
+
+

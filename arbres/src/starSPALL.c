@@ -113,9 +113,11 @@ element_sjt * init_sjt(int taille)
 }
 long long fact(int a)
 {
-	if(a==2)
+
+
+	if(a<=2)
 	{
-		return 2;
+		return a;
 	}
 	else
 		return a * fact(a-1);
