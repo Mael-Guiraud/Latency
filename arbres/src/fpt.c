@@ -18,7 +18,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 	int nb_routes = g.arc_pool[arcid].nb_routes;
 	int retour;
 	//printf("Arc %d kind %d profondeur %d(%droutes)\n",arcid,kind,profondeur,nb_routes);
-	Assignment a;
+	int a;
 	if(profondeur == nb_routes)
 	{
 		/*printf("arcid %d nbroutes %d kind %d order :",arcid,g.arc_pool[arcid].nb_routes,kind);
@@ -33,10 +33,10 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 
 			a = assignment_with_orders_vois1(g, P, message_size, 0);
 			retour = travel_time_max_buffers(g);
-			if(a->all_routes_scheduled)
+			if(a)
 			{
 
-				free_assignment(a);
+				//free_assignment(a);
 				//printf("REtour %d \n",retour);
 				//exit(12);
 				return retour;
@@ -45,7 +45,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 			{
 				//printf("REtour INTMAX \n");
 				//exit(13);
-				free_assignment(a);
+				//free_assignment(a);
 				return INT_MAX;
 
 			}

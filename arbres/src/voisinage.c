@@ -724,16 +724,16 @@ int borninfcorrre(Graph g, int P, int message_size,int budget, int first,int * s
     return max;
 }
 int DEBUGTMP;
-Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
+int assignment_with_orders(Graph g, int P, int message_size, int print)
 {
 
-	Assignment a = malloc(sizeof(struct assignment));
+	/*Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
 	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
 	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
 
 	a->nb_routes_scheduled = 0;
-	a->all_routes_scheduled = 0;
+	a->all_routes_scheduled = 0;*/
 	Period_kind kind;
 	int CL;
 	int offset ;
@@ -853,7 +853,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  						total_check += check_value;
  						if(total_check >= P)
  						{
- 							return a;
+ 							return 0;
  						}
  					}
  					offset += total_check;
@@ -954,6 +954,7 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  		}
 
  	}
+ 	/*
  	for(int i=0;i<g.nb_routes;i++)
  	{
  		a->offset_forward[i] = 0;
@@ -962,9 +963,9 @@ Assignment assignment_with_orders(Graph g, int P, int message_size, int print)
  	}
 	a->all_routes_scheduled = 1;
 	a->nb_routes_scheduled = g.nb_routes;
+*/
 
-
-	return a;
+	return g.nb_routes;
 
 }
 int trouver_premier(int* orders, int nb)
@@ -1170,7 +1171,7 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 		if(offset > begin+P)
 		{
-			//printf("Ca a débordé, on quitte");
+		//	printf("													Ca a débordé, on quitte");
 			return 0;
 		}
 		if(print)
@@ -1186,16 +1187,10 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		
 	return 1;
 }
-Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
+int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
 {
 
-	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
-
-	a->nb_routes_scheduled = 0;
-	a->all_routes_scheduled = 0;
+	
 	Period_kind kind;
 	int CL;
 	int offset ;
@@ -1221,22 +1216,14 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
  			if(g.arc_pool[j].contention_level == CL)
  			{
 	 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
-	 				return a;
+	 				return 0;
 	 		}
  		}
 
  	}
- 	for(int i=0;i<g.nb_routes;i++)
- 	{
- 		a->offset_forward[i] = 0;
- 		a->offset_backward[i] = route_length_with_buffers_forward(g, i);
- 		a->waiting_time[i]=0;
- 	}
-	a->all_routes_scheduled = 1;
-	a->nb_routes_scheduled = g.nb_routes;
+ 
 
-
-	return a;
+	return g.nb_routes;
 
 }
 
@@ -1337,8 +1324,8 @@ void aff_orders(int*  cpy[], Graph g)
 int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 {
 
-	Assignment a=NULL;
-	
+	int a = 0;
+	 int b;
 	int begin = mintime;
 
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
@@ -1355,15 +1342,15 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 			a= assignment_with_orders_vois1(g,P,message_size,0);
 		else
 			a = assignment_with_orders(g,P,message_size,0);
-		if(a->all_routes_scheduled)
+		if(a)
 		{
-			a->time = travel_time_max_buffers(g);
-			if(a->time < mintime)
+			b = travel_time_max_buffers(g);
+			if(b < mintime)
 			{
 		
 				cpy_orders(orders,g,1);
 				//printf("nouveau etat optimal\n");aff_orders(orders,g);
-				mintime = a->time;
+				mintime = b;
 				
 			}
 		}
@@ -1374,7 +1361,7 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 		//printf("\n\n");
 		reinit_delays(g);
 	
-		free_assignment(a);
+		//free_assignment(a);
 
 	}
 	cpy_orders(orders,g,0);//on remet le graph optimal
@@ -1417,7 +1404,7 @@ Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size, int tma
 	
 	return v;
 }
-Assignment descente(Graph g, int P, int message_size,int tmax)
+int descente(Graph g, int P, int message_size,int tmax)
 {
 	Voisin v;
 	int nb_d =0;
@@ -1428,12 +1415,12 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 
 	if(v.route == -1)
 	{
-		return NULL;
+		return 0;
 	}
 	reinit_delays(g);
 	int ** orders = parcours_voisinage(g,P,message_size,v,INT_MAX);
 	reinit_delays(g);
-	Assignment a=NULL;
+	int a=0,b;
 	if(!orders)
 	{
 /*
@@ -1452,8 +1439,8 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 	{
 		//printf("descente\n");
 		nb_d++;
-		if(a)
-			free_assignment(a);
+		//if(a)
+		//	free_assignment(a);
 		v=reinit_voins(g,v);
 		cpy_orders(orders,g,0);
 		//printf("On remet le dernier graph renvoyé\n");aff_orders(orders,g);
@@ -1463,21 +1450,21 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 			a= assignment_with_orders_vois1(g,P,message_size,0);
 		else
 			a = assignment_with_orders(g,P,message_size,0);
-		a->time = travel_time_max_buffers(g);
+		b = travel_time_max_buffers(g);
 		
 		for(int i=0;i<g.arc_pool_size*2;i++)
 		{
 			free(orders[i]);
 		}
 		free(orders);
-		orders = parcours_voisinage(g,P,message_size,v,a->time);
+		orders = parcours_voisinage(g,P,message_size,v,b);
 
 		//printf("%p \n",orders);
 	}
 	//printf("Recalcul avec le meilleur ordre ---------------------\n\n\n");aff_orders(orders,g);
 	//ici quand on quitte, le graph est normalement remis au meilleur de avant
-	if(a)
-		free_assignment(a);
+	//if(a)
+	//	free_assignment(a);
 	reinit_delays(g);
 	reset_periods(g,P);
 	//printf("APPEL \n");
@@ -1489,12 +1476,12 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 
 	if(verifie_solution( g,message_size))
 	{
-		printf("La solution n'est pas correcte descente (error %d) %d",verifie_solution( g,message_size),a->all_routes_scheduled);
+		printf("La solution n'est pas correcte descente (error %d) %d",verifie_solution( g,message_size),a);
 		exit(82);
 	}
 
 
-	a->time = travel_time_max_buffers(g);
+	b = travel_time_max_buffers(g);
 /*
 	char buf[128];
 	char buf_dot[128];
@@ -1522,14 +1509,14 @@ Assignment descente(Graph g, int P, int message_size,int tmax)
 		printf("ON A PAS SU TROUVER AVEC LA DICHO \n");
 		exit(99);
 	}*/
-	a->nb_routes_scheduled = nb_d;
-	return a;
+	//a->nb_routes_scheduled = nb_d;
+	return b;
 
 }
-Assignment best_of_x(Graph g, int P, int message_size,int tmax)
+int best_of_x(Graph g, int P, int message_size,int tmax)
 {
-	Assignment a;
-	Assignment best = NULL;
+	int a;
+	int best = 0;
 	int prev = INT_MAX;
 	
 	for(int i=0;i<tmax;i++)
@@ -1538,18 +1525,11 @@ Assignment best_of_x(Graph g, int P, int message_size,int tmax)
 		if(a)
 		{
 			
-				if(a->time < prev )
+				if(a < prev )
 				{
 					//printf("a->time %d\n ",a->time);
 					best = a;
-				}
-					
-				else
-				{
-					free_assignment(a);
-				}
-					
-		
+				}			
 				
 		}
 		
@@ -1637,8 +1617,8 @@ void free_trace(Trace t,int arcpoolsize)
 Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace * hash_table,int sizehash)
 {
 
-	Assignment a=NULL;
-	
+	int a=0;
+	int b;
 	int min = INT_MAX;
 	int key;
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
@@ -1672,22 +1652,22 @@ Trace parcours_voisinage_tabou(Graph g,int P, int message_size,Voisin v,Trace * 
 			a= assignment_with_orders_vois1(g,P,message_size,0);
 		else
 			a = assignment_with_orders(g,P,message_size,0);
-		if(a->all_routes_scheduled)
+		if(a)
 		{
 
-			a->time = travel_time_max_buffers(g);
+			b = travel_time_max_buffers(g);
 			
-			if(a->time <= min)
+			if(b <= min)
 			{
 				//printf("Nouveau meileur temmps %d \n",a->time);
 				cpy_orders(orders,g,1);// de g vers orders
 				//aff_orders(orders,g);
-				min = a->time;
+				min = b;
 				
 			}
 		}
 		reinit_delays(g);
-		free_assignment(a);
+		//free_assignment(a);
 		v= nouveau_voisin(v,g);
 	}
 	cpy_orders(orders,g,0);//on remet le graph optimal
@@ -1705,10 +1685,10 @@ int size(Trace t)
 	}
 	return cmpt;
 }
-Assignment taboo(Graph g, int P, int message_size,int nb_steps)
+int taboo(Graph g, int P, int message_size,int nb_steps)
 {
 	Voisin v;
-	Assignment a=NULL; 
+	int a=0,b; 
 	int sizehash = nb_steps*2;
 	Trace * hash_table = malloc(sizeof(Trace) *sizehash);
 	FILE * f = fopen("../data/trace","w");
@@ -1725,15 +1705,12 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		a= assignment_with_orders_vois1(g,P,message_size,0);
 	else
 		a = assignment_with_orders(g,P,message_size,0);
-	if(a->all_routes_scheduled)
-		a->time = travel_time_max_buffers(g);
+	if(a)
+		b = travel_time_max_buffers(g);
 	else
-	{
-		free_assignment(a);
-		return NULL;
-	}
+		return 0;
 		
-	int min = a->time;
+	int min = b;
 	reinit_delays(g);
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
 
@@ -1746,9 +1723,9 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	cpy_orders(orders,g,1);
 
 	int key = hash_graph(g,sizehash);
-	hash_table[key] = ajouter_orders(hash_table[key],orders,a->time);
+	hash_table[key] = ajouter_orders(hash_table[key],orders,b);
 	//fprintf(f,"%d %d \n",0,hash_table[key]->time);
-	free_assignment(a);
+	//free_assignment(a);
 	
 	v.route=0;
 	v.pos = malloc(sizeof(int)* g.nb_levels[v.route]);
@@ -1797,8 +1774,8 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 		a= assignment_with_orders_vois1(g,P,message_size,1);
 	else
 		a = assignment_with_orders(g,P,message_size,1);
-	a->nb_routes_scheduled = nb_steps_better;
-	a->time = travel_time_max_buffers(g);
+	//a->nb_routes_scheduled = nb_steps_better;
+	b = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))
 	{
 		printf("La solution n'est pas correcte TABOO (error %d) ",verifie_solution( g,message_size));
@@ -1815,7 +1792,7 @@ Assignment taboo(Graph g, int P, int message_size,int nb_steps)
 	free(hash_table);
 	//printf("\n");
 	fclose(f);
-	return a;
+	return b;
 
 }
 //-----------------------------------------------
@@ -2091,16 +2068,17 @@ int CritMetropolis(int delta, float t)
 	}
 	return 0;
 }
-Assignment recuit(Graph g, int P, int message_size, int param)
+int recuit(Graph g, int P, int message_size, int param)
 {
 	//Parametres du recuit
 	int nb_paliers = param;
 	float temperature = 10000.0;
 	float coeff= 0.90;
+	int b;
 	int seuil_arret = 100;
 	float seuil_incr_cmpt = 0.001;
 
-	Assignment a=NULL;
+	int a=0;
 	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
@@ -2110,12 +2088,12 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 		a= assignment_with_orders_vois1(g,P,message_size,0);
 	else
 		a = assignment_with_orders(g,P,message_size,0);
-	a->time = travel_time_max_buffers(g);
+	b = travel_time_max_buffers(g);
 	 
-	int min = a->time;
+	int min = b;
 	int time_actuel = min;
 	reinit_delays(g);
-	free_assignment(a);
+	//free_assignment(a);
 	int nb_moves;
 	float acceptance_rate;
 	Voisin v;
@@ -2143,21 +2121,21 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 				a= assignment_with_orders_vois1(g,P,message_size,0);
 			else
 				a = assignment_with_orders(g,P,message_size,0);
-			if(a->all_routes_scheduled)
+			if(a)
 			{
-				a->time = travel_time_max_buffers(g);
-				if(CritMetropolis(a->time - time_actuel,temperature))//On swap sur le nouveau voisin.
+				b = travel_time_max_buffers(g);
+				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					if(time_actuel != a->time)
+					if(time_actuel != b)
 						nb_moves++;
-					time_actuel = a->time;
+					time_actuel = b;
 					//Le graph a ete changé dans voisin alea, on a donc rien a faire
 
 					//Sauvegarde du mec le plus opti
-					if(a->time < min)
+					if(b < min)
 					{
 						cpy_orders(orders,g,1);// de g vers orders
-						min = a->time;
+						min = b;
 						cmpt = 0;
 					}
 					
@@ -2173,7 +2151,7 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 				remet_voisin(g,v);
 			}
 			reinit_delays(g);
-			free_assignment(a);
+			//free_assignment(a);
 		}
 		acceptance_rate = (float)nb_moves/nb_paliers;
 		//printf("rate %f \n",acceptance_rate);
@@ -2201,12 +2179,12 @@ Assignment recuit(Graph g, int P, int message_size, int param)
 	else
 		a = assignment_with_orders(g,P,message_size,1);
 
-	a->time = travel_time_max_buffers(g);
+	b = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))
 	{
 		printf("La solution n'est pas correcte recuit (error %d) ",verifie_solution( g,message_size));
 		exit(83);
 	}
-	return a;
+	return b;
 
 }

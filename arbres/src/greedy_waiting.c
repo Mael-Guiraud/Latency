@@ -515,14 +515,14 @@ int greedy_deadline(Graph g, int P, int message_size)
 }
 Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int useless)
 {
-	Assignment a=NULL; 
+	int a=0; 
 //printf("\n\n\n\nnew greedy \n\n\n");
 	reset_periods( g, P);
 
 	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order\n");
-		return NULL;
+		return 0;
 	}
 	int t = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))
@@ -545,6 +545,6 @@ Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int usel
 		printf("La solution n'est pas correcte AwO (error %d) ",verifie_solution( g,message_size));
 		exit(86);
 	}
-	a->all_routes_scheduled = 1;
-	return a;
+	
+	return t2;
 }
