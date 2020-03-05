@@ -1029,6 +1029,163 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 	
 	return r;
 }
+
+int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int print)
+{
+	int j = arcid;
+	int offset = 0;
+	int Per[g.arc_pool[arcid].nb_routes];
+	//int subset[g.arc_pool[j].nb_routes];
+	//printf("ARc %d CL %d \n",j,g.arc_pool[j].contention_level);
+	
+	//printf("ARc %d %d routes\n",j,g.arc_pool[j].nb_routes);
+	int premier ;
+	if(kind == FORWARD)
+		premier = trouver_premier(g.arc_pool[j].routes_order_f,g.arc_pool[j].nb_routes);
+	else
+		premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
+	//printf("premier %d \n",premier);
+
+	int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
+	int bool_p;
+	int current_route;
+	if(kind == BACKWARD)
+	{
+		begin += route_length_with_buffers_forward(g, premier);
+	}
+	if(kind == FORWARD)
+		g.arc_pool[j].routes_delay_f[premier] =  0;
+	else
+		g.arc_pool[j].routes_delay_b[premier] =  0;
+	offset = begin+message_size;
+	if(print)
+	{
+	
+		if(kind == FORWARD)
+			fill_Per(g.arc_pool[j].period_f, premier, offset-message_size, message_size,P);
+		else
+			fill_Per(g.arc_pool[j].period_b, premier, offset-message_size, message_size,P);
+	}
+	for(int k=0;k<g.arc_pool[j].nb_routes;k++)
+	{
+		
+
+
+		if(kind == FORWARD)
+		{
+			//printf("arcpoolforward %d \n",g.arc_pool[j].routes_order_f[k]);
+			if((g.arc_pool[j].routes_order_f[k] >= 0)&&(g.arc_pool[j].routes_order_f[k] != INT_MAX))
+			{
+				if(g.arc_pool[j].routes_order_f[k] != premier)
+				{
+					current_route = g.arc_pool[j].routes_order_f[k];
+					bool_p = 0;
+				}
+				else
+					current_route = -1;
+			}
+			else
+			{
+				if(g.arc_pool[j].routes_order_f[k] == INT_MAX)
+				{
+					if(premier!=0)
+					{
+						current_route = 0;
+					}
+					else
+					{
+						current_route = -1;
+					}
+				}
+				else
+				{
+					if(-g.arc_pool[j].routes_order_f[k] != premier)
+					{
+						current_route = -g.arc_pool[j].routes_order_f[k];
+					}
+					else
+					{
+						current_route = -1;
+					}
+				}
+				bool_p = 1;
+			}
+		}
+		else
+		{
+			//printf("arcpoolbackward %d \n",g.arc_pool[j].routes_order_b[k]);
+			if((g.arc_pool[j].routes_order_b[k] >= 0)&&(g.arc_pool[j].routes_order_b[k] != INT_MAX))
+			{
+				if(g.arc_pool[j].routes_order_b[k] != premier)
+				{
+					current_route = g.arc_pool[j].routes_order_b[k];
+					bool_p = 0;
+				}
+				else
+					current_route = -1;
+			}
+			else
+			{
+				if(g.arc_pool[j].routes_order_b[k] == INT_MAX)
+				{
+					if(premier!=0)
+					{
+						current_route = 0;
+					}
+					else
+					{
+						current_route = -1;
+					}
+				}
+				else
+				{
+					if(-g.arc_pool[j].routes_order_b[k] != premier)
+					{
+						current_route = -g.arc_pool[j].routes_order_b[k];
+					}
+					else
+					{
+						current_route = -1;
+					}
+				}
+				bool_p = 1;
+			}
+		}
+		//printf("currentourte %d boolp %d \n",current_route, bool_p);
+		if(current_route == -1)
+			continue;
+		//printf("route %d \n",current_route);
+		int r_t = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
+		if(kind == BACKWARD)
+		{
+			r_t += route_length_with_buffers_forward(g, current_route);
+		}
+		//printf("rt %d offset %d\n",r_t,offset);
+		retval r = calcul_delay(begin,offset,P,r_t,message_size,bool_p);
+		if(kind == FORWARD)
+			g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
+		else
+			g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
+		offset = r.new_offset;
+		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+		if(offset > begin+P)
+		{
+			//printf("Ca a débordé, on quitte");
+			return 0;
+		}
+		if(print)
+		{
+		
+			if(kind == FORWARD)
+				fill_Per(g.arc_pool[j].period_f, current_route, offset-message_size, message_size,P);
+			else
+				fill_Per(g.arc_pool[j].period_b, current_route, offset-message_size, message_size,P);
+		}
+
+	}
+		
+	return 1;
+}
 Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
 {
 
@@ -1061,159 +1218,11 @@ Assignment assignment_with_orders_vois1(Graph g, int P, int message_size, int pr
 
  		for(int j=0;j<g.arc_pool_size;j++)
  		{
- 			offset = 0;
- 			int Per[g.arc_pool[j].nb_routes];
- 			//int subset[g.arc_pool[j].nb_routes];
- 			//printf("ARc %d CL %d \n",j,g.arc_pool[j].contention_level);
  			if(g.arc_pool[j].contention_level == CL)
  			{
- 				//printf("ARc %d %d routes\n",j,g.arc_pool[j].nb_routes);
- 				int premier ;
- 				if(kind == FORWARD)
- 					premier = trouver_premier(g.arc_pool[j].routes_order_f,g.arc_pool[j].nb_routes);
- 				else
- 					premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
- 				//printf("premier %d \n",premier);
- 			
- 				int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
- 				int bool_p;
- 				if(kind == BACKWARD)
- 				{
- 					begin += route_length_with_buffers_forward(g, premier);
- 				}
- 				if(kind == FORWARD)
- 					g.arc_pool[j].routes_delay_f[premier] =  0;
- 				else
- 					g.arc_pool[j].routes_delay_b[premier] =  0;
- 				offset = begin+message_size;
- 				if(print)
- 				{
- 				
- 					if(kind == FORWARD)
- 						fill_Per(g.arc_pool[j].period_f, premier, offset-message_size, message_size,P);
- 					else
- 						fill_Per(g.arc_pool[j].period_b, premier, offset-message_size, message_size,P);
- 				}
- 				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
- 				{
- 					
-
-
- 					if(kind == FORWARD)
- 					{
- 						//printf("arcpoolforward %d \n",g.arc_pool[j].routes_order_f[k]);
- 						if((g.arc_pool[j].routes_order_f[k] >= 0)&&(g.arc_pool[j].routes_order_f[k] != INT_MAX))
- 						{
- 							if(g.arc_pool[j].routes_order_f[k] != premier)
- 							{
- 								current_route = g.arc_pool[j].routes_order_f[k];
- 								bool_p = 0;
- 							}
- 							else
- 								current_route = -1;
- 						}
- 						else
- 						{
- 							if(g.arc_pool[j].routes_order_f[k] == INT_MAX)
- 							{
- 								if(premier!=0)
- 								{
- 									current_route = 0;
- 								}
- 								else
- 								{
- 									current_route = -1;
- 								}
- 							}
- 							else
- 							{
- 								if(-g.arc_pool[j].routes_order_f[k] != premier)
- 								{
- 									current_route = -g.arc_pool[j].routes_order_f[k];
- 								}
- 								else
- 								{
- 									current_route = -1;
- 								}
- 							}
- 							bool_p = 1;
- 						}
- 					}
- 					else
- 					{
- 						//printf("arcpoolbackward %d \n",g.arc_pool[j].routes_order_b[k]);
- 						if((g.arc_pool[j].routes_order_b[k] >= 0)&&(g.arc_pool[j].routes_order_b[k] != INT_MAX))
- 						{
- 							if(g.arc_pool[j].routes_order_b[k] != premier)
- 							{
- 								current_route = g.arc_pool[j].routes_order_b[k];
- 								bool_p = 0;
- 							}
- 							else
- 								current_route = -1;
- 						}
- 						else
- 						{
- 							if(g.arc_pool[j].routes_order_b[k] == INT_MAX)
- 							{
- 								if(premier!=0)
- 								{
- 									current_route = 0;
- 								}
- 								else
- 								{
- 									current_route = -1;
- 								}
- 							}
- 							else
- 							{
- 								if(-g.arc_pool[j].routes_order_b[k] != premier)
- 								{
- 									current_route = -g.arc_pool[j].routes_order_b[k];
- 								}
- 								else
- 								{
- 									current_route = -1;
- 								}
- 							}
- 							bool_p = 1;
- 						}
- 					}
- 					//printf("currentourte %d boolp %d \n",current_route, bool_p);
- 					if(current_route == -1)
- 						continue;
- 					//printf("route %d \n",current_route);
- 					int r_t = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
- 					if(kind == BACKWARD)
- 					{
- 						r_t += route_length_with_buffers_forward(g, current_route);
- 					}
- 					//printf("rt %d offset %d\n",r_t,offset);
- 					retval r = calcul_delay(begin,offset,P,r_t,message_size,bool_p);
- 					if(kind == FORWARD)
- 						g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
- 					else
- 						g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
- 					offset = r.new_offset;
- 					// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
- 					if(offset > begin+P)
- 					{
- 						//printf("Ca a débordé, on quitte");
- 						return a;
- 					}
- 					if(print)
- 					{
- 					
- 						if(kind == FORWARD)
- 							fill_Per(g.arc_pool[j].period_f, current_route, offset-message_size, message_size,P);
- 						else
- 							fill_Per(g.arc_pool[j].period_b, current_route, offset-message_size, message_size,P);
- 					}
-
- 				}
- 					
-
- 			}
+	 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
+	 				return a;
+	 		}
  		}
 
  	}

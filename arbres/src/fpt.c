@@ -54,9 +54,14 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 		}
 		else
 		{
+			//COUPE SI JAMAIS ON NE TROUVE RIEN SUR CET ARC, CA NE SERT A RIEN DE CONTINUER L'ARBRE RECURSIF EN DESSOUS
+			if(!assignOneArc( g, arcid,  kind, message_size,  P, 0))
+				return INT_MAX;
+
 			if(arcid == 0)
 			{
 				//printf("Repart backward \n");
+
 				return  rec_arcs(g,g.nb_bbu,BACKWARD,P,message_size);
 			}
 			else
@@ -173,7 +178,13 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size)
 {
 	//printf("RECARCS arc %d kind %d \n",arcid,kind);
-	element_sjt * permuts = init_sjt(g.arc_pool[arcid].nb_routes);
+	element_sjt permuts[g.arc_pool[arcid].nb_routes]; 
+	for(int i=0;i<g.arc_pool[arcid].nb_routes;i++)
+	{
+		permuts[i].val = i;
+		permuts[i].sens = 0;
+	}	
+	
 	int min = INT_MAX;
 	int returnvalue;
 	
@@ -215,7 +226,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size)
 		if(i!=facto-1)
 			algo_sjt(permuts,g.arc_pool[arcid].nb_routes);
 	}
-	free(permuts);
+	
 	return min;
 }
 
