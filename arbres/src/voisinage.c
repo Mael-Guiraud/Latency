@@ -1034,8 +1034,8 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int print)
 {
 	int j = arcid;
+	g.arc_pool[j].bounded = 1;
 	int offset = 0;
-	int Per[g.arc_pool[arcid].nb_routes];
 	//int subset[g.arc_pool[j].nb_routes];
 	//printf("ARc %d CL %d \n",j,g.arc_pool[j].contention_level);
 	
@@ -1193,13 +1193,13 @@ int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
 	
 	Period_kind kind;
 	int CL;
-	int offset ;
-	int current_route;
+	
+	
 
 
  	for(int i=0;i<g.contention_level;i++)
  	{
- 		offset = 0;
+ 		
  		if(i<g.contention_level/2)
  		{	
  			CL = i;
@@ -1381,7 +1381,7 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 
 	return orders;
 }
-Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size, int tmax)
+Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size)
 {
 	if(!greedy_deadline(g, P, message_size))
 	{
@@ -1411,7 +1411,7 @@ int descente(Graph g, int P, int message_size,int tmax)
 	if(tmax)
 		v= init_voisinage( g,  v);
 	else
-		v=init_voisinage_greedy(v,g,P,message_size,tmax);
+		v=init_voisinage_greedy(v,g,P,message_size);
 
 	if(v.route == -1)
 	{
@@ -1742,7 +1742,7 @@ int taboo(Graph g, int P, int message_size,int nb_steps)
 	
 	int cmpt = 0;
 	
-	int nb_steps_better=1;
+	//int nb_steps_better=1;
 	int ** best_order = orders;
 	//printf("Taboo \n");
 	
@@ -1756,7 +1756,7 @@ int taboo(Graph g, int P, int message_size,int nb_steps)
 		{
 			best_order = t->order;
 			min = t->time;
-			nb_steps_better = cmpt;
+			//nb_steps_better = cmpt;
 		}
 		v=reinit_voins(g,v);
 		//fprintf(stdout,"\r step %d/%d",cmpt,nb_steps);

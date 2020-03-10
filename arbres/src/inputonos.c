@@ -29,6 +29,11 @@ Devices  devices()
 	int id;
 	int retval; 
 	retval = fscanf(f,"%d",&nb_dev);
+	if(retval == EOF)
+	{
+		printf("Error retval \n");
+		exit(34);
+	}
 	Devices D;
 	D.nb_devs = nb_dev;
 	D.devs = malloc(sizeof(device)* nb_dev);
@@ -73,6 +78,11 @@ Links links(Devices D)
 	for(int i = 0;i<nb_links;i++)
 	{
 		retval = fscanf(f,"%d", &id);
+		if(retval == EOF)
+		{
+			printf("Error retval \n");
+			exit(34);
+		}
 		L.links[i].id = id;
 		retval = fscanf(f,"%d", &id);
 		L.links[i].latency = id;
@@ -251,6 +261,11 @@ Graph parseinput()
 	  }
 
 	retval = fscanf(f,"%d",&tmax);
+	if(retval == EOF)
+	{
+		printf("Error retval \n");
+		exit(34);
+	}
 	retval = fscanf(f,"%d",&period);
 	fclose(f);
 	printf("\nLecture des devices...");
