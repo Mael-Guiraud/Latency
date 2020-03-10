@@ -226,7 +226,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size)
 		if(i!=facto-1)
 			algo_sjt(permuts,g.arc_pool[arcid].nb_routes);
 	}
-	
+	printf("Sortie de l'appel recursif arc %d kind %d res %d\n",arcid,kind,min);
 	return min;
 }
 
