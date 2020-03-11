@@ -9,11 +9,14 @@
 #include "greedy_waiting.h"
 #include "borneInf.h"
 
+int nb_appels_arc;
+int nb_appels_orders;
+
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int borneinf);
 //Fait l'arbre recursif avec tous les sous ensemble de routes 
 int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int profondeur,int borneinf)
 {
-
+	nb_appels_orders++;
 	int val_D;
 	int val_G;
 	int nb_routes = g.arc_pool[arcid].nb_routes;
@@ -185,7 +188,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int borneinf)
 {
-
+	nb_appels_arc++;
 	element_sjt permuts[g.arc_pool[arcid].nb_routes]; 
 	for(int i=0;i<g.arc_pool[arcid].nb_routes;i++)
 	{
@@ -239,15 +242,19 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int bor
 		}
 		g.arc_pool[arcid].bounded = 0;
 	}
-	
+
 	return borneinf;
 }
 
 int branchbound(Graph g,int P, int message_size)
 {
-
+	nb_appels_arc =0;
+	nb_appels_orders = 0;
 	int borneinf=greedy_deadline_assignment( g, P, message_size);
 	printf("borneinf %d \n",borneinf);
 	reinit_delays(g);
-	return rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
+	int ret = rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
+	
+	printf("%d %d \n",nb_appels_arc,nb_appels_orders);
+	return ret;
 }

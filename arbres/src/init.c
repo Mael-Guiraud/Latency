@@ -86,7 +86,7 @@ int* random_number_routes(int l)
 			tab[i] = 1;
 		}
 		else
-			tab[i] = rand()%(NB_ROUTES_PER_FLOW-1) +1;
+			tab[i] = rand()%(NB_ROUTES_PER_FLOW) +1;
 	}
 	return tab;
 }
