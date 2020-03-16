@@ -1187,7 +1187,158 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		
 	return 1;
 }
+
+
+int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_kind kind)
+{
+	
+
+
+	// On a l'arc le plus chargé
+	//int arc_id = load_links_CL(g,0);
+
+
+	int taille_tab=g.arc_pool[arc_id].nb_routes;
+	/*printf("\n\n\n\nArc le plus chargé : %d routes \n routes sur l'arc \n",taille_tab);
+	for(int i=0;i<taille_tab;i++)
+		printf("%d ",g.arc_pool[arc_id].routes_id[i]);
+	printf("\n");*/
+	//On init le tableau des permutations
+
+	int release[taille_tab];
+	int deadline[taille_tab];
+	int ids[taille_tab];
+
+	//printf("BUDGETABCD = %d \n",budget);
+	for(int i=0;i<taille_tab;i++)
+	{
+		if(kind == FORWARD)
+		{
+			release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
+			//printf("(%d ",release[i]);
+			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			
+		}
+		else
+		{
+			release[i] = route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i])
+			+route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
+			//printf("(%d ",release[i]);
+			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			
+		}
+		
+		//printf("%d (%d + %d - %d)",deadline[i],release[i],budget,route_length(g,g.arc_pool[arc_id].routes_id[i]));	
+		ids[i]=g.arc_pool[arc_id].routes_id[i];
+		//printf("%d)\n",ids[i]);
+	}
+
+	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
+	int max =0;
+	int taille_route;
+	if(res)
+	{	
+
+		for(int i=0;i<taille_tab;i++)
+		{
+			g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]] = res[i];		
+		}
+	}
+	else
+	{
+		//printf("no res  %d \n", budget);
+		return 0;
+	}
+
+    free(res);
+
+    //printf("%d \n",max);
+	return 1;
+
+}
+
+int dichosimons(Graph g, int P, int message_size,int arcid,Period_kind kind)
+{
+	int min = 2*longest_route(g);
+	int max = min +P;
+	int milieu;
+	int res=0;
+	int tmp;
+	while(min != max)
+	{
+		milieu =min+ (max - min ) / 2;
+		tmp = simonslastarc(g,P,message_size,milieu,arcid,kind);
+		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
+		if(tmp)
+		{
+			max = milieu;
+			res = tmp;
+		}
+		else
+		{
+			
+			min = milieu;
+		}
+		
+	}	
+
+	return res;
+}
+
 int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
+{
+
+	
+	Period_kind kind;
+	int CL;
+	
+	
+
+
+ 	for(int i=0;i<g.contention_level;i++)
+ 	{
+ 		
+ 		if(i<g.contention_level/2)
+ 		{	
+ 			CL = i;
+ 			kind = FORWARD;
+ 		}
+ 		else
+ 		{
+ 			CL = g.contention_level-i-1;
+ 			kind = BACKWARD;
+ 		}
+
+ 		for(int j=0;j<g.arc_pool_size;j++)
+ 		{
+ 			if((0 == CL)&&(kind == BACKWARD))
+ 			{
+ 				if(!dichosimons( g,  P,  message_size,j , BACKWARD))
+ 				{
+ 					return 0;
+ 				}
+ 			}
+ 			else
+ 			{
+	 			if(g.arc_pool[j].contention_level == CL)
+	 			{
+		 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
+		 				return 0;
+		 		}
+ 			}			
+ 			
+ 		}
+
+ 	}
+
+
+ 
+
+	return g.nb_routes;
+
+}
+
+int compute_sol(Graph g, int P, int message_size, int print)
 {
 
 	

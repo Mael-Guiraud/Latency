@@ -12,6 +12,9 @@
 int nb_appels_arc;
 int nb_appels_orders;
 
+
+
+
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int borneinf);
 //Fait l'arbre recursif avec tous les sous ensemble de routes 
 int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int profondeur,int borneinf)
@@ -31,7 +34,8 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 		else
 			for(int i=0;i<g.arc_pool[arcid].nb_routes;i++)printf("%d ",g.arc_pool[arcid].routes_order_b[i]);
 		printf("\n");*/
-		if((arcid == g.nb_bbu + g.nb_collisions-1)&&(kind == BACKWARD))
+		//if((arcid == g.nb_bbu + g.nb_collisions-1)&&(kind == BACKWARD))
+		if(arcid == 0)
 		{	
 			//printf("Calcul assingment \n");
 
@@ -69,14 +73,14 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 			{
 				return INT_MAX;
 			}
-			if(arcid == 0)
+			/*if(arcid == 0)
 			{
 				//printf("Repart backward \n");
 
 				return  rec_arcs(g,g.nb_bbu,BACKWARD,P,message_size,borneinf);
 			}
 			else
-			{
+			{*/
 				if(kind == FORWARD)
 				{
 					//printf("Enfonce forward \n");
@@ -87,7 +91,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					//printf("remonte backward\n");
 					return rec_arcs(g,arcid+1,kind,P,message_size,borneinf);
 				}
-			}
+			//}
 		}
 		
 	}
