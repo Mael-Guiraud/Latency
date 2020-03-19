@@ -1,12 +1,14 @@
 #include "structs.h"
 #include "treatment.h"
 #include "voisinage.h"
+
 #include "config.h"
+
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
 
-
+#include "test.h"
 
 Assignment greedy(Graph g, int P, int message_size, int tmax)
 {
@@ -148,10 +150,9 @@ ARG mode :
 	- 1 : uses the longest route first
 	- 2 : use the route with the most collisions first
 */
-Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
+Assignment greedy_by_arcs(Graph g, int P, int message_size,int mode)
 {
-	//to avoid warn
-	tmax = 0;
+	
 	Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
 	a->nb_routes_scheduled = 0;
@@ -291,19 +292,19 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size, int tmax,int mode)
 
 }
 
-Assignment loaded_greedy(Graph g, int P, int message_size, int tmax)
+Assignment loaded_greedy(Graph g, int P, int message_size)
 {
-	return greedy_by_arcs(g,P,message_size,tmax,0);
+	return greedy_by_arcs(g,P,message_size,0);
 }
 
-Assignment loaded_greedy_longest(Graph g, int P, int message_size, int tmax)
+Assignment loaded_greedy_longest(Graph g, int P, int message_size)
 {
-	return greedy_by_arcs(g,P,message_size,tmax,1);
+	return greedy_by_arcs(g,P,message_size,1);
 }
 
-Assignment loaded_greedy_collisions(Graph g, int P, int message_size, int tmax)
+Assignment loaded_greedy_collisions(Graph g, int P, int message_size)
 {
-	return greedy_by_arcs(g,P,message_size,tmax,2);
+	return greedy_by_arcs(g,P,message_size,2);
 }
 
 
@@ -425,7 +426,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		offset += total_check;
 		if(VOISINAGE)
 		{
-			if(offset >= period)
+			if(offset >= P)
 			{
 				if(id[current_route] == 0)
 					order[i]= INT_MAX;
@@ -513,16 +514,16 @@ int greedy_deadline(Graph g, int P, int message_size)
 	return 1;
 
 }
-Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int useless)
+int greedy_deadline_assignment(Graph g, int P, int message_size)
 {
-	Assignment a=NULL; 
+	
 //printf("\n\n\n\nnew greedy \n\n\n");
 	reset_periods( g, P);
 
 	if(!greedy_deadline(g, P, message_size))
 	{
 		printf("Error, greedystatdeadline didnt find an order\n");
-		return NULL;
+		return 0;
 	}
 	int t = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))
@@ -531,7 +532,12 @@ Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int usel
 		affiche_graph(g,P,stdout);
 		exit(84);
 	}
-	a = assignment_with_orders(g,P,message_size,1);
+	if( assignment_with_orders(g,P,message_size,1)==0)
+	{
+		printf("Assignmentwithorder ne trouve pas de solution ?? tres etrange greedydeadlineassignment\n");
+		exit(87);
+	}
+
 
 	int t2 = travel_time_max_buffers(g);
 
@@ -545,6 +551,6 @@ Assignment greedy_deadline_assignment(Graph g, int P, int message_size, int usel
 		printf("La solution n'est pas correcte AwO (error %d) ",verifie_solution( g,message_size));
 		exit(86);
 	}
-	a->all_routes_scheduled = 1;
-	return a;
+	
+	return t2;
 }

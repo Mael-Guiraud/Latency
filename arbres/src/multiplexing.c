@@ -434,7 +434,7 @@ int multiplexing(Graph g, int period, int message_size, int nb_periods,Policy po
 	return longest_time_elapsed;
 }
 
-Assignment greedy_stat_deadline(Graph g, int P, int message_size, int tmax)
+Assignment greedy_stat_deadline(Graph g, int P, int message_size)
 {
 	Assignment a = malloc(sizeof(struct assignment));
 	a->offset_forward = calloc(g.nb_routes,sizeof(int));
@@ -445,7 +445,7 @@ Assignment greedy_stat_deadline(Graph g, int P, int message_size, int tmax)
 	a->time  = multiplexing(g, P, message_size, 10, DEADLINE,INT_MAX);
 	//affiche_graph(g,P, stdout);
 	//to avoid warn
-	tmax = 0;
+
 	return a;
 }
 

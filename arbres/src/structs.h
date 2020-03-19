@@ -45,6 +45,7 @@ typedef struct arc{
 	int routes_delay_b[128];
 	int contention_level;
 	int pos_swap;
+	int bounded;
 
 } Arc;
 

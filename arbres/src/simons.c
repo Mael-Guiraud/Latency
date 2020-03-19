@@ -1339,7 +1339,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 */
 
 //int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int mode)
-int* simons_FPT(Graph g,int* RELEASE,int* ids, int * DEADLINE, int  nbr_route, int taille_paquet, int periode, int premier,int * subset)
+int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet, int periode, int premier,int * subset)
 {	
 	
 	///////////////////////////////////////////////////////taille_paquet = 6;
@@ -1509,7 +1509,7 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 		for(int i=0;i<nbr_candidats;i++)
 			if(subset[i])
 				routes[candidats[i]]=1;
-		return simons_FPT(g,RELEASE,ids, DEADLINE,nbr_route,taille_paquet,periode,premier,routes);
+		return simons_FPT(RELEASE, DEADLINE,nbr_route,taille_paquet,periode,premier,routes);
 
 	}
 	else

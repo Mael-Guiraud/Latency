@@ -48,14 +48,14 @@ int main (int argc, char *argv[])
 		if(!strcmp(argv[1],"simulWaiting") || !strcmp(argv[1],"simulAll"))
 		{
 			simul(seed,&greedy,"greedy");
-			simul(seed,&loaded_greedy,"loadedGreedy");
-			simul(seed,&loaded_greedy_longest,"loadedGreedyLongest");
-			simul(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
+			//simul(seed,&loaded_greedy,"loadedGreedy");
+			//simul(seed,&loaded_greedy_longest,"loadedGreedyLongest");
+			//simul(seed,&loaded_greedy_collisions,"loadedGreedyCollisions");
 			simul(seed,&RRH_first_spall,"RRHFirst");
-			simul(seed,&greedy_deadline_assignment,"GreedyDeadline");
+			//simul(seed,&greedy_deadline_assignment,"GreedyDeadline");
 		
 
-			simul(seed,&recuit,"Recuit");
+			//simul(seed,&recuit,"Recuit");
 
 			char * noms[] = {"greedy","loadedGreedy","loadedGreedyLongest","loadedGreedyCollisions","RRHFirst","GreedyDeadline","Recuit"};
 			print_gnuplot("waiting",noms, 7, "performance of greedys with waiting times", "margin", ylabels);

@@ -385,24 +385,19 @@ int route_length_untill_arc_without_delay(Graph g,int route, Arc * a,Period_kind
 		
 	}	
 	return length;		
-	
 }
 int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 {
 	int length = 0;
-	
 	if(kind == FORWARD)
 	{
 		for(int i=0;i<g.size_routes[route];i++)
 		{
-
-			
 			if(a == g.routes[route][i])
 				return length;
 			length += g.routes[route][i]->length;
 			length += g.routes[route][i]->routes_delay_f[route];
 		}
-		
 	}
 	else
 	{
@@ -414,14 +409,9 @@ int route_length_untill_arc(Graph g,int route, Arc * a,Period_kind kind)
 			length += g.routes[route][i]->length;
 			length += g.routes[route][i]->routes_delay_b[route];
 		}
-		
 	}	
-	return length;		
-	
+	return length;			
 }
-
-
-
 
 void free_assignment(Assignment a)
 {
@@ -778,7 +768,7 @@ int check_period(Arc * a,int P,int message_size)
 			return taille;
 		}
 	}
-	for(i;i<P-fin;i++)
+	for(;i<P-fin;i++)
 	{
 		if(a->period_f[i] != 0)
 		{
@@ -822,7 +812,7 @@ int check_period(Arc * a,int P,int message_size)
 			
 		}
 	}
-	for(i;i<P-fin;i++)
+	for(;i<P-fin;i++)
 	{
 		if(a->period_b[i] != 0)
 		{

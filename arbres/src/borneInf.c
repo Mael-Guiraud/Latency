@@ -58,7 +58,7 @@ int  load_links_CL(Graph g,int CL)
 	return id[0];
 }
 
-int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id)
+int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_kind kind)
 {
 	
 
@@ -81,9 +81,21 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id)
 	//printf("BUDGETABCD = %d \n",budget);
 	for(int i=0;i<taille_tab;i++)
 	{
-		release[i] = route_length_untill_arc_without_delay(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-		//printf("(%d ",release[i]);
-		deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+		if(kind == FORWARD)
+		{
+			release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
+			//printf("(%d ",release[i]);
+			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			
+		}
+		else
+		{
+			release[i] = route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i])
+			+route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
+			//printf("(%d ",release[i]);
+			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			
+		}
 		
 		//printf("%d (%d + %d - %d)",deadline[i],release[i],budget,route_length(g,g.arc_pool[arc_id].routes_id[i]));	
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
@@ -116,8 +128,25 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id)
 	return max;
 
 }
+int bornebounded(Graph g,int arc_id,Period_kind kind)
+{
+	int taille_route;
+	int max = 0;
+	int taille_tab=g.arc_pool[arc_id].nb_routes;
+	for(int i=0;i<taille_tab;i++)
+	{
+		if(kind == FORWARD)
+			taille_route =  g.arc_pool[arc_id].routes_delay_f[g.arc_pool[arc_id].routes_id[i]]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+		else
+			taille_route =  g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+		//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
+		if(taille_route > max)
+			max = taille_route; 
+	}
+	return max;
+}
 
-int borneInfDicho(Graph g, int P, int message_size,int arcid)
+int borneInfDicho(Graph g, int P, int message_size,int arcid,Period_kind kind)
 {
 	int min = 2*longest_route(g);
 	int max = min +P;
@@ -127,7 +156,7 @@ int borneInfDicho(Graph g, int P, int message_size,int arcid)
 	while(min != max)
 	{
 		milieu =min+ (max - min ) / 2;
-		tmp = coreBorneInf(g,P,message_size,milieu,arcid);
+		tmp = coreBorneInf(g,P,message_size,milieu,arcid,kind);
 		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
 		if(tmp)
 		{
@@ -165,7 +194,23 @@ int borneInf(Graph g, int P, int message_size)
 	
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		tmp = borneInfDicho(g,P,message_size,t[i]);
+		if(g.arc_pool[i].bounded == 0)
+			tmp = borneInfDicho(g,P,message_size,t[i],FORWARD);
+		else
+			tmp = bornebounded(g,t[i],FORWARD);
+	
+		if(tmp>max)
+		{
+			max = tmp;
+			
+		}
+	}
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		if(g.arc_pool[i].bounded == 0)
+			tmp = borneInfDicho(g,P,message_size,t[i],BACKWARD);
+		else
+			tmp = bornebounded(g,t[i],BACKWARD);
 	
 		if(tmp>max)
 		{
@@ -176,7 +221,7 @@ int borneInf(Graph g, int P, int message_size)
 	free (t);
 	return max;
 }
-int borneInf2_core(Graph g, int P, int message_size,int arc_id)
+int borneInf2_core(Graph g, int message_size,int arc_id)
 {
 	
 	
@@ -206,7 +251,7 @@ int borneInf2_core(Graph g, int P, int message_size,int arc_id)
 
 	return (max+value_to_add>2*longest_route(g))?max+value_to_add:2*longest_route(g);
 }
-int borneInf2(Graph g, int P, int message_size)
+int borneInf2(Graph g, int message_size)
 {
 	int * t = load_links(g);
 	int max = 0;
@@ -214,7 +259,7 @@ int borneInf2(Graph g, int P, int message_size)
 	//printf("BORNE2 2\n");
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		tmp = borneInf2_core(g,P,message_size,t[i]);
+		tmp = borneInf2_core(g,message_size,t[i]);
 		//printf("arc %d red %d \n routes on arc :",i,tmp);
 		/*for(int j=0;j<g.arc_pool[t[i]].nb_routes;j++)
 		{

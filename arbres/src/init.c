@@ -16,6 +16,7 @@ void init_arc(Arc * a)
 	a->period_b = NULL;
 
 	a->first = -1;
+	a->bounded = 0;
 	a->last = -1;
 	a->bbu_dest = -1;
 	a->seen = 0;
@@ -85,7 +86,7 @@ int* random_number_routes(int l)
 			tab[i] = 1;
 		}
 		else
-			tab[i] = rand()%(NB_ROUTES_PER_FLOW-1) +1;
+			tab[i] = rand()%(NB_ROUTES_PER_FLOW) +1;
 	}
 	return tab;
 }
