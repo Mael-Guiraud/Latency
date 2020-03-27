@@ -4,7 +4,7 @@
 #define MESSAGE_SIZE 2500
 #define NB_BBU 2
 #define NB_COLLISIONS 3
-#define NB_ROUTES_PER_FLOW 1
+#define NB_ROUTES_PER_FLOW 5
 #define PROBA 0.5
 
 //Mod synch or not
@@ -34,16 +34,16 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel
-#define PARALLEL 1
+#define PARALLEL 0
 
 //for logs 
 #define SHOW_EVERY 100
 
-#define NB_POINTS 20
+#define NB_POINTS 40
 
 
-#define VOISINAGE 0
+#define VOISINAGE 1

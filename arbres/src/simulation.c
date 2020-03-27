@@ -669,7 +669,7 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 7 ;
+	int nb_algos = 1 ;
 	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons","Recuit"};
 
 	srand(seed);
@@ -838,16 +838,17 @@ void simuldistrib(int seed)
 	for(int i=0;i<nb_algos;i++)
 	{
 		tri_bulles_classique_croissant(res[i],NB_SIMULS);
-		if(res[i][NB_SIMULS-1] > max)
-			max = res[i][NB_SIMULS-1];
+		/*if(res[i][NB_SIMULS-1] > max)
+			max = res[i][NB_SIMULS-1];*/
 		
 	}
-	int interval_size = max / NB_POINTS;
+	//int interval_size = max / NB_POINTS;
 	for(int i=0;i<nb_algos;i++)
 	{
 		for(int j=0;j<NB_SIMULS;j++)
 		{
-			fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
+			fprintf(f[i],"%d \n",res[i][j]);
+			//fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
 		}
 		fclose(f[i]);
 	}

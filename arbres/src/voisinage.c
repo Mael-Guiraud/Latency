@@ -110,7 +110,8 @@ void next2(int * tab,int * bool_p, int id)
 		{
 			tab[id]=0;
 			next(tab,id-1);
-			init_vois(bool_p,id);
+			init_vois(bool_p,id+1);
+			return ;
 		}
 		
 	}
@@ -120,7 +121,8 @@ void next2(int * tab,int * bool_p, int id)
 		{
 		
 			tab[id]++;
-			init_vois(bool_p,id);
+			init_vois(bool_p,id+1);
+			return;
 		}
 		
 	}
@@ -666,87 +668,17 @@ void cpy_per(int * t , int * t2 ,int p)
 	}
 }
 
-int borninfcorrre(Graph g, int P, int message_size,int budget, int first,int * subset)
-{
-	int * t = load_links(g);
-	int arc_id = t[0];
-	free (t);
-	
-		int taille_tab=g.arc_pool[arc_id].nb_routes;
-	/*printf("\n\n\n\nArc le plus chargé : %d routes \n routes sur l'arc \n",taille_tab);
-	for(int i=0;i<taille_tab;i++)
-		printf("%d ",g.arc_pool[arc_id].routes_id[i]);
-	printf("\n");*/
-	//On init le tableau des permutations
 
-	int release[taille_tab];
-	int deadline[taille_tab];
-	int ids[taille_tab];
-
-
-	for(int l=0;l<taille_tab;l++)
-	{
-		release[l] = route_length_untill_arc_without_delay(g,g.arc_pool[arc_id].routes_id[l],&g.arc_pool[arc_id],FORWARD);
-		printf(" %d %d / ",release[l],g.arc_pool[arc_id].routes_id[l]);
-		deadline[l] = budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[l])+message_size+release[l];
-		
-			//printf("%d ",deadline[i]);	
-		ids[l]=g.arc_pool[arc_id].routes_id[l];
-		
-		//printf("%d)\n",ids[i]);
-	}
-	
-	
-		
-
-	int *res = simons_FPT(g,release,ids, deadline,taille_tab,message_size,P,first,subset);
-	int max =0;
-	int taille_route;
-	if(res)
-	{	
-
-		for(int i=0;i<taille_tab;i++)
-		{
-			taille_route =  res[i]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
-			printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
-			if(taille_route > max)
-				max = taille_route; 
-		}
-	}
-	else
-	{
-		printf("no res  \n");
-	
-	}
-
-    free(res);
-    printf("MAX = %d \n",max);
-    return max;
-}
 int DEBUGTMP;
 int assignment_with_orders(Graph g, int P, int message_size, int print)
 {
 
-	/*Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
-
-	a->nb_routes_scheduled = 0;
-	a->all_routes_scheduled = 0;*/
+	
 	Period_kind kind;
 	int CL;
 	int offset ;
 	int current_route;
 	int dl;
-/*
-	int * t = load_links(g);
-	int arc_id = t[0];
-	free (t);
-	
-
-	int datefirst;*/
-	//int ok;
 
  	//for each contention  level
  	for(int i=0;i<g.contention_level;i++)
@@ -767,18 +699,10 @@ int assignment_with_orders(Graph g, int P, int message_size, int print)
  		{
  			offset = 0;
  			int Per[g.arc_pool[j].nb_routes];
- 			//int subset[g.arc_pool[j].nb_routes];
+ 			
  			if(g.arc_pool[j].contention_level == CL)
  			{
- 				/*printf("Routes sur l'arc : %d\n",kind);
- 				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
- 				{
- 					if(kind == FORWARD)
- 						printf("%d ",g.arc_pool[j].routes_order_f[k]);
- 					else
- 						printf("%d ",g.arc_pool[j].routes_order_f[k]);
- 				}
- 				printf("\n");*/
+ 				
  				for(int k=0;k<g.arc_pool[j].nb_routes;k++)
  				{
 
@@ -794,14 +718,7 @@ int assignment_with_orders(Graph g, int P, int message_size, int print)
  					{
  						dl += route_length_with_buffers_forward(g, current_route);
  					}
- 					/*if(kind == FORWARD)
-	 					if(offset == 0)
-	 					{
-	 
-	 						datefirst = dl;
-	 						
-	 					}*/
- 					//printf("Route %d release %d \n",current_route,dl);
+ 				
  					if(dl < offset )
  					{
  						
@@ -819,31 +736,7 @@ int assignment_with_orders(Graph g, int P, int message_size, int print)
  							g.arc_pool[j].routes_delay_b[current_route] =  0;
  						
  					}
- 					//ok = 0;
- 					/*
- 					for(int add =0;add<P;add++)
- 					{
-
- 						if(cols_check(Per,offset+add,message_size,P,k))
- 						{
- 							
- 							if(kind == FORWARD)
- 								g.arc_pool[j].routes_delay_f[current_route] += add;
- 							else
- 								g.arc_pool[j].routes_delay_b[current_route] += add;
- 							offset += add;
- 							ok = 1;
- 							break;
- 						}
-
- 					}
- 					
- 					if(ok == 0)
- 					
- 					{
- 					
- 						return a;
- 					}*/
+ 				
  					int check_value = 1;
  					int total_check = 0;
  					while(check_value)
@@ -857,20 +750,7 @@ int assignment_with_orders(Graph g, int P, int message_size, int print)
  						}
  					}
  					offset += total_check;
- 					/*
- 					if(kind == FORWARD)
-	 					if(j==arc_id)
-	 					{
-	 						if(offset >= datefirst%P + P)
-	 						{
-	 							subset[k] = 1;
-	 						}
-	 						else
-	 						{
-	 							subset[k] = 0;
-	 						}
-	 					}
- 					*/
+ 				
  					if(kind == FORWARD)
  						g.arc_pool[j].routes_delay_f[current_route] += total_check;
  					else
@@ -890,80 +770,14 @@ int assignment_with_orders(Graph g, int P, int message_size, int print)
 
  					//printf("%d ",current_route);printf("\n");
  				}
- 					/*if(print)
- 					{
- 						if(kind == FORWARD)
- 						{
-	 						if(j==arc_id)
-	 						{
-	 							int first;
-	 							for(int l=0;l<g.arc_pool[arc_id].nb_routes;l++)
-	 							{
- 									if(g.arc_pool[j].routes_order_f[0] == g.arc_pool[arc_id].routes_id[l])
- 										first = l;
-	 							}
-
-							    
-
-							    int min = 2*longest_route(g);
-							    int max = min +P;
-							    int milieu;
-							    int res=0;
-							    int tmp;
-							    while(min != max)
-							    {
-							    	milieu =min+ (max - min ) / 2;
-							    	tmp = borninfcorrre(g, P, message_size, milieu,  first, subset);
-							    	printf("-------------------------------------------abc %d %d \n",tmp,milieu);
-							    	if(tmp)
-							    	{
-							    		max = milieu;
-							    		res = tmp;
-							    	}
-							    	else
-							    	{
-							    		
-							    		if(min == max -1)
-							    		{
-							    			if(!res)
-							    			{
-							    				printf("Etrange, on aurait du trouver un resultat avec la dichotomie\n");
-							    				
-							    			}
-							    			break;
-							    		}
-							    		min = milieu;
-							    	}
-							    	
-							    }	
-							    if(!res)
-							    {
-							    	printf(" TRES Etrange, on aurait du trouver un resultat avec la dichotomie\n");
-							    }
-							    DEBUGTMP = res;
-
-							    
-							}
- 						}
- 						
- 						
- 					}*/
- 				
+ 					
 
  			}
  		}
 
  	}
- 	/*
- 	for(int i=0;i<g.nb_routes;i++)
- 	{
- 		a->offset_forward[i] = 0;
- 		a->offset_backward[i] = route_length_with_buffers_forward(g, i);
- 		a->waiting_time[i]=0;
- 	}
-	a->all_routes_scheduled = 1;
-	a->nb_routes_scheduled = g.nb_routes;
-*/
+
+
 
 	return g.nb_routes;
 
@@ -1045,7 +859,7 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		premier = trouver_premier(g.arc_pool[j].routes_order_f,g.arc_pool[j].nb_routes);
 	else
 		premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
-	//printf("premier %d \n",premier);
+	printf("premier %d \n",premier);
 
 	int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
 	int bool_p;
@@ -1155,23 +969,23 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		//printf("currentourte %d boolp %d \n",current_route, bool_p);
 		if(current_route == -1)
 			continue;
-		//printf("route %d \n",current_route);
+		printf("route %d boolp %d \n",current_route,bool_p);
 		int r_t = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
 		if(kind == BACKWARD)
 		{
 			r_t += route_length_with_buffers_forward(g, current_route);
 		}
-		//printf("rt %d offset %d\n",r_t,offset);
+		printf("rt %d offset %d\n",r_t,offset);
 		retval r = calcul_delay(begin,offset,P,r_t,message_size,bool_p);
 		if(kind == FORWARD)
 			g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
 		else
 			g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
 		offset = r.new_offset;
-		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+		 printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 		if(offset > begin+P)
 		{
-		//	printf("													Ca a débordé, on quitte");
+		//	printf("													Ca a débordé, on quitte\n");
 			return 0;
 		}
 		if(print)
@@ -1191,8 +1005,6 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 
 int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_kind kind)
 {
-	
-
 
 	// On a l'arc le plus chargé
 	//int arc_id = load_links_CL(g,0);
@@ -1234,8 +1046,7 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 	}
 
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
-	int max =0;
-	int taille_route;
+
 	if(res)
 	{	
 
@@ -1281,7 +1092,11 @@ int dichosimons(Graph g, int P, int message_size,int arcid,Period_kind kind)
 		}
 		
 	}	
-
+	if(res == 0)
+	{
+		printf("La dicho simons sur le dernier arc ne trouve rien, c'est impossible\n");
+		exit(49);
+	}
 	return res;
 }
 
@@ -1311,7 +1126,7 @@ int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
 
  		for(int j=0;j<g.arc_pool_size;j++)
  		{
- 			if((0 == CL)&&(kind == BACKWARD))
+ 			/*if((0 == CL)&&(kind == BACKWARD))
  			{
  				if(!dichosimons( g,  P,  message_size,j , BACKWARD))
  				{
@@ -1319,13 +1134,13 @@ int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
  				}
  			}
  			else
- 			{
+ 			{*/
 	 			if(g.arc_pool[j].contention_level == CL)
 	 			{
 		 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
 		 				return 0;
 		 		}
- 			}			
+ 			//}			
  			
  		}
 
@@ -1478,7 +1293,8 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 	int a = 0;
 	 int b;
 	int begin = mintime;
-
+	
+	
 	int **orders = malloc(sizeof(int*)*g.arc_pool_size*2);
 	for(int i=0;i<g.arc_pool_size*2;i++)
 	{
@@ -1493,6 +1309,7 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 			a= assignment_with_orders_vois1(g,P,message_size,0);
 		else
 			a = assignment_with_orders(g,P,message_size,0);
+		//printf("                                               a = %d \n",a);
 		if(a)
 		{
 			b = travel_time_max_buffers(g);
@@ -1507,14 +1324,25 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 		}
 		//printf("\n\navant nouveau voisin\n");aff_orders(orders,g);
 		v= nouveau_voisin(v,g);
+		/*printf(" route %d",v.route);
+		printf("pos : ");
+		for(int i= 0;i<g.nb_levels[v.route];i++)
+			printf("%d ",v.pos[i]);
+		printf("\n");
+		printf(" route %d",v.route);
+		printf("boolp : ");
+		for(int i= 0;i<g.nb_levels[v.route];i++)
+			printf("%d ",v.bool_p[i]);
+		printf("\n");
 		//printf("%d %d %d \n",v.pos,v.level,v.route);
-		//printf("Apres noveau voising \n");aff_orders(orders,g);
-		//printf("\n\n");
-		reinit_delays(g);
+		printf("Apres noveau voisin \n");aff_orders(orders,g);
+		printf("\n\n");
+		reinit_delays(g);*/
 	
 		//free_assignment(a);
 
 	}
+	
 	cpy_orders(orders,g,0);//on remet le graph optimal
 	//printf("On remet l'état optimal\n");aff_orders(orders,g);
 	//printf("%d %d\n",mintime,begin);
@@ -1526,10 +1354,11 @@ int ** parcours_voisinage(Graph g,int P, int message_size,Voisin v, int mintime)
 			free(orders[i]);
 		}
 		free(orders);
+		//printf("Parcours vois fail pck on a pas amélioré  \n");
 		return NULL;
 	}
 
-
+	//printf("Parcours vois ne fail pas\n");
 	return orders;
 }
 Voisin init_voisinage_greedy(Voisin v, Graph g, int P, int message_size)
@@ -1564,6 +1393,17 @@ int descente(Graph g, int P, int message_size,int tmax)
 	else
 		v=init_voisinage_greedy(v,g,P,message_size);
 
+	/*printf(" route %d",v.route);
+	printf("pos : ");
+	for(int i= 0;i<g.nb_levels[v.route];i++)
+		printf("%d ",v.pos[i]);
+	printf("\n");
+	printf(" route %d",v.route);
+	printf("boolp : ");
+	for(int i= 0;i<g.nb_levels[v.route];i++)
+		printf("%d ",v.bool_p[i]);
+	printf("\n");*/
+
 	if(v.route == -1)
 	{
 		return 0;
@@ -1574,15 +1414,13 @@ int descente(Graph g, int P, int message_size,int tmax)
 	int a=0,b;
 	if(!orders)
 	{
-/*
-		Assignment a = malloc(sizeof(struct assignment));
-		a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-		a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-		a->waiting_time = malloc(sizeof(int)*g.nb_routes);
-		a->nb_routes_scheduled = nb_d;
-		a->all_routes_scheduled = 0;
-	*/
-		return a;
+		if(tmax == 0)
+		{
+			printf("parcours voisinage n'a pas su retrouver la solution trouvée par greedy_deadline, ce n'est pas normal \n");
+			exit(32);
+			return a;
+		}
+		
 	}
 	
 
@@ -1623,7 +1461,10 @@ int descente(Graph g, int P, int message_size,int tmax)
 			a= assignment_with_orders_vois1(g,P,message_size,1);
 		else
 			a = assignment_with_orders(g,P,message_size,1);
-
+	if(!a)
+	{
+		return 0;
+	}
 
 	if(verifie_solution( g,message_size))
 	{
@@ -1633,41 +1474,14 @@ int descente(Graph g, int P, int message_size,int tmax)
 
 
 	b = travel_time_max_buffers(g);
-/*
-	char buf[128];
-	char buf_dot[128];
-	char* nom = "test";
-	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}*/
 
-	/*if(travel_time_max_buffers(g) < DEBUGTMP)
-	{
-		printf("PROBLEME SUR LA BORNE %d %d\n",travel_time_max_buffers(g),DEBUGTMP);
-		exit(98);
-	}
-	if(DEBUGTMP == 0)
-	{
-		printf("ON A PAS SU TROUVER AVEC LA DICHO \n");
-		exit(99);
-	}*/
-	//a->nb_routes_scheduled = nb_d;
 	return b;
 
 }
 int best_of_x(Graph g, int P, int message_size,int tmax)
 {
 	int a;
-	int best = 0;
+	
 	int prev = INT_MAX;
 	
 	for(int i=0;i<tmax;i++)
@@ -1679,14 +1493,14 @@ int best_of_x(Graph g, int P, int message_size,int tmax)
 				if(a < prev )
 				{
 					//printf("a->time %d\n ",a->time);
-					best = a;
+					prev = a;
 				}			
 				
 		}
 		
 	}
 
-	return best;
+	return prev;
 }
 
 
@@ -1859,7 +1673,11 @@ int taboo(Graph g, int P, int message_size,int nb_steps)
 	if(a)
 		b = travel_time_max_buffers(g);
 	else
+	{
+		printf("Assignment with order n'a pas pu retrouver un ordre donné par le greedy (taboo \n)");
+		exit(33);
 		return 0;
+	}
 		
 	int min = b;
 	reinit_delays(g);
@@ -2239,7 +2057,14 @@ int recuit(Graph g, int P, int message_size, int param)
 		a= assignment_with_orders_vois1(g,P,message_size,0);
 	else
 		a = assignment_with_orders(g,P,message_size,0);
-	b = travel_time_max_buffers(g);
+	if(a)
+		b = travel_time_max_buffers(g);
+	else
+	{
+		printf("Dans le crecuit on n'a pas su retrouver le greedy avec assingment with oder \n");
+		exit(35);
+		return 0;
+	}
 	 
 	int min = b;
 	int time_actuel = min;
