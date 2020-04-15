@@ -185,7 +185,7 @@ void test()
 //	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
 //	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 //test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
-	printf("FPT = %d \n",branchbound( g, P,  message_size));
+	//printf("FPT = %d \n",branchbound( g, P,  message_size));
 	
 	
 
@@ -669,7 +669,7 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 1 ;
+	int nb_algos = 7 ;
 	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons","Recuit"};
 
 	srand(seed);
@@ -762,6 +762,7 @@ void simuldistrib(int seed)
 				if(a)
 				{
 					time[algo] = a-l;
+					printf("time %d = %d \n",algo, time[algo]);
 					/*if(algo == 4)
 					{
 						time[algo] = a;//a->time-l;
@@ -792,11 +793,6 @@ void simuldistrib(int seed)
 					}*/
 				
 				//printf("Algo %d a = %p \n",algo,a);
-			
-
-		
-				
-					
 				reset_periods(g,P);
 				
 				reinit_delays(g);
@@ -813,16 +809,16 @@ void simuldistrib(int seed)
 			printf("Le taboo est moins bon que l'algo greedy d'init \n");
 		if((time[1]>time[5]) )
 		{
-			printf("Pb de born inf  simons %d calcul %d lenght %d\n",time[5]+l,time[1]+l,l);
-			print_graphvitz(g,"../view/view.dot");
-			affiche_graph(g,P,stdout);
-			exit(45);
+			//printf("Pb de born inf  simons %d calcul %d lenght %d\n",time[5]+l,time[1]+l,l);
+			//print_graphvitz(g,"../view/view.dot");
+			//affiche_graph(g,P,stdout);
+			//exit(45);
 		}
 		for(int k=2;k<nb_algos;k++)
 		{
 			if((time[k]<time[5]) || (time[k]<time[1]))
 			{
-				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d lenght %d\n",k,time[k],time[5],time[1],l);
+				//printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d lenght %d\n",k,time[k],time[5],time[1],l);
 				
 				//exit(4);
 

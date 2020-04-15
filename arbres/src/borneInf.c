@@ -84,7 +84,7 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 		if(kind == FORWARD)
 		{
 			release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-			//printf("(%d ",release[i]);
+			printf("(%d %d)",release[i],deadline[i]);
 			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 			
 		}
@@ -92,7 +92,7 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 		{
 			release[i] = route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i])
 			+route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
-			//printf("(%d ",release[i]);
+			printf("(%d %d)",release[i],deadline[i]);
 			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 			
 		}
@@ -101,13 +101,14 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
 		//printf("%d)\n",ids[i]);
 	}
+	printf("\n");
 
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
 	int max =0;
 	int taille_route;
 	if(res)
 	{	
-
+		printf("res trouvé \n");
 		for(int i=0;i<taille_tab;i++)
 		{
 			taille_route =  res[i]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
@@ -115,16 +116,17 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 			if(taille_route > max)
 				max = taille_route; 
 		}
+
 	}
 	else
 	{
-		//printf("no res  %d \n", budget);
+		printf("no res  %d \n", budget);
 		return 0;
 	}
 
     free(res);
 
-    //printf("%d \n",max);
+    printf("%d \n",max);
 	return max;
 
 }
@@ -160,6 +162,7 @@ int borneInfDicho(Graph g, int P, int message_size,int arcid,Period_kind kind)
 		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
 		if(tmp)
 		{
+			printf("On a trouvé, tmp = %d, res = %d\n",tmp, res);
 			max = milieu;
 			res = tmp;
 		}
@@ -232,6 +235,7 @@ int borneInf2_core(Graph g, int message_size,int arc_id)
 
 	for(int i=0;i<taille_tab;i++)
 	{
+
 		tmp = route_length_untill_arc_without_delay(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
 		if(tmp<value_to_add)
 		{

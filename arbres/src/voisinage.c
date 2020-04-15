@@ -859,7 +859,7 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		premier = trouver_premier(g.arc_pool[j].routes_order_f,g.arc_pool[j].nb_routes);
 	else
 		premier = trouver_premier(g.arc_pool[j].routes_order_b,g.arc_pool[j].nb_routes);
-	printf("premier %d \n",premier);
+	//printf("premier %d \n",premier);
 
 	int begin = route_length_untill_arc(g,premier,&g.arc_pool[j],kind);
 	int bool_p;
@@ -969,20 +969,20 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		//printf("currentourte %d boolp %d \n",current_route, bool_p);
 		if(current_route == -1)
 			continue;
-		printf("route %d boolp %d \n",current_route,bool_p);
+		//printf("route %d boolp %d \n",current_route,bool_p);
 		int r_t = route_length_untill_arc(g,current_route,&g.arc_pool[j],kind);
 		if(kind == BACKWARD)
 		{
 			r_t += route_length_with_buffers_forward(g, current_route);
 		}
-		printf("rt %d offset %d\n",r_t,offset);
+		//printf("rt %d offset %d\n",r_t,offset);
 		retval r = calcul_delay(begin,offset,P,r_t,message_size,bool_p);
 		if(kind == FORWARD)
 			g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
 		else
 			g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
 		offset = r.new_offset;
-		 printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 		if(offset > begin+P)
 		{
 		//	printf("													Ca a débordé, on quitte\n");
@@ -1500,7 +1500,7 @@ int best_of_x(Graph g, int P, int message_size,int tmax)
 		
 	}
 
-	return prev;
+	return (prev == INT_MAX)?0:prev;
 }
 
 

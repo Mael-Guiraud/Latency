@@ -341,7 +341,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 	offset = release[current_route]+message_size;
 	int begin_offset = release[current_route];
 	fill_Per(period, id[current_route], release[current_route], message_size,P);
-	printf("Premiere route : %d(pos %d dans le tableau) release %d\n",id[current_route],current_route,release[current_route]);
+	//printf("Premiere route : %d(pos %d dans le tableau) release %d\n",id[current_route],current_route,release[current_route]);
 	
 	release[current_route]= INT_MAX;
 
@@ -433,20 +433,19 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		//il faut d'abbord chercher le debut de la periode courrante
 		//begin offset est forcement le plus petit release, donc on cherche a decaler begin offset de P* le nombre de period qu'il faut
 		int begin2 = begin_offset;
-		int offset2 = offset;
+	
 		while( release[current_route] > begin2 + P )
 		{
 			if(release[current_route]>(begin2 + P))
 			{
 				begin2 +=P;
-				offset2;
 			}
 		}
 
 		if(VOISINAGE)
 		{
 			//une fois qu'on est la, le release est inferieur a la fin de la permiere periode, donc si offset dépasse, alors on met ordre a -ordre
-			if((offset2 >= P+begin2))
+			if((offset >= P+begin2))
 			{
 				if(id[current_route] == 0)
 					order[i]= INT_MAX;
@@ -454,7 +453,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 					order[i] = -order[i];
 			}	
 		}
-		printf("i = %d, oder = %d , offset %d \n",i,order[i],offset);
+		//printf("i = %d, oder = %d , offset %d \n",i,order[i],offset);
 		
 		delay[id[current_route]] += total_check;
 
