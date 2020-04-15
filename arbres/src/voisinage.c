@@ -848,7 +848,7 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int print)
 {
 	int j = arcid;
-	g.arc_pool[j].bounded = 1;
+	//g.arc_pool[j].bounded = 1;
 	int offset = 0;
 	//int subset[g.arc_pool[j].nb_routes];
 	//printf("ARc %d CL %d \n",j,g.arc_pool[j].contention_level);
@@ -1499,7 +1499,9 @@ int best_of_x(Graph g, int P, int message_size,int tmax)
 		}
 		
 	}
-
+	reset_periods(g,P);
+	
+	reinit_delays(g);
 	return (prev == INT_MAX)?0:prev;
 }
 
