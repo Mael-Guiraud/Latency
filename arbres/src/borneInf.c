@@ -84,17 +84,17 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 		if(kind == FORWARD)
 		{
 			release[i] = route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],FORWARD);
-			printf("(%d %d)",release[i],deadline[i]);
-			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 			
+			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			printf("(%d %d)",release[i],deadline[i]);
 		}
 		else
 		{
 			release[i] = route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i])
 			+route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
-			printf("(%d %d)",release[i],deadline[i]);
-			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 			
+			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			printf("(%d %d)",release[i],deadline[i]);
 		}
 		
 		//printf("%d (%d + %d - %d)",deadline[i],release[i],budget,route_length(g,g.arc_pool[arc_id].routes_id[i]));	
