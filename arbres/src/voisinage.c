@@ -988,7 +988,7 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		//	printf("													Ca a débordé, on quitte\n");
 			return 0;
 		}
-		if(print)
+		if(print == 1)
 		{
 		
 			if(kind == FORWARD)
@@ -1040,7 +1040,7 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 			
 		}
 		
-		//printf("%d (%d + %d - %d)",deadline[i],release[i],budget,route_length(g,g.arc_pool[arc_id].routes_id[i]));	
+		//printf("%d (%d + %d + %d- %d) ) \n",deadline[i],release[i],message_size,budget,2*route_length(g,g.arc_pool[arc_id].routes_id[i]));	
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
 		//printf("%d)\n",ids[i]);
 	}
@@ -1100,14 +1100,14 @@ int dichosimons(Graph g, int P, int message_size,int arcid,Period_kind kind)
 	return res;
 }
 
-int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
+int assignment_with_orders_vois1FPT(Graph g, int P, int message_size, int print)
 {
 
 	
 	Period_kind kind;
 	int CL;
 	
-	
+	int ret;
 
 
  	for(int i=0;i<g.contention_level;i++)
@@ -1126,21 +1126,77 @@ int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
 
  		for(int j=0;j<g.arc_pool_size;j++)
  		{
- 			/*if((0 == CL)&&(kind == BACKWARD))
+
+ 			if((0 == CL)&&(kind == BACKWARD)&&(g.arc_pool[j].contention_level == CL))
  			{
- 				if(!dichosimons( g,  P,  message_size,j , BACKWARD))
+ 				//printf("Simons arc %d kind %d\n",j,kind);
+ 				ret = simonslastarc(g,P,message_size,print,j,kind);
+ 				/*if(ret)
  				{
- 					return 0;
+ 					return g.nb_routes;
  				}
+ 				else*/
+ 				//printf("%d ret\n",ret);
+ 				if(!ret)
+ 					return 0;
+
  			}
  			else
- 			{*/
+ 			{
+ 				
 	 			if(g.arc_pool[j].contention_level == CL)
 	 			{
+	 				//printf("On fixe arc %d kind %d\n",j,kind);
 		 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
 		 				return 0;
 		 		}
- 			//}			
+ 			}			
+ 			
+ 		}
+
+ 	}
+
+
+ 
+
+	return g.nb_routes;
+
+}
+int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
+{
+
+	
+	Period_kind kind;
+	int CL;
+	
+	int ret;
+
+
+ 	for(int i=0;i<g.contention_level;i++)
+ 	{
+ 		
+ 		if(i<g.contention_level/2)
+ 		{	
+ 			CL = i;
+ 			kind = FORWARD;
+ 		}
+ 		else
+ 		{
+ 			CL = g.contention_level-i-1;
+ 			kind = BACKWARD;
+ 		}
+
+ 		for(int j=0;j<g.arc_pool_size;j++)
+ 		{
+
+ 			
+ 			if(g.arc_pool[j].contention_level == CL)
+ 			{
+ 				//printf("On fixe arc %d kind %d\n",j,kind);
+	 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
+	 				return 0;
+	 		}
+ 						
  			
  		}
 

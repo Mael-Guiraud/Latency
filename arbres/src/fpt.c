@@ -39,7 +39,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 		{	
 			//printf("Calcul assingment \n");
 
-			a = assignment_with_orders_vois1(g, P, message_size, 0);
+			a = assignment_with_orders_vois1FPT(g, P, message_size, borneinf);
 			retour = travel_time_max_buffers(g);
 			if(a)
 			{
@@ -63,11 +63,12 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 		else
 		{
 			//COUPE SI JAMAIS ON NE TROUVE RIEN SUR CET ARC, CA NE SERT A RIEN DE CONTINUER L'ARBRE RECURSIF EN DESSOUS
+			g.arc_pool[arcid].bounded = 1;
 			if(!assignOneArc( g, arcid,  kind, message_size,  P, 0))
 				return INT_MAX;
 
 			//coupe si on dépasse la borneinf du greedy
-			int cut = borneInf( g, P, message_size);
+			int cut = borneInfFPT( g, P, message_size,borneinf);
 			//printf("arc %d kind %d Coupe %d borneinf %d\n",arcid,kind, cut, borneinf);
 			if( cut > borneinf)
 			{

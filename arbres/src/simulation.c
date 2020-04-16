@@ -84,10 +84,10 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		int borninf =borneInf(g,P,message_size);
 	printf("La borne inf pour ce graph est :%d \n",borninf);
 	printf("%d %d -------------------------\n",borninf,travel_time_max_buffers(g) );
-	if(borninf >travel_time_max_buffers(g))
+	/*if(borninf >travel_time_max_buffers(g))
 	{
 		exit(49);
-	}
+	}*/
 	reset_periods(g,P);
 }
 void test()
@@ -188,7 +188,7 @@ void test()
 //	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
 //	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 //test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
-	//printf("FPT = %d \n",branchbound( g, P,  message_size));
+	printf("FPT = %d \n",branchbound( g, P,  message_size));
 	
 	
 

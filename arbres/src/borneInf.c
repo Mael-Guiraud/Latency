@@ -139,7 +139,7 @@ int bornebounded(Graph g,int arc_id,Period_kind kind)
 	for(int i=0;i<taille_tab;i++)
 	{
 		if(kind == FORWARD)
-			taille_route =  g.arc_pool[arc_id].routes_delay_f[g.arc_pool[arc_id].routes_id[i]]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			taille_route =  route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i]) + route_length(g,g.arc_pool[arc_id].routes_id[i]);
 		else
 			taille_route =  g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 		//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
@@ -189,6 +189,43 @@ int borneInfDicho(Graph g, int P, int message_size,int arcid,Period_kind kind)
 		exit(45);
 	}
 	return res;
+}
+int borneInfFPT(Graph g, int P, int message_size,int bound)
+{
+	int * t = load_links(g);
+	int max = 0;
+	int tmp;
+	
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		//printf("\n\n\nFORWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
+		if(g.arc_pool[i].bounded == 0)
+			tmp = coreBorneInf(g,P,message_size,bound,t[i],FORWARD);
+		else
+			tmp = bornebounded(g,t[i],FORWARD);
+	
+		if(tmp>max)
+		{
+			max = tmp;
+			
+		}
+	}
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		//printf("\n\n\nBACKWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
+		if(g.arc_pool[i].bounded == 0)
+			tmp = coreBorneInf(g,P,message_size,bound,t[i],BACKWARD);
+		else
+			tmp = bornebounded(g,t[i],BACKWARD);
+	
+		if(tmp>max)
+		{
+			max = tmp;
+			
+		}
+	}
+	free (t);
+	return max;
 }
 int borneInf(Graph g, int P, int message_size)
 {
