@@ -78,13 +78,16 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
 	fprintf(f,"Reseting periods ...\n");
 
+	reset_periods(g,P);
+				
+				reinit_delays(g);
 		int borninf =borneInf(g,P,message_size);
 	printf("La borne inf pour ce graph est :%d \n",borninf);
 	printf("%d %d -------------------------\n",borninf,travel_time_max_buffers(g) );
-	if(borninf >travel_time_max_buffers(g))
+	/*if(borninf >travel_time_max_buffers(g))
 	{
 		exit(49);
-	}
+	}*/
 	reset_periods(g,P);
 }
 void test()
@@ -762,6 +765,7 @@ void simuldistrib(int seed)
 				if(a)
 				{
 					time[algo] = a-l;
+					//printf("time %d = %d \n",algo, time[algo]);
 					/*if(algo == 4)
 					{
 						time[algo] = a;//a->time-l;
@@ -792,11 +796,6 @@ void simuldistrib(int seed)
 					}*/
 				
 				//printf("Algo %d a = %p \n",algo,a);
-			
-
-		
-				
-					
 				reset_periods(g,P);
 				
 				reinit_delays(g);
@@ -824,7 +823,7 @@ void simuldistrib(int seed)
 			{
 				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d lenght %d\n",k,time[k],time[5],time[1],l);
 				
-				//exit(4);
+				exit(4);
 
 			}
 		}
@@ -838,16 +837,17 @@ void simuldistrib(int seed)
 	for(int i=0;i<nb_algos;i++)
 	{
 		tri_bulles_classique_croissant(res[i],NB_SIMULS);
-		if(res[i][NB_SIMULS-1] > max)
-			max = res[i][NB_SIMULS-1];
+		/*if(res[i][NB_SIMULS-1] > max)
+			max = res[i][NB_SIMULS-1];*/
 		
 	}
-	int interval_size = max / NB_POINTS;
+	//int interval_size = max / NB_POINTS;
 	for(int i=0;i<nb_algos;i++)
 	{
 		for(int j=0;j<NB_SIMULS;j++)
 		{
-			fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
+			fprintf(f[i],"%d \n",res[i][j]);
+			//fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
 		}
 		fclose(f[i]);
 	}

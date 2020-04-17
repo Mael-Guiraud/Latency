@@ -321,7 +321,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 	int offset = 0;
 	//Recherche de la premiere route à arriver.
 	int min = release[0];
-	int max;
+	//int max;
 	int current_route = 0;
 	for(int i=1;i<size;i++)
 	{
@@ -336,7 +336,10 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 	delay[id[current_route]] = 0;
 	int Per[size];
 	Per[0]=release[current_route];
+	int firstorder = order[0];
+
 	offset = release[current_route]+message_size;
+	int begin_offset = release[current_route];
 	fill_Per(period, id[current_route], release[current_route], message_size,P);
 	//printf("Premiere route : %d(pos %d dans le tableau) release %d\n",id[current_route],current_route,release[current_route]);
 	
@@ -346,18 +349,19 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 	{
 		//Choix de la route éligible
 		current_route = -1;
-		max = 0;
+		min = INT_MAX;
 		for(int k=0;k<size;k++)
 		{
 			if(release[k]<offset)//route dispo
 			{
-				if(budget[k]>max)//le plus de reste a parcourir
+				if(budget[k]<min)//le plus de reste a parcourir
 				{
-					max = budget[k];
+					min = budget[k];
 					current_route = k;
 				}
 			}
 		}
+
 		//Si on ne trouve pas de routes eligible
 		if(current_route == -1)
 		{
@@ -424,9 +428,24 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			}
 		}
 		offset += total_check;
+
+		//La calcul suivant cherche a determiner si une route est placée dans la period ou elle esst dispo ou non
+		//il faut d'abbord chercher le debut de la periode courrante
+		//begin offset est forcement le plus petit release, donc on cherche a decaler begin offset de P* le nombre de period qu'il faut
+		int begin2 = begin_offset;
+	
+		while( release[current_route] > begin2 + P )
+		{
+			if(release[current_route]>(begin2 + P))
+			{
+				begin2 +=P;
+			}
+		}
+
 		if(VOISINAGE)
 		{
-			if(offset >= P)
+			//une fois qu'on est la, le release est inferieur a la fin de la permiere periode, donc si offset dépasse, alors on met ordre a -ordre
+			if((offset >= P+begin2))
 			{
 				if(id[current_route] == 0)
 					order[i]= INT_MAX;
@@ -434,6 +453,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 					order[i] = -order[i];
 			}	
 		}
+		//printf("i = %d, oder = %d , offset %d \n",i,order[i],offset);
 		
 		delay[id[current_route]] += total_check;
 
@@ -442,8 +462,20 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		fill_Per(period, id[current_route], offset, message_size,P);
 		offset+=message_size;
 		release[current_route]=INT_MAX;
-		budget[current_route]=0;
+		budget[current_route]=INT_MAX;
 		//printf("nouveau tour de boucle, offset = %d \n",offset);
+	}
+	for(int i=0;i<size;i++)
+	{
+		Per[i] = Per[i] - begin_offset;
+		Per[i] = Per[i] % P;
+	}
+	tri_bulles_inverse(Per,order,size);
+
+	if(order[0] != firstorder)
+	{
+		printf("impossible, le tri a mélangé les ordres (greedy) \n");
+		exit(56);
 	}
 	return 1;
 }
@@ -483,7 +515,7 @@ int greedy_deadline(Graph g, int P, int message_size)
  					{
  						ids[l] = g.arc_pool[j].routes_id[l];
  						release[l] = route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD);
- 						budget[l]= route_length(g,g.arc_pool[j].routes_id[l])*2 - route_length_untill_arc_without_delay(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD);
+ 						budget[l]= route_length(g,g.arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD);
  						//printf("route %d(%d) : %d = %d - %d ",ids[l], g.size_routes[ids[l]],budget[l], route_length(g,g.arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD));
  					}
  					//printf("\n");
@@ -497,7 +529,7 @@ int greedy_deadline(Graph g, int P, int message_size)
  					{
  						ids[l] = g.arc_pool[j].routes_id[l];
  						release[l] = route_length_with_buffers_forward(g,g.arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
- 						budget[l]= route_length(g,g.arc_pool[j].routes_id[l]) - route_length_untill_arc_without_delay(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
+ 						budget[l]= route_length(g,g.arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g.arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
  					}
  					if(!oderinarc( release, budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_b, g.arc_pool[j].routes_delay_b,ids,g.arc_pool[j].period_b))
  						return 0;
@@ -522,20 +554,32 @@ int greedy_deadline_assignment(Graph g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size))
 	{
-		printf("Error, greedystatdeadline didnt find an order\n");
+		printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
 		return 0;
 	}
+
 	int t = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))
 	{
-		printf("La solution n'est pas correcte GD (error %d) ",verifie_solution( g,message_size));
+		printf("La solution trouvée par l'algo greedy de base n'est pas correcte GD (error %d) ",verifie_solution( g,message_size));
 		affiche_graph(g,P,stdout);
 		exit(84);
 	}
-	if( assignment_with_orders(g,P,message_size,1)==0)
+	if(VOISINAGE)
 	{
-		printf("Assignmentwithorder ne trouve pas de solution ?? tres etrange greedydeadlineassignment\n");
-		exit(87);
+		if( assignment_with_orders_vois1(g,P,message_size,1)==0)
+			{
+				printf("Assignmentwithordervois1 ne trouve pas de solution alors que l'algo d'init si ?? \n");
+				exit(87);
+			}
+	}
+	else
+	{
+		if( assignment_with_orders(g,P,message_size,1)==0)
+		{
+			printf("Assignmentwithorder ne trouve pas de solution alors que l'algo d'init si ?? \n");
+			exit(87);
+		}
 	}
 
 
@@ -548,9 +592,9 @@ int greedy_deadline_assignment(Graph g, int P, int message_size)
 	}
 	if(verifie_solution( g,message_size))
 	{
-		printf("La solution n'est pas correcte AwO (error %d) ",verifie_solution( g,message_size));
+		printf("La solution de assignment with order n'est pas correcte (error %d) ",verifie_solution( g,message_size));
 		exit(86);
 	}
-	
+
 	return t2;
 }
