@@ -91,6 +91,7 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 		}
 		else
 		{
+
 			release[i] = route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i])
 			+route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
 			
@@ -140,8 +141,11 @@ int bornebounded(Graph g,int arc_id,Period_kind kind)
 	{
 		if(kind == FORWARD)
 			taille_route =  route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i]) + route_length(g,g.arc_pool[arc_id].routes_id[i]);
-		else
+		else{
+			
 			taille_route =  g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+		}
+		
 		//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
 		if(taille_route > max)
 			max = taille_route; 
@@ -201,9 +205,9 @@ int borneInfFPT(Graph g, int P, int message_size,int bound)
 		//printf("\n\n\nFORWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
 		if(g.arc_pool[i].bounded == 0)
 			tmp = coreBorneInf(g,P,message_size,bound,t[i],FORWARD);
-		else
+		/*else
 			tmp = bornebounded(g,t[i],FORWARD);
-	
+		*/
 		if(tmp>max)
 		{
 			max = tmp;

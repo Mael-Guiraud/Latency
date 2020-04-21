@@ -1,8 +1,8 @@
-\documentclass{article}
+\documentclass[french]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 
-\usepackage[french]{babel}
+\usepackage{babel}
 \usepackage{authblk}
 \usepackage{xspace}
 \usepackage{graphicx,graphics} 
@@ -23,8 +23,9 @@
  
 
 \newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
-
-
+\newcommand\spall{\textsc{SPALL}\xspace}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
 \author[1]{\bf{ {Dominique Barth}}}
 \author[1,2]{\bf{ {Ma\"el Guiraud}}}
 \author[2]{\bf{ {Brice Leclerc}}}
@@ -50,9 +51,91 @@ A simplifier \begin{itemize}
 \item Le debit sur les flux, qu'on considère tous les mêmes.
 \item La notion de jitter, on ne s'y intéresse pas vraiment, mais c'est un point important pour justifier, peut être à remonter dans l'intro en le redéfinissant pour un réseau déterministe?
 \end{itemize} 
-\subsection{Problems}
-Je propose de ne parler que de SPALL, nos résultats sur PALL conflict depth 2 sont très peu interessants
 
+We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\}$.
+
+  \subsubsection{Discrete time model}
+  In the model presented here, the time is discrete. The unit of time  is called a {\bf tic}. This is the time needed to transmit an atomic data over a link of the network. We consider that the speed of the links is the same over all the links of the network. 
+In this paper, the size of an atomic data is 64B, the speed of the links is considered to be 10Gbps, \todo{rajouter durée d'un tic}.
+  \subsubsection{Network modeling}
+  
+The network is modeled as a directed graph $G=(V,A)$. The \textbf{sending tic} of a message in a vertex $u$ is the tic at which the beginning of this message is sent from $u$. Also, the \textbf{reception tic} of a message in a vertex $v$ is the tic at which the beginning of the message arrives in $v$.  Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. It is the number of tics needed between the sending tic of a message in the first vertex of the route and the reception tic of this message at $u_i$. We also define $\lambda(u_0,r)=0$. The weight of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
+We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
+The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which computes an answer to the messages sent by the antenna.
+ \subsection{Messages dynamic}
+	 
+    %Time is discretized, hence the unit of all time values is a, the time needed to transmit a minimal unit of data over the network. \todo{parler des différents débits et de ce que ça change}. The weight of an arc is also expressed in tics, that is the time needed by a message to go through this arc.
+    
+        In the process we study, some {\bf datagrams} are sent on each route. The size $|d|$ of a datagram $d$ is an integer, and correspond to the number of tics needed by a node $u$ to emit the datagram through a link. Once a datagram has been emitted, it cannot be fragmented during its travel in the network.
+        %Thus, due to the different speed of the links, when the beginning of a datagram $d$ arrives in a node $v$ of a route $r$, it might be delayed in the node to avoid the fragmentation of the datagram. The number of tics lost in the node is given by the function $b(d,v,r)$.\\
+       % \begin{lemma}
+        %If a datagram $d$ arrives at a node $v$ through the link $(u,v)$ of speed $s_i$, and must be sent back in the link $(v,w)$ of speed $s_j$, then $b(d,v,r)$ is equal to $ \max( 0, |d|_{(u,v)} - |d|_{(v,w)} )$ tics.
+        %\end{lemma}
+        %\begin{proof}
+       % We consider a buffer in the node $v$. If $t$ is the reception tic of the datagram $d$ in $v$, the last tic of the $d$ has reached the buffer  at date $t+|d|_{(u,v)}$. The node can start to emit immediatly after the reception of the first tic of the datagram, if it is possible. We want to choose the sending tic such that the datagram will not be fragmented. This mean that the buffer must contain enough data to fill a tic on the link $(v,w)$.\\
+        
+        %If $s_i \geq s_j$, the buffer fills as fast or faster as it empties, thus, the datagram crosses the node without additional delay.\\
+   
+        %If $s_i < s_j$, the buffer need to be filled a bit before the emission of the datagram, in order to send back the datagram without fragmentation. The last tic at which the node receive some data is $t+|d|_{(u,v)}$. Thus, the next tic ($t+|d|_{(u,v)}+1$), is the minimum date at which the node can send the end of the datagram on the link $(v,w)$. Since the node needs $|d|_{(v,w)}$ to completely send the datagram, it can start to emit at date $t+|d|_{(u,v)}+ 1 - |d|_{(v,w)}$. 
+        %\end{proof}
+        
+          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, one can choose to buffer a datagram $d_r$ in any node $u_i$ of the route. The function $b(d_r,u_i), i \in \{0,\ldots,l\}$ associate to each couple datagram-node of the route an integer. Those integers represent the buffering time of the datagram in each nodes of the route.
+              
+The \textbf{departure date} of a datagram $d_r$ on a route $r$, denoted by $\theta(d_r)$, is the sending tic of $d_r$ at node $u_0$, the first vertex of $r$. 
+ Also, the \textbf{reception date} of this datagram $d_r$ at a vertex $u_i$ in $r$, i.e. the first tic at which the datagram sent at date $\theta(d_r)$ on $r$ reaches $u_i$, is $t(d_r,u_i) = \theta(d_r) + \lambda(u_i,r) + \sum_{k=0}^{i-1} b(d_r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the date of the emission of this datagram in the RRH, plus the physical delay of the links, plus the buffers determined by the logical solutions proposed.
+ 
+  \subsection{Cloud-RAN context}
+     
+      In the context of cloud-RAN applications, we need to send a datagram from an RRH $u$ to a BBU $v$ and then 
+      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in \emph{full-duplex} networks, but we do not need to enforce this property.
+      
+     We now describe the process of the sending of a datagram and of its answer. First, the datagrams $Sd_r$ is sent at node $u$, through the route $r \in A$, at time $\theta(d_r)$.
+      this datagram is received by $v$, i.e., the last vertex of $r$ at time $t(d_r,v)$. 
+     Once $v$ has received the datagram, the answer is computed and sent back in a datagram $d_{\rho_r}$. 
+     
+
+     Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
+
+     
+     \subsection{Definition of measures to optimize}
+             
+
+      The \textbf{whole process time} for a route $r$ of last vertex $v$ is equal to $PT(r)=t(d_r,v) - \theta(d_r) $.      
+      In the process time, we count the time elapsed between the date the first tic of the stream is emitted and the date at which the first tic of the answer comes back. 
+      
+      For the next definition, let $v_i$ be the last vertex of the route $i$.
+       We define the \textbf{full transmission time} of a routed network $TR(G,R) = \displaystyle \max_{i \in \{0,\ldots,n\}} t(d_i,v_i) - \displaystyle \min_{j \in \{0,\ldots,n\}} \theta(d_j)$. This is the time ellapsed between the sending of the first tic of the first stream, and the reception of the last tic of the last stream.
+        
+        
+      Each route must respect a time limit that we call \emph{deadline}. To represent these deadlines, 
+     we use a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
+  
+
+        An {\bf assignment} of a routed network $(G,\cal R)$ is a function that associates to each datagram of each route its departure date and its buffers function l. In an assignment, \emph{no pair of routes has a collision}.
+        
+\subsection{Problems}
+ In the C-RAN context, it appears that the antennas start to emit their stream at the same tic.
+        In this case, we can assume that all streams starts to emit at tic $0$, thus $PT(r)= t(d_r,v)$.
+        Also, we replace the deadline function by a maximal response time $Tmax$. We want $TR(G,{\cal R}) \leq Tmax$.
+        
+       
+       \noindent {\bf Periodic Assignment for Low Latency (\spall)} 
+
+      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the period $P$, $Tmax$ and a set of streams.
+      
+      \noindent {\bf Question:} does there exist an assignment $m$ of $(G,{\cal R})$ such that $ TR(G,{\cal R}) \leq Tmax$ ?
+
+      \noindent {\bf Optimisation problem:} Minimizing $TR(G,{\cal R})$.
+    
+     
+    \begin{lemma}
+   
+    To solve the problem \spall in a star shaped network, it is not useful to take choose the departure date of the datagrams in the first vertex of the route. Choosing the sequence of the datagrams in the central arc in the forward way is enough.
+     \label{lemma:spallorder}
+     \end{lemma}
+   \begin{proof}
+    Since all the datagrams can be sent at date $0$, if there is a gap of $a$ tics in the forward period between two datagrams $d_1$ and $d_2$, this mean that the datagram $d_2$ could have been sent $a$ tics earlier from the first node of the route. In the case of this delay of $a$ tics is essential to avoid collisions in the backward period , the algorithms allowing will just add this delay $a$ on the datagram $d_2$ on the first node of the route backward.
+   \end{proof}
 \section{Topologies}
 Je propose de parler rapidement des deux topologies. On peut peut être faire une sous section parlant de l'étoile en expliquant pourquoi on à un bon algo fpt(en renvoyant sur l'autre papier) vu que ce n'est pas très long.
 \section{Algorithms}

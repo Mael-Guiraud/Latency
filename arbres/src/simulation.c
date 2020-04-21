@@ -37,7 +37,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		a = ptrfonctionnowaiting( g, P, message_size);
 	else
 		a = ptrfonctionwaiting( g, P, message_size,tmax);
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
+	/*if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
 	{
 		printf(GRN "OK | " RESET);
 		fprintf(f,"Assignment found !\n");
@@ -60,7 +60,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 			fprintf(f,"No assignment found\n");
 		}
 			
-	}
+	}*/
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
 	print_assignment(g,a,P,buf_dot);
@@ -78,12 +78,8 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
 	fprintf(f,"Reseting periods ...\n");
 
-	reset_periods(g,P);
-				
-				reinit_delays(g);
-		int borninf =borneInf(g,P,message_size);
-	printf("La borne inf pour ce graph est :%d \n",borninf);
-	printf("%d %d -------------------------\n",borninf,travel_time_max_buffers(g) );
+	
+	
 	/*if(borninf >travel_time_max_buffers(g))
 	{
 		exit(49);
@@ -179,7 +175,7 @@ void test()
 
 	printf("\n --------- \n- WITH WAITING TIME : \n");
 	fprintf(f,"\n --------- \n WITH WAITING TIME \n");
-	test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
+	//test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
 	/*test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy,"LoadedGreedy",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
 	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
@@ -188,12 +184,74 @@ void test()
 //	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
 //	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
 //test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
+
+	char buf_dot[128];
+	char nom[32];
+	printf("Borneinf %d \n",borneInf(g,P,message_size));
+	
+	sprintf(nom,"borneinf");
+	/*printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	//free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");*/
+	reset_periods(g,P);reinit_delays(g);
+
+
+
 	printf("FPT = %d \n",branchbound( g, P,  message_size));
+	/*sprintf(nom,"FPT");
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	//free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");*/
+	reset_periods(g,P);reinit_delays(g);
 	
-	
+	printf("Recuit %d \n",recuit( g, P, message_size,1000));	
+	sprintf(nom,"recuit");
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	//free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");
+	reset_periods(g,P);reinit_delays(g);
+		
 
-
-	seed = time(NULL);
+/*	seed = time(NULL);
 
 
 	fprintf(f,"\n --------- \n Statistical Multiplexing .Testing the chain reaction of multiplexing ...   \n \n");
@@ -259,7 +317,7 @@ void test()
 		printf(RED "Not OK --\n" RESET);
 	}
 
-	
+	*/
 
 	
 
@@ -672,8 +730,8 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed)
 {
 	
-	int nb_algos = 7 ;
-	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons","Recuit"};
+	int nb_algos = 8 ;
+	char * noms[] = {"GreedyDeadline","BorneInfSort","Descente","Taboo","DescenteX","BorneInfSimons","Recuit","FPT"};
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
@@ -759,6 +817,9 @@ void simuldistrib(int seed)
 				case 6:
 					a = recuit( g, P, message_size,1000);
 					break;
+				case 7:
+					a = branchbound( g, P, message_size);
+					break;
 				}
 
 
@@ -817,8 +878,13 @@ void simuldistrib(int seed)
 			affiche_graph(g,P,stdout);
 			exit(45);
 		}
+
 		for(int k=2;k<nb_algos;k++)
 		{
+			if(time[7]>time[k])
+			{
+				printf("Algo %d meilleur que fpt (%d %d).\n",k,time[k],time[7]);
+			}
 			if((time[k]<time[5]) || (time[k]<time[1]))
 			{
 				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d lenght %d\n",k,time[k],time[5],time[1],l);

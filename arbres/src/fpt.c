@@ -41,6 +41,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 
 			a = assignment_with_orders_vois1FPT(g, P, message_size, borneinf);
 			retour = travel_time_max_buffers(g);
+			reset_periods(g,P);
 			if(a)
 			{
 
@@ -62,18 +63,30 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 		}
 		else
 		{
+			
 			//COUPE SI JAMAIS ON NE TROUVE RIEN SUR CET ARC, CA NE SERT A RIEN DE CONTINUER L'ARBRE RECURSIF EN DESSOUS
 			g.arc_pool[arcid].bounded = 1;
 			if(!assignOneArc( g, arcid,  kind, message_size,  P, 0))
+			{
+				for(int j=0;j<128;j++)
+				{
+					g.arc_pool[arcid].routes_delay_f[j]=0;
+					g.arc_pool[arcid].routes_delay_b[j]=0;
+				}
+				//printf("Assignonearc ne passe pas \n");
+				g.arc_pool[arcid].bounded = 0;
 				return INT_MAX;
-
-			//coupe si on dépasse la borneinf du greedy
+			}
+//coupe si on dépasse la borneinf du greedy
 			int cut = borneInfFPT( g, P, message_size,borneinf);
 			//printf("arc %d kind %d Coupe %d borneinf %d\n",arcid,kind, cut, borneinf);
 			if( cut > borneinf)
 			{
+				//printf("Coupe > borneinf deja trouvée %d %d \n",cut,borneinf);
 				return INT_MAX;
 			}
+			
+			
 			/*if(arcid == 0)
 			{
 				//printf("Repart backward \n");
@@ -101,7 +114,8 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 	{
 		//Parcours ou on ne change pas les periodes
 		val_D =  rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf);
-			
+		/*if(val_D < borneinf)
+			borneinf = val_D;*/
 		//Parcours ou on change la periode
 		if(arcid < NB_BBU)
 		{
@@ -240,7 +254,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int bor
 			borneinf = returnvalue;
 		if(i!=facto-1)
 			algo_sjt(permuts,g.arc_pool[arcid].nb_routes);
-		for(int j=0;j<g.arc_pool[arcid].nb_routes;j++)
+		for(int j=0;j<128;j++)
 		{
 			g.arc_pool[arcid].routes_delay_f[j]=0;
 			g.arc_pool[arcid].routes_delay_b[j]=0;
@@ -256,10 +270,10 @@ int branchbound(Graph g,int P, int message_size)
 	nb_appels_arc =0;
 	nb_appels_orders = 0;
 	int borneinf=greedy_deadline_assignment( g, P, message_size);
-	printf("borneinf %d \n",borneinf);
+	//printf("borneinf %d \n",borneinf);
 	reinit_delays(g);
 	int ret = rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
 	
-	printf("%d %d \n",nb_appels_arc,nb_appels_orders);
+	//printf("%d %d \n",nb_appels_arc,nb_appels_orders);
 	return ret;
 }
