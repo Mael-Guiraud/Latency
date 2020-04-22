@@ -17,15 +17,38 @@ int nb_appels_orders;
 
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int borneinf);
 //Fait l'arbre recursif avec tous les sous ensemble de routes 
-int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int profondeur,int borneinf)
+int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int profondeur,int borneinf,int offset,int begin)
 {
 	nb_appels_orders++;
 	int val_D;
 	int val_G;
 	int nb_routes = g.arc_pool[arcid].nb_routes;
 	int retour;
+	int premier;int r_t;
 	//printf("Arc %d kind %d profondeur %d(%droutes)\n",arcid,kind,profondeur,nb_routes);
 	int a;
+	int old_offset;
+	if(profondeur == 0)
+	{
+			
+		if(kind == FORWARD)
+			premier = g.arc_pool[arcid].routes_order_f[profondeur];
+		else
+			premier = g.arc_pool[arcid].routes_order_b[profondeur];
+		//printf("premier %d \n",premier);
+
+		begin = route_length_untill_arc(g,premier,&g.arc_pool[arcid],kind);
+		if(kind == BACKWARD)
+		{
+			begin += route_length_with_buffers_forward(g, premier);
+		}
+		if(kind == FORWARD)
+			g.arc_pool[arcid].routes_delay_f[premier] =  0;
+		else
+			g.arc_pool[arcid].routes_delay_b[premier] =  0;
+		offset = begin+message_size;
+		rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,offset,begin);
+	}
 	if(profondeur == nb_routes)
 	{
 		/*printf("arcid %d nbroutes %d kind %d order :",arcid,g.arc_pool[arcid].nb_routes,kind);
@@ -66,7 +89,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 			
 			//COUPE SI JAMAIS ON NE TROUVE RIEN SUR CET ARC, CA NE SERT A RIEN DE CONTINUER L'ARBRE RECURSIF EN DESSOUS
 			g.arc_pool[arcid].bounded = 1;
-			if(!assignOneArc( g, arcid,  kind, message_size,  P, 0))
+			/*if(!assignOneArc( g, arcid,  kind, message_size,  P, 0))
 			{
 				for(int j=0;j<128;j++)
 				{
@@ -76,7 +99,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				//printf("Assignonearc ne passe pas \n");
 				g.arc_pool[arcid].bounded = 0;
 				return INT_MAX;
-			}
+			}*/
 //coupe si on dépasse la borneinf du greedy
 			int cut = borneInfFPT( g, P, message_size,borneinf);
 			//printf("arc %d kind %d Coupe %d borneinf %d\n",arcid,kind, cut, borneinf);
@@ -112,12 +135,78 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 	
 	else
 	{
+		old_offset = offset;
 		//Parcours ou on ne change pas les periodes
-		val_D =  rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf);
+		int current_route = g.arc_pool[arcid].routes_order_f[profondeur];
+		//printf("current_route %d \n",current_route);
+		r_t = route_length_untill_arc(g,current_route,&g.arc_pool[arcid],FORWARD);
+	
+		//printf("rt %d offset %d\n",r_t,offset);
+		retval r = calcul_delay(begin,offset,P,r_t,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
+		
+		g.arc_pool[arcid].routes_delay_f[current_route] =  r.delay;
+		offset = r.new_offset;
+		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+		if(offset > begin+P)
+		{
+			
+			g.arc_pool[arcid].routes_delay_f[current_route]=0;
+			return INT_MAX;
+		}
+		val_D =  rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,offset,begin);
+
+		// On remonte, donc on enleve la route qu'on viens de mettre 
+		g.arc_pool[arcid].routes_delay_f[current_route]=0;
+		if(r.delay == 0)//Si on a de delay, on est collé, useless de mettre dans la seconde peride
+		{
+			return val_D;
+		}
+
+		//Calcul du i+1 pour l'opti numero 2
+		if(profondeur < nb_routes-1)
+		{
+			
+			int current_route2  = g.arc_pool[arcid].routes_order_f[profondeur+1];
+			int r_t2 = route_length_untill_arc(g,current_route2,&g.arc_pool[arcid],FORWARD);
+		
+			//printf("rt %d offset %d\n",r_t,offset);
+			retval r2 = calcul_delay(begin,offset,P,r_t2,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
+			
+			//Deja si ca dépasse, on quitte 
+			if(offset > begin+P)
+			{
+				
+				g.arc_pool[arcid].routes_delay_f[current_route]=0;
+				return INT_MAX;
+			}
+			//Si i+1 pas collé, on ne fait pas valG
+			if(r2.delay > 0)
+			{
+				return val_D;
+			}
+		}
+		///// FIN OPTI N2 /////
+
+
+		offset = old_offset;
+
+	
+		//printf("rt %d offset %d\n",r_t,offset);
+		r = calcul_delay(begin,offset,P,r_t,message_size,1);//ici le dernier argument est a 1 car seconde periode
+		
+		g.arc_pool[arcid].routes_delay_f[current_route] =  r.delay;
+		offset = r.new_offset;
+		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+		if(offset > begin+P)
+		{
+			
+			g.arc_pool[arcid].routes_delay_f[current_route]=0;
+			return INT_MAX;
+		}
 		/*if(val_D < borneinf)
 			borneinf = val_D;*/
 		//Parcours ou on change la periode
-		if(arcid < NB_BBU)
+	/*	if(arcid < NB_BBU)
 		{
 			if(g.arc_pool[arcid].routes_order_f[profondeur] == 0)
 			{
@@ -158,9 +247,12 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 			}
 			//printf("Modif %d \n",g.arc_pool[arcid].routes_order_b[profondeur]);
 		}
-		
-		val_G =  rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf);
+		*/
 
+		val_G =  rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,offset,begin);
+		// On remonte, donc on enleve la route qu'on viens de mettre 
+		g.arc_pool[arcid].routes_delay_f[current_route]=0;
+/*		
 		//Quand on remonte, on remet l'ordre d'avant
 		if(arcid < NB_BBU)
 		{
@@ -200,6 +292,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				}
 			}
 		}
+		*/
 		return (val_G>val_D)?val_D:val_G;
 
 	}
@@ -249,7 +342,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int bor
 			}
 		}
 		//print_tab(permuts,g.arc_pool[arcid].nb_routes);
-		returnvalue = rec_orders(g, arcid, kind,  message_size,  P,0,borneinf);
+		returnvalue = rec_orders(g, arcid, kind,  message_size,  P,0,borneinf,0,0);
 		if(returnvalue < borneinf)
 			borneinf = returnvalue;
 		if(i!=facto-1)
