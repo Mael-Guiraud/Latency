@@ -980,7 +980,10 @@ int assignOneArc(Graph g,int arcid, Period_kind kind,int message_size, int P,int
 		if(kind == FORWARD)
 			g.arc_pool[j].routes_delay_f[current_route] =  r.delay;
 		else
+		{
+			
 			g.arc_pool[j].routes_delay_b[current_route] =  r.delay;
+		}
 		offset = r.new_offset;
 		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 		if(offset > begin+P)
@@ -1140,15 +1143,16 @@ int assignment_with_orders_vois1FPT(Graph g, int P, int message_size, int print)
  				if(!ret)
  					return 0;
 
+
  			}
  			else
  			{
  				
 	 			if(g.arc_pool[j].contention_level == CL)
 	 			{
-	 				//printf("On fixe arc %d kind %d\n",j,kind);
-		 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
-		 				return 0;
+	 				if((kind != BACKWARD) || (j > g.nb_bbu) )
+		 				if(!assignOneArc( g, j,  kind, message_size,  P, print))
+		 					return 0;
 		 		}
  			}			
  			
