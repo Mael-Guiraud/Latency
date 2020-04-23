@@ -209,8 +209,9 @@ void test()
 	reset_periods(g,P);reinit_delays(g);
 
 
-
-	printf("FPT = %d \n",branchbound( g, P,  message_size));
+	int fpt = branchbound( g, P,  message_size);
+	
+	printf("FPT = %d \n",fpt);
 	/*sprintf(nom,"FPT");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
@@ -229,8 +230,8 @@ void test()
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
 	fprintf(f,"Reseting periods ...\n");*/
 	reset_periods(g,P);reinit_delays(g);
-	
-	printf("Recuit %d \n",recuit( g, P, message_size,1000));	
+	int recuits = recuit( g, P, message_size,1000);
+	printf("Recuit %d \n",recuits);	
 	sprintf(nom,"recuit");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
@@ -249,8 +250,15 @@ void test()
 	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(g,P);reinit_delays(g);
-		
-
+	if(recuits<fpt)
+	{
+		printf(RED "!!!!!!!!!!FPT trouve moins bien que le recuit!!!!!!!!!!!! \n" RESET);
+	}
+	else
+	{
+		printf(GRN "FPT trouve au moins aussi bien que le recuit ! \n" RESET);
+	}
+	
 /*	seed = time(NULL);
 
 
@@ -878,13 +886,17 @@ void simuldistrib(int seed)
 			affiche_graph(g,P,stdout);
 			exit(45);
 		}
-
+		if(time[7]<time[6])
+			{
+				printf(GRN "FPT meilleur que recuit (%d %d).\n" RESET,time[7],time[6]);
+			}
 		for(int k=2;k<nb_algos;k++)
 		{
-			if(time[7]>time[k])
+			if((time[7]>time[k])&&k!=5)
 			{
-				printf("Algo %d meilleur que fpt (%d %d).\n",k,time[k],time[7]);
+				printf(RED "Algo %d meilleur que fpt (%d %d).\n" RESET,k,time[k],time[7]);
 			}
+			
 			if((time[k]<time[5]) || (time[k]<time[1]))
 			{
 				printf("On dépasse la borne inf, c'est chelou algo %d tps algo %d tmps borne 1 %d tmps borne 2 %d lenght %d\n",k,time[k],time[5],time[1],l);

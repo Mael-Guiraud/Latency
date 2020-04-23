@@ -824,6 +824,12 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 
 	if(bool_p == 0)
 	{
+		/*if(rt > (begin+P-message_size))
+		{
+			r.delay = INT_MAX;
+			r.new_offset = INT_MAX;
+			return r;
+		}*/
 		if(offset>r_t)
 		{
 			r.delay = offset-r_t;
@@ -1145,7 +1151,7 @@ int assignment_with_orders_vois1FPT(Graph g, int P, int message_size, int print)
 
 
  			}
- 			else
+ 			/*else
  			{
  				
 	 			if(g.arc_pool[j].contention_level == CL)
@@ -1154,7 +1160,7 @@ int assignment_with_orders_vois1FPT(Graph g, int P, int message_size, int print)
 		 				if(!assignOneArc( g, j,  kind, message_size,  P, print))
 		 					return 0;
 		 		}
- 			}			
+ 			}	*/		
  			
  		}
 

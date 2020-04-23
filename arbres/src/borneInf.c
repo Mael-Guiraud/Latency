@@ -88,6 +88,7 @@ int coreBorneInf(Graph g, int P, int message_size,int budget,int arc_id,Period_k
 			
 			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
 			//printf("(%d %d %d)",release[i],g.routes[g.arc_pool[arc_id].routes_id[i]][0]->routes_delay_f[g.arc_pool[arc_id].routes_id[i]],deadline[i]);
+			//printf("(%d %d)",release[i],deadline[i]);
 		}
 		else
 		{
@@ -143,7 +144,7 @@ int bornebounded(Graph g,int arc_id,Period_kind kind)
 			taille_route =  route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i]) + route_length(g,g.arc_pool[arc_id].routes_id[i]);
 		else{
 			
-			taille_route =  g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]]+ 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			taille_route =  route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i]) +route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD) + route_length(g,g.arc_pool[arc_id].routes_id[i])-route_length_untill_arc_without_delay(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
 		}
 		
 		//printf("route %d buff %d lenght %d (%d)\n",g.arc_pool[arc_id].routes_id[i],res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i])+res[i],2*route_length(g,g.arc_pool[arc_id].routes_id[i]));
@@ -202,12 +203,18 @@ int borneInfFPT(Graph g, int P, int message_size,int bound)
 	
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		//printf("\n\n\nFORWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
+		//printf("FORWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
 		if(g.arc_pool[i].bounded == 0)
+		{
 			tmp = coreBorneInf(g,P,message_size,bound,t[i],FORWARD);
-		/*else
+			if(tmp == 0)
+			{
+				printf("Fail \n");
+			}
+		}
+		else
 			tmp = bornebounded(g,t[i],FORWARD);
-		*/
+		//printf("%d %d \n",tmp,max);
 		if(tmp>max)
 		{
 			max = tmp;
@@ -216,12 +223,18 @@ int borneInfFPT(Graph g, int P, int message_size,int bound)
 	}
 	for(int i=0;i<g.arc_pool_size;i++)
 	{
-		//printf("\n\n\nBACKWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
+		//printf("BACKWARD arc %d  bouded %d \n",i,g.arc_pool[i].bounded);
 		if(g.arc_pool[i].bounded == 0)
+		{
 			tmp = coreBorneInf(g,P,message_size,bound,t[i],BACKWARD);
+			if(tmp == 0)
+			{
+				printf("Fail \n");
+			}
+		}
 		else
 			tmp = bornebounded(g,t[i],BACKWARD);
-	
+		//printf("%d %d \n",tmp,max);
 		if(tmp>max)
 		{
 			max = tmp;
