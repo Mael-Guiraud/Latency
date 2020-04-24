@@ -61,7 +61,7 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 		}
 			
 	}*/
-	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+//	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
 	print_assignment(g,a,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
@@ -192,45 +192,14 @@ void test()
 	printf("Borneinf %d \n",borneInf(g,P,message_size));
 	
 	sprintf(nom,"borneinf");
-	/*printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
-	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,NULL,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,NULL,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	//free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");*/
+	
 	reset_periods(g,P);reinit_delays(g);
 
 
 	int fpt = branchbound( g, P,  message_size);
 	
 	printf("FPT = %d \n",fpt);
-	/*sprintf(nom,"FPT");
-	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
-	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,NULL,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,NULL,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	//free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");*/
+	
 	reset_periods(g,P);reinit_delays(g);
 	int recuits = recuit( g, P, message_size,1000);
 	printf("Recuit %d \n",recuits);	
@@ -261,7 +230,64 @@ void test()
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le recuit ! \n" RESET);
 	}
-	
+	int descent = descente( g, P, message_size,0);
+	printf("descente %d \n",descent);	
+	sprintf(nom,"descente");
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	//free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");
+	reset_periods(g,P);reinit_delays(g);
+	if(descent<fpt)
+	{
+		printf(RED "!!!!!!!!!!FPT trouve moins bien que la descente!!!!!!!!!!!! \n" RESET);
+		exit(44);
+	}
+	else
+	{
+		printf(GRN "FPT trouve au moins aussi bien que la descente ! \n" RESET);
+	}
+	int tabo = taboo( g, P, message_size,100);
+	printf("taboo %d \n",tabo);	
+	sprintf(nom,"taboo");
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(g,NULL,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	//free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Reseting periods ...\n");
+	reset_periods(g,P);reinit_delays(g);
+	if(tabo<fpt)
+	{
+		printf(RED "!!!!!!!!!!FPT trouve moins bien que le taboo!!!!!!!!!!!! \n" RESET);
+		exit(44);
+	}
+	else
+	{
+		printf(GRN "FPT trouve au moins aussi bien que le taboo ! \n" RESET);
+	}
 /*	seed = time(NULL);
 
 
@@ -938,7 +964,7 @@ void simuldistrib(int seed)
 	char * ylabels2[] = {"Nombre d'instances"};
 	print_gnuplot_distrib("waiting",noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
 	
-	printf("Nombre de pas moyen : Descente %f | Taboo %f | DescenteX %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS);
+	//printf("Nombre de pas moyen : Descente %f | Taboo %f | DescenteX %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS);
 	
 		
 }

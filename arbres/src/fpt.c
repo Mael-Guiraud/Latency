@@ -3,6 +3,7 @@
 #include "structs.h"
 #include "starSPALL.h"
 
+#include <sys/time.h>
 #include <limits.h>
 #include "config.h"
 #include "voisinage.h"
@@ -99,7 +100,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					//Quand on arrive ici, on a calculé le delay pour toutes les routes, on met donc l'arc a "bounded", ce qui simplifie le calcul pour la borne inf
 					g.arc_pool[arcid].bounded = 1;
 					//coupe si on dépasse la borneinf du greedy
-					/*int cut = borneInfFPT( g, P, message_size,borneinf);
+					int cut = borneInfFPT( g, P, message_size,borneinf);
 					//printf("arc %d kind %d Coupe %d borneinf %d\n",arcid,kind, cut, borneinf);
 					if( cut > borneinf)
 					{
@@ -108,7 +109,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 						//printf("Coupe > borneinf deja trouvée %d %d \n",cut,borneinf);
 						return INT_MAX;
 					}
-					*/
+					
 					
 						if(kind == FORWARD)
 						{
@@ -147,13 +148,13 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					// (dans ce cas la fonction calcul delay renvoie 0 de delay, ce qui est filtré par le test d'avant)
 					// On remonte, donc on enleve la route qu'on viens de mettre 
 					g.arc_pool[arcid].routes_delay_f[current_route]=0;
-					/*if(r.delay == 0)//Si on  0 a de delay, on est collé, useless de mettre dans la seconde peride
+					if(r.delay == 0)//Si on  0 a de delay, on est collé, useless de mettre dans la seconde peride
 					{
 						nb_coupes[2]++;
 						coupe_moy[2]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 						return val_D;
 					
-					}*/
+					}
 				}
 				else
 				{
@@ -167,7 +168,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				
 
 				//Calcul du i+1 pour l'opti numero 2
-				/*if(profondeur < nb_routes-1)
+				if(profondeur < nb_routes-1)
 				{
 					
 					int current_route2  = g.arc_pool[arcid].routes_order_f[profondeur+1];
@@ -192,7 +193,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 						return val_D;
 					}
 				}
-				*/
+				
 				///// FIN OPTI N2 /////
 		
 
@@ -306,28 +307,43 @@ int count_feuilles_arbre(Graph g)
 	}
 	return nb;
 }
+double time_diff(struct timeval tv1, struct timeval tv2)
+{
+    return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
+}
+
 
 int branchbound(Graph g,int P, int message_size)
 {
 	
+    struct timeval tv1, tv2;
+
 	nb_feuilles = 0;
-	//nb_coupes = 0;
+	
 	for(int i=0;i<NB_COUPES;i++)
 	{
 		nb_coupes[i]=0;
 		coupe_moy[i]=0.0;
 	}
+
 	int borneinf=greedy_deadline_assignment( g, P, message_size);
 	//printf("borneinf %d \n",borneinf);
 	//printf("Taille de l'arbre FPT = %d \n",count_feuilles_arbre(g));
 	reinit_delays(g);
+	 gettimeofday (&tv1, NULL);
 	int ret = rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
-	/*printf("%f%% %d %d Des feuilles explorées \n \n",(double)nb_feuilles*100/(double)count_feuilles_arbre(g),nb_feuilles,count_feuilles_arbre(g));
+	gettimeofday (&tv2, NULL);	
+	printf("%f%% %d %d Des feuilles explorées \n \n",(double)nb_feuilles*100/(double)count_feuilles_arbre(g),nb_feuilles,count_feuilles_arbre(g));
 	for(int i=0;i<NB_COUPES;i++)
 	{
 		printf("Coupe %d : \n 	-Nombre : %d\n 	Hauteur moyenne de coupe %f \n",i,nb_coupes[i],coupe_moy[i]/nb_coupes[i]);
 	
-	}*/
+	}
+
+	printf("Temps de calcul : %f ms.\n",time_diff(tv1,tv2));
 	//printf("Nombre appels fonction arcs = %d nombre appels fonction orders = %d nombre de feuille calculées = %d \n",nb_appels_arc,nb_appels_orders,nb_feuilles);
 	return ret;
 }
+
+
+
