@@ -1029,6 +1029,7 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 	int release[taille_tab];
 	int deadline[taille_tab];
 	int ids[taille_tab];
+	
 
 	//printf("BUDGET = %d  arc id %d \n",arc_id);
 	for(int i=0;i<taille_tab;i++)
