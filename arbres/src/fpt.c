@@ -137,7 +137,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				
 				g.arc_pool[arcid].routes_delay_f[current_route] =  r.delay;
 				offset = r.new_offset;
-				 //printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+				// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 				if(offset <= begin+P)
 				{
 					//printf("Appel a droite\n");
@@ -157,6 +157,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				}
 				else
 				{
+				//	printf("Pas d'apel a droite\n");
 					nb_coupes[1]++;
 					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 				}
@@ -208,7 +209,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				{
 					nb_coupes[1]++;
 					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-					//printf("coupe avant gauche\n");
+				//	printf("coupe avant gauche\n");
 					g.arc_pool[arcid].routes_delay_f[current_route]=0;
 					return val_D;
 				}
@@ -267,7 +268,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int bor
 				}
 			}
 		}
-		//print_tab(permuts,g.arc_pool[arcid].nb_routes);
+	//	print_tab(permuts,g.arc_pool[arcid].nb_routes);
 		returnvalue = rec_orders(g, arcid, kind,  message_size,  P,0,borneinf,0,0);
 		if(returnvalue < borneinf)
 			borneinf = returnvalue;

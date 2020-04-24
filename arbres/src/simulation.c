@@ -88,12 +88,14 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 }
 void test()
 {
-	int seed;
+	//unsigned int seed = 1587739540;
+	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
 	fprintf(f,"\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
-	srand(time(NULL));
+	srand(seed);
+	printf("%d %u %x seed \n",seed,seed,seed);
 	int P ;
 	int message_size = MESSAGE_SIZE;
 	int tmax;
@@ -253,6 +255,7 @@ void test()
 	if(recuits<fpt)
 	{
 		printf(RED "!!!!!!!!!!FPT trouve moins bien que le recuit!!!!!!!!!!!! \n" RESET);
+		exit(44);
 	}
 	else
 	{
@@ -895,6 +898,8 @@ void simuldistrib(int seed)
 			if((time[7]>time[k])&&k!=5)
 			{
 				printf(RED "Algo %d meilleur que fpt (%d %d).\n" RESET,k,time[k],time[7]);
+				printf("\n printing graphvitz ...");print_graphvitz(g,"../view/view.dot");printf("Ok.\n");
+				exit(24);
 			}
 			
 			if((time[k]<time[5]) || (time[k]<time[1]))

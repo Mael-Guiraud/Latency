@@ -1030,7 +1030,7 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 	int deadline[taille_tab];
 	int ids[taille_tab];
 
-	//printf("BUDGETABCD = %d \n",budget);
+	//printf("BUDGET = %d  arc id %d \n",arc_id);
 	for(int i=0;i<taille_tab;i++)
 	{
 		if(kind == FORWARD)
@@ -1046,6 +1046,7 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 			+route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD);
 			//printf("(%d ",release[i]);
 			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g.arc_pool[arc_id].routes_id[i]);
+			//printf(" (%d(%d+%d) + %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g.arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g.arc_pool[arc_id].routes_id[i],&g.arc_pool[arc_id],BACKWARD),message_size,budget,2* route_length(g,g.arc_pool[arc_id].routes_id[i]),deadline[i]);
 			
 		}
 		
@@ -1053,7 +1054,7 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 		ids[i]=g.arc_pool[arc_id].routes_id[i];
 		//printf("%d)\n",ids[i]);
 	}
-
+	//printf("\n");
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
 
 	if(res)
@@ -1061,7 +1062,9 @@ int simonslastarc(Graph g, int P, int message_size,int budget,int arc_id,Period_
 
 		for(int i=0;i<taille_tab;i++)
 		{
-			g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]] = res[i];		
+			
+			g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]] = res[i];
+			//printf("Delay route %d = %d \n",g.arc_pool[arc_id].routes_id[i],g.arc_pool[arc_id].routes_delay_b[g.arc_pool[arc_id].routes_id[i]]);		
 		}
 	}
 	else

@@ -17,7 +17,9 @@
 #include "borneInf.h"
 int main (int argc, char *argv[])
 {
-	int seed = time(NULL);
+	//int seed = time(NULL);
+	int seed = 1587737419;
+	//printf("%d seed \n",seed);
 	if(argc < 2)
 	{
 		printf("Usage %s [arg]",argv[0]);
