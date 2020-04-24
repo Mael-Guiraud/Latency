@@ -1539,7 +1539,7 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 		}
 		for(int i=0;i<nbr_route;i++)
 		{
-			tmp = 2* route_length(g,ids[i]);
+			tmp = route_length_with_buffers_forward(g,ids[i])+ route_length(g,ids[i]);
 			if( (tmp + val_D[i]) > maxd)
 			{
 				maxd = tmp + val_D[i];
@@ -1585,6 +1585,7 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 	int nbr_candidats;
 	for(int premier=0;premier<nbr_route;premier++)
 	{
+		//printf("premier %d ",premier);
 		
 		j=0;
 		nbr_candidats = 0;
@@ -1641,10 +1642,11 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 		
 		if(res)
 		{
+			//printf("succes ");
 			max = 0;
 			for(int i=0;i<nbr_route;i++)
 			{
-				tmp = 2* route_length(g,ids[i]);
+				tmp = route_length_with_buffers_forward(g,ids[i])+ route_length(g,ids[i]);
 				if( (tmp + res[i]) > max)
 				{
 					max = tmp + res[i];
