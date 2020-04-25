@@ -79,7 +79,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					{
 
 						//free_assignment(a);
-						//printf("REtour %d \n",retour);
+					//	printf("REtour %d \n",retour);
 						//exit(12);
 						return retour;
 					}
@@ -106,7 +106,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					{
 						nb_coupes[0]++;
 						coupe_moy[0]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-						//printf("Coupe > borneinf deja trouvée %d %d \n",cut,borneinf);
+					//	printf("Coupe > borneinf deja trouvée %d %d \n",cut,borneinf);
 						return INT_MAX;
 					}
 					
@@ -130,7 +130,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				old_offset = offset;
 				//Parcours ou on ne change pas les periodes
 				int current_route = g.arc_pool[arcid].routes_order_f[profondeur];
-				//printf("current_route %d \n",current_route);
+				//printf("current_route %d arc %d\n",current_route,arcid);
 				r_t = route_length_untill_arc(g,current_route,&g.arc_pool[arcid],FORWARD);
 			
 				//printf("rt %d offset %d\n",r_t,offset);
@@ -148,17 +148,50 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					// (dans ce cas la fonction calcul delay renvoie 0 de delay, ce qui est filtré par le test d'avant)
 					// On remonte, donc on enleve la route qu'on viens de mettre 
 					g.arc_pool[arcid].routes_delay_f[current_route]=0;
-					if(r.delay == 0)//Si on  0 a de delay, on est collé, useless de mettre dans la seconde peride
+					if(r.delay > 0)//Si on plus de 0 a de delay, on est collé, useless de mettre dans la seconde peride
 					{
 						nb_coupes[2]++;
 						coupe_moy[2]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+						//printf("coupe opti 1											%d prof %d route %d\n",arcid,profondeur,current_route);
 						return val_D;
 					
 					}
+
+					//printf("avant opt 2													%d \n",arcid);
+					//Calcul du i+1 pour l'opti numero 2
+					if(profondeur < nb_routes-1)
+					{
+						
+						int current_route2  = g.arc_pool[arcid].routes_order_f[profondeur+1];
+						int r_t2 = route_length_untill_arc(g,current_route2,&g.arc_pool[arcid],FORWARD);
+					
+						//printf("rt2 %d offset %d\n",r_t2,offset);
+						retval r2 = calcul_delay(begin,offset,P,r_t2,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
+						// printf("offset %d , rdelay2 %d begin %d p %d\n",offset,r2.delay,begin,P);
+						//Deja si ca dépasse, on quitte 
+						if(r2.new_offset > begin+P)
+						{
+							//printf("on sort pck ca dépasse\n");
+							nb_coupes[1]++;
+							coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+							g.arc_pool[arcid].routes_delay_f[current_route]=0;
+							return INT_MAX;
+						}
+						//Si i+1 pas collé, on ne fait pas valG
+						if(r2.delay > 0)
+						{
+							nb_coupes[3]++;
+							coupe_moy[3]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+							return val_D;
+						}
+					}
+				//	printf("apres opt 2\n");
+					
+					///// FIN OPTI N2 /////
 				}
 				else
 				{
-				//	printf("Pas d'apel a droite\n");
+					//printf("Pas d'apel a droite													%d\n",arcid);
 					nb_coupes[1]++;
 					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 				}
@@ -166,35 +199,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				
 				g.arc_pool[arcid].routes_delay_f[current_route]=0;
 				
-
-				//Calcul du i+1 pour l'opti numero 2
-				if(profondeur < nb_routes-1)
-				{
-					
-					int current_route2  = g.arc_pool[arcid].routes_order_f[profondeur+1];
-					int r_t2 = route_length_untill_arc(g,current_route2,&g.arc_pool[arcid],FORWARD);
 				
-					//printf("rt %d offset %d\n",r_t,offset);
-					retval r2 = calcul_delay(begin,offset,P,r_t2,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
-					
-					//Deja si ca dépasse, on quitte 
-					if(offset > begin+P)
-					{
-						nb_coupes[1]++;
-						coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-						g.arc_pool[arcid].routes_delay_f[current_route]=0;
-						return INT_MAX;
-					}
-					//Si i+1 pas collé, on ne fait pas valG
-					if(r2.delay > 0)
-					{
-						nb_coupes[3]++;
-						coupe_moy[3]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-						return val_D;
-					}
-				}
-				
-				///// FIN OPTI N2 /////
 		
 
 				offset = old_offset;
@@ -210,7 +215,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				{
 					nb_coupes[1]++;
 					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-				//	printf("coupe avant gauche\n");
+					//printf("coupe avant gauche\n");
 					g.arc_pool[arcid].routes_delay_f[current_route]=0;
 					return val_D;
 				}
@@ -269,7 +274,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int bor
 				}
 			}
 		}
-	//	print_tab(permuts,g.arc_pool[arcid].nb_routes);
+		//print_tab(permuts,g.arc_pool[arcid].nb_routes);
 		returnvalue = rec_orders(g, arcid, kind,  message_size,  P,0,borneinf,0,0);
 		if(returnvalue < borneinf)
 			borneinf = returnvalue;
