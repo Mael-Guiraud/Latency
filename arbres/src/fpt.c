@@ -29,7 +29,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 	int nb_routes = g.arc_pool[arcid].nb_routes;
 	int retour;
 	int premier;int r_t;
-	printf("Arc %d kind %d profondeur %d(%droutes)\n",arcid,kind,profondeur,nb_routes);
+	//printf("Arc %d kind %d profondeur %d(%droutes)\n",arcid,kind,profondeur,nb_routes);
 	int a;
 	int old_offset;
 	if(profondeur == 0)
@@ -39,7 +39,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 			premier = g.arc_pool[arcid].routes_order_f[profondeur];
 		else
 			premier = g.arc_pool[arcid].routes_order_b[profondeur];
-		printf("premier %d \n",premier);
+		//printf("premier %d \n",premier);
 
 		begin = route_length_untill_arc(g,premier,&g.arc_pool[arcid],kind);
 		if(kind == BACKWARD)
@@ -51,7 +51,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 		else
 			g.arc_pool[arcid].routes_delay_b[premier] =  0;
 		offset = begin+message_size;
-		printf("begin %d offset %d \n",begin,offset);
+		//printf("begin %d offset %d \n",begin,offset);
 		rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,offset,begin);
 	}
 	else
@@ -79,13 +79,13 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					{
 
 						//free_assignment(a);
-						printf("REtour %d \n",retour);
+					//	printf("REtour %d \n",retour);
 						//exit(12);
 						return retour;
 					}
 					else
 					{
-						printf("REtour INTMAX \n");
+						//printf("REtour INTMAX \n");
 						//exit(13);
 						//free_assignment(a);
 						return INT_MAX;
@@ -130,18 +130,18 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				old_offset = offset;
 				//Parcours ou on ne change pas les periodes
 				int current_route = g.arc_pool[arcid].routes_order_f[profondeur];
-				printf("current_route %d arc %d\n",current_route,arcid);
+				//printf("current_route %d arc %d\n",current_route,arcid);
 				r_t = route_length_untill_arc(g,current_route,&g.arc_pool[arcid],FORWARD);
 			
-				printf("rt %d offset %d\n",r_t,offset);
+				//printf("rt %d offset %d\n",r_t,offset);
 				retval r = calcul_delay(begin,offset,P,r_t,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
 				
 				g.arc_pool[arcid].routes_delay_f[current_route] =  r.delay;
 				offset = r.new_offset;
-				 printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+				// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 				if(offset <= begin+P)
 				{
-					printf("Appel a droite\n");
+					//printf("Appel a droite\n");
 					val_D =  rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,offset,begin);
 
 					//Opti N1, on ne la fait que dans le cas ou la route ne peut pas etre d'office placée que en seconde periode
@@ -152,12 +152,12 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					{
 						nb_coupes[2]++;
 						coupe_moy[2]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-						printf("coupe opti 1											%d prof %d route %d\n",arcid,profondeur,current_route);
+						//printf("coupe opti 1											%d prof %d route %d\n",arcid,profondeur,current_route);
 						return val_D;
 					
 					}
 
-					printf("avant opt 2													%d \n",arcid);
+					//printf("avant opt 2													%d \n",arcid);
 					//Calcul du i+1 pour l'opti numero 2
 					if(profondeur < nb_routes-1)
 					{
@@ -165,13 +165,13 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 						int current_route2  = g.arc_pool[arcid].routes_order_f[profondeur+1];
 						int r_t2 = route_length_untill_arc(g,current_route2,&g.arc_pool[arcid],FORWARD);
 					
-						printf("rt2 %d offset %d\n",r_t2,offset);
+						//printf("rt2 %d offset %d\n",r_t2,offset);
 						retval r2 = calcul_delay(begin,offset,P,r_t2,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
-						 printf("offset %d , rdelay2 %d begin %d p %d\n",offset,r2.delay,begin,P);
+						// printf("offset %d , rdelay2 %d begin %d p %d\n",offset,r2.delay,begin,P);
 						//Deja si ca dépasse, on quitte 
 						if(r2.new_offset > begin+P)
 						{
-							printf("on sort pck ca dépasse\n");
+							//printf("on sort pck ca dépasse\n");
 							nb_coupes[1]++;
 							coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 							g.arc_pool[arcid].routes_delay_f[current_route]=0;
@@ -185,7 +185,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 							return val_D;
 						}
 					}
-					printf("apres opt 2\n");
+				//	printf("apres opt 2\n");
 					
 					///// FIN OPTI N2 /////
 				}
@@ -215,7 +215,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				{
 					nb_coupes[1]++;
 					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-					printf("coupe avant gauche\n");
+					//printf("coupe avant gauche\n");
 					g.arc_pool[arcid].routes_delay_f[current_route]=0;
 					return val_D;
 				}
@@ -274,7 +274,7 @@ int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int bor
 				}
 			}
 		}
-		print_tab(permuts,g.arc_pool[arcid].nb_routes);
+		//print_tab(permuts,g.arc_pool[arcid].nb_routes);
 		returnvalue = rec_orders(g, arcid, kind,  message_size,  P,0,borneinf,0,0);
 		if(returnvalue < borneinf)
 			borneinf = returnvalue;
@@ -338,14 +338,14 @@ int branchbound(Graph g,int P, int message_size)
 	 gettimeofday (&tv1, NULL);
 	int ret = rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
 	gettimeofday (&tv2, NULL);	
-	/*printf("%f%% %d %d Des feuilles explorées \n \n",(double)nb_feuilles*100/(double)count_feuilles_arbre(g),nb_feuilles,count_feuilles_arbre(g));
+	printf("%f%% %d %d Des feuilles explorées \n \n",(double)nb_feuilles*100/(double)count_feuilles_arbre(g),nb_feuilles,count_feuilles_arbre(g));
 	for(int i=0;i<NB_COUPES;i++)
 	{
 		printf("Coupe %d : \n 	-Nombre : %d\n 	Hauteur moyenne de coupe %f \n",i,nb_coupes[i],coupe_moy[i]/nb_coupes[i]);
 	
 	}
 
-	printf("Temps de calcul : %f ms.\n",time_diff(tv1,tv2));*/
+	printf("Temps de calcul : %f ms.\n",time_diff(tv1,tv2));
 	//printf("Nombre appels fonction arcs = %d nombre appels fonction orders = %d nombre de feuille calculées = %d \n",nb_appels_arc,nb_appels_orders,nb_feuilles);
 	return ret;
 }

@@ -1804,6 +1804,11 @@ int taboo(Graph g, int P, int message_size,int nb_steps)
 		fflush(stdout);
 		
 	}
+	if(v.route != -1)
+	{
+		free(v.pos);
+		free(v.bool_p);
+	}
 
 
 
@@ -2085,6 +2090,7 @@ void remet_voisin(Graph g,Voisin v)
 		
 	}
 	free(v.pos);
+	free(v.bool_p);
 }
 int CritMetropolis(int delta, float t)
 {
@@ -2186,6 +2192,8 @@ int recuit(Graph g, int P, int message_size, int param)
 						min = b;
 						cmpt = 0;
 					}
+					free(v.pos);
+					free(v.bool_p);
 					
 					
 				}
@@ -2222,6 +2230,12 @@ int recuit(Graph g, int P, int message_size, int param)
 //aff_orders(orders,g);
 	reinit_delays(g);
 	reset_periods(g,P);
+	for(int i=0;i<g.arc_pool_size;i++)
+	{
+		free(orders[i]);
+		free(orders[i+g.arc_pool_size]); 
+	}
+	free(orders);
 	if(VOISINAGE)
 		a= assignment_with_orders_vois1(g,P,message_size,1);
 	else
