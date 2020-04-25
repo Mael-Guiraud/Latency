@@ -169,7 +169,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 						retval r2 = calcul_delay(begin,offset,P,r_t2,message_size,0);//ici le dernier argument est a 0 car on met la route dans la permiere periode
 						 printf("offset %d , rdelay2 %d begin %d p %d\n",offset,r2.delay,begin,P);
 						//Deja si ca dépasse, on quitte 
-						if(rz.new_offset > begin+P)
+						if(r2.new_offset > begin+P)
 						{
 							printf("on sort pck ca dépasse\n");
 							nb_coupes[1]++;
