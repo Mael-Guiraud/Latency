@@ -13,7 +13,7 @@
 #include "borneInf.h"
 #include "coupes.h"
 
-int nb_feuilles;
+long long nb_feuilles;
 
 
 char* noms_coupes[]= {"BorneInf","NotFillInArc","i Collé","routes suivantes avant i","plus petit id","seconde dans premiere","echange seconde"};
@@ -384,7 +384,7 @@ int pow2n(int n)
 	return 1<<(n-1);
 }
 
-int count_feuilles_arbre(Graph g)
+long long count_feuilles_arbre(Graph g)
 {
 	long long nb = 1;
 	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
@@ -422,7 +422,7 @@ int branchbound(Graph g,int P, int message_size)
 	gettimeofday (&tv2, NULL);	
 	if(AFFICHE_RES)
 	{
-		printf("%f%% (%d/%d) Des feuilles explorées \n \n",(double)nb_feuilles*100/(double)count_feuilles_arbre(g),nb_feuilles,count_feuilles_arbre(g));
+		printf("%f%% (%lld/%lld) Des feuilles explorées \n \n",(double)nb_feuilles*100/(double)count_feuilles_arbre(g),nb_feuilles,count_feuilles_arbre(g));
 		for(int i=0;i<NB_COUPES;i++)
 		{
 			printf("Coupe %s : \n 	-Nombre : %lld\n 	Hauteur moyenne de coupe %f \n",noms_coupes[i],nb_coupes[i],coupe_moy[i]/nb_coupes[i]);
