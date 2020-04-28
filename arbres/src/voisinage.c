@@ -1183,7 +1183,7 @@ int assignment_with_orders_vois1(Graph g, int P, int message_size, int print)
 	Period_kind kind;
 	int CL;
 	
-	int ret;
+	
 
 
  	for(int i=0;i<g.contention_level;i++)
