@@ -23,7 +23,7 @@
 #include <limits.h>
 #include "borneInf.h"
 #include "fpt.h"
-
+#include "coupes.h"
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
@@ -88,8 +88,8 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 }
 void test()
 {
-	unsigned int seed = 1588002954;
-	//unsigned int seed = time(NULL);
+	//unsigned int seed = 1588085823;
+	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -942,7 +942,7 @@ void simuldistrib(int seed)
 		fflush(stdout);
 	}	
 
-	int max=0;
+	//int max=0;
 	for(int i=0;i<nb_algos;i++)
 	{
 		tri_bulles_classique_croissant(res[i],NB_SIMULS);
