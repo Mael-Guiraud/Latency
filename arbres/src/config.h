@@ -1,9 +1,9 @@
 // CONFIG OF THE TOPOLOGY
 
-#define MAX_LENGTH 700
+#define MAX_LENGTH 20000
 #define MESSAGE_SIZE 2500
 #define NB_BBU 2
-#define NB_COLLISIONS 3
+#define NB_COLLISIONS 4
 #define NB_ROUTES_PER_FLOW 1
 #define PROBA 0.5
 
@@ -34,7 +34,7 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 10
 
 
 //openMP parallel
@@ -45,5 +45,6 @@
 
 #define NB_POINTS 40
 
+#define NB_COUPES 7
 
 #define VOISINAGE 1

@@ -209,6 +209,7 @@ int borneInfFPT(Graph g, int P, int message_size,int bound)
 			tmp = coreBorneInf(g,P,message_size,bound,t[i],FORWARD);
 			if(tmp == 0)
 			{
+				return 0;
 				printf("Fail \n");
 			}
 		}
@@ -229,6 +230,7 @@ int borneInfFPT(Graph g, int P, int message_size,int bound)
 			tmp = coreBorneInf(g,P,message_size,bound,t[i],BACKWARD);
 			if(tmp == 0)
 			{
+				return 0;
 				printf("Fail \n");
 			}
 		}

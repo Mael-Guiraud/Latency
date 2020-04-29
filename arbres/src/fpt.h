@@ -1,1 +1,1 @@
-int branchbound(Graph g,int P, int message_size);
+int branchbound(Graph g,int P, int message_size,int* coupes,double * coupes_m);

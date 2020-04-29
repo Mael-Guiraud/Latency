@@ -5,3 +5,4 @@ void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,
 void trouve_topology();
 void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int,int),char * nom);
 void simuldistrib(int seed);
+void testcoupefpt(int seed);

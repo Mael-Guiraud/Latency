@@ -2,21 +2,44 @@
 #include <stdlib.h>
 #include "structs.h"
 #include "starSPALL.h"
- #include <inttypes.h>
 
-#include <sys/time.h>
 #include <limits.h>
 #include "config.h"
 #include "voisinage.h"
 #include "treatment.h"
 #include "greedy_waiting.h"
 #include "borneInf.h"
-#include "coupes.h"
 
+/* 
+Ce fichier permet de séléctionner les coupes à activer ou à désactiver pour le FPT.
+*/
+
+
+int AFFICHE_RES ;
+
+///// COUPES A LA FIN D'UN ARC ///////////
+//Coupe avec le calcul de borne inf à la fin de chaque arc.
+int BORNEINF_ON ;
+
+//Si une route dans la seconde periode peut être placée dans la première quelque part.
+int SECONDE_DANS_PREMIERE ;
+
+//Si i peut etre en premiere periode sans retarder i+1
+int I_PLUS_1_PAS_COLLE ;
+
+/////// COUPES AU FUR ET A MESURE DU CALCUL DES ROUTES //////
+
+
+//Si la route i est collée dans la première periode, on ne fait pas la seconde periode
+int I_COLLE ;
+//Si après avoir mis i en première periode, je pourrais faire rentrer une des routes suivantes avant i dans la première periode, je ne fais pas avec i en première periode
+int ROUTES_SUIVANTES_AVANT_I ;
+//Si j'ai une route avec 0 de délai qui n'est pas de l'id le plus petit, je ne fait pas l'odre, car je le verrais à un autre moment.
+int PAS_PLUS_PETIT_ID ;
 long long nb_feuilles;
 
 
-char* noms_coupes[]= {"BorneInf","NotFillInArc","i Collé","routes suivantes avant i","plus petit id","seconde dans premiere","echange seconde"};
+char* noms_coupes[]= {"seconde dans premiere","i+1 pas collé","i Collé","routes suivantes avant i","BorneInf","plus petit id","NotFillInArc"};
 long long int nb_coupes[NB_COUPES];
 double coupe_moy[NB_COUPES];
 
@@ -37,21 +60,14 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 	if(profondeur == 0)
 	{
 			
-		if(kind == FORWARD)
-			premier = g.arc_pool[arcid].routes_order_f[profondeur];
-		else
-			premier = g.arc_pool[arcid].routes_order_b[profondeur];
-	//	printf("premier %d \n",premier);
 
+		premier = g.arc_pool[arcid].routes_order_f[profondeur];
+	//	printf("premier %d \n",premier);
 		begin = r_t[profondeur];
 
-		if(kind == FORWARD)
-			g.arc_pool[arcid].routes_delay_f[premier] =  0;
-		else
-			g.arc_pool[arcid].routes_delay_b[premier] =  0;
-		offset = begin+message_size;
-		//printf("begin %d offset %d \n",begin,offset);
-		return rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,offset,begin,r_t);
+		g.arc_pool[arcid].routes_delay_f[premier] =  0;
+
+		return rec_orders(g,arcid,kind,message_size,P,profondeur+1,borneinf,begin+message_size,begin,r_t);
 	}
 	else
 	{
@@ -67,6 +83,27 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					//route dans la seconde periode
 					if((r_t[i]+begin)%P+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[i]] > (begin)%P+P)
 					{
+
+						if(I_PLUS_1_PAS_COLLE)
+						{
+							if(i<nb_routes-1)
+							{
+								if((r_t[i+1]+begin)%P+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[i+1]] < (begin)%P+P)//j dans la première periode
+								{
+									if ((begin+r_t[i])%P + message_size  <=  (begin+P)%P)//c'était possible de mettre dans la premiere periode
+									{
+										if((begin+r_t[i])%P + message_size < (r_t[i+1]+begin)%P+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[i+1]] )
+										{
+											nb_coupes[1]++;
+											coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+											return INT_MAX;
+										}
+									}
+									
+								}
+							}
+							
+						}
 						if(SECONDE_DANS_PREMIERE)
 						{
 							//printf(" seconde periode begin %d beginmodP +p %d, rt+beginmodP %d , buff %d rt+buff %d",begin, begin%P+P,(r_t[i]+begin)%P,g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[i]],(r_t[i]+begin)%P+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[i]]);
@@ -76,6 +113,12 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 							//printf("ROUTE %d EN SECONDE PERIODE\n",g.arc_pool[arcid].routes_order_f[i]);
 							for(int j=0;j<nb_routes;j++)
 							{
+								if(i == j)
+									continue;
+								if((r_t[j]+begin)%P+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[j]] > (begin)%P+P)//j aussi dans la seconde periode
+								{
+									continue;
+								}
 								temps_min_j = (begin+r_t[j]+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[j]])%P;
 								if((temps_min_j < temps_min_i) && (temps_min_j+message_size > temps_min_i))
 								{
@@ -86,8 +129,8 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 									if( abs( temps_min_j-temps_min_i) >= message_size)
 									{
 										//printf("									COUPE avec route %d \n",g.arc_pool[arcid].routes_order_f[j]);
-										nb_coupes[5]++;
-										coupe_moy[5]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+										nb_coupes[0]++;
+										coupe_moy[0]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 										return INT_MAX;
 									}
 									temps_min_i = temps_min_j+message_size;
@@ -98,26 +141,7 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 									
 							}
 						}
-					
-						if(ECHANGE_SECONDE)
-						{
-							for(int j=i+1;j<nb_routes;j++)
-							{
-								if((r_t[j]+begin)%P+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[j]] > (begin)%P+P)//j aussi dans la seconde periode
-								{
-									//si rti <= (rtj+buffj-P)<- place de j dans la premiere periode
-									if((begin+r_t[i])%P<=(begin+r_t[j]+g.arc_pool[arcid].routes_delay_f[g.arc_pool[arcid].routes_order_f[j]])%P)
-									{
-										//on peut echanger, pas bon
-										nb_coupes[6]++;
-										coupe_moy[6]+=g.nb_bbu+g.nb_collisions-1 - arcid;
-										return INT_MAX;
-									}
-								}
-									
-							}
-						}
-							
+											
 						
 
 					}
@@ -126,26 +150,17 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				
 				if(arcid == 0)
 				{	
-					//printf("Calcul assingment \n");
 					nb_feuilles++;
 					a = assignment_with_orders_vois1FPT(g, P, message_size, borneinf);
-					retour = travel_time_max_buffers(g);
-					reset_periods(g,P);
-					if(a)
+					if(!a)
 					{
-
-						//free_assignment(a);
-					//	printf("REtour %d \n",retour);
-						//exit(12);
-						return retour;
+						return INT_MAX;
 					}
 					else
 					{
-						//printf("REtour INTMAX \n");
-						//exit(13);
-						//free_assignment(a);
-						return INT_MAX;
-
+						retour = travel_time_max_buffers(g);
+						reset_periods(g,P);
+						return retour;
 					}
 					
 					
@@ -160,10 +175,10 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					{
 						int cut = borneInfFPT( g, P, message_size,borneinf);
 						//printf("arc %d kind %d Coupe %d borneinf %d\n",arcid,kind, cut, borneinf);
-						if( cut > borneinf)
+						if(( cut > borneinf)||(cut == 0))
 						{
-							nb_coupes[0]++;
-							coupe_moy[0]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+							nb_coupes[4]++;
+							coupe_moy[4]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 						//	printf("Coupe > borneinf deja trouvée %d %d \n",cut,borneinf);
 							return INT_MAX;
 						}
@@ -210,19 +225,20 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 						{
 							if(current_route < g.arc_pool[arcid].routes_order_f[0])// pas plus petit id
 							{
-								nb_coupes[4]++;
-								coupe_moy[4]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+								nb_coupes[6]++;
+								coupe_moy[6]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 								goto findroite;
 							}
 						}
 						
 						if(ROUTES_SUIVANTES_AVANT_I)
 						{
-							if(old_offset < offset)
+							if(old_offset+message_size <= offset)
 							{
 								for(int i=profondeur+1;i<nb_routes;i++)
 								{
-									if((r_t[i]>offset )&&(r_t[i] <= r_t[profondeur]-message_size))//un message suivant rentrerais dans le trou laissé par la route en cours
+									//printf("old %d, rt %d new %d begin %d\n",old_offset,r_t[i]+begin,offset,begin);
+									if(begin+r_t[i]+message_size<= offset-message_size)//un message suivant rentrerais dans le trou laissé par la route en cours
 									{
 										//printf("coupe ici\n");
 										nb_coupes[3]++;
@@ -267,8 +283,8 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 					//printf("arc %d route %d Offset %d begin %d profondeur %d nb routes %d total %d \n",arcid,current_route,offset,begin,profondeur,nb_routes,begin+P-message_size*(nb_routes-profondeur));
 					
 					//printf("Pas d'apel a droite													%d\n",arcid);
-					nb_coupes[1]++;
-					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+					nb_coupes[5]++;
+					coupe_moy[5]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 				}
 				findroite:
 				
@@ -289,8 +305,8 @@ int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int 
 				if(offset > begin+P)
 				{
 
-					nb_coupes[1]++;
-					coupe_moy[1]+=g.nb_bbu+g.nb_collisions-1 - arcid;
+					nb_coupes[5]++;
+					coupe_moy[5]+=g.nb_bbu+g.nb_collisions-1 - arcid;
 					//printf("coupe avant gauche\n");
 					g.arc_pool[arcid].routes_delay_f[current_route]=0;
 					return val_D;
@@ -394,15 +410,22 @@ long long count_feuilles_arbre(Graph g)
 	}
 	return nb;
 }
-double time_diff(struct timeval tv1, struct timeval tv2)
-{
-    return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
-}
 
 
-int branchbound(Graph g,int P, int message_size)
+
+int branchbound(Graph g,int P, int message_size,int * coupes,double * coupes_m)
 {
+		
+	AFFICHE_RES = 1;
+
+	BORNEINF_ON =1;
+	PAS_PLUS_PETIT_ID =1;
+	SECONDE_DANS_PREMIERE = coupes[0];
+	I_PLUS_1_PAS_COLLE =coupes[1];
+	I_COLLE =coupes[2];
+	ROUTES_SUIVANTES_AVANT_I =coupes[3];
 	
+
     struct timeval tv1, tv2;
 
 	nb_feuilles = 0;
@@ -411,12 +434,17 @@ int branchbound(Graph g,int P, int message_size)
 	{
 		nb_coupes[i]=0;
 		coupe_moy[i]=0.0;
+		//printf("%d ",coupes[i]);
 	}
+	//printf("\n");
 
 	int borneinf=greedy_deadline_assignment( g, P, message_size);
+	if(!borneinf)
+		return 0;
 	//printf("borneinf %d \n",borneinf);
 	//printf("Taille de l'arbre FPT = %d \n",count_feuilles_arbre(g));
 	reinit_delays(g);
+
 	 gettimeofday (&tv1, NULL);
 	int ret = rec_arcs(g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
 	gettimeofday (&tv2, NULL);	
@@ -430,6 +458,18 @@ int branchbound(Graph g,int P, int message_size)
 		}
 
 		printf("Temps de calcul : %f ms.\n",time_diff(tv1,tv2));
+	}
+	//printf("%lld %f",nb_coupes[0],coupe_moy[0]/nb_coupes[0]);
+	for(int i=0;i<NB_COUPES;i++)
+	{
+	
+		coupes[i] = nb_coupes[i];
+		if(coupes[i])
+			coupes_m[i] = coupe_moy[i]/nb_coupes[i];
+		else
+			coupes_m[i] = 0.0;
+	
+	
 	}
 	
 
