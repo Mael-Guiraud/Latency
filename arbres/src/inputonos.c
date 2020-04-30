@@ -157,7 +157,7 @@ void print_list(int * p, int size, FILE * f)
 
 
 
-void gcl(Graph g,int period,Devices D, Links L)
+void gcl(Graph * g,int period,Devices D, Links L)
 {
 	char* file = "../../onos/Topolexample/gcl.json";
 
@@ -185,13 +185,13 @@ void gcl(Graph g,int period,Devices D, Links L)
 	 		if(!strcmp(D.devs[i].address,L.links[j].src))
 	 		{
 	 			
-	 			if(g.arc_pool[j].first != i)
+	 			if(g->arc_pool[j].first != i)
 	 			{
-	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g.arc_pool[j].first);
+	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g->arc_pool[j].first);
 	 				fprintf(stderr,"Une source n'a pas le bon id, ce n'est pas normal.");
 	 				exit(35);
 	 			}
-	 			if(g.arc_pool[j].nb_routes)
+	 			if(g->arc_pool[j].nb_routes)
 	 			{
 	 				if(!first)
 	 				{
@@ -202,22 +202,22 @@ void gcl(Graph g,int period,Devices D, Links L)
 	 					first = 0;
 	 				
 	 				fprintf(f,"\t\t\t\t{\n\t\t\t\t\t\"port\":\"%d\",\n\t\t\t\t\t\"gcl\":[",L.links[j].src_port);	
- 					print_list(g.arc_pool[j].period_f,  period, f);
- 					//print_list(g.arc_pool[j].period_f,  period, stdout);
- 					//affiche_periode(g.arc_pool[j].period_f,  period, stdout);
+ 					print_list(g->arc_pool[j].period_f,  period, f);
+ 					//print_list(g->arc_pool[j].period_f,  period, stdout);
+ 					//affiche_periode(g->arc_pool[j].period_f,  period, stdout);
  					fprintf(f,"]\n\t\t\t\t}");
 	 			}
 	 		}
 	 		if(!strcmp(D.devs[i].address,L.links[j].dst))
 	 		{
 	 			
-	 			if(g.arc_pool[j].last != i)
+	 			if(g->arc_pool[j].last != i)
 	 			{
-	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g.arc_pool[j].first);
+	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g->arc_pool[j].first);
 	 				fprintf(stderr,"Une source n'a pas le bon id, ce n'est pas normal.");
 	 				exit(35);
 	 			}
-	 			if(g.arc_pool[j].nb_routes)
+	 			if(g->arc_pool[j].nb_routes)
 	 			{
 	 				if(!first)
 	 				{
@@ -228,9 +228,9 @@ void gcl(Graph g,int period,Devices D, Links L)
 	 					first = 0;
 	 				
 	 				fprintf(f,"\t\t\t\t{\n\t\t\t\t\t\"port\":\"%d\",\n\t\t\t\t\t\"gcl\":[",L.links[j].dst_port);	
- 					print_list(g.arc_pool[j].period_b,  period, f);
- 					//print_list(g.arc_pool[j].period_b,  period, stdout);
- 					//affiche_periode(g.arc_pool[j].period_b,  period, stdout);
+ 					print_list(g->arc_pool[j].period_b,  period, f);
+ 					//print_list(g->arc_pool[j].period_b,  period, stdout);
+ 					//affiche_periode(g->arc_pool[j].period_b,  period, stdout);
  					fprintf(f,"]\n\t\t\t\t}");
 	 			}
 	 		}
@@ -274,29 +274,29 @@ Graph parseinput()
  	printf("Lecture des Links...");
 	Links L = links(D);
 	printf("OK.\n");
-	Graph g;
-	g.nb_bbu = -1;
-	g.nb_collisions = -1;
-	g.kind = TREE;
+	Graph * g;
+	g->nb_bbu = -1;
+	g->nb_collisions = -1;
+	g->kind = TREE;
 
-	g.arc_pool_size = L.nb_links;
+	g->arc_pool_size = L.nb_links;
 
-	g.arc_pool = malloc(sizeof(Arc)*L.nb_links);
+	g->arc_pool = malloc(sizeof(Arc)*L.nb_links);
 
 	printf("Lecture des Paths...");
-  	for(int i=0;i<g.arc_pool_size;i++)
+  	for(int i=0;i<g->arc_pool_size;i++)
   	{
 
-		g.arc_pool[i].length = L.links[i].latency;
-		g.arc_pool[i].nb_routes = 0;
+		g->arc_pool[i].length = L.links[i].latency;
+		g->arc_pool[i].nb_routes = 0;
 
-		g.arc_pool[i].first = L.links[i].src_id;
-		g.arc_pool[i].last = L.links[i].dst_id;
-		g.arc_pool[i].bbu_dest = -1;
-		g.arc_pool[i].seen = 0;
+		g->arc_pool[i].first = L.links[i].src_id;
+		g->arc_pool[i].last = L.links[i].dst_id;
+		g->arc_pool[i].bbu_dest = -1;
+		g->arc_pool[i].seen = 0;
   		
-    	g.arc_pool[i].period_f = calloc(period,sizeof(int));
-    	g.arc_pool[i].period_b = calloc(period,sizeof(int));
+    	g->arc_pool[i].period_f = calloc(period,sizeof(int));
+    	g->arc_pool[i].period_b = calloc(period,sizeof(int));
 	}
 
 
@@ -317,9 +317,9 @@ Graph parseinput()
 	int portsrc;
 	int portdst;
 	retval = fscanf(f,"%d",&nb_paths);
-	g.nb_routes = nb_paths;
-	g.routes = malloc(sizeof(Route*)*nb_paths);
-	g.size_routes = malloc(sizeof(int)*nb_paths);
+	g->nb_routes = nb_paths;
+	g->routes = malloc(sizeof(Route*)*nb_paths);
+	g->size_routes = malloc(sizeof(int)*nb_paths);
 
 
 	for(int i = 0;i<nb_paths;i++)
@@ -330,8 +330,8 @@ Graph parseinput()
 
 		//taille en arcs
 		retval = fscanf(f,"%d", &id);
-		g.routes[i]=malloc(sizeof(Route)*id);
-		g.size_routes[i] = id;
+		g->routes[i]=malloc(sizeof(Route)*id);
+		g->size_routes[i] = id;
 		for(int j=0;j<id;j++)
 		{
 			retval = fscanf(f,"%s", src);
@@ -345,9 +345,9 @@ Graph parseinput()
 				fprintf(stderr,"Erreur de matching du lien.\n");
 				exit(35);
 			}
-			g.routes[i][j] =  &g.arc_pool[id_arc];
-			g.arc_pool[id_arc].routes_id[g.arc_pool[id_arc].nb_routes] = i;
-			g.arc_pool[id_arc].nb_routes++;
+			g->routes[i][j] =  &g->arc_pool[id_arc];
+			g->arc_pool[id_arc].routes_id[g->arc_pool[id_arc].nb_routes] = i;
+			g->arc_pool[id_arc].nb_routes++;
 		}
 	
 		
@@ -373,7 +373,7 @@ Graph parseinput()
 
 	int seed = time(NULL);
 
-	printf("\n --------- \n Statistical Multiplexing. Testing the chain reaction of multiplexing ...  \n");
+	printf("\n --------- \n Statistical Multiplexing-> Testing the chain reaction of multiplexing ...  \n");
 	printf("Fifo : \n");
 	fprintf(f,"Fifo \n");
 	int last_time_ellapsed =0;

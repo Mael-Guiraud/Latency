@@ -30,50 +30,50 @@ void affiche_periode(int * p, int size, FILE * f)
 }
 
 
-void affiche_graph(Graph g,int p, FILE * f)
+void affiche_graph(Graph * g,int p, FILE * f)
 {
-	for(int i=0;i<g.nb_routes; i++)
+	for(int i=0;i<g->nb_routes; i++)
 	{
 		fprintf(f,"Route %d total length = %d : \n",i,route_length( g,i));
-		for(int j=0 ; j< g.size_routes[i];j++)
+		for(int j=0 ; j< g->size_routes[i];j++)
 		{
-			fprintf(f,"[%d], partagé avec %d routes\n",g.routes[i][j]->length,g.routes[i][j]->nb_routes);
+			fprintf(f,"[%d], partagé avec %d routes\n",g->routes[i][j]->length,g->routes[i][j]->nb_routes);
 			fprintf(f,"Routes sur l'arc : ");
-			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			for(int k=0;k<g->routes[i][j]->nb_routes;k++)
 			{
-				fprintf(f,"%d ",g.routes[i][j]->routes_id[k]);
+				fprintf(f,"%d ",g->routes[i][j]->routes_id[k]);
 			}
 			fprintf(f,"\n");
 			fprintf(f,"order f: ");
-			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			for(int k=0;k<g->routes[i][j]->nb_routes;k++)
 			{
-				fprintf(f,"%d ",g.routes[i][j]->routes_order_f[k]);
+				fprintf(f,"%d ",g->routes[i][j]->routes_order_f[k]);
 			}
 			fprintf(f,"\n");
 			fprintf(f,"order b: ");
-			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			for(int k=0;k<g->routes[i][j]->nb_routes;k++)
 			{
-				fprintf(f,"%d ",g.routes[i][j]->routes_order_b[k]);
+				fprintf(f,"%d ",g->routes[i][j]->routes_order_b[k]);
 			}
 			fprintf(f,"\n");
 			fprintf(f,"buffer f: ");
-			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			for(int k=0;k<g->routes[i][j]->nb_routes;k++)
 			{
-				fprintf(f,"%d ",g.routes[i][j]->routes_delay_f[k]);
+				fprintf(f,"%d ",g->routes[i][j]->routes_delay_f[k]);
 			}
 			fprintf(f,"\n");
 			fprintf(f,"buffer b: ");
-			for(int k=0;k<g.routes[i][j]->nb_routes;k++)
+			for(int k=0;k<g->routes[i][j]->nb_routes;k++)
 			{
-				fprintf(f,"%d ",g.routes[i][j]->routes_delay_b[k]);
+				fprintf(f,"%d ",g->routes[i][j]->routes_delay_b[k]);
 			}
 			fprintf(f,"\n");
-			if( g.routes[i][j]->period_f != NULL)
+			if( g->routes[i][j]->period_f != NULL)
 			{
 				fprintf(f," Forward  \n");
-				affiche_periode(g.routes[i][j]->period_f,p,f);
+				affiche_periode(g->routes[i][j]->period_f,p,f);
 				fprintf(f,"Backward \n");
-				affiche_periode(g.routes[i][j]->period_b,p,f);
+				affiche_periode(g->routes[i][j]->period_b,p,f);
 			}
 		}
 		fprintf(f,"\n");
@@ -82,27 +82,27 @@ void affiche_graph(Graph g,int p, FILE * f)
 	return;
 }
 
-void affiche_graph_routes(Graph g, FILE * f)
+void affiche_graph_routes(Graph * g, FILE * f)
 {
-	for(int i=0;i<g.nb_routes; i++)
+	for(int i=0;i<g->nb_routes; i++)
 	{
 		fprintf(f,"Route %d total length = %d : [ ",i,route_length( g,i));
-		for(int j=0 ; j< g.size_routes[i];j++)
+		for(int j=0 ; j< g->size_routes[i];j++)
 		{
-			fprintf(f,"%d, ",g.routes[i][j]->length);
+			fprintf(f,"%d, ",g->routes[i][j]->length);
 			
 		}
 		fprintf(f,"]\n");
 	}
 	return;
 }
-void affiche_period_star(Graph g,int p, FILE * f)
+void affiche_period_star(Graph * g,int p, FILE * f)
 {
 
 	fprintf(f," Forward  \n");
-	affiche_periode(g.arc_pool[g.nb_routes].period_f,p,f);
+	affiche_periode(g->arc_pool[g->nb_routes].period_f,p,f);
 	fprintf(f,"Backward \n");
-	affiche_periode(g.arc_pool[g.nb_routes].period_b,p,f);
+	affiche_periode(g->arc_pool[g->nb_routes].period_b,p,f);
 			
 
 	return;

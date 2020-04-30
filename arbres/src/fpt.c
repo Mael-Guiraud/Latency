@@ -51,7 +51,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 {
 	int val_D = INT_MAX;
 	int val_G;
-	int nb_routes = pg->arc_pool[arcid].nb_routes;
+	int nb_routes =g->arc_pool[arcid].nb_routes;
 	int retour;
 	int premier;
 	int a;
@@ -349,7 +349,7 @@ int pow2n(int n)
 	return 1<<(n-1);
 }
 
-long long count_feuilles_arbre(Graph g)
+long long count_feuilles_arbre(Graph * g)
 {
 	long long nb = 1;
 	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
@@ -361,7 +361,7 @@ long long count_feuilles_arbre(Graph g)
 
 
 
-int branchbound(Graph g,int P, int message_size,int * coupes,double * coupes_m)
+int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m)
 {
 		
 	AFFICHE_RES = 1;
@@ -394,7 +394,7 @@ int branchbound(Graph g,int P, int message_size,int * coupes,double * coupes_m)
 	reinit_delays(g);
 
 	 gettimeofday (&tv1, NULL);
-	int ret = rec_arcs(&g,g.nb_bbu+g.nb_collisions-1,FORWARD,P,message_size,borneinf);
+	int ret = rec_arcs(&g,g->nb_bbu+g->nb_collisions-1,FORWARD,P,message_size,borneinf);
 	reset_periods(g);
 	gettimeofday (&tv2, NULL);	
 	if(AFFICHE_RES)

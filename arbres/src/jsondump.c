@@ -9,7 +9,7 @@
 #include "treatment.h"
 #include "test.h"
 
-Graph g;
+Graph * g;
 typedef enum {
   NUL, FROM, TO, LENGTH, OBJ, ENDOBJ, PATH, ARRAY, ON, OFF, TMAX
 } last_string;
@@ -50,13 +50,13 @@ static int dump(const char *js, jsmntok_t *t, size_t count, int indent) {
     val = atoi(str);
     switch(last){
       case FROM:
-        g.arc_pool[g.arc_pool_size-1].first = val;
+        g->arc_pool[g->arc_pool_size-1].first = val;
       break;
       case TO:
-        g.arc_pool[g.arc_pool_size-1].last = val;
+        g->arc_pool[g->arc_pool_size-1].last = val;
       break;
       case LENGTH:
-        g.arc_pool[g.arc_pool_size-1].length = val;
+        g->arc_pool[g->arc_pool_size-1].length = val;
       break;
       default:
           perror("This should not happend.\n ");
@@ -93,10 +93,10 @@ static int dump(const char *js, jsmntok_t *t, size_t count, int indent) {
   } else if (t->type == JSMN_OBJECT) {
     if(last!= NUL)
     {
-      g.arc_pool_size++;
+      g->arc_pool_size++;
 
-        g.arc_pool = realloc(g.arc_pool,sizeof(Arc)*g.arc_pool_size);
-      g.arc_pool[g.arc_pool_size-1].nb_routes = 0;
+        g->arc_pool = realloc(g->arc_pool,sizeof(Arc)*g->arc_pool_size);
+      g->arc_pool[g->arc_pool_size-1].nb_routes = 0;
       
     }
     last = OBJ;
@@ -139,12 +139,12 @@ static int dumppath(const char *js, jsmntok_t *t, size_t count, int indent) {
     
     if(last == ARRAY)
     {
-      g.size_routes[g.nb_routes-1]++;
-      g.routes[g.nb_routes-1] = realloc(g.routes[g.nb_routes-1],sizeof(Arc*)* g.size_routes[g.nb_routes-1]);
-      g.routes[g.nb_routes-1][g.size_routes[g.nb_routes-1]-1] = &g.arc_pool[val];
+      g->size_routes[g->nb_routes-1]++;
+      g->routes[g->nb_routes-1] = realloc(g->routes[g->nb_routes-1],sizeof(Arc*)* g->size_routes[g->nb_routes-1]);
+      g->routes[g->nb_routes-1][g->size_routes[g->nb_routes-1]-1] = &g->arc_pool[val];
       
-      g.arc_pool[val].routes_id[g.arc_pool[val].nb_routes] = g.nb_routes-1;
-      g.arc_pool[val].nb_routes++;
+      g->arc_pool[val].routes_id[g->arc_pool[val].nb_routes] = g->nb_routes-1;
+      g->arc_pool[val].nb_routes++;
     
       return 1;
     }
@@ -169,11 +169,11 @@ static int dumppath(const char *js, jsmntok_t *t, size_t count, int indent) {
   } else if (t->type == JSMN_OBJECT) {
     if(last!= NUL)
     {
-      g.nb_routes++;
-      g.routes = realloc(g.routes,sizeof(Route)*g.nb_routes);
-      g.size_routes = realloc(g.size_routes,sizeof(int)*g.nb_routes);
-      g.routes[g.nb_routes-1] = NULL;
-      g.size_routes[g.nb_routes-1]=0;
+      g->nb_routes++;
+      g->routes = realloc(g->routes,sizeof(Route)*g->nb_routes);
+      g->size_routes = realloc(g->size_routes,sizeof(int)*g->nb_routes);
+      g->routes[g->nb_routes-1] = NULL;
+      g->size_routes[g->nb_routes-1]=0;
     }
     last = OBJ;
     j = 0;
@@ -364,9 +364,9 @@ int parsearcs() {
   free(tok);
   free(js);
   fprintf(stdout, "Ok.\n");
-  for(int i=0;i<g.arc_pool_size;i++)
+  for(int i=0;i<g->arc_pool_size;i++)
   {
-    printf("Arc %p: from %d to %d length %d \n",&g.arc_pool[i],g.arc_pool[i].first,g.arc_pool[i].last,g.arc_pool[i].length);
+    printf("Arc %p: from %d to %d length %d \n",&g->arc_pool[i],g->arc_pool[i].first,g->arc_pool[i].last,g->arc_pool[i].length);
   }
   return 1;
 }
@@ -447,21 +447,21 @@ int parsepath()
   free(tok);
   free(js);
 
-  for(int i=0;i<g.nb_routes;i++)
+  for(int i=0;i<g->nb_routes;i++)
   {
-    for(int j=0;j<g.size_routes[i];j++)
+    for(int j=0;j<g->size_routes[i];j++)
     {
-        g.routes[i][j]->bbu_dest = g.routes[i][g.size_routes[i]-1]->last;
+        g->routes[i][j]->bbu_dest = g->routes[i][g->size_routes[i]-1]->last;
     }
   }
   fprintf(stdout, "Ok.\n");
-    printf("%d routes : \n",g.nb_routes);
-  for(int i=0;i<g.nb_routes;i++)
+    printf("%d routes : \n",g->nb_routes);
+  for(int i=0;i<g->nb_routes;i++)
   {
-    printf("route of size %d : \n",g.size_routes[i]);
-    for(int j=0;j<g.size_routes[i];j++)
+    printf("route of size %d : \n",g->size_routes[i]);
+    for(int j=0;j<g->size_routes[i];j++)
     {
-      printf("%d - ",g.routes[i][j]->length);
+      printf("%d - ",g->routes[i][j]->length);
     }
     printf("\n");
   }
@@ -551,21 +551,21 @@ int parseflows()
   return 1;
 }
 /*
-void count_cols_bbu(Graph g,int* p_bbu,int * p_cols)
+void count_cols_bbu(Graph * g,int* p_bbu,int * p_cols)
 {
-  for(int i=0;i<g.arc_pool_size;i++)
+  for(int i=0;i<g->arc_pool_size;i++)
   {
-    g.arc_pool[i].seen = 0;
+    g->arc_pool[i].seen = 0;
   }
-  for(int i=0;i<g.nb_routes;i++)
+  for(int i=0;i<g->nb_routes;i++)
   {
-    for(int j=1;j<g.size_routes[i];j++)
+    for(int j=1;j<g->size_routes[i];j++)
     {
-      if(g.routes[i][j]->seen == 0)
+      if(g->routes[i][j]->seen == 0)
       {
-        if(g.routes[i][j-1]->nb_routes < g.routes[i][j]->nb_routes )
+        if(g->routes[i][j-1]->nb_routes < g->routes[i][j]->nb_routes )
         {
-          if(j == g.size_routes[i]-1)
+          if(j == g->size_routes[i]-1)
           {
             *p_bbu++;
           }
@@ -574,7 +574,7 @@ void count_cols_bbu(Graph g,int* p_bbu,int * p_cols)
             *p_cols++;
           }
         }
-        g.routes[i][j]->seen = 1;
+        g->routes[i][j]->seen = 1;
       }
     }
   }
@@ -582,10 +582,10 @@ void count_cols_bbu(Graph g,int* p_bbu,int * p_cols)
 }*/
 void jsontest()
 {
-  g.arc_pool = NULL;
-  g.routes = NULL;
-  g.size_routes = NULL;
-  g.arc_pool_size = 0;
+  g->arc_pool = NULL;
+  g->routes = NULL;
+  g->size_routes = NULL;
+  g->arc_pool_size = 0;
   period = 0;
   tmax = 0;
   parsearcs();
@@ -593,10 +593,10 @@ void jsontest()
   parseflows();
  // int nb_bbu=0;
  // int nb_cols=0;
-  for(int i=0;i<g.arc_pool_size;i++)
+  for(int i=0;i<g->arc_pool_size;i++)
   {
-    g.arc_pool[i].period_f = calloc(period,sizeof(int));
-    g.arc_pool[i].period_b = calloc(period,sizeof(int));
+    g->arc_pool[i].period_f = calloc(period,sizeof(int));
+    g->arc_pool[i].period_b = calloc(period,sizeof(int));
   }
  // count_cols_bbu(g,&nb_bbu,&nb_cols);
 //  printf("%d %d \n",nb_bbu,nb_cols);
