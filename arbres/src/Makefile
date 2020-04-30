@@ -1,6 +1,6 @@
 
 CC=gcc-7
-CFLAGS=-W -Wall -g -O2 -fopenmp -fprofile-arcs -ftest-coverage -std=c99
+CFLAGS=-W -Wall -g -O3 -fopenmp -fprofile-arcs -ftest-coverage -std=c99
 LFLAGS = -fopenmp
 
 DIRbin = bin/
@@ -99,7 +99,9 @@ debugstar: compil
 	valgrind --leak-check=full -v ./compil star
 
 profile: compil
+	rm -f callgrind*
 	valgrind --tool=callgrind -v ./compil test
+	kcachegrind callgrind*
 
 cover: dirs  
 	lcov --directory . -c -o rapport.info

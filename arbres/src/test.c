@@ -1,8 +1,9 @@
+#include <stdio.h>
 #include "structs.h"
 #include "init.h"
 #include "treatment.h"
 #include "data_treatment.h"
-#include <stdio.h>
+
 
 void affiche_tab(int * tab, int taille, FILE * f)
 {

@@ -16,23 +16,23 @@ float rand01()
 
 graphe init_graphe(int n){//créé un graphe dont tous les sommets sont isolés
 	graphe G; 
-	g->nombre_sommet = n;
-	g->matrice_adjacence = malloc(sizeof(int*)*n);
-	for(int i=0;i<g->nombre_sommet;i++)
+	G.nombre_sommet = n;
+	G.matrice_adjacence = malloc(sizeof(int*)*n);
+	for(int i=0;i<G.nombre_sommet;i++)
 	{
-		g->matrice_adjacence[i] = calloc(n,sizeof(int));
+		G.matrice_adjacence[i] = calloc(n,sizeof(int));
 	}
 	return G;
 }
 
 void libere_graphe(graphe G){
-	for(int i=0;i<g->nombre_sommet;i++)
+	for(int i=0;i<G.nombre_sommet;i++)
 	{
-		free(g->matrice_adjacence[i]);
+		free(G.matrice_adjacence[i]);
 		
 	}
 
-	free(g->matrice_adjacence);
+	free(G.matrice_adjacence);
 }
 
 
@@ -41,12 +41,12 @@ void libere_graphe(graphe G){
 graphe graphe_arbre(int *pere, int n){//créer un arbre couvrant à partir du tableau des pères représenté comme un graphe
 	graphe G=init_graphe(n);
 
-	for(int i=0;i<g->nombre_sommet;i++)
+	for(int i=0;i<G.nombre_sommet;i++)
 	{
 		if(pere[i] != i)
 		{
-			g->matrice_adjacence[i][pere[i]] = 1;
-			g->matrice_adjacence[pere[i]][i] = 1;
+			G.matrice_adjacence[i][pere[i]] = 1;
+			G.matrice_adjacence[pere[i]][i] = 1;
 		}
 	}
 
@@ -55,9 +55,9 @@ graphe graphe_arbre(int *pere, int n){//créer un arbre couvrant à partir du ta
 
 void parcours_sommet(graphe G, int s, int *couleur, int *pere){
 	couleur[s] = 1;
-	for(int i=0;i<g->nombre_sommet;i++)//Pour tout les sommets 
+	for(int i=0;i<G.nombre_sommet;i++)//Pour tout les sommets 
 	{
-		if(g->matrice_adjacence[s][i])//Si l'arrete existe (c'est mon voisin)
+		if(G.matrice_adjacence[s][i])//Si l'arrete existe (c'est mon voisin)
 		{
 			if(couleur[i] == 0)//Si le sommet n'a jamais été visité
 			{
@@ -74,16 +74,16 @@ void parcours_sommet(graphe G, int s, int *couleur, int *pere){
 }
 
 int parcours_graphe(graphe G){
-	int *couleur = calloc(g->nombre_sommet,sizeof(int)); // 0 est blanc, 1 gris et 2 noir
-	int *pere = malloc(sizeof(int)*g->nombre_sommet);
+	int *couleur = calloc(G.nombre_sommet,sizeof(int)); // 0 est blanc, 1 gris et 2 noir
+	int *pere = malloc(sizeof(int)*G.nombre_sommet);
 	int composante = 0;
 
-	for(int i=0;i<g->nombre_sommet;i++){ //init
+	for(int i=0;i<G.nombre_sommet;i++){ //init
 		couleur[i]=0;
 		pere[i]=i;
 	}
 
-	for(int i=0;i<g->nombre_sommet;i++){
+	for(int i=0;i<G.nombre_sommet;i++){
 		if(couleur[i] == 0)
 		{
 			composante++;
@@ -110,8 +110,8 @@ int is_connexe(int ** tab, int nb_bbu, int nb_collisions)
 		{
 			if(tab[i][j])
 			{
-				g->matrice_adjacence[i][nb_bbu+j] = 1;
-				g->matrice_adjacence[nb_bbu+j][i] = 1;
+				G.matrice_adjacence[i][nb_bbu+j] = 1;
+				G.matrice_adjacence[nb_bbu+j][i] = 1;
 			}
 		}
 	}

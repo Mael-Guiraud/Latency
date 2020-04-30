@@ -109,7 +109,7 @@ void print_graphvitz(Graph * g,char * nom){
 		perror("Opening dot file failure\n");exit(2);
 	}
 
-	fprintf(f,"Graph * g { \n node[shape=point]\n");
+	fprintf(f,"Graph g { \n node[shape=point]\n");
 	vertex_id = 0;
 
 	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
@@ -242,7 +242,7 @@ char* sprint_periode_color(int * bufs,int * p, int size,char * string)
 
 
 
-void print_assignment(Graph * g, Assignment a, int p,char * path){
+void print_assignment(Graph * g, int p,char * path){
 	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
@@ -347,7 +347,7 @@ void print_assignment(Graph * g, Assignment a, int p,char * path){
 }
 
 
-void print_assignment_backward(Graph * g, Assignment a, int p,char * path){
+void print_assignment_backward(Graph * g,  int p,char * path){
 	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;

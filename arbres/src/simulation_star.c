@@ -92,7 +92,7 @@ void star_search_random_routes()
 				sprintf(nom,"../view/graph%d",cmpt_fail);
 				print_graphvitz(&g,nom);
 				printf("Solution pour Greedy SWAP :\n");
-				affiche_assignment(a2,g->nb_routes,stdout);
+				affiche_assignment(a2,g.nb_routes,stdout);
 				affiche_period_star(&g,P,stdout);
 				printf("Solution pour FPT :\n");
 				affiche_assignment(a3,a3->nb_routes_scheduled,stdout);
@@ -191,7 +191,7 @@ void star_all_routes_lenghts()
 			if(min > a->nb_routes_scheduled)
 			{
 					min = a->nb_routes_scheduled;
-					print_graphvitz(g,"../view/graphminGreedy");
+					print_graphvitz(&g,"../view/graphminGreedy");
 			}
 		}
 		#pragma omp critical
@@ -199,7 +199,7 @@ void star_all_routes_lenghts()
 			if(min2 > a2->nb_routes_scheduled)
 			{
 					min2 = a2->nb_routes_scheduled;
-					print_graphvitz(g,"../view/graphminSWAPT");
+					print_graphvitz(&g,"../view/graphminSWAPT");
 			}
 		}
 
@@ -286,7 +286,7 @@ void star_all_routes_lenghts()
 }
 
 
-void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
+void simul_star(int seed,Assignment (*ptrfonction)(Graph*,int,int,int),char * nom)
 {
 	srand(seed);
 	int message_size = MESSAGE_SIZE;

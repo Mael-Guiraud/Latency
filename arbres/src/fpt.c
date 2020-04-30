@@ -112,6 +112,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 								{
 									continue;
 								}
+								temps_min_j = (begin+r_t[j]+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]])%P;
 								if((temps_min_j < temps_min_i) && (temps_min_j+message_size > temps_min_i))
 								{
 									//la route j finit juste apres le temps d'arrivé de i, on prends j = i+1 et on fixe la date de départ de i a la fin du message
@@ -120,7 +121,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 									break;
 								}
 							}
-							for(j;j<nb_routes;j++)
+							for(;j<nb_routes;j++)
 							{
 		
 								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > (begin)%P+P)//j aussi dans la seconde periode
@@ -293,7 +294,7 @@ int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf)
 	int r_t[g->arc_pool[arcid].nb_routes];
 	for(int j=0;j<g->arc_pool[arcid].nb_routes;j++)
 	{
-				tab[j]=g->arc_pool[arcid].routes_id[j];
+		tab[j]=g->arc_pool[arcid].routes_id[j];
 				
 	}
 	//Pour tout les ordres de routes :
@@ -309,14 +310,9 @@ int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf)
 			}
 			else
 			{
-				if(kind == FORWARD)
-				{
-					g->arc_pool[arcid].routes_order_f[j] = tab[permuts[j].val];
-				}
-				else
-				{
-					g->arc_pool[arcid].routes_order_b[j] = tab[permuts[j].val];
-				}
+				
+				g->arc_pool[arcid].routes_order_f[j] = tab[permuts[j].val];
+				
 			}
 			r_t[j] = route_length_untill_arc(g,tab[permuts[j].val],&g->arc_pool[arcid],FORWARD);
 		}
@@ -364,7 +360,7 @@ long long count_feuilles_arbre(Graph * g)
 int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m)
 {
 		
-	AFFICHE_RES = 1;
+	AFFICHE_RES = 0;
 
 	BORNEINF_ON =1;
 	PAS_PLUS_PETIT_ID =1;
@@ -394,8 +390,8 @@ int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m
 	reinit_delays(g);
 
 	 gettimeofday (&tv1, NULL);
-	int ret = rec_arcs(&g,g->nb_bbu+g->nb_collisions-1,FORWARD,P,message_size,borneinf);
-	reset_periods(g);
+	int ret = rec_arcs(g,g->nb_bbu+g->nb_collisions-1,P,message_size,borneinf);
+	reset_periods(g,P);
 	gettimeofday (&tv2, NULL);	
 	if(AFFICHE_RES)
 	{

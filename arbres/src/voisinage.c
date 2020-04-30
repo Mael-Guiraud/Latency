@@ -1454,10 +1454,10 @@ Voisin init_voisinage_greedy(Voisin v, Graph * g, int P, int message_size)
 	
 	return v;
 }
-int descente(Graph * g, int P, int message_size,int tmax)
+int descente(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 {
 	Voisin v;
-	int nb_d =0;
+	//int nb_d =0;
 	if(tmax)
 		v= init_voisinage( g,  v);
 	else
@@ -1497,7 +1497,7 @@ int descente(Graph * g, int P, int message_size,int tmax)
 	while(orders != NULL)
 	{
 		//printf("descente\n");
-		nb_d++;
+		(*nb_pas)++;
 		//if(a)
 		//	free_assignment(a);
 		v=reinit_voins(g,v);
@@ -1548,27 +1548,29 @@ int descente(Graph * g, int P, int message_size,int tmax)
 	return b;
 
 }
-int best_of_x(Graph * g, int P, int message_size,int tmax)
+int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 {
 	int a;
 	
 	int prev = INT_MAX;
-	
+	float pas=0.0;
 	for(int i=0;i<tmax;i++)
 	{
-		a = descente(g,P,message_size,1);
+		a = descente(g,P,message_size,1,nb_pas);
 		if(a)
 		{
 			
 				if(a < prev )
 				{
 					//printf("a->time %d\n ",a->time);
+					pas = *nb_pas;
 					prev = a;
 				}			
 				
 		}
 		
 	}
+	*nb_pas = pas;
 	reset_periods(g,P);
 	
 	reinit_delays(g);
@@ -2115,7 +2117,7 @@ int CritMetropolis(int delta, float t)
 	}
 	return 0;
 }
-int recuit(Graph * g, int P, int message_size, int param)
+int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 {
 	//Parametres du recuit
 	int nb_paliers = param;
@@ -2247,6 +2249,7 @@ int recuit(Graph * g, int P, int message_size, int param)
 		printf("La solution n'est pas correcte recuit (error %d) ",verifie_solution( g,message_size));
 		exit(83);
 	}
+	*nb_pas = (float)nb_step;
 	return b;
 
 }
