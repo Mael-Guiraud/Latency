@@ -47,7 +47,7 @@ double coupe_moy[NB_COUPES];
 
 int rec_arcs(Graph g,int arcid,Period_kind kind, int P, int message_size,int borneinf);
 //Fait l'arbre recursif avec tous les sous ensemble de routes 
-int rec_orders(Graph g, int arcid,Period_kind kind, int message_size, int P,int profondeur,int borneinf,int offset,int begin,int * r_t)
+int rec_orders(Graph g, int arcid, Period_kind kind, int message_size, int P,int profondeur,int borneinf,int offset,int begin,int * r_t)
 {
 	int val_D = INT_MAX;
 	int val_G;
