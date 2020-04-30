@@ -1113,7 +1113,7 @@ int dichosimons(Graph g, int P, int message_size,int arcid,Period_kind kind)
 	return res;
 }
 
-int assignment_with_orders_vois1FPT(Graph g, int P, int message_size, int print)
+int assignment_with_orders_vois1FPT(Graph* pg, int P, int message_size, int print)
 {
 
 	
