@@ -357,6 +357,10 @@ void convert_graph_order(Graph g, int P)
 			period_to_order(&g.arc_pool[i],P);
 	}
 }
+double time_diff(struct timeval tv1, struct timeval tv2)
+{
+    return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
+}
 int route_length_untill_arc_without_delay(Graph g,int route, Arc * a,Period_kind kind)
 {
 	int length = 0;

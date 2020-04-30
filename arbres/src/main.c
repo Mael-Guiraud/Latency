@@ -84,7 +84,11 @@ int main (int argc, char *argv[])
 			print_gnuplot_distrib("waiting",noms, 6, "Distribution of the Latency", "Latency", ylabels2);*/
 			simuldistrib(seed);
 		}
-	
+		if(!strcmp(argv[1],"simulFPT") )
+		{
+			testcoupefpt(seed);
+		}
+			
 
 		
 

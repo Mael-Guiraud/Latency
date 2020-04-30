@@ -23,7 +23,6 @@
 #include <limits.h>
 #include "borneInf.h"
 #include "fpt.h"
-#include "coupes.h"
 
 
 void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
@@ -88,8 +87,8 @@ void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfo
 }
 void test()
 {
-	//unsigned int seed = 1588085823;
-	unsigned int seed = time(NULL);
+	unsigned int seed = 1588183584;
+	//unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -195,13 +194,15 @@ void test()
 	
 	reset_periods(g,P);reinit_delays(g);
 
-
-	int fpt = branchbound( g, P,  message_size);
+	int coupes[NB_COUPES];
+	for(int i=0;i<NB_COUPES;i++)coupes[i]=1; 
+		double coupes_m[NB_COUPES];
+	int fpt = branchbound( g, P,  message_size,coupes,coupes_m);
 	
 	printf("FPT = %d \n",fpt);
 	
 	reset_periods(g,P);reinit_delays(g);
-	int recuits = recuit( g, P, message_size,1000);
+	/*int recuits = recuit( g, P, message_size,1000);
 	printf("Recuit %d \n",recuits);	
 	sprintf(nom,"recuit");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
@@ -287,7 +288,7 @@ void test()
 	else
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le taboo ! \n" RESET);
-	}
+	}*/
 /*	seed = time(NULL);
 
 
@@ -774,7 +775,12 @@ void simuldistrib(int seed)
 	int message_size = MESSAGE_SIZE;
 	Graph g;
 	int P ;
-
+	int coupes[NB_COUPES];
+	double coupes_m[NB_COUPES];
+	for(int i=0;i<NB_COUPES;i++)
+	{
+		coupes[i]=1;
+	}
 
 	char buf[256];
 	FILE * f[nb_algos];
@@ -855,7 +861,7 @@ void simuldistrib(int seed)
 					a = recuit( g, P, message_size,1000);
 					break;
 				case 7:
-					a = branchbound( g, P, message_size);
+					a = branchbound( g, P, message_size,coupes,coupes_m);
 					break;
 				}
 
@@ -965,6 +971,100 @@ void simuldistrib(int seed)
 	print_gnuplot_distrib("waiting",noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
 	
 	//printf("Nombre de pas moyen : Descente %f | Taboo %f | DescenteX %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS);
+	
+		
+}
+void testcoupefpt(int seed)
+{
+	   struct timeval tv1, tv2;
+	 	
+	
+	char* noms[]= {"seconde dans premiere","i+1 pas collé","i Collé","routes suivantes avant i","BorneInf","plus petit id","NotFillInArc"};
+	int message_size = MESSAGE_SIZE;
+	Graph g;
+	int P ;
+	int coupes[NB_COUPES];
+	double coupes_m[NB_COUPES];
+	int cuts[4];
+	long long moy;
+	long double hauteur_moy;
+	long double calcul_moy;
+	for(int i=0;i<4;i++)
+	{
+		cuts[i]=0;
+	}
+	for(int i=0;i<4;i++)
+	{
+		
+		printf("Coupe %s :\n",noms[i]);
+		cuts[i]=1;
+		for(int j=0;j<4;j++)
+		{
+			moy =0;
+			hauteur_moy = 0.0;
+			calcul_moy = 0.0;
+			cuts[j]=1;
+			srand(seed);
+			#pragma omp parallel for private(g,P,coupes,coupes_m)  if(PARALLEL)
+			for(int k=0;k<NB_SIMULS;k++)
+			{
+
+				for(int l=0;l<NB_COUPES;l++)
+				{
+					if(l<4)
+						coupes[l]=cuts[l];
+					else
+						coupes[l]=0;
+				}
+				
+				g= init_graph_random_tree(STANDARD_LOAD);
+				
+				//printf("%d \n",longest_route);
+				if(FIXED_PERIOD_MOD)
+				{
+					if(PERIOD < load_max(g)*MESSAGE_SIZE)
+						printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+					P = PERIOD;
+				}
+				else
+					P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+				
+				gettimeofday (&tv1, NULL);
+				branchbound( g, P, message_size,coupes,coupes_m);
+				gettimeofday (&tv2, NULL);	
+		
+				
+				
+				moy += coupes[i];
+
+				hauteur_moy += coupes_m[i];
+			//	printf("%d %f\n",coupes[i],coupes_m[i]);
+				calcul_moy += time_diff(tv1,tv2);
+				free_graph(g);
+				fprintf(stdout,"\r	%d/%d",k+1,NB_SIMULS);
+				fflush(stdout);
+			}
+			if(i == j)
+			{
+				printf(".... - Seul [nombre moyen = %lld | Hauteur moyenne = %Lf | Temps moyen = %Lf] \n",moy/NB_SIMULS,hauteur_moy/NB_SIMULS,calcul_moy/NB_SIMULS);
+			}
+			else
+			{
+				printf(".... - Seul Avec %s = [nombre moyen = %lld | Hauteur moyenne = %Lf | Temps moyen = %Lf] \n",noms[j],moy/NB_SIMULS,hauteur_moy/NB_SIMULS,calcul_moy/NB_SIMULS);
+				cuts[j]=0;
+			}
+		
+			
+		}
+		printf("\n");
+
+		cuts[i]=0;
+		
+
+	}	
+
+
+
 	
 		
 }

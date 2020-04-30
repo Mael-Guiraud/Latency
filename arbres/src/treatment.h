@@ -1,3 +1,6 @@
+ #include <inttypes.h>
+
+#include <sys/time.h>
 int message_no_collisions(Graph g,int route,int offset,int message_size,Period_kind kind,int P);
 void free_assignment(Assignment a);
 void free_graph(Graph g);
@@ -31,3 +34,4 @@ int route_length_untill_arc_without_delay(Graph g,int route, Arc * a,Period_kind
 void tri_bulles_classique_decroissant(int* tab,int taille);
 
 void reinit_delays(Graph g);
+double time_diff(struct timeval tv1, struct timeval tv2);

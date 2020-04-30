@@ -1171,7 +1171,7 @@ int assignment_with_orders_vois1FPT(Graph g, int P, int message_size, int print)
  	}
 
 
- 
+  
 
 	return g.nb_routes;
 
