@@ -7,14 +7,14 @@
 
 #include "test.h"
 
-Assignment RRH_first_spall(Graph g, int P, int message_size, int tmax)
+Assignment RRH_first_spall(Graph * g, int P, int message_size, int tmax)
 {
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 
 
 	int * id_routes = routes_sorted_lenght_arcs_bbu(g);
@@ -25,7 +25,7 @@ Assignment RRH_first_spall(Graph g, int P, int message_size, int tmax)
 	int best_back = INT_MAX;
 	int back_found;
 
-	for(int j=0;j<g.nb_routes;j++)
+	for(int j=0;j<g->nb_routes;j++)
 	{
 		
 		for(offset = 0;offset<P;offset++)
@@ -88,11 +88,11 @@ Assignment RRH_first_spall(Graph g, int P, int message_size, int tmax)
 			{
 				fill_period(g,id_routes[j],best_offset,message_size,FORWARD,P);
 				a->offset_forward[id_routes[j]]=best_offset;
-				g.routes[id_routes[j]][0]->routes_delay_f[id_routes[j]] = best_offset;
+				g->routes[id_routes[j]][0]->routes_delay_f[id_routes[j]] = best_offset;
 				
 				fill_period(g,id_routes[j],best_back,message_size,BACKWARD,P);
 				a->offset_backward[id_routes[j]]=best_back;
-				g.routes[id_routes[j]][0]->routes_delay_b[id_routes[j]] = best_back-best_begin;
+				g->routes[id_routes[j]][0]->routes_delay_b[id_routes[j]] = best_back-best_begin;
 				a->waiting_time[id_routes[j]]=best_back-best_begin;	
 				a->nb_routes_scheduled++;
 			}
@@ -105,7 +105,7 @@ Assignment RRH_first_spall(Graph g, int P, int message_size, int tmax)
 		
 	}
 	free(id_routes);
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 

@@ -157,7 +157,7 @@ void print_list(int * p, int size, FILE * f)
 
 
 
-void gcl(Graph g,int period,Devices D, Links L)
+void gcl(Graph * g,int period,Devices D, Links L)
 {
 	char* file = "../../onos/Topolexample/gcl.json";
 
@@ -185,13 +185,13 @@ void gcl(Graph g,int period,Devices D, Links L)
 	 		if(!strcmp(D.devs[i].address,L.links[j].src))
 	 		{
 	 			
-	 			if(g.arc_pool[j].first != i)
+	 			if(g->arc_pool[j].first != i)
 	 			{
-	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g.arc_pool[j].first);
+	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g->arc_pool[j].first);
 	 				fprintf(stderr,"Une source n'a pas le bon id, ce n'est pas normal.");
 	 				exit(35);
 	 			}
-	 			if(g.arc_pool[j].nb_routes)
+	 			if(g->arc_pool[j].nb_routes)
 	 			{
 	 				if(!first)
 	 				{
@@ -202,22 +202,22 @@ void gcl(Graph g,int period,Devices D, Links L)
 	 					first = 0;
 	 				
 	 				fprintf(f,"\t\t\t\t{\n\t\t\t\t\t\"port\":\"%d\",\n\t\t\t\t\t\"gcl\":[",L.links[j].src_port);	
- 					print_list(g.arc_pool[j].period_f,  period, f);
- 					//print_list(g.arc_pool[j].period_f,  period, stdout);
- 					//affiche_periode(g.arc_pool[j].period_f,  period, stdout);
+ 					print_list(g->arc_pool[j].period_f,  period, f);
+ 					//print_list(g->arc_pool[j].period_f,  period, stdout);
+ 					//affiche_periode(g->arc_pool[j].period_f,  period, stdout);
  					fprintf(f,"]\n\t\t\t\t}");
 	 			}
 	 		}
 	 		if(!strcmp(D.devs[i].address,L.links[j].dst))
 	 		{
 	 			
-	 			if(g.arc_pool[j].last != i)
+	 			if(g->arc_pool[j].last != i)
 	 			{
-	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g.arc_pool[j].first);
+	 				//printf("%d %d %d\n",D.devs[i].id,L.links[j].src_id,g->arc_pool[j].first);
 	 				fprintf(stderr,"Une source n'a pas le bon id, ce n'est pas normal.");
 	 				exit(35);
 	 			}
-	 			if(g.arc_pool[j].nb_routes)
+	 			if(g->arc_pool[j].nb_routes)
 	 			{
 	 				if(!first)
 	 				{
@@ -228,9 +228,9 @@ void gcl(Graph g,int period,Devices D, Links L)
 	 					first = 0;
 	 				
 	 				fprintf(f,"\t\t\t\t{\n\t\t\t\t\t\"port\":\"%d\",\n\t\t\t\t\t\"gcl\":[",L.links[j].dst_port);	
- 					print_list(g.arc_pool[j].period_b,  period, f);
- 					//print_list(g.arc_pool[j].period_b,  period, stdout);
- 					//affiche_periode(g.arc_pool[j].period_b,  period, stdout);
+ 					print_list(g->arc_pool[j].period_b,  period, f);
+ 					//print_list(g->arc_pool[j].period_b,  period, stdout);
+ 					//affiche_periode(g->arc_pool[j].period_b,  period, stdout);
  					fprintf(f,"]\n\t\t\t\t}");
 	 			}
 	 		}
@@ -274,7 +274,7 @@ Graph parseinput()
  	printf("Lecture des Links...");
 	Links L = links(D);
 	printf("OK.\n");
-	Graph g;
+	Graph  g;
 	g.nb_bbu = -1;
 	g.nb_collisions = -1;
 	g.kind = TREE;
@@ -358,12 +358,12 @@ Graph parseinput()
 	printf("Ok.\n\n");
 
 	printf("Algorithme DetNet...");
-	Assignment a = Prime_all_routes(g,period,message_size,tmax);
+	Assignment a = Prime_all_routes(&g,period,message_size,tmax);
 	
-	if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
+	if((a->all_routes_scheduled) && (travel_time_max( &g, tmax, a) != -1) )
 	{
 		printf(GRN "OK | " RESET);
-		printf(" Travel time max = %d \n",travel_time_max( g, tmax, a));
+		printf(" Travel time max = %d \n",travel_time_max( &g, tmax, a));
 	}
 	else
 	{
@@ -382,7 +382,7 @@ Graph parseinput()
 	while(1)
 	{
 		srand(seed);
-		time_ellapsed = multiplexing(g, period, message_size, nb_periods, FIFO,tmax);
+		time_ellapsed = multiplexing(&g, period, message_size, nb_periods, FIFO,tmax);
 		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
 		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
 		{
@@ -404,7 +404,7 @@ Graph parseinput()
 	}
 
 	printf("\n\n Ecriture des GCL...");
-	gcl(g,period,D,L);
+	gcl(&g,period,D,L);
 	printf("Ok.\n");
 	free(L.links);
 	free(D.devs);

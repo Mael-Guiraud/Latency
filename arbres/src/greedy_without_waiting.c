@@ -21,51 +21,51 @@ int tic_won(int * period, int offset, int P,int message_size)
 }
 
 
-int sum_tics_won(Graph g,int route,int offset,int message_size,int P)
+int sum_tics_won(Graph * g,int route,int offset,int message_size,int P)
 {
 	int sum = 0;
-	for(int i=0;i<g.size_routes[route];i++)
+	for(int i=0;i<g->size_routes[route];i++)
 		{
 			
 			//This is a contention point
-			if(g.routes[route][i]->period_f != NULL)
+			if(g->routes[route][i]->period_f != NULL)
 			{
 				
-				if(g.routes[route][i]->period_f[offset%P] || g.routes[route][i]->period_f[(offset+message_size-1)%P] )
+				if(g->routes[route][i]->period_f[offset%P] || g->routes[route][i]->period_f[(offset+message_size-1)%P] )
 				{
 					return -1;
 				}
-				sum +=tic_won(g.routes[route][i]->period_f,offset,P,message_size);
+				sum +=tic_won(g->routes[route][i]->period_f,offset,P,message_size);
 			}
-			offset += g.routes[route][i]->length; 
+			offset += g->routes[route][i]->length; 
 			
 		}
 
-		for(int i=g.size_routes[route]-1;i>=0;i--)
+		for(int i=g->size_routes[route]-1;i>=0;i--)
 		{
 			
 			//This is a contention point
-			if(g.routes[route][i]->period_b != NULL)
+			if(g->routes[route][i]->period_b != NULL)
 			{
-				if(g.routes[route][i]->period_b[offset%P] || g.routes[route][i]->period_b[(offset+message_size-1)%P] )
+				if(g->routes[route][i]->period_b[offset%P] || g->routes[route][i]->period_b[(offset+message_size-1)%P] )
 				{
 					return -1;
 				}
-				sum +=tic_won(g.routes[route][i]->period_b,offset,P,message_size);
+				sum +=tic_won(g->routes[route][i]->period_b,offset,P,message_size);
 			}
-			offset += g.routes[route][i]->length; 
+			offset += g->routes[route][i]->length; 
 			
 		}
 		return sum;
 }
 
-Assignment greedy_tics_won(Graph g, int P, int message_size)
+Assignment greedy_tics_won(Graph * g, int P, int message_size)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
 	int tics_won_tmp;
@@ -74,7 +74,7 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 
 
 	//for each route
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 	
 		max_tics_won = -1;
@@ -101,7 +101,7 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 		{
 			fill_period(g,i,best_offset,message_size,FORWARD,P);
 			a->offset_forward[i]=best_offset;
-			g.routes[i][0]->routes_delay_f[i] = best_offset;
+			g->routes[i][0]->routes_delay_f[i] = best_offset;
 			fill_period(g,i,best_offset+route_length(g,i),message_size,BACKWARD,P);
 			a->offset_backward[i]=0;
 			a->waiting_time[i]=0;
@@ -111,7 +111,7 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 		
 			
 	}
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 
@@ -124,13 +124,13 @@ Assignment greedy_tics_won(Graph g, int P, int message_size)
 
 }
 
-Assignment greedy_PRIME(Graph g, int P, int message_size)
+Assignment greedy_PRIME(Graph * g, int P, int message_size)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
  	int offset;
@@ -138,7 +138,7 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 	
 
 	//for each route
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 
 		offset=0;
@@ -161,7 +161,7 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 			
 			fill_period(g,i,offset,message_size,FORWARD,P);
 			a->offset_forward[i]=offset;
-			g.routes[i][0]->routes_delay_f[i] = offset;
+			g->routes[i][0]->routes_delay_f[i] = offset;
 			fill_period(g,i,offset+route_length(g,i),message_size,BACKWARD,P);
 			a->offset_backward[i]=offset+route_length(g,i);
 			a->waiting_time[i]=0;
@@ -170,7 +170,7 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 
 		
 	}
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 
@@ -182,13 +182,13 @@ Assignment greedy_PRIME(Graph g, int P, int message_size)
 	return a;
 
 }
-Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt * tab)
+Assignment greedy_PRIME_allroutes(Graph * g, int P, int message_size, element_sjt * tab)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
  	int offset;
@@ -196,7 +196,7 @@ Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt 
 	
 
 	//for each route
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 
 		offset=0;
@@ -219,7 +219,7 @@ Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt 
 			
 			fill_period(g,tab[i].val,offset,message_size,FORWARD,P);
 			a->offset_forward[tab[i].val]=offset;
-			g.routes[i][0]->routes_delay_f[i] = offset;
+			g->routes[i][0]->routes_delay_f[i] = offset;
 			fill_period(g,tab[i].val,offset+route_length(g,tab[i].val),message_size,BACKWARD,P);
 			a->offset_backward[tab[i].val]=offset+route_length(g,tab[i].val);
 			a->waiting_time[tab[i].val]=0;
@@ -228,7 +228,7 @@ Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt 
 
 		
 	}
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 
@@ -240,11 +240,11 @@ Assignment greedy_PRIME_allroutes(Graph g, int P, int message_size, element_sjt 
 	return a;
 
 }
-Assignment Prime_all_routes(Graph g, int P, int message_size,int tmax)
+Assignment Prime_all_routes(Graph * g, int P, int message_size,int tmax)
 {
 	Assignment a=NULL;
-	element_sjt * tab = init_sjt(g.nb_routes);
-	long long facto=fact(g.nb_routes);
+	element_sjt * tab = init_sjt(g->nb_routes);
+	long long facto=fact(g->nb_routes);
 	int travel_time;
 
 	//Pour tout les ordres de routes :
@@ -263,7 +263,7 @@ Assignment Prime_all_routes(Graph g, int P, int message_size,int tmax)
 			}
 		}
 		if(i!=facto-1)
-			algo_sjt(tab,g.nb_routes);
+			algo_sjt(tab,g->nb_routes);
 		reset_periods(g,P);
 		
 	}

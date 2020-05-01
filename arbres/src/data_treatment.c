@@ -98,8 +98,8 @@ void print_gnuplot_distrib(char * outputname,char ** files, int nb_files, char* 
 }
 
 
-void print_graphvitz(Graph g,char * nom){
-	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
+void print_graphvitz(Graph * g,char * nom){
+	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
 	int previous_end ;
@@ -109,29 +109,29 @@ void print_graphvitz(Graph g,char * nom){
 		perror("Opening dot file failure\n");exit(2);
 	}
 
-	fprintf(f,"graph G { \n node[shape=point]\n");
+	fprintf(f,"Graph g { \n node[shape=point]\n");
 	vertex_id = 0;
 
-	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
+	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
 	{
-		if(g.kind == STAR)
+		if(g->kind == STAR)
 		{
 			
-			if(i<g.nb_bbu)
+			if(i<g->nb_bbu)
 			{
-				g.arc_pool[i].first = 0;
-				g.arc_pool[i].last = vertex_id+1;
-				g.arc_pool[i].seen = 1;
+				g->arc_pool[i].first = 0;
+				g->arc_pool[i].last = vertex_id+1;
+				g->arc_pool[i].seen = 1;
 				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g.arc_pool[i].length);
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g->arc_pool[i].length);
 				vertex_id++;
 			}
 			else
 			{
-				g.arc_pool[i].last = 0;
-				g.arc_pool[i].first = vertex_id+1;
-				g.arc_pool[i].seen = 1;
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
+				g->arc_pool[i].last = 0;
+				g->arc_pool[i].first = vertex_id+1;
+				g->arc_pool[i].seen = 1;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g->arc_pool[i].length);
 				vertex_id+=2;
 			}
 			
@@ -139,47 +139,47 @@ void print_graphvitz(Graph g,char * nom){
 		}
 		else
 		{
-			g.arc_pool[i].first = vertex_id;
-			g.arc_pool[i].last = vertex_id+1;
-			g.arc_pool[i].seen = 1;
-			if(i<g.nb_bbu)
+			g->arc_pool[i].first = vertex_id;
+			g->arc_pool[i].last = vertex_id+1;
+			g->arc_pool[i].seen = 1;
+			if(i<g->nb_bbu)
 			{
 				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
 			}
-			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
+			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g->arc_pool[i].length);
 			vertex_id+=2;
 		}
 		
 	}
 
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 		previous_end = -1;
 		next_begin = -1;
-		for(int j=0;j<g.size_routes[i];j++)
+		for(int j=0;j<g->size_routes[i];j++)
 		{
-			if(g.routes[i][j]->seen == 0)
+			if(g->routes[i][j]->seen == 0)
 			{
-				if(j==(g.size_routes[i]-1))
+				if(j==(g->size_routes[i]-1))
 				{
 					printf("This situation is weyrd(data_treatment.c)\n");
 					exit(491);
 				}
-				next_begin = g.routes[i][j+1]->first;
+				next_begin = g->routes[i][j+1]->first;
 				if(previous_end == -1)
 				{
 					previous_end = vertex_id;
-					fprintf(f,"%d [shape = \"circle\",label=\"%d\"]\n",vertex_id,g.routes[i][j]->bbu_dest);
+					fprintf(f,"%d [shape = \"circle\",label=\"%d\"]\n",vertex_id,g->routes[i][j]->bbu_dest);
 					vertex_id++;
 
 				}
-				g.routes[i][j]->first = previous_end;
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g.routes[i][j]->length);
+				g->routes[i][j]->first = previous_end;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g->routes[i][j]->length);
 				
-				g.routes[i][j]->last = next_begin;
-				g.routes[i][j]->seen = 1;
+				g->routes[i][j]->last = next_begin;
+				g->routes[i][j]->seen = 1;
 			}
-			previous_end = g.routes[i][j]->last;
+			previous_end = g->routes[i][j]->last;
 		}
 	}
 
@@ -242,8 +242,8 @@ char* sprint_periode_color(int * bufs,int * p, int size,char * string)
 
 
 
-void print_assignment(Graph g, Assignment a, int p,char * path){
-	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
+void print_assignment(Graph * g, int p,char * path){
+	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
 	int previous_end ;
@@ -254,31 +254,31 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 		perror("Opening dot file failure\n");exit(2);
 	}
 
-	 fprintf(f,"graph G { \n node[shape=point]\n 9000 [shape =\"box\",label=\"Period %d\"] \n ",p);
+	 fprintf(f,"Graph * g { \n node[shape=point]\n 9000 [shape =\"box\",label=\"Period %d\"] \n ",p);
 	vertex_id = 0;
 
-	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
+	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
 	{
-		if(g.kind == STAR)
+		if(g->kind == STAR)
 		{
 			
-			if(i<g.nb_bbu)
+			if(i<g->nb_bbu)
 			{
-				g.arc_pool[i].first = 0;
-				g.arc_pool[i].last = vertex_id+1;
-				g.arc_pool[i].seen = 1;
+				g->arc_pool[i].first = 0;
+				g->arc_pool[i].last = vertex_id+1;
+				g->arc_pool[i].seen = 1;
 				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g.arc_pool[i].length);
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g->arc_pool[i].length);
 				vertex_id++;
 			}
 			else
 			{
-				g.arc_pool[i].last = 0;
-				g.arc_pool[i].first = vertex_id+1;
-				g.arc_pool[i].seen = 1;
-				str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_f,g.arc_pool[g.nb_routes].period_f,p,str);
+				g->arc_pool[i].last = 0;
+				g->arc_pool[i].first = vertex_id+1;
+				g->arc_pool[i].seen = 1;
+				str = sprint_periode_color(g->arc_pool[g->nb_routes].routes_delay_f,g->arc_pool[g->nb_routes].period_f,p,str);
 				fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id+1,str);	
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g->arc_pool[i].length);
 				vertex_id+=2;
 			}
 			
@@ -286,36 +286,36 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 		}
 		else
 		{
-			g.arc_pool[i].first = vertex_id;
-			g.arc_pool[i].last = vertex_id+1;
-			g.arc_pool[i].seen = 1;
-			str = sprint_periode_color(g.arc_pool[i].routes_delay_f,g.arc_pool[i].period_f,p,str);
+			g->arc_pool[i].first = vertex_id;
+			g->arc_pool[i].last = vertex_id+1;
+			g->arc_pool[i].seen = 1;
+			str = sprint_periode_color(g->arc_pool[i].routes_delay_f,g->arc_pool[i].period_f,p,str);
 			fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id,str);	
-			if(i<g.nb_bbu)
+			if(i<g->nb_bbu)
 			{
 				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
 			}
-			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
+			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g->arc_pool[i].length);
 			vertex_id+=2;
 		}
 		
 		
 	}
 
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 		previous_end = -1;
 		next_begin = -1;
-		for(int j=0;j<g.size_routes[i];j++)
+		for(int j=0;j<g->size_routes[i];j++)
 		{
-			if(g.routes[i][j]->seen == 0)
+			if(g->routes[i][j]->seen == 0)
 			{
-				if(j==(g.size_routes[i]-1))
+				if(j==(g->size_routes[i]-1))
 				{
 					printf("This situation is weyrd(data_treatment.c)\n");
 					exit(491);
 				}
-				next_begin = g.routes[i][j+1]->first;
+				next_begin = g->routes[i][j+1]->first;
 				if(previous_end == -1)
 				{
 					previous_end = vertex_id;
@@ -324,17 +324,17 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 					else*/
 						sprintf(str,"%s",COLORS[i%NB_COLORS]);
 						
-					fprintf(f,"%d [shape = \"circle\",label=<<font color=\"%s\">%d</font><font color=\"black\">(%d)</font>>]\n",vertex_id,str,g.routes[i][j]->routes_delay_f[i],g.routes[i][j]->bbu_dest);
+					fprintf(f,"%d [shape = \"circle\",label=<<font color=\"%s\">%d</font><font color=\"black\">(%d)</font>>]\n",vertex_id,str,g->routes[i][j]->routes_delay_f[i],g->routes[i][j]->bbu_dest);
 					vertex_id++;
 
 				}
-				g.routes[i][j]->first = previous_end;
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g.routes[i][j]->length);
+				g->routes[i][j]->first = previous_end;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g->routes[i][j]->length);
 				
-				g.routes[i][j]->last = next_begin;
-				g.routes[i][j]->seen = 1;
+				g->routes[i][j]->last = next_begin;
+				g->routes[i][j]->seen = 1;
 			}
-			previous_end = g.routes[i][j]->last;
+			previous_end = g->routes[i][j]->last;
 		}
 	}
 
@@ -347,8 +347,8 @@ void print_assignment(Graph g, Assignment a, int p,char * path){
 }
 
 
-void print_assignment_backward(Graph g, Assignment a, int p,char * path){
-	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
+void print_assignment_backward(Graph * g,  int p,char * path){
+	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
 	int previous_end ;
@@ -359,32 +359,32 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 		perror("Opening dot file failure\n");exit(2);
 	}
 
-	 fprintf(f,"graph G { \n node[shape=point]\n 9000 [shape =\"box\",label=\"Period %d\"] \n ",p);
+	 fprintf(f,"Graph * g { \n node[shape=point]\n 9000 [shape =\"box\",label=\"Period %d\"] \n ",p);
 	vertex_id = 0;
 
-	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
+	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
 	{
 
-		if(g.kind == STAR)
+		if(g->kind == STAR)
 		{
-			str = sprint_periode_color(g.arc_pool[g.nb_routes].routes_delay_b,g.arc_pool[g.nb_routes].period_b,p,str);
+			str = sprint_periode_color(g->arc_pool[g->nb_routes].routes_delay_b,g->arc_pool[g->nb_routes].period_b,p,str);
 			fprintf(f,"%d [shape = \"box\",label=%s]\n",0,str);	
 			
-			if(i<g.nb_bbu)
+			if(i<g->nb_bbu)
 			{
-				g.arc_pool[i].first = 0;
-				g.arc_pool[i].last = vertex_id+1;
-				g.arc_pool[i].seen = 1;
+				g->arc_pool[i].first = 0;
+				g->arc_pool[i].last = vertex_id+1;
+				g->arc_pool[i].seen = 1;
 				fprintf(f,"%d [shape = \"box\",label=\"%d\"]\n",vertex_id+1,i);	
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g.arc_pool[i].length);
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",0,vertex_id+1,g->arc_pool[i].length);
 				vertex_id++;
 			}
 			else
 			{
-				g.arc_pool[i].last = 0;
-				g.arc_pool[i].first = vertex_id+1;
-				g.arc_pool[i].seen = 1;
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g.arc_pool[i].length);
+				g->arc_pool[i].last = 0;
+				g->arc_pool[i].first = vertex_id+1;
+				g->arc_pool[i].seen = 1;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id+1,0,g->arc_pool[i].length);
 				vertex_id+=2;
 			}
 			
@@ -392,38 +392,38 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 		}
 		else
 		{
-			g.arc_pool[i].first = vertex_id;
-			g.arc_pool[i].last = vertex_id+1;
-			g.arc_pool[i].seen = 1;
+			g->arc_pool[i].first = vertex_id;
+			g->arc_pool[i].last = vertex_id+1;
+			g->arc_pool[i].seen = 1;
 			
 			
-			str = sprint_periode_color(g.arc_pool[i].routes_delay_b,g.arc_pool[i].period_b,p,str);
+			str = sprint_periode_color(g->arc_pool[i].routes_delay_b,g->arc_pool[i].period_b,p,str);
 			if(strcmp(str,"<>") == 0)
 				fprintf(f,"%d [shape = \"point\"]\n",vertex_id+1);	
 			else
 				fprintf(f,"%d [shape = \"box\",label=%s]\n",vertex_id+1,str);	
 			
-			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g.arc_pool[i].length);
+			fprintf(f,"%d -- %d [label = \"%d\"]\n",vertex_id,vertex_id+1,g->arc_pool[i].length);
 			vertex_id+=2;
 		}
 
 		
 	}
 
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 		previous_end = -1;
 		next_begin = -1;
-		for(int j=0;j<g.size_routes[i];j++)
+		for(int j=0;j<g->size_routes[i];j++)
 		{
-			if(g.routes[i][j]->seen == 0)
+			if(g->routes[i][j]->seen == 0)
 			{
-				if(j==(g.size_routes[i]-1))
+				if(j==(g->size_routes[i]-1))
 				{
 					printf("This situation is weyrd(data_treatment.c)\n");
 					exit(491);
 				}
-				next_begin = g.routes[i][j+1]->first;
+				next_begin = g->routes[i][j+1]->first;
 				if(previous_end == -1)
 				{
 					previous_end = vertex_id;
@@ -432,17 +432,17 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 					else*/
 						sprintf(str,"%s",COLORS[i%NB_COLORS]);
 						
-					fprintf(f,"%d [shape = \"circle\",label=<<font color=\"%s\">%d</font><font color=\"black\">(%d)</font>>]\n",vertex_id,str,i,g.routes[i][j]->bbu_dest);
+					fprintf(f,"%d [shape = \"circle\",label=<<font color=\"%s\">%d</font><font color=\"black\">(%d)</font>>]\n",vertex_id,str,i,g->routes[i][j]->bbu_dest);
 					vertex_id++;
 
 				}
-				g.routes[i][j]->first = previous_end;
-				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g.routes[i][j]->length);
+				g->routes[i][j]->first = previous_end;
+				fprintf(f,"%d -- %d [label = \"%d\"]\n",previous_end,next_begin,g->routes[i][j]->length);
 				
-				g.routes[i][j]->last = next_begin;
-				g.routes[i][j]->seen = 1;
+				g->routes[i][j]->last = next_begin;
+				g->routes[i][j]->seen = 1;
 			}
-			previous_end = g.routes[i][j]->last;
+			previous_end = g->routes[i][j]->last;
 		}
 	}
 
@@ -455,8 +455,8 @@ void print_assignment_backward(Graph g, Assignment a, int p,char * path){
 }
 
 
-void print_json_arcs(Graph g){
-	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
+void print_json_arcs(Graph * g){
+	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
 	int arcid = 0;
@@ -470,48 +470,48 @@ void print_json_arcs(Graph g){
 	 fprintf(f,"{ \n ");
 	vertex_id = 0;
 
-	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
+	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
 	{
 
-		g.arc_pool[i].first = vertex_id;
-		g.arc_pool[i].last = vertex_id+1;
-		g.arc_pool[i].seen = 1;
+		g->arc_pool[i].first = vertex_id;
+		g->arc_pool[i].last = vertex_id+1;
+		g->arc_pool[i].seen = 1;
 		
 		
-		fprintf(f,"\"%d\":{ \n \"from\":%d, \n \"to\":%d, \n \"length\":%d \n }, \n  ",arcid,g.arc_pool[i].first,g.arc_pool[i].last,g.arc_pool[i].length);
+		fprintf(f,"\"%d\":{ \n \"from\":%d, \n \"to\":%d, \n \"length\":%d \n }, \n  ",arcid,g->arc_pool[i].first,g->arc_pool[i].last,g->arc_pool[i].length);
 		vertex_id+=2;
 		arcid++;
 	}
 
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 		previous_end = -1;
 		next_begin = -1;
-		for(int j=0;j<g.size_routes[i];j++)
+		for(int j=0;j<g->size_routes[i];j++)
 		{
-			if(g.routes[i][j]->seen == 0)
+			if(g->routes[i][j]->seen == 0)
 			{
-				if(j==(g.size_routes[i]-1))
+				if(j==(g->size_routes[i]-1))
 				{
 					printf("This situation is weyrd(data_treatment.c)\n");
 					exit(491);
 				}
-				next_begin = g.routes[i][j+1]->first;
+				next_begin = g->routes[i][j+1]->first;
 				if(previous_end == -1)
 				{
 					previous_end = vertex_id;
 					vertex_id++;
 
 				}
-				g.routes[i][j]->first = previous_end;
-				fprintf(f,"\"%d\":{ \n \"from\":%d, \n \"to\":%d, \n \"length\":%d \n }, \n  ",arcid,g.routes[i][j]->first,g.routes[i][j]->last,g.routes[i][j]->length);
+				g->routes[i][j]->first = previous_end;
+				fprintf(f,"\"%d\":{ \n \"from\":%d, \n \"to\":%d, \n \"length\":%d \n }, \n  ",arcid,g->routes[i][j]->first,g->routes[i][j]->last,g->routes[i][j]->length);
 				
-				g.routes[i][j]->last = next_begin;
-				g.routes[i][j]->seen = 1;
+				g->routes[i][j]->last = next_begin;
+				g->routes[i][j]->seen = 1;
 				arcid++;
 			}
 			
-			previous_end = g.routes[i][j]->last;
+			previous_end = g->routes[i][j]->last;
 		}
 	}
 
@@ -523,9 +523,9 @@ void print_json_arcs(Graph g){
 
 }
 
-void print_python(Graph g)
+void print_python(Graph * g)
 {
-	for(int i=0;i<g.arc_pool_size;i++){g.arc_pool[i].seen=0;}
+	for(int i=0;i<g->arc_pool_size;i++){g->arc_pool[i].seen=0;}
 	FILE* f;
 	int vertex_id ;
 	int previous_end ;
@@ -543,13 +543,13 @@ void print_python(Graph g)
 	int vertex_kind[1024];
 	for(int i=0;i<1024;i++)
 		vertex_kind[i] = 0;
-	for(int i=0;i<g.nb_bbu+g.nb_collisions;i++)
+	for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
 	{
 
-		g.arc_pool[i].first = vertex_id;
-		g.arc_pool[i].last = vertex_id+1;
-		g.arc_pool[i].seen = 1;
-		if(i<g.nb_bbu)
+		g->arc_pool[i].first = vertex_id;
+		g->arc_pool[i].last = vertex_id+1;
+		g->arc_pool[i].seen = 1;
+		if(i<g->nb_bbu)
 		{
 			fprintf(f,"		bbu%d = self.addHost( 'bbu%d' )\n",i,i);	
 			fprintf(f,"		s%d = self.addSwitch( 's%d' )\n",vertex_id,vertex_id);	
@@ -568,21 +568,21 @@ void print_python(Graph g)
 		vertex_id+=2;
 	}
 
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{	
 		previous_end = -1;
 		next_begin = -1;
-		for(int j=0;j<g.size_routes[i];j++)
+		for(int j=0;j<g->size_routes[i];j++)
 		{
 			
-			if(g.routes[i][j]->seen == 0)
+			if(g->routes[i][j]->seen == 0)
 			{
-				if(j==(g.size_routes[i]-1))
+				if(j==(g->size_routes[i]-1))
 				{
 					printf("This situation is weyrd(data_treatment.c)\n");
 					exit(491);
 				}
-				next_begin = g.routes[i][j+1]->first;
+				next_begin = g->routes[i][j+1]->first;
 
 				if(previous_end == -1)
 				{
@@ -592,15 +592,15 @@ void print_python(Graph g)
 					vertex_id++;
 
 				}
-				g.routes[i][j]->first = previous_end;
+				g->routes[i][j]->first = previous_end;
 				if(vertex_kind[previous_end]==3)
 					fprintf(f,"		self.addLink( rrh%d, s%d ) \n",previous_end,next_begin);
 				else
 					fprintf(f,"		self.addLink( s%d, s%d ) \n",previous_end,next_begin);
-				g.routes[i][j]->last = next_begin;
-				g.routes[i][j]->seen = 1;
+				g->routes[i][j]->last = next_begin;
+				g->routes[i][j]->seen = 1;
 			}
-			previous_end = g.routes[i][j]->last;
+			previous_end = g->routes[i][j]->last;
 		}
 	}
 

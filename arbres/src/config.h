@@ -34,7 +34,7 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 10
 
 
 //openMP parallel
@@ -45,5 +45,6 @@
 
 #define NB_POINTS 40
 
+#define NB_COUPES 7
 
 #define VOISINAGE 1

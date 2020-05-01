@@ -126,12 +126,12 @@ long long fact(int a)
 
 
 
-void compute_tabs(element_sjt * tab,int * m_i,int * release, int * deadline, Graph g, int P, int message_size,int tmax)
+void compute_tabs(element_sjt * tab,int * m_i,int * release, int * deadline, Graph * g, int P, int message_size,int tmax)
 {
 	int offset;
 	int longest = route_length(g,0);
 	int tmp;
-	for(int i=1;i<g.nb_routes;i++)
+	for(int i=1;i<g->nb_routes;i++)
 	{
 		tmp = route_length(g,i);
 		if(tmp > longest)
@@ -140,30 +140,30 @@ void compute_tabs(element_sjt * tab,int * m_i,int * release, int * deadline, Gra
 		}
 	}
 	offset = longest;
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
-		m_i[tab[i].val] = (offset-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],FORWARD)) % P;
-		release[tab[i].val] = m_i[tab[i].val]+route_length(g,tab[i].val)+route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD);
-		deadline[tab[i].val] = message_size+tmax+m_i[tab[i].val]-(route_length(g,tab[i].val)-route_length_untill_arc(g,tab[i].val,&g.arc_pool[g.nb_routes],BACKWARD));
+		m_i[tab[i].val] = (offset-route_length_untill_arc(g,tab[i].val,&g->arc_pool[g->nb_routes],FORWARD)) % P;
+		release[tab[i].val] = m_i[tab[i].val]+route_length(g,tab[i].val)+route_length_untill_arc(g,tab[i].val,&g->arc_pool[g->nb_routes],BACKWARD);
+		deadline[tab[i].val] = message_size+tmax+m_i[tab[i].val]-(route_length(g,tab[i].val)-route_length_untill_arc(g,tab[i].val,&g->arc_pool[g->nb_routes],BACKWARD));
 		offset+=message_size;
 	}
 }
-Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
+Assignment fpt_spall(Graph * g, int P, int message_size, int tmax)
 {
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
 
-	int m_i[g.nb_routes];
-	int release[g.nb_routes];
-	int deadline[g.nb_routes];
+	int m_i[g->nb_routes];
+	int release[g->nb_routes];
+	int deadline[g->nb_routes];
 
 
-	element_sjt * tab = init_sjt(g.nb_routes);
-	long long facto=fact(g.nb_routes);
+	element_sjt * tab = init_sjt(g->nb_routes);
+	long long facto=fact(g->nb_routes);
 	int * res;
 	int travel_time;
 
@@ -175,18 +175,18 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 
 		//DEUX PREMIERS PARAMETRES RAJOUTES , CODE A REFAIRE. CE SIMONS LA CHERCHE LE MEILLEUR DE TT LES RESULTATS
 		//ET NON JUSTE LE PREMIR RESULTAT OK
-		res = FPT_PALL(g,NULL,release,deadline,g.nb_routes,message_size,P);
+		res = FPT_PALL(g,NULL,release,deadline,g->nb_routes,message_size,P);
 		if(res)
 		{	
 		
-			for(int j=0;j<g.nb_routes;j++)
+			for(int j=0;j<g->nb_routes;j++)
 			{
 				a->offset_forward[j] = m_i[j];
 				a->waiting_time[j] = res[j];
 				a->offset_backward[j] = m_i[j] + res[j] +  route_length(g,j);
 			}
 			a->all_routes_scheduled=1;
-			a->nb_routes_scheduled = g.nb_routes;
+			a->nb_routes_scheduled = g->nb_routes;
 			travel_time = travel_time_max(g, tmax,a);
 			if(travel_time != -1)
 			{
@@ -196,7 +196,7 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 			}
 			else
 			{
-				for(int j=0;j<g.nb_routes;j++)
+				for(int j=0;j<g->nb_routes;j++)
 				{
 					a->offset_forward[j] = -1;
 					a->waiting_time[j] = -1;
@@ -207,7 +207,7 @@ Assignment fpt_spall(Graph g, int P, int message_size, int tmax)
 			}
 		}
 		if(i!=facto-1)
-			algo_sjt(tab,g.nb_routes);
+			algo_sjt(tab,g->nb_routes);
 		
 	}
 	free(tab);

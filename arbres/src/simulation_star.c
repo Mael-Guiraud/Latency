@@ -38,7 +38,7 @@ void star_search_random_routes()
 	int P=PERIOD;
 	float nb_simuls = NB_SIMULS;
 	Assignment a,a2,a3 ;
-	Graph g;
+	Graph  g;
 	char * str= strcmpt(nb_simuls);
 	
 	int cmpt_fail = 0;
@@ -54,10 +54,10 @@ void star_search_random_routes()
 	for( int j=0; j<(int)nb_simuls; j++ )
 	{
 		g = init_graph_etoile(P/MESSAGE_SIZE,P);
-		a = greedy_PRIME(g, P, message_size);
-		reset_periods(g,P);
-		a2 = PRIME_reuse(g, P, message_size);
-		a3 = linear_search(g, P/MESSAGE_SIZE,  P,  MESSAGE_SIZE);
+		a = greedy_PRIME(&g, P, message_size);
+		reset_periods(&g,P);
+		a2 = PRIME_reuse(&g, P, message_size);
+		a3 = linear_search(&g, P/MESSAGE_SIZE,  P,  MESSAGE_SIZE);
 	
 			moy += a->nb_routes_scheduled;
 
@@ -79,7 +79,7 @@ void star_search_random_routes()
 		{
 	
 				min3 = a3->nb_routes_scheduled;
-				print_graphvitz(g,"../view/graphminFPT");
+				print_graphvitz(&g,"../view/graphminFPT");
 		}
 
 		if(a3->nb_routes_scheduled>a2->nb_routes_scheduled) 
@@ -88,12 +88,12 @@ void star_search_random_routes()
 			if(cmpt_fail< 5)
 			{
 				printf("\nCas N° %d :\n",cmpt_fail);
-				affiche_graph_routes(g, stdout);
+				affiche_graph_routes(&g, stdout);
 				sprintf(nom,"../view/graph%d",cmpt_fail);
-				print_graphvitz(g,nom);
+				print_graphvitz(&g,nom);
 				printf("Solution pour Greedy SWAP :\n");
 				affiche_assignment(a2,g.nb_routes,stdout);
-				affiche_period_star(g,P,stdout);
+				affiche_period_star(&g,P,stdout);
 				printf("Solution pour FPT :\n");
 				affiche_assignment(a3,a3->nb_routes_scheduled,stdout);
 				//affiche_graph(g,P,stdout);
@@ -112,7 +112,7 @@ void star_search_random_routes()
 		free_assignment(a2);
 		free_assignment(a3);
 		
-		free_graph(g);	
+		free_graph(&g);	
 		
 		fprintf(stdout,str,j+1,(int)nb_simuls);
 	}
@@ -145,7 +145,7 @@ void star_all_routes_lenghts()
 	
 
 	Assignment a,a2,a3 ;
-	Graph g;
+	Graph  g;
 
 	int cmpt_fail = 0;
 	float moy = 0;
@@ -175,9 +175,9 @@ void star_all_routes_lenghts()
 
 
 		g =  init_graph_etoile_values_set(nb_routes,P,tab);
-		a = greedy_PRIME(g, P, message_size);
-		reset_periods(g,P);
-		a2 = PRIME_reuse(g, P, message_size);
+		a = greedy_PRIME(&g, P, message_size);
+		reset_periods(&g,P);
+		a2 = PRIME_reuse(&g, P, message_size);
 	
 
 		#pragma omp atomic update
@@ -191,7 +191,7 @@ void star_all_routes_lenghts()
 			if(min > a->nb_routes_scheduled)
 			{
 					min = a->nb_routes_scheduled;
-					print_graphvitz(g,"../view/graphminGreedy");
+					print_graphvitz(&g,"../view/graphminGreedy");
 			}
 		}
 		#pragma omp critical
@@ -199,13 +199,13 @@ void star_all_routes_lenghts()
 			if(min2 > a2->nb_routes_scheduled)
 			{
 					min2 = a2->nb_routes_scheduled;
-					print_graphvitz(g,"../view/graphminSWAPT");
+					print_graphvitz(&g,"../view/graphminSWAPT");
 			}
 		}
 
 		if(a2->nb_routes_scheduled <= 6)
 		{
-			a3 = linear_search(g, P/MESSAGE_SIZE,  P,  MESSAGE_SIZE);
+			a3 = linear_search(&g, P/MESSAGE_SIZE,  P,  MESSAGE_SIZE);
 			#pragma omp atomic update
 				moy3 += a3->nb_routes_scheduled;
 			#pragma omp critical
@@ -214,7 +214,7 @@ void star_all_routes_lenghts()
 				{
 				
 						min3 = a3->nb_routes_scheduled;
-						print_graphvitz(g,"../view/graphminFPT");
+						print_graphvitz(&g,"../view/graphminFPT");
 				}
 	
 			}
@@ -242,7 +242,7 @@ void star_all_routes_lenghts()
 				sprintf(nom,"../view/graph%d",cmpt_fail);
 				print_graphvitz(g,nom);
 				printf("Solution pour Greedy SWAP :\n");
-				affiche_assignment(a2,g.nb_routes,stdout);
+				affiche_assignment(a2,g->nb_routes,stdout);
 				affiche_period_star(g,P,stdout);
 				printf("Solution pour FPT :\n");
 				affiche_assignment(a3,a3->nb_routes_scheduled,stdout);
@@ -263,7 +263,7 @@ void star_all_routes_lenghts()
 		free_assignment(a);
 		free_assignment(a2);
 		
-		free_graph(g);	
+		free_graph(&g);	
 
 		#pragma omp critical
 			fprintf(stdout,str,j+1,(int)nb_simuls);
@@ -286,7 +286,7 @@ void star_all_routes_lenghts()
 }
 
 
-void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
+void simul_star(int seed,Assignment (*ptrfonction)(Graph*,int,int,int),char * nom)
 {
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
@@ -294,7 +294,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 	long long moy;
 	int tmax;
 	double moy_routes_scheduled ;
-	Graph g;
+	Graph  g;
 	int P ;
 	
 	char buf[256];
@@ -339,7 +339,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 			
 			if(FIXED_PERIOD_MOD)
 			{
-				if(PERIOD < load_max(g)*MESSAGE_SIZE)
+				if(PERIOD < load_max(&g)*MESSAGE_SIZE)
 					printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
 				P = PERIOD;
 			}
@@ -349,18 +349,18 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 			g= init_graph_etoile(NB_ROUTES,P);
 			if(TMAX_MOD)
 			{
-				if(longest_route(g)*2 > TMAX)
+				if(longest_route(&g)*2 > TMAX)
 					printf("			WARNING! TMAX is higher than the longest route. \n");
 				tmax = TMAX;
 			}
 			else
-				tmax = longest_route(g)*2 + margin;
+				tmax = longest_route(&g)*2 + margin;
 			
 
-			a = ptrfonction( g, P, message_size,tmax);
+			a = ptrfonction(&g, P, message_size,tmax);
 			if(a->all_routes_scheduled)
 			{
-				travel_time = travel_time_max(g, tmax,a);
+				travel_time = travel_time_max(&g, tmax,a);
 				
 				if(travel_time != -1)
 				{
@@ -378,7 +378,7 @@ void simul_star(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom
 				moy_routes_scheduled += a->nb_routes_scheduled;
 			free_assignment(a);
 	
-			free_graph(g);
+			free_graph(&g);
 			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 			fflush(stdout);
 		}	
