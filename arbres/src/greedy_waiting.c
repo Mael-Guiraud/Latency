@@ -10,14 +10,14 @@
 
 #include "test.h"
 
-Assignment greedy(Graph g, int P, int message_size, int tmax)
+Assignment greedy(Graph * g, int P, int message_size, int tmax)
 {
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 	int offset;
 	int begin_offset;
 	int bool_fail = 0;
@@ -25,7 +25,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 	
 
 	//for each route
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 		
 		offset=0;
@@ -46,7 +46,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 		{
 			fill_period(g,i,offset,message_size,FORWARD,P);
 			a->offset_forward[i]=offset;
-			g.routes[i][0]->routes_delay_f[i] = offset;
+			g->routes[i][0]->routes_delay_f[i] = offset;
 		}
 		else
 		{
@@ -56,22 +56,22 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 		
 	}
 
-	int deadline[g.nb_routes];
-	int order[g.nb_routes];
-	for(int i=0;i<g.nb_routes;i++)
+	int deadline[g->nb_routes];
+	int order[g->nb_routes];
+	for(int i=0;i<g->nb_routes;i++)
 		order[i]=i;
 	
-	for(int i= 0;i<g.nb_routes;i++)
+	for(int i= 0;i<g->nb_routes;i++)
 	{
 		deadline[i] = tmax - (2 * route_length(g,i) + a->offset_forward[i]);
 	}
 
-	tri_bulles_inverse(deadline,order, g.nb_routes);
+	tri_bulles_inverse(deadline,order, g->nb_routes);
 
 	
 		//for each route
 	
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 		bool_fail = 0;
 		bool_fail_tmax = 0;
@@ -104,7 +104,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 				
 					fill_period(g,order[i],offset,message_size,BACKWARD,P);
 					a->offset_backward[order[i]]=offset;
-					g.routes[order[i]][0]->routes_delay_b[order[i]] = offset-begin_offset;
+					g->routes[order[i]][0]->routes_delay_b[order[i]] = offset-begin_offset;
 					a->waiting_time[order[i]]=offset-begin_offset;
 					a->nb_routes_scheduled++;
 				}
@@ -127,7 +127,7 @@ Assignment greedy(Graph g, int P, int message_size, int tmax)
 			a->waiting_time[order[i]]=-1;
 		}
 	}
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 
@@ -150,46 +150,46 @@ ARG mode :
 	- 1 : uses the longest route first
 	- 2 : use the route with the most collisions first
 */
-Assignment greedy_by_arcs(Graph g, int P, int message_size,int mode)
+Assignment greedy_by_arcs(Graph * g, int P, int message_size,int mode)
 {
 	
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = malloc(sizeof(int)*g.nb_routes);
+	a->offset_forward = malloc(sizeof(int)*g->nb_routes);
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
-	a->offset_backward = malloc(sizeof(int)*g.nb_routes);
-	a->waiting_time = malloc(sizeof(int)*g.nb_routes);
+	a->offset_backward = malloc(sizeof(int)*g->nb_routes);
+	a->waiting_time = malloc(sizeof(int)*g->nb_routes);
 	int offset,begin_offset,offset_back;
 	int best_offset=0;
 	int best_begin = 0;
 	int best_back = INT_MAX;
 	int back_found;
-	int routes[g.nb_routes];
-	for(int i=0;i<g.nb_routes;i++)
+	int routes[g->nb_routes];
+	for(int i=0;i<g->nb_routes;i++)
 		routes[i]=0;
 
 	int * load_order = load_links(g);//store the id of the arcs, by the most loaded to the less loaded
 	int * id_routes;
 
-	for(int i=0;i<g.arc_pool_size;i++)
+	for(int i=0;i<g->arc_pool_size;i++)
 	{
 		switch (mode) {// id_routes  stores the id of the routes to use, considering the sort chosen
 
 		case 0 :
-			id_routes = routes_by_id(g.arc_pool[load_order[i]]); 
+			id_routes = routes_by_id(g->arc_pool[load_order[i]]); 
 		break;
 
 		case 1 :
-			id_routes = sort_longest_routes_on_arc(g, g.arc_pool[load_order[i]]);
+			id_routes = sort_longest_routes_on_arc(g, g->arc_pool[load_order[i]]);
 		break;
 		case 2:
-			id_routes = sort_routes_by_collisions(g,g.arc_pool[load_order[i]]);
+			id_routes = sort_routes_by_collisions(g,g->arc_pool[load_order[i]]);
 		break;
 		default:
 			printf("Mode non connu(greedy by arcs).\n");exit(97);
 		break;
 		}
-		for(int j=0;j<g.arc_pool[load_order[i]].nb_routes;j++)
+		for(int j=0;j<g->arc_pool[load_order[i]].nb_routes;j++)
 		{
 			
 			if(!routes[id_routes[j]])
@@ -254,12 +254,12 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size,int mode)
 					{*/
 						fill_period(g,id_routes[j],best_offset,message_size,FORWARD,P);
 						a->offset_forward[id_routes[j]]=best_offset;
-						g.routes[id_routes[j]][0]->routes_delay_f[id_routes[j]] = best_offset;
+						g->routes[id_routes[j]][0]->routes_delay_f[id_routes[j]] = best_offset;
 						
 						fill_period(g,id_routes[j],best_back,message_size,BACKWARD,P);
 						a->offset_backward[id_routes[j]]=best_back;
 						a->waiting_time[id_routes[j]]=best_back-best_begin;
-						g.routes[id_routes[j]][0]->routes_delay_b[id_routes[j]] = best_back-best_begin;
+						g->routes[id_routes[j]][0]->routes_delay_b[id_routes[j]] = best_back-best_begin;
 						routes[id_routes[j]] = 1;	
 						a->nb_routes_scheduled++;
 					//}
@@ -272,7 +272,7 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size,int mode)
 		free(id_routes);
 	}
 	free(load_order);
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 
@@ -292,17 +292,17 @@ Assignment greedy_by_arcs(Graph g, int P, int message_size,int mode)
 
 }
 
-Assignment loaded_greedy(Graph g, int P, int message_size)
+Assignment loaded_greedy(Graph * g, int P, int message_size)
 {
 	return greedy_by_arcs(g,P,message_size,0);
 }
 
-Assignment loaded_greedy_longest(Graph g, int P, int message_size)
+Assignment loaded_greedy_longest(Graph * g, int P, int message_size)
 {
 	return greedy_by_arcs(g,P,message_size,1);
 }
 
-Assignment loaded_greedy_collisions(Graph g, int P, int message_size)
+Assignment loaded_greedy_collisions(Graph * g, int P, int message_size)
 {
 	return greedy_by_arcs(g,P,message_size,2);
 }
@@ -481,57 +481,57 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 }
 
 
-int greedy_deadline(Graph g, int P, int message_size)
+int greedy_deadline(Graph * g, int P, int message_size)
 {
 	Period_kind kind;
 	int CL;
 
  	//for each contention  level
- 	for(int i=0;i<g.contention_level;i++)
+ 	for(int i=0;i<g->contention_level;i++)
  	{
 
- 		if(i<g.contention_level/2)
+ 		if(i<g->contention_level/2)
  		{	
  			CL = i;
  			kind = FORWARD;
  		}
  		else
  		{
- 			CL = g.contention_level-i-1;
+ 			CL = g->contention_level-i-1;
  			kind = BACKWARD;
  		}
 
- 		for(int j=0;j<g.arc_pool_size;j++)
+ 		for(int j=0;j<g->arc_pool_size;j++)
  		{
 
- 			if(g.arc_pool[j].contention_level == CL)
+ 			if(g->arc_pool[j].contention_level == CL)
  			{
- 				int release[g.arc_pool[j].nb_routes];
- 				int budget[g.arc_pool[j].nb_routes];
- 				int ids[g.arc_pool[j].nb_routes];
+ 				int release[g->arc_pool[j].nb_routes];
+ 				int budget[g->arc_pool[j].nb_routes];
+ 				int ids[g->arc_pool[j].nb_routes];
  				if(kind == FORWARD)
  				{
- 					for(int l=0;l<g.arc_pool[j].nb_routes;l++)
+ 					for(int l=0;l<g->arc_pool[j].nb_routes;l++)
  					{
- 						ids[l] = g.arc_pool[j].routes_id[l];
- 						release[l] = route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD);
- 						budget[l]= route_length(g,g.arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD);
- 						//printf("route %d(%d) : %d = %d - %d ",ids[l], g.size_routes[ids[l]],budget[l], route_length(g,g.arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],FORWARD));
+ 						ids[l] = g->arc_pool[j].routes_id[l];
+ 						release[l] = route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 						budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 						//printf("route %d(%d) : %d = %d - %d ",ids[l], g->size_routes[ids[l]],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
  					}
  					//printf("\n");
- 					if(!oderinarc(release,  budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_f, g.arc_pool[j].routes_delay_f,ids,g.arc_pool[j].period_f))
+ 					if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f))
  						return 0;
  				}
  					
  				else
  				{
- 					for(int l=0;l<g.arc_pool[j].nb_routes;l++)
+ 					for(int l=0;l<g->arc_pool[j].nb_routes;l++)
  					{
- 						ids[l] = g.arc_pool[j].routes_id[l];
- 						release[l] = route_length_with_buffers_forward(g,g.arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
- 						budget[l]= route_length(g,g.arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g.arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g.arc_pool[j].routes_id[l], &g.arc_pool[j],BACKWARD);
+ 						ids[l] = g->arc_pool[j].routes_id[l];
+ 						release[l] = route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
+ 						budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
  					}
- 					if(!oderinarc( release, budget,P ,  g.arc_pool[j].nb_routes,message_size,g.arc_pool[j].routes_order_b, g.arc_pool[j].routes_delay_b,ids,g.arc_pool[j].period_b))
+ 					if(!oderinarc( release, budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_b, g->arc_pool[j].routes_delay_b,ids,g->arc_pool[j].period_b))
  						return 0;
  				}
  					
@@ -546,7 +546,7 @@ int greedy_deadline(Graph g, int P, int message_size)
 	return 1;
 
 }
-int greedy_deadline_assignment(Graph g, int P, int message_size)
+int greedy_deadline_assignment(Graph * g, int P, int message_size)
 {
 	
 //printf("\n\n\n\nnew greedy \n\n\n");

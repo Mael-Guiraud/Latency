@@ -1,1 +1,1 @@
-int hash_graph( Graph g,int size);
+int hash_graph( Graph * g,int size);

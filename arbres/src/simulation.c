@@ -25,70 +25,10 @@
 #include "fpt.h"
 
 
-void test_one_algo(Graph g,int P, int message_size, int tmax, Assignment (*ptrfonctionnowaiting)(Graph,int,int),Assignment (*ptrfonctionwaiting)(Graph,int,int,int),char * nom,FILE * f)
-{
-	Assignment a;
-	char buf[128];
-	char buf_dot[128];
-	printf(" %s: ",nom);
-	fprintf(f,"\n %s: \n",nom);
-	if(ptrfonctionnowaiting)
-		a = ptrfonctionnowaiting( g, P, message_size);
-	else
-		a = ptrfonctionwaiting( g, P, message_size,tmax);
-	/*if((a->all_routes_scheduled) && (travel_time_max( g, tmax, a) != -1) )
-	{
-		printf(GRN "OK | " RESET);
-		fprintf(f,"Assignment found !\n");
-		affiche_assignment( a,g.nb_routes,f);
-		printf("Travel time max = %d | buffers %d \n",travel_time_max( g, tmax, a),travel_time_max_buffers(g) );
-		fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-	}
-	else
-	{	
-		
-		printf(RED "Not OK -- " RESET);
-		if(a->all_routes_scheduled)
-		{
-			printf("Travel time max = %d |buffers %d \n",travel_time_max( g, tmax, a), travel_time_max_buffers( g));
-			fprintf(f,"Travel time max = %d \n",travel_time_max( g, tmax, a));
-		}
-		else
-		{
-			printf("No assignment found\n");
-			fprintf(f,"No assignment found\n");
-		}
-			
-	}*/
-//	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
-	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,a,P,buf_dot);
-	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	sprintf(buf,"rm -rf %s",buf_dot);
-	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
-	fprintf(f,"Reseting periods ...\n");
-
-	
-	
-	/*if(borninf >travel_time_max_buffers(g))
-	{
-		exit(49);
-	}*/
-	reset_periods(g,P);
-}
 void test()
 {
-	unsigned int seed = 1588183584;
-	//unsigned int seed = time(NULL);
+	//unsigned int seed = 1588264505;
+	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -107,54 +47,54 @@ void test()
 				
 	
 
-	Graph g = init_graph_random_tree(STANDARD_LOAD);
+	Graph  g = init_graph_random_tree(STANDARD_LOAD);
 	if(FIXED_PERIOD_MOD)
 	{
 		P = PERIOD;
 	}
 	else
-		P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+		P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 	if(TMAX_MOD)
 	{
 		tmax = TMAX;
 	}
 	else
-		tmax = longest_route(g)*2 + margin;
+		tmax = longest_route(&g)*2 + margin;
 
 			
 	printf("Parameters : \n");
 	printf("	Fixed period   : ");if(FIXED_PERIOD_MOD){printf("ON ");}else{printf("OFF ");}printf("| P = %d .\n",P);
-	if(P < load_max(g)*MESSAGE_SIZE)
+	if(P < load_max(&g)*MESSAGE_SIZE)
 			printf(YEL "WARNING: not enought space to schedule all the messages on the loadest link.\n" RESET);
 	printf("	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
 	printf("	Fixed tmax     : ");if(TMAX_MOD){printf("ON ");}else{printf("OFF");}printf("| TMAX = %d .\n",tmax);
-	if(longest_route(g)*2 > TMAX)
+	if(longest_route(&g)*2 > TMAX)
 			printf(YEL "WARNING! TMAX is lower than the longest route. \n" RESET);
 	printf("	Message size   : %d .\n",message_size);
 	printf("	Routes Synch   : ");if(SYNCH){printf("ON ");}else{printf("OFF ");}printf("\n");
 
 	fprintf(f,"Parameters : \n");
 	fprintf(f,"	Fixed period   : ");if(FIXED_PERIOD_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"| P = %d .\n",P);
-	if(PERIOD < load_max(g)*MESSAGE_SIZE)
+	if(PERIOD < load_max(&g)*MESSAGE_SIZE)
 			fprintf(f,YEL "WARDNING: not enought space to schedule all the messages on the loadest link.\n" RESET);
 	fprintf(f,"	Margin(random) : %d (note : if TMAX is fixed, this parameter is not efficient).\n",margin);
 	fprintf(f,"	Fixed tmax     : ");if(TMAX_MOD){fprintf(f,"ON ");}else{fprintf(f,"OFF");}fprintf(f,"| TMAX = %d .\n",tmax);
-	if(longest_route(g)*2 > TMAX)
+	if(longest_route(&g)*2 > TMAX)
 			fprintf(f,YEL "WARNING! TMAX is higher than the longest route. \n" RESET);
 	fprintf(f,"	Message size   : %d .\n",message_size);
 	fprintf(f,"	Routes Synch   : ");if(SYNCH){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"\n");
 
 
-	printf(" ---- \n Graph Generated ...\n");
-	fprintf(f,"\n ---- \n Graph Generated ...\n");
-	affiche_graph(g,P,f);
+	printf(" ---- \n Graph * generated ...\n");
+	fprintf(f,"\n ---- \n Graph * generated ...\n");
+	affiche_graph(&g,P,f);
 	printf("Number of routes on the graph : %d .\n",g.nb_routes);
-	printf("Number of routes on the loadest arc : %d .\n",load_max(g));
-	printf("Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(g),longest_route(g)*2);
-	fprintf(f,"Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(g),longest_route(g)*2);
-	fprintf(f,"Number of routes on the loadest arc : %d .\n",load_max(g));
+	printf("Number of routes on the loadest arc : %d .\n",load_max(&g));
+	printf("Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(&g),longest_route(&g)*2);
+	fprintf(f,"Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(&g),longest_route(&g)*2);
+	fprintf(f,"Number of routes on the loadest arc : %d .\n",load_max(&g));
 	fprintf(f,"Load of each links : ");
-	tmp = load_links(g);
+	tmp = load_links(&g);
 	affiche_tab(tmp,g.arc_pool_size,f);
 	free(tmp);
 
@@ -162,58 +102,36 @@ void test()
 	printf("------- \n TESTING ALGORITHMS : \n");
 	fprintf(f,"\n ------- \n TESTING ALGORITHMS : \n");
 
-	//printf("Le voisinage donne un temps aller retour de %d.\n",descente(g,P,message_size));
 
-	printf("- WITHOUT WAITING TIME : \n");
-	fprintf(f," WITHOUT WAITING TIME : \n\n");
-	
-	//THE NAME MUST NOT CONTAIN SPACES
-	//test_one_algo(g,P,message_size,tmax,&greedy_PRIME,NULL,"GreedyPrime",f);
-	//test_one_algo(g,P,message_size,tmax,&PRIME_reuse,NULL,"PrimeReuse",f);
-	//test_one_algo(g,P,message_size,tmax,&greedy_tics_won,NULL,"GreedyMinLost",f);
-	
-	
-
-	printf("\n --------- \n- WITH WAITING TIME : \n");
-	fprintf(f,"\n --------- \n WITH WAITING TIME \n");
-	//test_one_algo(g,P,message_size,tmax,NULL,&greedy,"Greedy",f);
-	/*test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy,"LoadedGreedy",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_longest,"LoadedGreedyLongest",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&loaded_greedy_collisions,"LoadedGreedyCollisions",f);
-	test_one_algo(g,P,message_size,tmax,NULL,&RRH_first_spall,"RRHFirst",f);*/
-	//test_one_algo(g,P,message_size,0,NULL,&descente,"Descente",f);
-//	test_one_algo(g,P,message_size,100,NULL,&taboo,"taboo",f);
-//	test_one_algo(g,P,message_size,1000,NULL,&recuit,"recuit",f);
-//test_one_algo(g,P,message_size,100,NULL,&greedy_deadline_assignment,"GreedyDeadline",f);
-
-	char buf_dot[128];
 	char nom[32];
-	printf("Borneinf %d \n",borneInf(g,P,message_size));
+	printf("Borneinf %d \n",borneInf(&g,P,message_size));
 	
 	sprintf(nom,"borneinf");
 	
-	reset_periods(g,P);reinit_delays(g);
+	reset_periods(&g,P);reinit_delays(&g);
 
 	int coupes[NB_COUPES];
 	for(int i=0;i<NB_COUPES;i++)coupes[i]=1; 
 		double coupes_m[NB_COUPES];
-	int fpt = branchbound( g, P,  message_size,coupes,coupes_m);
+	int fpt = branchbound( &g, P,  message_size,coupes,coupes_m);
 	
 	printf("FPT = %d \n",fpt);
 	
-	reset_periods(g,P);reinit_delays(g);
-	/*int recuits = recuit( g, P, message_size,1000);
-	printf("Recuit %d \n",recuits);	
+	reset_periods(&g,P);reinit_delays(&g);
+		/*
+	float nb_pas;	
+	int recuits = recuit( g, P, message_size,1000,&nb_pas);
+	printf("Recuit %d, %f pas \n",recuits,nb_pas);	
 	sprintf(nom,"recuit");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,NULL,P,buf_dot);
+	print_assignment(g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,NULL,P,buf_dot);
+	print_assignment_backward(g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
@@ -236,13 +154,13 @@ void test()
 	sprintf(nom,"descente");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,NULL,P,buf_dot);
+	print_assignment(g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,NULL,P,buf_dot);
+	print_assignment_backward(g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
@@ -289,481 +207,18 @@ void test()
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le taboo ! \n" RESET);
 	}*/
-/*	seed = time(NULL);
-
-
-	fprintf(f,"\n --------- \n Statistical Multiplexing .Testing the chain reaction of multiplexing ...   \n \n");
-	printf("\n --------- \n Statistical Multiplexing. Testing the chain reaction of multiplexing ...  \n");
-	printf("Fifo : \n");
-	fprintf(f,"Fifo \n");
-	int last_time_ellapsed =0;
-	int time_ellapsed = 0;
-	int nb_periods=1;
-	while(1)
-	{
-		srand(seed);
-		time_ellapsed = multiplexing(g, P, message_size, nb_periods, FIFO,tmax);
-		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
-		fprintf(f,"For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
-		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
-		{
-			nb_periods *= 10;
-			printf("This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
-			fprintf(f,"This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
-			last_time_ellapsed = time_ellapsed;
-		}
-		else
-			break;
-	}
-	if(time_ellapsed < tmax)
-	{
-		printf(GRN "OK\n" RESET);
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-	}
-
-	
-	printf("\n ------- \nTime ellapsed first . Testing the chain reaction of multiplexing ... \n");
-	fprintf(f,"\n ------- \nTime ellapsed first . Testing the chain reaction of multiplexing ... \n");
-	last_time_ellapsed =0;
-	time_ellapsed = 0;
-	nb_periods=1;
-	while(1)
-	{
-		srand(seed);
-		time_ellapsed = multiplexing(g, P, message_size, nb_periods, DEADLINE,tmax);
-		printf("For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
-		fprintf(f,"For %d period(s), the max time ellapsed is %d \n",nb_periods,time_ellapsed);
-		if(time_ellapsed > (last_time_ellapsed+last_time_ellapsed/10) )
-		{
-			nb_periods *= 10;
-			printf("This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
-			fprintf(f,"This time is more than 10%% higher than the previous. \n We increase the number of periods to %d.\n",nb_periods);
-			last_time_ellapsed = time_ellapsed;
-		}
-		else
-			break;
-	}
-	if(time_ellapsed < tmax)
-	{
-		printf(GRN "OK\n" RESET);
-	}
-	else
-	{
-		printf(RED "Not OK --\n" RESET);
-	}
-
-	*/
-
 	
 
-	printf("\n printing graphvitz ...");print_graphvitz(g,"../view/view.dot");printf("Ok.\n");
-	printf("\n printing python ...");print_python(g);printf("Ok.\n");
-	printf("\n printing json arcs ..."); print_json_arcs(g);
+	printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
+	printf("\n printing python ...");print_python(&g);printf("Ok.\n");
+	printf("\n printing json arcs ..."); print_json_arcs(&g);
 	printf("Logs in logs.txt\n");
-	free_graph(g);
+	free_graph(&g);
 	fclose(f);
-	 //jsontest();
+
 
 }
 
-
-void simul(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
-{
-	srand(seed);
-	int message_size = MESSAGE_SIZE;
-	int nb_success;
-	int tmax;
-	double moy_routes_scheduled ;
-	Graph g;
-	int P ;
-	long long moy;
-	char buf[256];
-	sprintf(buf,"../data/%s",nom);
-	FILE * f = fopen(buf,"w");
-
-	Assignment a;
-	int MarginMax = MARGIN_MAX;
-	int MarginMin = MARGIN_MIN;
-
-	//Generation of the pdf of fails
-	int cmpt_fail = 0;
-	char buf_dot[256];
-	if(!PARALLEL)
-	{
-		sprintf(buf,"mkdir -p ../FAIL/%s",nom);
-		if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	}
-
-	printf("ALGORITHM : %s \n",nom);
-	if(!f)perror("Error while opening file\n");
-	if(TMAX_MOD)
-	{
-		printf("		TMax is fixed to %d .\n",TMAX);
-		MarginMin = 0;
-		MarginMax = 0; 
-	}
-	if(FIXED_PERIOD_MOD)
-	{
-		printf("		The period is fixed to %d .\n",PERIOD);
-	}
-	for(int margin=MarginMin;margin<=MarginMax;margin+=MARGIN_GAP)
-	{
-		nb_success=0;
-		moy_routes_scheduled = 0;
-		moy = 0;
-		if(!PARALLEL)
-		{
-			cmpt_fail = 0;
-			sprintf(buf,"mkdir -p ../FAIL/%s/margin%d",nom,margin);
-			if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-		}
-		
-
-		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
-		for(int i=0;i<NB_SIMULS;i++)
-		{
-			g= init_graph_random_tree(STANDARD_LOAD);
-			if(FIXED_PERIOD_MOD)
-			{
-				if(PERIOD < load_max(g)*MESSAGE_SIZE)
-					printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
-				P = PERIOD;
-			}
-			else
-				P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-			if(TMAX_MOD)
-			{
-				if(longest_route(g)*2 > TMAX)
-					printf("			WARNING! TMAX is higher than the longest route. \n");
-				tmax = TMAX;
-			}
-			else
-				tmax = longest_route(g)*2 + margin;
-			
-			a = ptrfonction( g, P, message_size,tmax);
-			if(a->all_routes_scheduled)
-			{
-				//if(travel_time_max( g, tmax, a) != -1)
-				if(travel_time_max_buffers( g) <= tmax)
-				{
-					#pragma omp atomic update
-						nb_success++;
-					#pragma omp atomic update
-						moy+=travel_time_max_buffers( g);
-				}
-				else
-				{
-					if(!SYNCH)
-					{
-						printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok.\n");
-						exit(56);	
-					}
-				}
-				
-
-			}
-			else
-			{
-				if(!PARALLEL)
-				{
-				
-		
-					sprintf(buf_dot,"../FAIL/%s/margin%d/%df.dot",nom,margin,cmpt_fail);
-					print_assignment(g,a,P,buf_dot);
-					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/margin%d/%df.pdf",buf_dot,nom,margin,cmpt_fail);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					sprintf(buf,"rm -rf %s",buf_dot);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					sprintf(buf_dot,"../FAIL/%s/margin%d/%db.dot",nom,margin,cmpt_fail);
-					print_assignment_backward(g,a,P,buf_dot);
-					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/margin%d/%db.pdf",buf_dot,nom,margin,cmpt_fail);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					sprintf(buf,"rm -rf %s",buf_dot);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-				
-			
-					cmpt_fail++;
-				}
-			}
-			
-
-			#pragma omp atomic update
-				moy_routes_scheduled += a->nb_routes_scheduled;
-			free_assignment(a);
-	
-			free_graph(g);
-			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
-			fflush(stdout);
-		}	
-		printf("\nMargin : %d success : %d/%d ",margin,nb_success,NB_SIMULS);
-		if(nb_success)
-		{
-			printf("moy = %lld.\n",moy/nb_success);
-		}
-		else
-		{
-			printf("\n");
-		}
-		fprintf(f,"%d %f %f ",margin,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
-		if(nb_success)
-		{
-			fprintf(f,"%lld \n",moy/nb_success);
-		}
-		else
-		{
-			fprintf(f,"-1 \n");
-		}
-	}
-	fclose(f);
-	
-		
-}
-
-
-void simul_period(int seed,Assignment (*ptrfonction)(Graph,int,int),char * nom)
-{
-	srand(seed);
-	int message_size = MESSAGE_SIZE;
-	int nb_success;
-	Graph g;
-	int P;
-	double moy_routes_scheduled ;
-	int tmax;
-	Assignment a;
-	double loadMin=LOAD_MIN;
-	double loadMax=LOAD_MAX;
-	char buf[256];
-	sprintf(buf,"../data/%s",nom);
-	FILE * f = fopen(buf,"w");
-	if(!f)perror("Error while opening file\n");
-
-
-	//Generation of the pdf of fails
-	int cmpt_fail = 0;
-	char buf_dot[256];
-	if(!PARALLEL)
-	{
-		sprintf(buf,"mkdir -p ../FAIL/%s",nom);
-		if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-	}
-
-	printf("ALGORITHM : %s \n",nom);
-	if(TMAX_MOD)
-	{
-		printf("		TMax is fixed to %d .\n",TMAX);
-	}
-	if(FIXED_PERIOD_MOD)
-	{
-		printf("		The period is fixed to %d .\n",PERIOD);
-		loadMin = 0.0;
-		loadMax = 0.0;
-	}
-	for(double load=loadMin;load<=loadMax;load+=LOAD_GAP)
-	{
-		
-		nb_success=0;
-		moy_routes_scheduled = 0;
-		if(!PARALLEL)
-		{
-			cmpt_fail = 0;
-			sprintf(buf,"mkdir -p ../FAIL/%s/load%f",nom,load);
-			if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-		}
-		
-
-		#pragma omp parallel for private(g,P,a,tmax)  if(PARALLEL)
-		for(int i=0;i<NB_SIMULS;i++)
-		{
-			
-			//printf("%f %d\n",load, P);
-
-			g= init_graph_random_tree(load);
-
-
-			if(FIXED_PERIOD_MOD)
-			{
-				if(PERIOD < load_max(g)*MESSAGE_SIZE)
-					printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
-				P = PERIOD;
-			}
-			else
-				P= (load_max(g)*MESSAGE_SIZE)/load;
-
-			if(TMAX_MOD)
-			{
-				if(longest_route(g)*2 > TMAX)
-					printf("			WARNING! TMAX is higher than the longest route. \n");
-				tmax = TMAX;
-			}
-			else
-				tmax = longest_route(g)*2;
-			
-			
-			a = ptrfonction( g, P, message_size);
-			if(a->all_routes_scheduled)
-			{
-					
-				if(travel_time_max( g, tmax, a) != -1)
-				{
-					#pragma omp atomic update
-						nb_success++;
-				}
-				else
-				{
-					if(!SYNCH)
-					{
-						printf("Error, this should not happend, the algorithm has to return an assignment in which the travel time is ok since we have no waiting times.\n");
-						exit(56);
-					}
-					
-				}
-						
-			}
-			else
-			{
-				if(!PARALLEL)
-				{
-
-					sprintf(buf_dot,"../FAIL/%s/load%f/%df.dot",nom,load,cmpt_fail);
-					print_assignment(g,a,P,buf_dot);
-					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/load%f/%df.pdf",buf_dot,nom,load,cmpt_fail);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					sprintf(buf,"rm -rf %s",buf_dot);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					sprintf(buf_dot,"../FAIL/%s/load%f/%db.dot",nom,load,cmpt_fail);
-					print_assignment_backward(g,a,P,buf_dot);
-					sprintf(buf,"dot -Tpdf %s -o ../FAIL/%s/load%f/%db.pdf",buf_dot,nom,load,cmpt_fail);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					sprintf(buf,"rm -rf %s",buf_dot);
-					if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
-					cmpt_fail++;
-				}
-			}
-
-			#pragma omp atomic update
-			moy_routes_scheduled += a->nb_routes_scheduled;
-			free_assignment(a);
-			free_graph(g);
-			fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
-			fflush(stdout);
-		}	
-		printf("\nLoad : %f success : %d/%d \n",load,nb_success,NB_SIMULS);
-		fprintf(f,"%f %f %f\n",load,nb_success/(float)NB_SIMULS,moy_routes_scheduled/(float)NB_SIMULS);
-	}
-	fclose(f);	
-}
-
-
-
-
-void print_distrib_margin_algo_waiting(int seed,Assignment (*ptrfonction)(Graph,int,int,int),char * nom)
-{
-	
-	srand(seed);
-	int message_size = MESSAGE_SIZE;
-	Graph g;
-	int P ;
-
-	char buf[256];
-	sprintf(buf,"../data/%s.plot",nom);
-	FILE * f = fopen(buf,"w");
-
-	Assignment a=NULL;
-	
-
-	printf("ALGORITHM : %s \n",nom);
-	if(!f)perror("Error while opening file\n");
-	int time;
-	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
-	for(int i=0;i<NB_SIMULS;i++)
-	{
-		a = NULL;
-
-		g= init_graph_random_tree(STANDARD_LOAD);
-
-		if(FIXED_PERIOD_MOD)
-		{
-			if(PERIOD < load_max(g)*MESSAGE_SIZE)
-				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
-			P = PERIOD;
-		}
-		else
-			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-		
-		
-		a = ptrfonction( g, P, message_size,20);
-
-		time = travel_time_max_buffers(g);
-			
-		#pragma omp critical
-			fprintf(f,"%d\n",time);		
-		if(a)
-			free_assignment(a);
-
-		free_graph(g);
-		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
-		fflush(stdout);
-	}	
-	
-	fclose(f);
-	
-		
-}
-void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int,int),char * nom)
-{
-
-	srand(seed);
-	int message_size = MESSAGE_SIZE;
-	Graph g;
-	int P ;
-
-	char buf[256];
-	sprintf(buf,"../data/%s.plot",nom);
-	FILE * f = fopen(buf,"w");
-
-
-	
-
-	printf("ALGORITHM : %s \n",nom);
-	if(!f)perror("Error while opening file\n");
-	int time;
-	#pragma omp parallel for private(g,P,time)  if(PARALLEL)
-	for(int i=0;i<NB_SIMULS;i++)
-	{
-		
-
-		g= init_graph_random_tree(STANDARD_LOAD);
-
-		if(FIXED_PERIOD_MOD)
-		{
-			if(PERIOD < load_max(g)*MESSAGE_SIZE)
-				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
-			P = PERIOD;
-		}
-		else
-			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
-		
-		
-		time = ptrfonction( g, P, message_size);
-		
-			
-
-		#pragma omp critical
-			fprintf(f,"%d\n",time);		
-		
-
-		free_graph(g);
-		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
-		fflush(stdout);
-	}	
-	
-	fclose(f);
-	
-		
-}
 
 void simuldistrib(int seed)
 {
@@ -773,7 +228,7 @@ void simuldistrib(int seed)
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;
-	Graph g;
+	Graph  g;
 	int P ;
 	int coupes[NB_COUPES];
 	double coupes_m[NB_COUPES];
@@ -799,7 +254,7 @@ void simuldistrib(int seed)
 	
 	int time[nb_algos];
 	int res[nb_algos][NB_SIMULS];
-	float nb_pas[3];
+	float nb_pas[4];
 	
 	for(int i=0;i<3;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
@@ -809,17 +264,17 @@ void simuldistrib(int seed)
 		a = 0;
 
 		g= init_graph_random_tree(STANDARD_LOAD);
-		int l = 2*longest_route(g);
+		int l = 2*longest_route(&g);
 		
 		//printf("%d \n",longest_route);
 		if(FIXED_PERIOD_MOD)
 		{
-			if(PERIOD < load_max(g)*MESSAGE_SIZE)
+			if(PERIOD < load_max(&g)*MESSAGE_SIZE)
 				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
 			P = PERIOD;
 		}
 		else
-			P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+			P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
@@ -827,41 +282,41 @@ void simuldistrib(int seed)
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
 			switch(algo){
 				case 5:
-					time[algo] = borneInf( g, P, message_size)-l;	
+					time[algo] = borneInf( &g, P, message_size)-l;	
 					//printf("%d longest_route\n",l);
 				break;
 				case 1:
-					time[algo] = borneInf2( g, message_size)-l;	
+					time[algo] = borneInf2( &g, message_size)-l;	
 				break;
 				case 2:
 					//printf("DESCENTE \n\n\n\n\n\n\n\n\n");
-					a = descente( g, P, message_size,0);
+					a = descente( &g, P, message_size,0,&nb_pas[0]);
 					/*if(a)
 						nb_pas[0] += a->nb_routes_scheduled;*/
 				break;
 				case 3:
-					a = taboo( g, P, message_size,100);
-					/*if(a)
-						nb_pas[1] += a->nb_routes_scheduled;*/
+					a = taboo( &g, P, message_size,100);
+					if(a)
+						nb_pas[2] += 100;
 				break;
 				case 4:
-					a = best_of_x( g, P, message_size,10);
+					a = best_of_x( &g, P, message_size,10,&nb_pas[1]);
 					/*if(a)
 						nb_pas[2] += a->nb_routes_scheduled;*/
 				break;
 				case 0:
-					a =  greedy_deadline_assignment( g, P, message_size);
+					a =  greedy_deadline_assignment( &g, P, message_size);
 					if(!a)
 					{
-						free_graph(g);
+						free_graph(&g);
 						goto saut;
 					}
 				break;
 				case 6:
-					a = recuit( g, P, message_size,1000);
+					a = recuit( &g, P, message_size,1000,&nb_pas[3]);
 					break;
 				case 7:
-					a = branchbound( g, P, message_size,coupes,coupes_m);
+					a = branchbound( &g, P, message_size,coupes,coupes_m);
 					break;
 				}
 
@@ -890,7 +345,7 @@ void simuldistrib(int seed)
 					
 					/*printf("algo %d \n",algo);
 					int lenght=0;
-					for(int j=1;j<g.nb_routes;j++)
+					for(int j=1;j<g->nb_routes;j++)
 					{
 						lenght = route_length_with_buffers(g,j);
 
@@ -900,9 +355,9 @@ void simuldistrib(int seed)
 					}*/
 				
 				//printf("Algo %d a = %p \n",algo,a);
-				reset_periods(g,P);
+				reset_periods(&g,P);
 				
-				reinit_delays(g);
+				reinit_delays(&g);
 			
 		}
 		for(int algo = 0;algo<nb_algos;algo++)
@@ -917,8 +372,8 @@ void simuldistrib(int seed)
 		if((time[1]>time[5]) )
 		{
 			printf("Pb de born inf  simons %d calcul %d lenght %d\n",time[5]+l,time[1]+l,l);
-			print_graphvitz(g,"../view/view.dot");
-			affiche_graph(g,P,stdout);
+			print_graphvitz(&g,"../view/view.dot");
+			affiche_graph(&g,P,stdout);
 			exit(45);
 		}
 		if(time[7]<time[6])
@@ -930,7 +385,7 @@ void simuldistrib(int seed)
 			if((time[7]>time[k])&&k!=5)
 			{
 				printf(RED "Algo %d meilleur que fpt (%d %d).\n" RESET,k,time[k],time[7]);
-				printf("\n printing graphvitz ...");print_graphvitz(g,"../view/view.dot");printf("Ok.\n");
+				printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
 				exit(24);
 			}
 			
@@ -943,7 +398,7 @@ void simuldistrib(int seed)
 			}
 		}
 		
-		free_graph(g);
+		free_graph(&g);
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 		fflush(stdout);
 	}	
@@ -970,7 +425,7 @@ void simuldistrib(int seed)
 	char * ylabels2[] = {"Nombre d'instances"};
 	print_gnuplot_distrib("waiting",noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
 	
-	//printf("Nombre de pas moyen : Descente %f | Taboo %f | DescenteX %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS);
+	printf("Nombre de pas moyen : Descente %f | DescenteX %f | Taboo %f | Recuit %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS,nb_pas[3]/NB_SIMULS);
 	
 		
 }
@@ -981,7 +436,7 @@ void testcoupefpt(int seed)
 	
 	char* noms[]= {"seconde dans premiere","i+1 pas collé","i Collé","routes suivantes avant i","BorneInf","plus petit id","NotFillInArc"};
 	int message_size = MESSAGE_SIZE;
-	Graph g;
+	Graph  g;
 	int P ;
 	int coupes[NB_COUPES];
 	double coupes_m[NB_COUPES];
@@ -1022,15 +477,15 @@ void testcoupefpt(int seed)
 				//printf("%d \n",longest_route);
 				if(FIXED_PERIOD_MOD)
 				{
-					if(PERIOD < load_max(g)*MESSAGE_SIZE)
+					if(PERIOD < load_max(&g)*MESSAGE_SIZE)
 						printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
 					P = PERIOD;
 				}
 				else
-					P= (load_max(g)*MESSAGE_SIZE)/STANDARD_LOAD;
+					P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 				
 				gettimeofday (&tv1, NULL);
-				branchbound( g, P, message_size,coupes,coupes_m);
+				branchbound( &g, P, message_size,coupes,coupes_m);
 				gettimeofday (&tv2, NULL);	
 		
 				
@@ -1040,7 +495,7 @@ void testcoupefpt(int seed)
 				hauteur_moy += coupes_m[i];
 			//	printf("%d %f\n",coupes[i],coupes_m[i]);
 				calcul_moy += time_diff(tv1,tv2);
-				free_graph(g);
+				free_graph(&g);
 				fprintf(stdout,"\r	%d/%d",k+1,NB_SIMULS);
 				fflush(stdout);
 			}

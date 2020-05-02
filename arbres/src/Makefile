@@ -99,7 +99,9 @@ debugstar: compil
 	valgrind --leak-check=full -v ./compil star
 
 profile: compil
+	rm -f callgrind*
 	valgrind --tool=callgrind -v ./compil test
+	kcachegrind callgrind*
 
 cover: dirs  
 	lcov --directory . -c -o rapport.info

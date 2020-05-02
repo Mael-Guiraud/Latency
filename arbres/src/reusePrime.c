@@ -11,7 +11,7 @@ typedef struct{
 	int nb_cols;
 	int cols[128];
 } Collisions;
-Collisions id_col(Graph g,int route, int P,int offset, Period_kind kind, int message_size)
+Collisions id_col(Graph * g,int route, int P,int offset, Period_kind kind, int message_size)
 {
 	Collisions c;
 	for(int i=0;i<128;i++)
@@ -24,29 +24,29 @@ Collisions id_col(Graph g,int route, int P,int offset, Period_kind kind, int mes
 
 	if(kind == FORWARD)
 	{
-		for(int j=0;j<g.size_routes[route];j++)
+		for(int j=0;j<g->size_routes[route];j++)
 		{
 			
-			if(g.routes[route][j]->period_f != NULL)
+			if(g->routes[route][j]->period_f != NULL)
 			{
 				for(int i=0;i<message_size;i++)
 				{
 		
-					if(g.routes[route][j]->period_f[(offset+i)%P] != 0)
+					if(g->routes[route][j]->period_f[(offset+i)%P] != 0)
 					{
-						if(g.routes[route][j]->period_f[(offset+i)%P] != last)
+						if(g->routes[route][j]->period_f[(offset+i)%P] != last)
 						{
 							
-							if(g.routes[route][j]->period_f[(offset+i)%P] == -1)
+							if(g->routes[route][j]->period_f[(offset+i)%P] == -1)
 							{
 								c.cols[c.nb_cols] = 0;
 								
 							}
 							else
 							{
-								c.cols[c.nb_cols] = g.routes[route][j]->period_f[(offset+i)%P];
+								c.cols[c.nb_cols] = g->routes[route][j]->period_f[(offset+i)%P];
 							}
-							last = g.routes[route][j]->period_f[(offset+i)%P];
+							last = g->routes[route][j]->period_f[(offset+i)%P];
 							c.nb_cols++;
 						}
 						
@@ -54,43 +54,43 @@ Collisions id_col(Graph g,int route, int P,int offset, Period_kind kind, int mes
 					}
 				}
 			}
-			offset += g.routes[route][j]->length;
+			offset += g->routes[route][j]->length;
 		}
 
 	}
 	else
 	{
 		//For each arcs
-		for(int j=g.size_routes[route]-1;j>=0;j--)
+		for(int j=g->size_routes[route]-1;j>=0;j--)
 		{
 			
 			//This is a contention point
-			if(g.routes[route][j]->period_b != NULL)
+			if(g->routes[route][j]->period_b != NULL)
 			{
 				for(int i=0;i<message_size;i++)
 				{
 				
-					if(g.routes[route][j]->period_b[(offset+i)%P] != 0)
+					if(g->routes[route][j]->period_b[(offset+i)%P] != 0)
 					{
 						
-						if(g.routes[route][j]->period_b[(offset+i)%P] != last)
+						if(g->routes[route][j]->period_b[(offset+i)%P] != last)
 						{
 							
-							if(g.routes[route][j]->period_b[(offset+i)%P] == -1)
+							if(g->routes[route][j]->period_b[(offset+i)%P] == -1)
 							{
 								c.cols[c.nb_cols] = 0;
 							}
 							else
 							{
-								c.cols[c.nb_cols] = g.routes[route][j]->period_b[(offset+i)%P];
+								c.cols[c.nb_cols] = g->routes[route][j]->period_b[(offset+i)%P];
 							}
 							c.nb_cols++;
-							last = g.routes[route][j]->period_b[(offset+i)%P];
+							last = g->routes[route][j]->period_b[(offset+i)%P];
 						}
 					}
 				}
 			}
-			offset += g.routes[route][j]->length;
+			offset += g->routes[route][j]->length;
 		}
 		
 
@@ -99,7 +99,7 @@ Collisions id_col(Graph g,int route, int P,int offset, Period_kind kind, int mes
 	return c;
 }
 
-int find_new_offset(Graph g, int P, int message_size, int id_route)
+int find_new_offset(Graph * g, int P, int message_size, int id_route)
 {
 
 	for(int offset =0 ; offset < P; offset++)
@@ -110,47 +110,47 @@ int find_new_offset(Graph g, int P, int message_size, int id_route)
 	return -1;
 }
 
-void free_period(Graph g,int route,int offset,int message_size,Period_kind kind,int P)
+void free_period(Graph * g,int route,int offset,int message_size,Period_kind kind,int P)
 {
 
 	if(kind == FORWARD)
 	{
 		//For each arcs
-		for(int i=0;i<g.size_routes[route];i++)
+		for(int i=0;i<g->size_routes[route];i++)
 		{
 			
 			//This is a contention point
-			if(g.routes[route][i]->period_f != NULL)
+			if(g->routes[route][i]->period_f != NULL)
 			{
 				for(int j=0;j<message_size;j++)
 				{
-					g.routes[route][i]->period_f[(offset+j)%P]=0;
+					g->routes[route][i]->period_f[(offset+j)%P]=0;
 				}
 					
 				
 			}
-			offset += g.routes[route][i]->length;
+			offset += g->routes[route][i]->length;
 		}
 	}
 	else
 	{
 		//For each arcs
-		for(int i=g.size_routes[route]-1;i>=0;i--)
+		for(int i=g->size_routes[route]-1;i>=0;i--)
 		{
 			//This is a contention point
-			if(g.routes[route][i]->period_f != NULL)
+			if(g->routes[route][i]->period_f != NULL)
 			{
 				for(int j=0;j<message_size;j++)
 				{
-					g.routes[route][i]->period_b[(offset+j)%P]=0;
+					g->routes[route][i]->period_b[(offset+j)%P]=0;
 				}				
 			}
-			offset += g.routes[route][i]->length;
+			offset += g->routes[route][i]->length;
 		}
 	}
 }
 
-Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment a)
+Assignment search_moove(Graph * g, int P, int message_size, int id_pb, Assignment a)
 {
 	Collisions c,c2;
 	c.nb_cols = 0;
@@ -159,12 +159,12 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 	int var_continue;
 	
 	//printf("Forward : \n ");
-	//affiche_tab(g.routes[0][1]->period_f,P,stdout);
+	//affiche_tab(g->routes[0][1]->period_f,P,stdout);
 	//printf("Backward : \n ");
-	//affiche_tab(g.routes[0][1]->period_b,P,stdout);
+	//affiche_tab(g->routes[0][1]->period_b,P,stdout);
 	for(int offset = 0;offset<P;offset++)
 	{
-		//printf(" offset %d(%d) offset back %d(%d) \n",offset,offset+g.routes[id_pb][0]->length,(offset+route_length(g,id_pb))%P,(offset+route_length(g,id_pb)+g.routes[id_pb][3]->length)%P);
+		//printf(" offset %d(%d) offset back %d(%d) \n",offset,offset+g->routes[id_pb][0]->length,(offset+route_length(g,id_pb))%P,(offset+route_length(g,id_pb)+g->routes[id_pb][3]->length)%P);
 		if(message_no_collisions( g, id_pb, offset,message_size,FORWARD,P))
 		{
 			if(!message_no_collisions( g, id_pb, offset+route_length(g,id_pb),message_size,BACKWARD,P))
@@ -298,13 +298,13 @@ Assignment search_moove(Graph g, int P, int message_size, int id_pb, Assignment 
 
 }
 
-Assignment PRIME_reuse(Graph g, int P, int message_size)
+Assignment PRIME_reuse(Graph * g, int P, int message_size)
 {
 
 	Assignment a = malloc(sizeof(struct assignment));
-	a->offset_forward = calloc(g.nb_routes,sizeof(int));
-	a->offset_backward = calloc(g.nb_routes,sizeof(int));
-	a->waiting_time = calloc(g.nb_routes,sizeof(int));
+	a->offset_forward = calloc(g->nb_routes,sizeof(int));
+	a->offset_backward = calloc(g->nb_routes,sizeof(int));
+	a->waiting_time = calloc(g->nb_routes,sizeof(int));
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
  	int offset;
@@ -312,7 +312,7 @@ Assignment PRIME_reuse(Graph g, int P, int message_size)
 	
 
 	//for each route
-	for(int i=0;i<g.nb_routes;i++)
+	for(int i=0;i<g->nb_routes;i++)
 	{
 
 		offset=0;
@@ -352,7 +352,7 @@ Assignment PRIME_reuse(Graph g, int P, int message_size)
 
 		
 	}
-	if(a->nb_routes_scheduled == g.nb_routes)
+	if(a->nb_routes_scheduled == g->nb_routes)
 	{
 		a->all_routes_scheduled = 1;
 

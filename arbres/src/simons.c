@@ -992,7 +992,7 @@ void transforme_waiting(Ensemble * ens, int * wi)
 /*
 int* retourne_offset(Graphe g, int taille_paquet, int* permutation,int mode,int periode)
 {
-	int nbr_route = g.N/2;
+	int nbr_route = g->N/2;
 	int * offsets;
 	assert(offsets=(int*)malloc(sizeof(int)*nbr_route));
 	int offset = 0;
@@ -1037,12 +1037,12 @@ int* retourne_offset(Graphe g, int taille_paquet, int* permutation,int mode,int 
 }*/
 /*int *retourne_departs(Graphe g, int * offsets)
 {
-	int nbr_route = g.N/2;
+	int nbr_route = g->N/2;
 	int* m_i = (int*)malloc(sizeof(int)*nbr_route);
 	int min = INT_MAX;
 	for(int i=0;i<nbr_route;i++)
 	{
-		m_i[i] = offsets[i] - g.matrice[nbr_route][i];
+		m_i[i] = offsets[i] - g->matrice[nbr_route][i];
 		if(m_i[i]<min)
 			min = m_i[i];
 	}
@@ -1163,11 +1163,11 @@ Ensemble * algo_simons(Element * elems, int nbr_route, int taille_paquet, int da
  
 /*int* normaliser_instance(Graphe g, int periode)
 {
-	int nbr_route = g.N/2;
+	int nbr_route = g->N/2;
 	int * instance = (int *)malloc(sizeof(int)*nbr_route);
 	for(int i=0;i<nbr_route;i++)
 	{
-		instance[i] = g.matrice[nbr_route][i+nbr_route+1]; // juste le retour
+		instance[i] = g->matrice[nbr_route][i+nbr_route+1]; // juste le retour
 		while((2 * instance[i]) >= periode)
 		{
 			instance[i] -= periode/2;
@@ -1227,13 +1227,13 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 	
 	
 	///////////////////////////////////////////////////////taille_paquet = 6;
-	 if (!(g.N % 2))
+	 if (!(g->N % 2))
     {
       printf ("G n'est peut être pas une étoile\n");
       exit (5);
     }
 
-	int nbr_route = g.N/2;
+	int nbr_route = g->N/2;
 	
 	int Dl[nbr_route];
 	int w_i[nbr_route];
@@ -1263,13 +1263,13 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		//printf("Premier = %d \n",premier);
 		for(int i=0;i<nbr_route;i++)
 		{
-			Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
-			release[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
-			arrivee[i] = Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
+			Dl[i] = g->matrice[nbr_route][i]+g->matrice[nbr_route][i+nbr_route+1];
+			release[i] = Dl[i]+m_i[i]+g->matrice[nbr_route][i+nbr_route+1];
+			arrivee[i] = Dl[i]+m_i[i]+g->matrice[nbr_route][i+nbr_route+1];
 			if(!SYNCH)
-				deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+				deadline[i] =  TMAX+m_i[i]- g->matrice[nbr_route][i]+taille_paquet;
 			else
-				deadline[i] =  TMAX+mini-g.matrice[nbr_route][i]+taille_paquet;
+				deadline[i] =  TMAX+mini-g->matrice[nbr_route][i]+taille_paquet;
 		}
 		//printf("Release \n");affiche_tab(arrivee,nbr_route);printf("\n");
 		debut_periode_retour = arrivee[premier];
@@ -1366,10 +1366,10 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 	
 	for(int i=0;i<nbr_route;i++)
 	{
-		//Dl[i] = LENGTH[i];//g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
-		release[i] = RELEASE[i];//Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
-		arrivee[i] = RELEASE[i];//Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
-		deadline[i] =  DEADLINE[i];//TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+		//Dl[i] = LENGTH[i];//g->matrice[nbr_route][i]+g->matrice[nbr_route][i+nbr_route+1];
+		release[i] = RELEASE[i];//Dl[i]+m_i[i]+g->matrice[nbr_route][i+nbr_route+1];
+		arrivee[i] = RELEASE[i];//Dl[i]+m_i[i]+g->matrice[nbr_route][i+nbr_route+1];
+		deadline[i] =  DEADLINE[i];//TMAX+m_i[i]- g->matrice[nbr_route][i]+taille_paquet;
 	}
 	debut_periode_retour = arrivee[premier];
 	
@@ -1459,7 +1459,7 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 		int retour[nbr_route];
 		for(int i=0;i<nbr_route;i++)
 		{
-			retour[i] = m_i[i]+g.matrice[nbr_route][i]+2*g.matrice[nbr_route][nbr_route+i+1]+w_i[i];
+			retour[i] = m_i[i]+g->matrice[nbr_route][i]+2*g->matrice[nbr_route][nbr_route+i+1]+w_i[i];
 		}
 		int taille_periode_retour = retour[greater(retour,nbr_route)]-retour[lower(retour,nbr_route)]+taille_paquet;
 		printf("Periode de taille %d \n\n",taille_periode_retour);
@@ -1494,7 +1494,7 @@ int* simons_FPT(int* RELEASE, int * DEADLINE, int  nbr_route, int taille_paquet,
 }
 
 //Fait l'arbre recursif avec tous les sous ensemble de routes et appel sur MLS avec la premiere route fixée
-int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int periode, int premier, int* subset,int * candidats, int profondeur, int nbr_candidats)
+int* rec_FPT(Graph * g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int taille_paquet, int periode, int premier, int* subset,int * candidats, int profondeur, int nbr_candidats)
 {
 	
 	
@@ -1568,7 +1568,7 @@ int* rec_FPT(Graph g,int * ids,int* RELEASE, int * DEADLINE, int nbr_route, int 
 
 
 //Les dates release, deadline et m_i sont calculées dans le graph de base, l'algo se charge de les normaliser
-int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode)
+int* FPT_PALL(Graph * g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int taille_paquet, int periode)
 {	
 
 	int *res=NULL;
@@ -1591,9 +1591,9 @@ int* FPT_PALL(Graph g,int * ids,int *RELEASE, int *DEADLINE, int nbr_route, int 
 		nbr_candidats = 0;
 		for(int i=0;i<nbr_route;i++)
 		{
-			//Dl[i] = g.matrice[nbr_route][i]+g.matrice[nbr_route][i+nbr_route+1];
-			arrivee[i] = RELEASE[i];//Dl[i]+m_i[i]+g.matrice[nbr_route][i+nbr_route+1];
-			deadline[i] =  DEADLINE[i];//TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
+			//Dl[i] = g->matrice[nbr_route][i]+g->matrice[nbr_route][i+nbr_route+1];
+			arrivee[i] = RELEASE[i];//Dl[i]+m_i[i]+g->matrice[nbr_route][i+nbr_route+1];
+			deadline[i] =  DEADLINE[i];//TMAX+m_i[i]- g->matrice[nbr_route][i]+taille_paquet;
 		}
 		decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
 	

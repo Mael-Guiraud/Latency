@@ -149,7 +149,7 @@ Assignment search(int* return_time, int route_number,int message_size, int perio
 	a->nb_routes_scheduled = 0;
 	a->all_routes_scheduled = 0;
 	
-	 // return_time[i] = (2 * g.matrice[nbr_route][i + nbr_route + 1])%periode;
+	 // return_time[i] = (2 * g->matrice[nbr_route][i + nbr_route + 1])%periode;
 	  
 	if(DEBUG)printf("Instance aléatoire :\n");//we assume that the value in return time are in [0,period[
 	if(DEBUG)for(int i = 0; i < route_number; i++) printf("%d  ",return_time[i]);
@@ -223,7 +223,7 @@ Assignment search(int* return_time, int route_number,int message_size, int perio
   	return a;
 }
 
-Assignment linear_search(Graph g, int nb_routes, int P, int message_size)
+Assignment linear_search(Graph * g, int nb_routes, int P, int message_size)
 {
 	Assignment a = NULL;
 	Assignment olda=NULL;
@@ -234,14 +234,14 @@ Assignment linear_search(Graph g, int nb_routes, int P, int message_size)
 		for(int k=0;k<i;k++)
 		{
 
-			return_time[k]=  (2*route_length_untill_arc(g,k, &g.arc_pool[nb_routes],BACKWARD))%P;
+			return_time[k]=  (2*route_length_untill_arc(g,k, &g->arc_pool[nb_routes],BACKWARD))%P;
 		}
 		a = search(return_time, i,message_size,P);
 		for(int k=0;k<i;k++)
 		{
 			
 			
-			a->offset_forward[k] =( a->offset_forward[k] +  route_length_untill_arc(g,k, &g.arc_pool[i],BACKWARD)-route_length(g,k) + P )% P;
+			a->offset_forward[k] =( a->offset_forward[k] +  route_length_untill_arc(g,k, &g->arc_pool[i],BACKWARD)-route_length(g,k) + P )% P;
 			a->offset_backward[k] =( a->offset_forward[k] + route_length(g,k) )% P;
 			
 		}

@@ -258,7 +258,7 @@ Graph init_graph_random_tree(double load)
 	if(FIXED_PERIOD_MOD)
 		real_period = PERIOD;
 	else
-		real_period = (load_max(g) * MESSAGE_SIZE) / load;
+		real_period = (load_max(&g) * MESSAGE_SIZE) / load;
 	g.period = real_period;
 	//for(int i=0;i<g.arc_pool_size;i++)
 	for(int i=0;i<nb_real_collisions+nb_bbu;i++)
