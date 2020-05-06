@@ -1029,26 +1029,26 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 	int release[taille_tab];
 	int deadline[taille_tab];
 	int ids[taille_tab];
-	
+	int temps_restant;
 
-	//printf("BUDGET = %d  arc id %d \n",arc_id);
+	//printf("BUDGET = %d  arc id %d \n",budget,arc_id);
 	for(int i=0;i<taille_tab;i++)
 	{
+		//printf("route %d ",i);
 		if(kind == FORWARD)
 		{
-			release[i] = route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],FORWARD);
-			//printf("(%d ",release[i]);
-			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g->arc_pool[arc_id].routes_id[i]);
+			printf("On ne doit pas passer ici dans le simons a la fin  du fpt\n");
+			exit(61);
 			
 		}
 		else
 		{
 			release[i] = route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i])
 			+route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
-			//printf("(%d ",release[i]);
-			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g->arc_pool[arc_id].routes_id[i]);
+			temps_restant = route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
+			deadline[i] = budget  +message_size - temps_restant;
 			//printf(" (%d(%d+%d) + %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),message_size,budget,2* route_length(g,g->arc_pool[arc_id].routes_id[i]),deadline[i]);
-			
+		//	printf("(%d = (%d + %d) %d = (%d+%d+%d - %d)) \n",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),deadline[i],release[i],message_size,budget,2* route_length(g,g->arc_pool[arc_id].routes_id[i]));
 		}
 		
 		//printf("%d (%d + %d + %d- %d) ) \n",deadline[i],release[i],message_size,budget,2*route_length(g,g->arc_pool[arc_id].routes_id[i]));	
@@ -1065,7 +1065,7 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 		{
 			
 			g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]] = res[i];
-			//printf("Delay route %d = %d \n",g->arc_pool[arc_id].routes_id[i],g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]]);		
+		//	printf("Delay route %d = %d %d\n",g->arc_pool[arc_id].routes_id[i],g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]],route_length_with_buffers( g,g->arc_pool[arc_id].routes_id[i]));		
 		}
 	}
 	else
@@ -1081,35 +1081,41 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 
 }
 
-int dichosimons(Graph * g, int P, int message_size,int arcid,Period_kind kind)
+int dichosimons(Graph * g, int P, int message_size,int arcid,Period_kind kind,int min,int budget)
 {
-	int min = 2*longest_route(g);
-	int max = min +P;
+	int max = budget;
 	int milieu;
 	int res=0;
 	int tmp;
+	//printf("arc %d min %d max %d \n",arcid,min,budget); 
 	while(min != max)
 	{
 		milieu =min+ (max - min ) / 2;
 		tmp = simonslastarc(g,P,message_size,milieu,arcid,kind);
-		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
+		
+		//printf("-------------------------------------------abc %d %d %d\n",tmp,milieu);
 		if(tmp)
 		{
 			max = milieu;
-			res = tmp;
+			res = milieu;
 		}
 		else
 		{
-			
+			if(min == max -1)
+			{
+				tmp = simonslastarc(g,P,message_size,max,arcid,kind);
+				//printf("-------------------------------------------abc %d %d \n",tmp,max);
+				if(tmp)
+				{
+					return max;
+				}
+				return 0;
+			}
 			min = milieu;
 		}
-		
+
 	}	
-	if(res == 0)
-	{
-		printf("La dicho simons sur le dernier arc ne trouve rien, c'est impossible\n");
-		exit(49);
-	}
+	//printf("Retour %d arc %d \n",res,arcid);
 	return res;
 }
 
@@ -1121,6 +1127,7 @@ int assignment_with_orders_vois1FPT(Graph* g, int P, int message_size, int print
 	int CL;
 	
 	int ret;
+	int min = 2*longest_route(g);
 
 
  	for(int i=0;i<g->contention_level;i++)
@@ -1139,19 +1146,22 @@ int assignment_with_orders_vois1FPT(Graph* g, int P, int message_size, int print
 
  		for(int j=0;j<g->arc_pool_size;j++)
  		{
-
+ 			//printf(" j %d cL %d kind %d level %d\n",j,CL,kind,g->arc_pool[j].contention_level);
  			if((0 == CL)&&(kind == BACKWARD)&&(g->arc_pool[j].contention_level == CL))
  			{
- 				//printf("Simons arc %d kind %d\n",j,kind);
- 				ret = simonslastarc(g,P,message_size,print,j,kind);
- 				/*if(ret)
+ 				//printf("Simons arc %d min %d max %d\n",j,min,print);
+ 				ret =  dichosimons(g, P,  message_size,j , kind, min,print);
+ 				if(ret)
  				{
- 					return g->nb_routes;
+ 					simonslastarc(g,P,message_size,ret,j,kind) ;
+ 					if(ret > min)
+ 						min = ret;
  				}
- 				else*/
- 				//printf("%d ret\n",ret);
- 				if(!ret)
+ 				else
+ 				{
+ 					//printf("retour 0 \n");
  					return 0;
+ 				}
 
 
  			}
@@ -1171,9 +1181,9 @@ int assignment_with_orders_vois1FPT(Graph* g, int P, int message_size, int print
  	}
 
 
-  
+ // printf("retour %d \n",min);
 
-	return g->nb_routes;
+	return min;
 
 }
 int assignment_with_orders_vois1(Graph * g, int P, int message_size, int print)
@@ -1268,8 +1278,8 @@ void reinit_delays(Graph * g)
 	
 	for(int i=0;i<g->arc_pool_size;i++)
 	{
-		memset(g->arc_pool[i].routes_delay_f,0,sizeof(int)*128);
-		memset(g->arc_pool[i].routes_delay_b,0,sizeof(int)*128);
+		memset(g->arc_pool[i].routes_delay_f,0,sizeof(int)*g->arc_pool[i].id_max);
+		memset(g->arc_pool[i].routes_delay_b,0,sizeof(int)*g->arc_pool[i].id_max);
 		/*printf("[%d]",g->arc_pool[i].nb_routes);
 		for(int j=0;j<128;j++)
 		{
@@ -1291,6 +1301,7 @@ void cpy_orders(int*  cpy[], Graph * g,int sens)
 			{
 
 				cpy[i][j] = g->arc_pool[i].routes_order_f[j];
+			//	printf("Assign %d \n",j);
 				cpy[i+g->arc_pool_size][j] = g->arc_pool[i].routes_order_b[j];
 			}
 	
@@ -1366,9 +1377,10 @@ int ** parcours_voisinage(Graph * g,int P, int message_size,Voisin v, int mintim
 	
 	
 	int **orders = malloc(sizeof(int*)*g->arc_pool_size*2);
-	for(int i=0;i<g->arc_pool_size*2;i++)
+	for(int i=0;i<g->arc_pool_size;i++)
 	{
-		orders[i] = malloc(sizeof(int)*128);
+		orders[i] = malloc(sizeof(int)*g->arc_pool[i].nb_routes);
+		orders[i+g->arc_pool_size] = malloc(sizeof(int)*g->arc_pool[i].nb_routes);
 	}
 	cpy_orders(orders,g,1);//on fait une sauvegarde dans l'état
 	//printf("Sauvegarde de l'état \n");aff_orders(orders,g);

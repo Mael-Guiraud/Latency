@@ -2,10 +2,10 @@
 
 #define MAX_LENGTH 20000
 #define MESSAGE_SIZE 2500
-#define NB_BBU 2
-#define NB_COLLISIONS 3
+#define NB_BBU 3
+#define NB_COLLISIONS 4
 #define NB_ROUTES_PER_FLOW 1
-#define PROBA 0.5
+#define PROBA 1
 
 //Mod synch or not
 #define SYNCH 1
@@ -34,7 +34,7 @@
 //For star simulation
 #define NB_ROUTES 7
 
-#define NB_SIMULS 10
+#define NB_SIMULS 100
 
 
 //openMP parallel
@@ -48,3 +48,5 @@
 #define NB_COUPES 7
 
 #define VOISINAGE 1
+
+#define DATA_CENTER_ROUTES 0
