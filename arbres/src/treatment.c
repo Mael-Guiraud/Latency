@@ -438,6 +438,11 @@ void free_graph(Graph * g)
 			{
 				free(g->routes[i][j]->period_f);
 				free(g->routes[i][j]->period_b);
+				free(g->routes[i][j]->routes_order_f); 
+				free(g->routes[i][j]->routes_order_b); 
+				free(g->routes[i][j]->routes_delay_f); 
+				free(g->routes[i][j]->routes_delay_b); 
+			
 				g->routes[i][j]->nb_routes = 0;
 				
 			}
@@ -700,6 +705,7 @@ int route_length_with_buffers(Graph * g,int route)
 		length += g->routes[route][i]->routes_delay_f[route];
 		if( g->routes[route][i]->routes_delay_f[route]<0)
 			exit(34);
+		// printf("%d + %d + %d +",2*g->routes[route][i]->length,g->routes[route][i]->routes_delay_b[route],g->routes[route][i]->routes_delay_f[route]);
 	}
 	return length;
 }
@@ -723,10 +729,11 @@ int travel_time_max_buffers(Graph * g)
 	for(int i=1;i<g->nb_routes;i++)
 	{
 		lenght = route_length_with_buffers(g,i);
-		//printf("taille de la route %d = %d \n",i,lenght);
+	//	printf("taille de la route %d = %d \n",i,lenght);
 		max = (max>lenght)?max:lenght;
 		
 	}
+	//printf("max = %d \n",max);
 	return max;
 }
 //return a mod b

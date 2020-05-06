@@ -27,7 +27,7 @@
 
 void test()
 {
-	//unsigned int seed = 1588264505;
+	//unsigned int seed = 1588782688;
 	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
@@ -40,6 +40,7 @@ void test()
 	int tmax;
 	int margin = rand()%MARGIN_MAX;
 	char buf[128];
+	char buf_dot[128];
 	int * tmp;
 
 	sprintf(buf,"mkdir -p ../view/assignments");
@@ -118,28 +119,28 @@ void test()
 	printf("FPT = %d \n",fpt);
 	
 	reset_periods(&g,P);reinit_delays(&g);
-		/*
+		
 	float nb_pas;	
-	int recuits = recuit( g, P, message_size,1000,&nb_pas);
+	int recuits = recuit( &g, P, message_size,1000,&nb_pas);
 	printf("Recuit %d, %f pas \n",recuits,nb_pas);	
 	sprintf(nom,"recuit");
-	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,P,buf_dot);
+	print_assignment(&g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,P,buf_dot);
+	print_assignment_backward(&g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	//free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
 	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);reinit_delays(g);
+	reset_periods(&g,P);reinit_delays(&g);
 	if(recuits<fpt)
 	{
 		printf(RED "!!!!!!!!!!FPT trouve moins bien que le recuit!!!!!!!!!!!! \n" RESET);
@@ -149,6 +150,7 @@ void test()
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le recuit ! \n" RESET);
 	}
+	/*
 	int descent = descente( g, P, message_size,0);
 	printf("descente %d \n",descent);	
 	sprintf(nom,"descente");

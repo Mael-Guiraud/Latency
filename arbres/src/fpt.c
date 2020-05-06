@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "structs.h"
 #include "starSPALL.h"
 
@@ -50,10 +51,10 @@ int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf);
 
 int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int borneinf,int offset,int begin,int * r_t)
 {
+
 	int val_D = INT_MAX;
 	int val_G;
 	int nb_routes =g->arc_pool[arcid].nb_routes;
-	int retour;
 	int premier;
 	int a;
 	int old_offset;
@@ -76,10 +77,10 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 				for(int i=1;i<nb_routes;i++)
 				{
 					//route dans la seconde periode
-					if((r_t[i]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[i]] > (begin)%P+P)
+					if((r_t[i]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[i]] >= P)
 					{
 
-						if(I_PLUS_1_PAS_COLLE)
+						/*if(I_PLUS_1_PAS_COLLE)
 						{
 							if(i<nb_routes-1)
 							{
@@ -98,7 +99,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 								}
 							}
 							
-						}
+						}*/
 						if(SECONDE_DANS_PREMIERE)
 						{
 							//Si on a la place en premiere periode pour placer la route, on coupe
@@ -109,7 +110,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 							//Recherche de la route qui termine juste après i ou qui commence avant i
 							for(j=0;j<nb_routes;j++)
 							{
-								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > (begin)%P+P)//j aussi dans la seconde periode
+								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > P)//j aussi dans la seconde periode
 								{
 									continue;
 								}
@@ -125,7 +126,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 							for(;j<nb_routes;j++)
 							{
 		
-								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > (begin)%P+P)//j aussi dans la seconde periode
+								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > P)//j aussi dans la seconde periode
 								{
 									continue;
 								}
@@ -154,15 +155,21 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 				{	
 					nb_feuilles++;
 					a = assignment_with_orders_vois1FPT(g, P, message_size, borneinf);
+					int b = travel_time_max_buffers(g);
 					if(!a)
-					{
 						return INT_MAX;
-					}
-					else
+					for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
 					{
-						retour = travel_time_max_buffers(g);
-						return retour;
+						//printf("arc %d : \n",i);
+						for(int j=0;j<g->arc_pool[i].nb_routes;j++)
+						{
+							//printf("route %d, delay (%d-%d) \n",g->arc_pool[i].routes_order_f[j],g->arc_pool[i].routes_delay_f[g->arc_pool[i].routes_order_f[j]],g->arc_pool[i].routes_delay_b[g->arc_pool[i].routes_order_f[j]]);
+						}
 					}
+				//	printf("b = %d \n",b); 
+					return b;
+					//return (!a)?INT_MAX:travel_time_max_buffers(g);
+
 					
 				}
 				else
@@ -203,7 +210,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 				if(offset-message_size <= begin+P-message_size*(nb_routes-profondeur))
 				{
 
-					if(r.delay == 0)//on est pas collé
+					if(r.delay == 0)
 					{
 						if((PAS_PLUS_PETIT_ID)&&(current_route < g->arc_pool[arcid].routes_order_f[0]))// pas plus petit id
 						{
@@ -213,11 +220,11 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 							
 						}
 						
-						if((ROUTES_SUIVANTES_AVANT_I)&&(old_offset+message_size <= offset))
+						if((ROUTES_SUIVANTES_AVANT_I)&&(old_offset+2*message_size <= offset))
 						{
 							for(int i=profondeur+1;i<nb_routes;i++)
 							{
-								if(begin+r_t[i]+message_size<= offset-message_size)//un message suivant rentrerais dans le trou laissé par la route en cours
+								if( (begin+r_t[i])%P+message_size<= offset-begin-message_size)//un message suivant rentrerais dans le trou laissé par la route en cours
 								{
 									nb_coupes[3]++;
 									coupe_moy[3]+=g->nb_bbu+g->nb_collisions-1 - arcid;
@@ -240,7 +247,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 				
 					if(I_COLLE)
 					{
-						if(r.delay > 0 || old_offset == offset )//on est collé 
+						if( old_offset+message_size == offset )//on est collé 
 						{
 							nb_coupes[2]++;
 							coupe_moy[2]+=g->nb_bbu+g->nb_collisions-1 - arcid;
@@ -326,11 +333,11 @@ int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf)
 			borneinf = returnvalue;
 		if(i!=facto-1)
 			algo_sjt(permuts,g->arc_pool[arcid].nb_routes);
-		for(int j=0;j<128;j++)
-		{
-			g->arc_pool[arcid].routes_delay_f[j]=0;
-			g->arc_pool[arcid].routes_delay_b[j]=0;
-		}
+
+		memset(g->arc_pool[arcid].routes_delay_f,0,sizeof(int)*g->arc_pool[arcid].id_max);
+		//printf("%d %p %p %p\n",g->arc_pool[arcid].routes_delay_f,g->arc_pool[arcid].routes_delay_b,&g->arc_pool[i]);
+		memset(g->arc_pool[arcid].routes_delay_b,0,sizeof(int)*g->arc_pool[arcid].id_max);
+		
 		g->arc_pool[arcid].bounded = 0;
 	}
 

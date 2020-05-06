@@ -25,7 +25,7 @@ typedef enum policy{
 typedef struct arc{
 	int length;
 	int nb_routes;
-	int routes_id[128];
+	int routes_id[128]; 
 	int * period_f;
 	int * period_b;
 	int first;
@@ -39,13 +39,14 @@ typedef struct arc{
 	int state_b; //0 free, 1 used
 
 	//pour le voisinage
-	int routes_order_f[128];
-	int routes_order_b[128];
-	int routes_delay_f[128];
-	int routes_delay_b[128];
+	int *routes_order_f;
+	int *routes_order_b;
+	int *routes_delay_f;
+	int *routes_delay_b;
 	int contention_level;
 	int pos_swap;
 	int bounded;
+	int id_max;
 
 } Arc;
 
