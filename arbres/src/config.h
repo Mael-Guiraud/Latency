@@ -2,17 +2,10 @@
 
 #define MAX_LENGTH 20000
 #define MESSAGE_SIZE 2500
-<<<<<<< HEAD
 #define NB_BBU 2
 #define NB_COLLISIONS 3
 #define NB_ROUTES_PER_FLOW 2
 #define PROBA 0.5
-=======
-#define NB_BBU 3
-#define NB_COLLISIONS 4
-#define NB_ROUTES_PER_FLOW 1
-#define PROBA 1
->>>>>>> e0a73b6793ca13665b6433504a02d00f9763dbe5
 
 //Mod synch or not
 #define SYNCH 1
@@ -55,8 +48,6 @@
 #define NB_COUPES 7
 
 #define VOISINAGE 1
-<<<<<<< HEAD
-=======
 
 #define DATA_CENTER_ROUTES 0
->>>>>>> e0a73b6793ca13665b6433504a02d00f9763dbe5
+
