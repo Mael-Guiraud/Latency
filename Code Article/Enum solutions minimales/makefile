@@ -2,7 +2,7 @@ run: compile
 	time ./enum
 
 compile: enum.c
-	gcc -O2 enum.c -o enum
+	gcc -O2 -Wall enum.c -o enum
 
 debug: clean
 	gcc -Og -g enum.c -o enum
