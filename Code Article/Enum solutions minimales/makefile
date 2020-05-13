@@ -8,7 +8,12 @@ debug: clean
 	gcc -Og -g enum.c -o enum
 
 valgrind: debug
-	valgrind ./enum
+	valgrind --leak-check=full ./enum
+
+profile: debug
+	rm -f callgrind*
+	valgrind --tool=callgrind ./enum
+	kcachegrind callgrind* 
 
 gdb: debug
 	gdb ./enum
