@@ -12,7 +12,7 @@ valgrind: debug
 
 profile: debug
 	rm -f callgrind*
-	valgrind --tool=callgrind ./enum
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ./enum
 	kcachegrind callgrind* 
 
 gdb: debug
