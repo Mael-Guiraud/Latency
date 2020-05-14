@@ -48,6 +48,7 @@ double coupe_moy[NB_COUPES];
 
 int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf);
 //Fait l'arbre recursif avec tous les sous ensemble de routes 
+
 int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int borneinf,int offset,int begin,int * r_t)
 {
 
@@ -301,7 +302,9 @@ int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf)
 	int r_t[g->arc_pool[arcid].nb_routes];
 	for(int j=0;j<g->arc_pool[arcid].nb_routes;j++)
 	{
+
 		tab[j]=g->arc_pool[arcid].routes_id[j];
+
 				
 	}
 	//Pour tout les ordres de routes :
