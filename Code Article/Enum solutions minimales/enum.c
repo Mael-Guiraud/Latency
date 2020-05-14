@@ -5,7 +5,7 @@
 #include <strings.h>
 
 
-#define NOMBRE_ROUTE 6
+#define NOMBRE_ROUTE 9
 #define PERIODE 100
 #define TAILLE 10
 #define DEBUG 0
@@ -104,19 +104,19 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 						i = s[nombre_routes_traitees].numero + 1;
 						routes_utilisees[i-1] = 0;//on retire la route précédemment utilisée à ce niveau
 					}
+					add = 0;
 					//on ajoute le premier élément dispo en première période, à partir de la première route non traitée à cette position
 					for(; i < nombre_route && routes_utilisees[i]; i++){}  //si on fait un bitset, trouver la première route disponible est plus facile
 					if(i == nombre_route){//la route courante retirée était la plus grande route possible, retourne un cran en arriere
 						nombre_routes_traitees--;
-						add = 0;
 					}
 					else{
 						s[nombre_routes_traitees].depart = MAX(disponible_periode[i],s[nombre_routes_traitees - 1].depart + TAILLE);
 						s[nombre_routes_traitees].numero = i;
 						s[nombre_routes_traitees].seconde_periode = 0;
 						routes_utilisees[i] = 1;
-						add = 0;//par défaut, ça coupe et si toutes les conditions sont vérifiées on passe à la suite
-						if( s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
+						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
+						if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
 							(s[nombre_routes_traitees].numero > j || s[nombre_routes_traitees].depart > disponible_periode[(int) s[nombre_routes_traitees].numero])){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
 							int gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
@@ -146,7 +146,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 						//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
 						//pas l'échanger avec un autre élément dans la deuxième période
 						int k;
-						for(k = 0; k < nombre_routes_traitees && !( s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= s[nombre_routes_traitees-1].depart); k++){}
+						for(k = 0; k < nombre_routes_traitees && !(s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= s[nombre_routes_traitees-1].depart); k++){}
 						if(k == nombre_routes_traitees){	
 							nombre_routes_traitees++;
 							add = 1;	
