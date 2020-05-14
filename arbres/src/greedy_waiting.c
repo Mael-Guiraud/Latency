@@ -515,8 +515,9 @@ int greedy_deadline(Graph * g, int P, int message_size)
  					{
  						ids[l] = g->arc_pool[j].routes_id[l];
  						release[l] = route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 					//	printf("retourlenghtuntillarc %d \n",route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
  						budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
- 						//printf("route %d(%d) : %d = %d - %d ",ids[l], g->size_routes[ids[l]],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
+ 						//printf("route %d(%d) : %d = %d - %d\n ",ids[l], release[l],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
  					}
  					//printf("\n");
  					if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f))

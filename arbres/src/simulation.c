@@ -27,8 +27,8 @@
 
 void test()
 {
-	//unsigned int seed = 1588782688;
-	unsigned int seed = time(NULL);
+	unsigned int seed = 1588843277;
+	//unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -120,7 +120,7 @@ void test()
 	
 	reset_periods(&g,P);reinit_delays(&g);
 		
-	float nb_pas;	
+	float nb_pas = 0;	
 	int recuits = recuit( &g, P, message_size,1000,&nb_pas);
 	printf("Recuit %d, %f pas \n",recuits,nb_pas);	
 	sprintf(nom,"recuit");
@@ -150,27 +150,27 @@ void test()
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le recuit ! \n" RESET);
 	}
-	/*
-	int descent = descente( g, P, message_size,0);
-	printf("descente %d \n",descent);	
+	nb_pas = 0.0;	
+	int descent = descente( &g, P, message_size,0,&nb_pas);
+	printf("descente %d , %f pas\n",descent,nb_pas);	
 	sprintf(nom,"descente");
-	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,P,buf_dot);
+	print_assignment(&g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,P,buf_dot);
+	print_assignment_backward(&g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	//free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
 	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);reinit_delays(g);
+	reset_periods(&g,P);reinit_delays(&g);
 	if(descent<fpt)
 	{
 		printf(RED "!!!!!!!!!!FPT trouve moins bien que la descente!!!!!!!!!!!! \n" RESET);
@@ -180,6 +180,7 @@ void test()
 	{
 		printf(GRN "FPT trouve au moins aussi bien que la descente ! \n" RESET);
 	}
+	/*
 	int tabo = taboo( g, P, message_size,100);
 	printf("taboo %d \n",tabo);	
 	sprintf(nom,"taboo");
@@ -251,15 +252,17 @@ void simuldistrib(int seed)
 
 	int a=0;
 	
-
+	float nb;
 	
 	
 	int time[nb_algos];
 	int res[nb_algos][NB_SIMULS];
 	float nb_pas[4];
-	
+	float running_time[nb_algos];
+	  struct timeval tv1, tv2;
+	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
 	for(int i=0;i<3;i++)nb_pas[i] = 0;
-	#pragma omp parallel for private(g,P,a,time)  if(PARALLEL)
+	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
 		saut:
@@ -281,7 +284,10 @@ void simuldistrib(int seed)
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
 			a= 0;
+			nb = 0;
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
+				gettimeofday (&tv1, NULL);	
+		
 			switch(algo){
 				case 5:
 					time[algo] = borneInf( &g, P, message_size)-l;	
@@ -292,17 +298,24 @@ void simuldistrib(int seed)
 				break;
 				case 2:
 					//printf("DESCENTE \n\n\n\n\n\n\n\n\n");
-					a = descente( &g, P, message_size,0,&nb_pas[0]);
+					a = descente( &g, P, message_size,0,&nb);
+					#pragma omp critical
+						nb_pas[0] += nb;
 					/*if(a)
 						nb_pas[0] += a->nb_routes_scheduled;*/
 				break;
 				case 3:
 					a = taboo( &g, P, message_size,100);
 					if(a)
-						nb_pas[2] += 100;
+					{
+						#pragma omp critical
+							nb_pas[2] += 100;
+					}
 				break;
 				case 4:
-					a = best_of_x( &g, P, message_size,10,&nb_pas[1]);
+					a = best_of_x( &g, P, message_size,10,&nb);
+					#pragma omp critical
+						nb_pas[1] += nb;
 					/*if(a)
 						nb_pas[2] += a->nb_routes_scheduled;*/
 				break;
@@ -315,12 +328,17 @@ void simuldistrib(int seed)
 					}
 				break;
 				case 6:
-					a = recuit( &g, P, message_size,1000,&nb_pas[3]);
+					a = recuit( &g, P, message_size,1000,&nb);
+					#pragma omp critical
+						nb_pas[3] += nb;
 					break;
 				case 7:
 					a = branchbound( &g, P, message_size,coupes,coupes_m);
 					break;
 				}
+				gettimeofday (&tv2, NULL);	
+				#pragma omp critical
+					running_time[algo] += time_diff(tv1,tv2);
 
 
 				if(a)
@@ -378,17 +396,18 @@ void simuldistrib(int seed)
 			affiche_graph(&g,P,stdout);
 			exit(45);
 		}
-		if(time[7]<time[6])
+		/*if(time[7]<time[6])
 			{
 				printf(GRN "FPT meilleur que recuit (%d %d).\n" RESET,time[7],time[6]);
 			}
+			*/
 		for(int k=2;k<nb_algos;k++)
 		{
 			if((time[7]>time[k])&&k!=5)
 			{
 				printf(RED "Algo %d meilleur que fpt (%d %d).\n" RESET,k,time[k],time[7]);
 				printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
-				exit(24);
+				//exit(24);
 			}
 			
 			if((time[k]<time[5]) || (time[k]<time[1]))
@@ -414,8 +433,11 @@ void simuldistrib(int seed)
 		
 	}
 	//int interval_size = max / NB_POINTS;
+
+	printf("Temps executions : \n");
 	for(int i=0;i<nb_algos;i++)
 	{
+		printf("%s : %f ms\n",noms[i],running_time[i]/NB_SIMULS);
 		for(int j=0;j<NB_SIMULS;j++)
 		{
 			fprintf(f[i],"%d \n",res[i][j]);
@@ -424,8 +446,9 @@ void simuldistrib(int seed)
 		fclose(f[i]);
 	}
 	
+	sprintf(buf,"%d_%d_%d",NB_BBU,NB_COLLISIONS,MAX_LENGTH);
 	char * ylabels2[] = {"Nombre d'instances"};
-	print_gnuplot_distrib("waiting",noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
+	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
 	
 	printf("Nombre de pas moyen : Descente %f | DescenteX %f | Taboo %f | Recuit %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS,nb_pas[3]/NB_SIMULS);
 	

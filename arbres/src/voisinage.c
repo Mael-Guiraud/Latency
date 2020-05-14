@@ -1406,7 +1406,7 @@ int ** parcours_voisinage(Graph * g,int P, int message_size,Voisin v, int mintim
 		}
 		//printf("\n\navant nouveau voisin\n");aff_orders(orders,g);
 		v= nouveau_voisin(v,g);
-		/*printf(" route %d",v.route);
+		printf(" route %d",v.route);
 		printf("pos : ");
 		for(int i= 0;i<g->nb_levels[v.route];i++)
 			printf("%d ",v.pos[i]);
@@ -1417,9 +1417,8 @@ int ** parcours_voisinage(Graph * g,int P, int message_size,Voisin v, int mintim
 			printf("%d ",v.bool_p[i]);
 		printf("\n");
 		//printf("%d %d %d \n",v.pos,v.level,v.route);
-		printf("Apres noveau voisin \n");aff_orders(orders,g);
-		printf("\n\n");
-		reinit_delays(g);*/
+	
+		reinit_delays(g);
 	
 		//free_assignment(a);
 

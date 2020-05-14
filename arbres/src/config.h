@@ -4,8 +4,10 @@
 #define MESSAGE_SIZE 2500
 #define NB_BBU 2
 #define NB_COLLISIONS 3
-#define NB_ROUTES_PER_FLOW 2
-#define PROBA 0.5
+
+#define NB_ROUTES_PER_FLOW 1
+#define PROBA 1
+
 
 //Mod synch or not
 #define SYNCH 1
