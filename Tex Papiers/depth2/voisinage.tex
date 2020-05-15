@@ -52,12 +52,12 @@ We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\
 In this paper, the size of an atomic data is 64B, the speed of the links is considered to be 10Gbps, \todo{rajouter durée d'un tic}.
   \subsubsection{Network modeling}
   We study a communication network in which some pairs of source-destination nodes between which some messages are sent. Also, the routing between each such a pair of nodes is given.
-The network is modeled as a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three non intersecting subsets: a subset $\cal{S}$ of vertices modeling the sources of the messages, a subset $\cal{D}$ modeling the destination of the messages, and a subset $\cal{C}$ representing the contention points. Indeed, some links of the network are shared between several pairs of nodes source-destination, we represent the begining of this link (i.e. the pyhsical node which send the messages into this link) as a contention point. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. An arc in $G$ can represent several physical links or nodes, which do not induce contention points.\\
+The network is modeled as a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three non intersecting subsets: a subset ${\cal S}$ of vertices modeling the sources of the messages, a subset ${\cal D}$ modeling the destination of the messages, and a subset ${\cal C}$ representing the contention points. Indeed, some links of the network are shared between several pairs of nodes source-destination, we represent the begining of this link (i.e. the pyhsical node which send the messages into this link) as a contention point. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. An arc in $G$ can represent several physical links or nodes, which do not induce contention points.\\
   A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_1,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \Omega(u_j, u_{j+1})$. It is the number of tics needed between the sending tic of a message in the first vertex of the route and the reception tic of this message at $u_i$. We also define $\lambda(u_1,r)=0$. The weight of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
-We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.\\
-The \textbf{contention level} of a node $u_i \in \cal{C}$ on a route $r$ is defined by $cl(u_i,r) = i-1$. This is the id of contention point on the route. The contention level of a node $u$ is $cl(u) = \max_{1\leq i\leq n} cl(u,i)$, with $n$ the number of routes using the node $u$.
+We denote by ${\cal R}$ a set of routes, the pair $(G,{\cal R})$ is called a {\bf routed network} and represents our telecommunication network.\\
+The \textbf{contention level} of a node $u_i \in {\cal C}$ on a route $r$ is defined by $cl(u_i,r) = i-1$. This is the id of contention point on the route. The contention level of a node $u$ is $cl(u) = \max_{1\leq i\leq n} cl(u,i)$, with $n$ the number of routes using the node $u$.
 \todo{petit dessin avec un reseau et sa représentation en graph}
-The conflict depth of a routed network $(G,\cal{R})$ is equal to the maximum of the contention level of its vertices.
+The conflict depth of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level of its vertices.
  \subsection{Messages dynamic}
 	     
         In the process we study, a {\bf datagrams} is sent on each route from the source node. The size $|d|$ of a datagram $d$ is an integer, and correspond to the number of tics needed by a node $u$ to emit the datagram through a link. Once a datagram has been emitted, it cannot be fragmented during its travel in the network. We consider that the datagrams sent on each routes are all available to be sent at the same tic, which can be simplified, wlog. by $0$.
@@ -66,7 +66,7 @@ The conflict depth of a routed network $(G,\cal{R})$ is equal to the maximum of 
           Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, one can choose to buffer a datagram $d_r$ in any vertex $u_i$ of the route. The function $b(d_r,u_i), i \in \{0,\ldots,l\}$ associate to each couple datagram-vertex of the route an integer. Those integers represent the buffering time of the datagram in each nodes of the route.\\
        
 
- An \textbf{assingment} $a(u)$ of a vertex $u$ is a choice of a buffer value for each route using this vertex. The assingment $A(G,\cal{R})$ of a graph is defined by $\cup_{u \in V} a(u)$. In order to siplify the reading, we will note the assignment of a graph $A$, since the routed network $(G,\cal{R})$ is implicit from the context. The \textbf{reception date} of a datagram $d_r$ in vertex $u_i$ in $r$, is the first tic at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(d_r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} b(d_r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the physical delay of the links, plus the buffers determined by the logical solution proposed.\\
+ An \textbf{assingment} $a(u)$ of a vertex $u$ is a choice of a buffer value for each route using this vertex. The assingment $A(G,{\cal R})$ of a graph is defined by $\cup_{u \in V} a(u)$. In order to siplify the reading, we will note the assignment of a graph $A$, since the routed network $(G,{\cal R})$ is implicit from the context. The \textbf{reception date} of a datagram $d_r$ in vertex $u_i$ in $r$, is the first tic at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(d_r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} b(d_r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the physical delay of the links, plus the buffers determined by the logical solution proposed.\\
  \textbf{sending date} of a datagram $d_r$ by vertex $u_i$ in $r$, is the first tic at which the datagram is sent by $u_i$. It is defined by $s(d_r,u_i) = t(d_r,u_i) +  b(d_r,u_i) $. This is the reception date of the datgram plus the buffer defined by the assignment for the datagram.\\
  
   Let $v_i$ be the last vertex of the route $i$.
@@ -79,14 +79,14 @@ The conflict depth of a routed network $(G,\cal{R})$ is equal to the maximum of 
 
      
   \subsection{Periodic sending of the datagrams}
- The process we describe here is \textbf{periodic} during each period of $P$ slots, a datagram is sent from each source node in the network at the same tic in the period.
+ The process we describe here is \textbf{periodic}: during each period of $P$ slots, a datagram is sent from each source node in the network at the same tic in the period. There is an infinite number of datagram sent during each period. Thus, we chose to study the behavior of the datagrams on each nodes of the network during one period, and to apply the pattern for every subsequent periods.
              We denote by $\tau$ the number 
       of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the datagram sent by a source node into the network is the same, regardless of the route. Let us call $[t(d_r,u)]_{P,\tau}$ the set of time slots used a datagram on the by route $r$ at vertex $u$ in a period $P$, that is $[t(d_r,u)]_{P,\tau} = \{t(d_r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
 
       Let $r_1$ and $r_2$ be two routes, on which datagrams are sent at time $\theta(d_1)$ and $\theta(d_2)$ in their first vertex $u_1$ and $u_2$ respectively.
       We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(d_1,u_1)]_{P,\tau} \cap [t(d_2,u_2)]_{P,\tau} \neq \emptyset$.\\
 
-        A {\bf valid assignment} $A$ of a routed network $(G,\cal R)$ is an assignment in which \emph{no pair of routes has a collision}.
+        A {\bf valid assignment} $A$ of a routed network $(G,{\cal R})$ is an assignment in which \emph{no pair of routes has a collision}.
         
 \subsection{Problems}
        
@@ -98,7 +98,7 @@ The conflict depth of a routed network $(G,\cal{R})$ is equal to the maximum of 
 
       \noindent {\bf Optimisation problem:} Minimizing $TR(A)$.
     
-     
+     \todo{np completude, meme sur l'etoile, parler du papier avec PALL}
     
 \section{Compact representation of an assignment}
 
@@ -155,7 +155,7 @@ Among all assignments $A$ for a routed network $G,{\cal R})$, there is a compact
 \label{theorem:compact}
 \end{theorem}
 \begin{proof}
-Consider an assingment of a vertex $u$ $a(u) = (b(d_1),\dots,b(d_n))$. If $\forall i \in \{1,\ldots,n\}$ $b(d_i) > 0 $, then $s(d_i) > r(d_i)$. Then it is possible to compute the assignment $a(u)' = (b'(d_1),\dots,b'(d_n))$ in which $b'(d_i) = b(d_i) - \min\limits_{ 1\leq j \leq n} b(d_j)$. Consider a vertex $v$ such that $cl(v) = cl(u) +1$, or such that $v \in \cal{D}$ that is, $v$ comes after $u$ in any routes shared by both vertices.\\
+Consider an assingment of a vertex $u$ $a(u) = (b(d_1),\dots,b(d_n))$. If $\forall i \in \{1,\ldots,n\}$ $b(d_i) > 0 $, then $s(d_i) > r(d_i)$. Then it is possible to compute the assignment $a(u)' = (b'(d_1),\dots,b'(d_n))$ in which $b'(d_i) = b(d_i) - \min\limits_{ 1\leq j \leq n} b(d_j)$. Consider a vertex $v$ such that $cl(v) = cl(u) +1$, or such that $v \in {\cal d}$ that is, $v$ comes after $u$ in any routes shared by both vertices.\\
 For all routes $i$ passing through $v$, by definition, and since $b'(d_i,u) \leq b(d_i,u)$: $$t'(d_i,v) = \lambda(v,i) + \sum_{u \in i, cl(u,i) < cl(v,i)} b'(d_i,u)  \leq t(d_i,v)$$\\
 Note that by reducing the buffers in a node $u_i$, we allow a datagram to reach the node $u_{i+1}$ earlier. Nevertheless, we do not change the order of the datagrams in $v$, even if it is possible.
 By induction, if $v$ is the last vertex of the route, then : $$t'(d_i,v) \leq t(d_i,v) \Leftrightarrow TR(A') \leq TR(A)$$
@@ -180,7 +180,7 @@ Consider the datagrams are numeroted $d_1,\ldots,d_k$.
 From lemma~\ref{lemma:numberarcs}, one can determine the numbre of compact representation of an entire router network.
 We define $k_1,\ldots,k_l$ the number of routes on the $l$ contention points of a routed network.
 \begin{theorem}
- The number of compact representation for a routed network $(G,\cal{R})$ is $\prod_{i=1}^l k_i!2^{k_i-1}$ .
+ The number of compact representation for a routed network $(G,{\cal R})$ is $\prod_{i=1}^l k_i!2^{k_i-1}$ .
  \label{theorem:numbergraph}
 \end{theorem}
 
@@ -199,8 +199,21 @@ Greedy sans buffers dans le graph -> greedy avec buffers dans le graph.
 
 There is a large number of compact representation and to find the one which minimize $TR(A)$, we try serveral local search technique like ill climbing, Simulated annealing or Tabu search.\\
 
-As a reminder, a compact representation is, for each contention arc of the graph, a pair $(O,S)$ of an order $O$ an a subset $S$ of the routes of the arc.
-We define the neighbors of a compact represation as follow: for each routes of the graph, and for each contention arcs to which this route belongs, we try to swap the route with the following route in the order $O$ of the arc, and to put or not the route in the subset $S$ of the arc. Thus, if a route $i$ belongs to $k$ contention arcs, there is $2^{k+1}$ neighbors considering this route. Consider that the routes are numeroted $1,\ldots,n$ and belongs to $k_1,\ldots,k_n$ contention arcs, a compact representation has $\sum_{i=1}^n 2^{k_i +1} $ 
+As a reminder, a compact representation is, for a contention point of the graph, a pair $(O,S)$ of an order $O$ an a subset $S$ of the routes of the arc.
+We define by $(O,S)_u$ a compact representation of the arc $u$. A compact representation of a routed network is thus $CR(G,{\cal R}) = \cup_ {u\in V} (O,S)_u$.
+we also define $O(r)$ the position of the route $r$ in an order $O$, and the reverse fuction $\overline{O(r)} = r$.\\
+We consider a compact represtation $(O,S)_u$.
+A \textit{neigbhor order} of  $O$ over a route $r$, is an order $O'$ such that $O'(r) = O(r)+1$ . This means that $O'(j) = O(j),\forall j \notin \{r;\overline{O(r)+1}\}$. Indeed, by definition, $O'(\overline{O(r)+1}) = O(r)$.
+A \textit{neigbhor subset} of $S$ over a route $r$ is defined by $S' = S - \{r\}$ if $r\in S$ or $S'= S \cup \{r\}$ if $ r \notin S$.
+A \textbf{neighbor} of the of a compact represation $CR(G,{\cal R})$ over a route $r$ is another compact representation $Neigh(CR(G,{\cal R}),r) = \cup_ {u\in V} (O,S)'_u$ such that:
+\begin{itemize}
+ \item If $u \notin r$, $(O,S)'_u = (O,S)_u$
+ \item If $u \in r$, $(O,S)'_u \in \{(O,S');(O',S);(O',S')\}$
+\end{itemize}
+
+The \textbf{neighborhood} of a compact representation $CR(G,{\cal R})$ is defined by the set of compact representations: $$ \bigcup_{i\in{\cal R}} (\cup Neigh(CR(G,{\cal R}),i) ) $$.
+
+ Consider that the routes are numeroted $1,\ldots,n$ and belongs to respectively $k_1,\ldots,k_n$ contention arcs, a compact representation has $\sum_{i=1}^n 2^{2k_i} $ neighbors.
 
 
  
