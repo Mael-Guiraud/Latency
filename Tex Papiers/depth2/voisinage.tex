@@ -52,25 +52,26 @@ We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\
 In this paper, the size of an atomic data is 64B, the speed of the links is considered to be 10Gbps, \todo{rajouter durée d'un tic}.
   \subsubsection{Network modeling}
   We study a communication network in which some pairs of source-destination nodes between which some messages are sent. Also, the routing between each such a pair of nodes is given.
-The network is modeled as a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three non intersecting subsets: a subset ${\cal S}$ of vertices modeling the sources of the messages, a subset ${\cal D}$ modeling the destination of the messages, and a subset ${\cal C}$ representing the contention points. Indeed, some links of the network are shared between several pairs of nodes source-destination, we represent the begining of this link (i.e. the pyhsical node which send the messages into this link) as a contention point. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. An arc in $G$ can represent several physical links or nodes, which do not induce contention points.\\
+The network is modeled as a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three non intersecting subsets: a subset ${\cal S}$ of vertices modeling the sources of the messages, a subset ${\cal D}$ modeling the destination of the messages, and a subset ${\cal C}$ representing the contention points. Indeed, some links of the network are shared between several pairs of nodes source-destination, we represent the begining of this link (i.e. the pyhsical node which send the messages into this link) as a contention point. An arc in $G$ can represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. \\
   A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_1,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \Omega(u_j, u_{j+1})$. It is the number of tics needed between the sending tic of a message in the first vertex of the route and the reception tic of this message at $u_i$. We also define $\lambda(u_1,r)=0$. The weight of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
 We denote by ${\cal R}$ a set of routes, the pair $(G,{\cal R})$ is called a {\bf routed network} and represents our telecommunication network.\\
-The \textbf{contention level} of a node $u_i \in {\cal C}$ on a route $r$ is defined by $cl(u_i,r) = i-1$. This is the id of contention point on the route. The contention level of a node $u$ is $cl(u) = \max_{1\leq i\leq n} cl(u,i)$, with $n$ the number of routes using the node $u$.
+The \textbf{contention level} of a node $u_i \in {\cal C}$ on a route $r$ is defined by $c(u_i,r) = i-1$. This is the id of contention point on the route. The contention level of a node $u$ is $cl(u) = \max\limits_{r\in{\cal R}} cl(u,r)$, with $n$ the number of routes using the node $u$.
 \todo{petit dessin avec un reseau et sa représentation en graph}
-The conflict depth of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level of its vertices.
+The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is denoted $CD$ and is equal to the maximum of the contention level of its vertices. It correspond to the number of contention point on the longest route of the network.
  \subsection{Messages dynamic}
 	     
-        In the process we study, a {\bf datagrams} is sent on each route from the source node. The size $|d|$ of a datagram $d$ is an integer, and correspond to the number of tics needed by a node $u$ to emit the datagram through a link. Once a datagram has been emitted, it cannot be fragmented during its travel in the network. We consider that the datagrams sent on each routes are all available to be sent at the same tic, which can be simplified, wlog. by $0$.
+        In the process we study, a {\bf datagrams} is sent on each route from the source node. The size of a datagram is an integer, and correspond to the number of tics needed by a node $u$ to emit the datagram through a link.  We denote by $\tau$ the number of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the datagram sent by a source node into the network is the same, regardless of the route. Once a datagram has been emitted, it cannot be fragmented during its travel in the network. We consider that the datagrams sent on each routes are all available to be sent at the same tic, which can be simplified, w.l.o.g. by $0$.
       
         
-          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, one can choose to buffer a datagram $d_r$ in any vertex $u_i$ of the route. The function $b(d_r,u_i), i \in \{0,\ldots,l\}$ associate to each couple datagram-vertex of the route an integer. Those integers represent the buffering time of the datagram in each nodes of the route.\\
+          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, it is possible to buffer the datagrams in the contention points. The time a datagram on the route $r$ waits in buffer of a vertex $u_i$ is defined by $A(r,u_i), i \in \{0,\ldots,l\}$.
+          The function $A$, called \textbf{assingment} , associate an integer value, lower or equal to $0$, to each couple route-vertex of the routed network $(G,{\cal R})$. Those integers represent the buffering time of the datagram in each nodes of the route.\\
        
 
- An \textbf{assingment} $a(u)$ of a vertex $u$ is a choice of a buffer value for each route using this vertex. The assingment $A(G,{\cal R})$ of a graph is defined by $\cup_{u \in V} a(u)$. In order to siplify the reading, we will note the assignment of a graph $A$, since the routed network $(G,{\cal R})$ is implicit from the context. The \textbf{reception date} of a datagram $d_r$ in vertex $u_i$ in $r$, is the first tic at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(d_r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} b(d_r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the physical delay of the links, plus the buffers determined by the logical solution proposed.\\
- \textbf{sending date} of a datagram $d_r$ by vertex $u_i$ in $r$, is the first tic at which the datagram is sent by $u_i$. It is defined by $s(d_r,u_i) = t(d_r,u_i) +  b(d_r,u_i) $. This is the reception date of the datgram plus the buffer defined by the assignment for the datagram.\\
+ The \textbf{reception date} of a datagram in vertex $u_i$ in $r$, is the first tic at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} A(r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the physical delay of the links, plus the buffers determined by the logical solution proposed.\\
+ \textbf{sending date} of a datagram by vertex $u_i$ in $r$, is the first tic at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the reception date of the datgram plus the buffer defined by the assignment for the datagram.\\
  
-  Let $v_i$ be the last vertex of the route $i$.
-       We define the \textbf{full transmission time} of an assingment $A$ as $TR(A) = \displaystyle \max_{i \in \{0,\ldots,n\}} t(d_i,v_i) $, where $n$ is the number of routes in the routed network. This is the time ellapsed before the reception of the first tic of the last datagram.
+  Let $v_r$ be the last vertex of the route $r$.
+       We define the \textbf{full transmission time} of an assingment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} t(r,v_r) $. This is the time ellapsed before the reception of the first tic of the last datagram.
          In the application we study the full transmission time is bounded . We define $Tmax$ such that $TR(A) \leq Tmax$.
          
   \subsection{Cloud-RAN context}
@@ -80,13 +81,12 @@ The conflict depth of a routed network $(G,{\cal R})$ is equal to the maximum of
      
   \subsection{Periodic sending of the datagrams}
  The process we describe here is \textbf{periodic}: during each period of $P$ slots, a datagram is sent from each source node in the network at the same tic in the period. There is an infinite number of datagram sent during each period. Thus, we chose to study the behavior of the datagrams on each nodes of the network during one period, and to apply the pattern for every subsequent periods.
-             We denote by $\tau$ the number 
-      of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the datagram sent by a source node into the network is the same, regardless of the route. Let us call $[t(d_r,u)]_{P,\tau}$ the set of time slots used a datagram on the by route $r$ at vertex $u$ in a period $P$, that is $[t(d_r,u)]_{P,\tau} = \{t(d_r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
+             Let us call $[t(r,u)]_{P,\tau}$ the set of time slots used a datagram on the by route $r$ at vertex $u$ in a period $P$, that is $[t(r,u)]_{P,\tau} = \{t(r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
 
-      Let $r_1$ and $r_2$ be two routes, on which datagrams are sent at time $\theta(d_1)$ and $\theta(d_2)$ in their first vertex $u_1$ and $u_2$ respectively.
-      We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(d_1,u_1)]_{P,\tau} \cap [t(d_2,u_2)]_{P,\tau} \neq \emptyset$.\\
+      Let us consider two routes numbered $1$ and $2$.
+      We say that the two routes have a {\bf collision} at the contention point $u$ if $[t(1,u)]_{P,\tau} \cap [t(2,u)]_{P,\tau} \neq \emptyset$.\\
 
-        A {\bf valid assignment} $A$ of a routed network $(G,{\cal R})$ is an assignment in which \emph{no pair of routes has a collision}.
+        An assignment $A$ of a routed network $(G,{\cal R})$ is said \textbf{valid} if \emph{no pair of routes has a collision}. This notion of valid assignment depends of the period $P$ and the size of the messages $\tau$ but to simplify the reading, we do not imply those paremeters in the notations.
         
 \subsection{Problems}
        
@@ -107,46 +107,47 @@ The conflict depth of a routed network $(G,{\cal R})$ is equal to the maximum of
 
 
 We explain in this section how to represent an assignment for the problem 
-\spall over a vertex in a compact way. Then, this representation
-can be used at any contention point in an instance of larger depth.
-Not all solutions can be represented in a compact way, but there
-is at least one optimal assignment for \spall wich is.
+\spall in a compact way. 
+Not all assigments can be represented in a compact way, but there
+is at least one optimal valid assignment $A$ for \spall that is, that minimize $TR(A)$ .
 It allows to design FPT algorithm by going through all compact 
 representations. We obtain good heuristic algorithms using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.\\
 
 
-
 \begin{definition}
-A compact representation of an assignment over $n$ routes is a pair $(O,S)$,
-where $O$ is an order on the $n$ routes and $S$ is a subset of the $n$ routes.
+
+A compact representation of an assignment $A$ over a contention point $u$ routes is a pair $(O_u,S_u)$,
+where $O_u$ is an order on the routes and $S_u$ is a subset of the routes.\\
+A compact representation of an assignment $A$ on routed network is thus $CR(A) = \{(O_u,S_u)\}, u\in V$.
+\label{definition:compact}
+
 \end{definition}
 
-We now explain how to decompress a compact representation into an assignment.
-Because we only consider one contention point $u$, we simplify the notation of the functions $b(d_i,u)$, $r(d_i,u)$ and, $s(d_i,u)$ by respectively $b(d_i)$, $r(d_i)$ and $s(d_i)$.
-As a reminder those functions gives respectively the buffer, the reception date and the sendinc date of the datagram $d_i$ in the contention point $u$. Also, an assignment on one arc is defined as $a = (b(d_1),\dots,b(d_n))$.
-%\todo{Je ne connais pas les notations pour \spall, je suppose qu'on a des temps
-%d'arrivée sur l'arc $a_1,\dots,a_n$ et qu'on fixe des temps de départ sur l'arc 
-%$d_1,\dots,d_n$. Je note un assignement A. Je remarque qu'on a souvent omis des 
-%fonctions comme PT, TR la dépendence en l'assignement, du coup certaines choses sont 
-%plus dures à écrire proprement}
-Say w.l.o.g. that the datagrams are indexed in the order given by $O$.
-We fix the sending date of the first datagram $s(d_1) = r(d_1)$, that is $b(d_1) = 0$, the datagram does not wait in a buffer. Then, in each period beginning by the first datagram, the datagrams will be in order. To simplify, we assume that $s(d_1) = r(d_1) = 0$, which can be obtained by removing $r(d_1)$ to all arrival times. We fix the sending date of the datagram in order, when the first $i$ datagrams have their sending date computed, we fix $s(d_{i+1})$ in the following way. 
 
-If $i+1 \notin S$, then $s(d_{i+1}) >= r(d_{i+1})$ otherwise the datagram $i+1$ should go in the period after the one it is available in, that is $s(d_{i+1}) > (r(d_{i+1})/P + 1)P$.
-The value of  $s(d_{i+1})$ is the smallest value which satisfies the previous constraint,
-ensures that there are no collision with the first $i$ datagrams and  satisfies the order, that is $s(d_{i+1}) \mod P > s(d_i) \mod P$. 
-It is possible that the process fails to find a correct value for $s(d_i)$ at some point,
+
+
+We now explain how to decompress a compact representation into an assignment.
+We only consider one contention point $u$, thus, we simplify the notation of the functions  $r(r,u)$ and, $s(r,u)$ by respectively $b(r)$, $r(r)$ and $s(r)$.
+As a reminder those functions gives respectively the reception date and the sendinc date of the datagram of the route $r$ in the contention point $u$. Also, we simplify the notation of the compact representation on the contention point $u$ by $(O,S)$, and the buffering time of route $r$ on the contention point given by $A(r,u)$ is denoted here $A(r)$.
+
+Say w.l.o.g. that the datagrams are indexed in the order given by $O$.
+We fix the sending date of the first datagram $s(1) = r(1)$, that is $A(1) = 0$, the datagram does not wait in a buffer. Then, in each period beginning by the first datagram, the datagrams will be in order. To simplify, we assume that $s(1) = r(1) = 0$, which can be obtained by removing $r(1)$ to all arrival times. We fix the sending date of the datagram in order, when the first $i$ datagrams have their sending date computed, we fix $s(i+1)$ in the following way. 
+
+If $i+1 \notin S$, then $s(i+1) >= r(i+1)$ otherwise the datagram $i+1$ should go in the period after the one it is available in, that is $s(i+i) > (r(i+1)/P + 1)P$.
+The value of  $s(i+1)$ is the smallest value which satisfies the previous constraint,
+ensures that there are no collision with the first $i$ datagrams and  satisfies the order, that is $s(i+1) \mod P > s(i) \mod P$. 
+It is possible that the process fails to find a correct value for $s(i)$ at some point,
 in that case there are no assignment associated to this compact representation.
 
 We denote this transformation by $Sol$, that is $Sol(O,S)$ is the solution previously defined
 (the routed network is implicit) or a special value to denote there is no assignment compatible with this compact representation. 
 
-We can also define an inverse function which from most assignment $a$ computes a compact representation, that we denote by $Compact(a)$. The function is defined only for
-assignments $a = (b(d_1),\dots,b(d_n))$, such that the first datagram does not wait in a buffer, that is $a_1 = d_1$. Assume w.l.o.g that $r(d_1) = s(d_1) = 0$, by considering the equivalent problem where $r(d_i)= r(d_i) -r(d_1)$ and $s(d_i) = s(d_i) - r(d_1)$.
-Compute the values $(s(d_i))\mod P$ and  call their order $O$. Let 
- $S$ be the set of $i$ such that $(s(d_i) \geq (r(d_i) / P + 1) P$. We let $Compact(a) = (O,S)$.
+We can also define an inverse function which from most assignment $A$ computes a compact representation, that we already defined in def.~\ref{definition:compact} by $CR(A)$. The function is defined only for
+assignments $A$, such that the first datagram does not wait in a buffer, that is $s(1) = r(1)$. Assume w.l.o.g that $r(1) = s(1) = 0$, by considering the equivalent problem where $r(i)= r(i) -r(1)$ and $s(i) = s(i) - r(1)$.
+Compute the values $(s(i))\mod P$ and  call their order $O$. Let 
+ $S$ be the set of $i$ such that $(s(i) \geq (r(i) / P + 1) P$. We let $CR(A) = (O,S)$.
 
-
+\todo{donner un petit exemple en dessin, + parler de la complexité du changement de forme}
 A compact representation of a solution for an instance of depth larger than $k$
 is a list of compact representations, one for each contention arc. The following theorem explains why it is enough to explore the compact representations to solve \spall.
 
@@ -155,39 +156,45 @@ Among all assignments $A$ for a routed network $G,{\cal R})$, there is a compact
 \label{theorem:compact}
 \end{theorem}
 \begin{proof}
-Consider an assingment of a vertex $u$ $a(u) = (b(d_1),\dots,b(d_n))$. If $\forall i \in \{1,\ldots,n\}$ $b(d_i) > 0 $, then $s(d_i) > r(d_i)$. Then it is possible to compute the assignment $a(u)' = (b'(d_1),\dots,b'(d_n))$ in which $b'(d_i) = b(d_i) - \min\limits_{ 1\leq j \leq n} b(d_j)$. Consider a vertex $v$ such that $cl(v) = cl(u) +1$, or such that $v \in {\cal d}$ that is, $v$ comes after $u$ in any routes shared by both vertices.\\
-For all routes $i$ passing through $v$, by definition, and since $b'(d_i,u) \leq b(d_i,u)$: $$t'(d_i,v) = \lambda(v,i) + \sum_{u \in i, cl(u,i) < cl(v,i)} b'(d_i,u)  \leq t(d_i,v)$$\\
-Note that by reducing the buffers in a node $u_i$, we allow a datagram to reach the node $u_{i+1}$ earlier. Nevertheless, we do not change the order of the datagrams in $v$, even if it is possible.
-By induction, if $v$ is the last vertex of the route, then : $$t'(d_i,v) \leq t(d_i,v) \Leftrightarrow TR(A') \leq TR(A)$$
-Thus, for all existing assignments $A$ solving \spall, it is possible to find an equivalent assignment $A$ which have compact representation $Compact(A')$ and such that $TR(A') \leq TR(A)$.\\
+Consider an assingment $A$ and a vertex $u$.
+If $A(r,u) > 0, \forall r \in {\cal R}$, it is possible to compute the assignment $A'$ such that
+$A'(r,u) = A(r,u)-\min\limits_{i \in {\cal R}} A(i,u)$. Consider a vertex $v$ such that $cl(v) = cl(u) +1$, or such that $v \in {\cal D}$ that is, $v$ comes after $u$ in any routes shared by both vertices.\\
+For all routes $r$ passing through $v$, by definition, and since $A'(r,u) \leq A(r,u)$: $$t'(r,v) = \lambda(v,r) + \sum_{u \in r, cl(u,r) < cl(v,r)} A'(r,u)  \leq t(r,v)$$\\
+Note that by reducing the buffers in a node $u_i$, we allow a datagram to reach the node $u_{i+1}$ earlier. Nevertheless, we do not change the order of the datagrams in $u_{i+1}$, even if it is possible.
+By induction, if $v$ is the last vertex of the route $r$, then : $$t'(r,v) \leq t(r,v) \rightarrow TR(A') \leq TR(A)$$
+Thus, for all existing assignments $A$ solving \spall, it is possible to find an equivalent assignment $A'$ which have compact representation $CR(A')$ and such that $TR(A') \leq TR(A)$.\\
 \end{proof}
 
 
 We want to find the assignment for which $TR(A)$ is minimal. To do so, as explained in theorem~\ref{theorem:compact}, we search between all the compact representations the one which minimize $TR(A)$.
 
 \begin{lemma}
- The number of compact representation $(O,S)$ for a contention point with $k$ routes is $k!2^{k-1}$.
+ The number of compact representation $(O,S)$ for a contention point with $k$ routes is $k!2^{k}$.
  \label{lemma:numberarcs}
 \end{lemma}
-\begin{proof}
-Consider the datagrams are numeroted $d_1,\ldots,d_k$.
- There is $k$ routes on the contention point. Thus, there is $k!$ possible orders for the sequence of datagram in a period.
- Once the order $O$ of the compact representation is given, one can fix, w.l.o.g. $b(d_1) = 0$.
- Then, there is $k-1$ remaining datagram that can be set in $S$.
- This mean there is $k!2^{k-1}$ pairs of different $(O,S)$, i.e. compact representation for this arc.
-\end{proof}
+%\begin{proof}
+%Consider the datagrams are numeroted $d_1,\ldots,d_k$.
+% There is $k$ routes on the contention point. Thus, there is $k!$ possible orders for the sequence of datagram in a period.
+ %Once the order $O$ of the compact representation is given, one can fix, w.l.o.g. $b(d_1) = 0$.
+ %Then, there is $k-1$ remaining datagram that can be set in $S$.
+ %This mean there is $k!2^{k-1}$ pairs of different $(O,S)$, i.e. compact representation for this arc.
+%\end{proof}
 
 From lemma~\ref{lemma:numberarcs}, one can determine the numbre of compact representation of an entire router network.
 We define $k_1,\ldots,k_l$ the number of routes on the $l$ contention points of a routed network.
+\begin{lemma}
+ The number of compact representation for a routed network $(G,{\cal R})$ is $\prod_{i=1}^l k_i!2^{k_i}$ .
+ \label{lemma:numbergraph}
+\end{lemma}
+
+We consider a routed network $(G,{\cal R})$. As a reminder, $CD$ is the contention depth of the routed network, and  there is $n$ routes in ${\cal R}$.
 \begin{theorem}
- The number of compact representation for a routed network $(G,{\cal R})$ is $\prod_{i=1}^l k_i!2^{k_i-1}$ .
- \label{theorem:numbergraph}
+ Problem \spall is FPT when parametrized by the number of routes and can be solved in time $O( ( n!2^{n})^{CD})$.
 \end{theorem}
+\begin{proof}
+ \todo{idée : faire Contention level par contention level, sur un level on a qu'une seule fois la route et $\prod 2^k<2^n, \prod k! < n!$. De plus, il faut rajouter le facteur multiplicatif pour passer d'un compact assignment a l'autre et decompser le compact en sol}
+\end{proof}
 
-
-\begin{corollary}
- Problem \spall is FPT when parametrized by the number of routes and can be solved in $O(\prod_{i=1}^n n!2^{n})$, where $n$ is the number of routes on the graph.
-\end{corollary}
 
 
 
@@ -199,19 +206,25 @@ Greedy sans buffers dans le graph -> greedy avec buffers dans le graph.
 
 There is a large number of compact representation and to find the one which minimize $TR(A)$, we try serveral local search technique like ill climbing, Simulated annealing or Tabu search.\\
 
-As a reminder, a compact representation is, for a contention point of the graph, a pair $(O,S)$ of an order $O$ an a subset $S$ of the routes of the arc.
-We define by $(O,S)_u$ a compact representation of the arc $u$. A compact representation of a routed network is thus $CR(G,{\cal R}) = \cup_ {u\in V} (O,S)_u$.
-we also define $O(r)$ the position of the route $r$ in an order $O$, and the reverse fuction $\overline{O(r)} = r$.\\
-We consider a compact represtation $(O,S)_u$.
-A \textit{neigbhor order} of  $O$ over a route $r$, is an order $O'$ such that $O'(r) = O(r)+1$ . This means that $O'(j) = O(j),\forall j \notin \{r;\overline{O(r)+1}\}$. Indeed, by definition, $O'(\overline{O(r)+1}) = O(r)$.
+As a reminder, on a contention point $u$ of the graph, the pair $(O_u,S_u)$ of an order $O_u$ an a subset $S_u$ of the routes of the contention point represent the compact representation of an assignment $A$ for $u$.
+ Also, remember that the compact representation of $A$ on routed network is detoned $CR(A)$.
+We define $O(r)$ the position of the route $r$ in an order $O$, and the inverse fuction $O^{-1}(r)$.\\
+We consider a compact represtation $(O_u,S_u)$ on a contention point $u$.
+A \textit{neigbhor order} of  $O$ over a route $r$, is an order $O'$ such that $O'(r) = O(r)+1$ . This means that $O'(j) = O(j),\forall j \notin \{r;O^{-1}(r)+1\}$. Indeed, by definition, $O'(O^{-1}(O(r)+1)) = O(r)$. If $r$ is the last route in the order $O$, then $O'(r) = 1$ and $O'(O^{-1}(O(1))=O(r)$
 A \textit{neigbhor subset} of $S$ over a route $r$ is defined by $S' = S - \{r\}$ if $r\in S$ or $S'= S \cup \{r\}$ if $ r \notin S$.
-A \textbf{neighbor} of the of a compact represation $CR(G,{\cal R})$ over a route $r$ is another compact representation $Neigh(CR(G,{\cal R}),r) = \cup_ {u\in V} (O,S)'_u$ such that:
+The \textbf{neighborhood of the pair} $(O_u,S_u)$ ouver a route $r$ is defined by the set $N_u = \{(O_u,S_u);(O_u,S_u');(O_u',S_u);(O_u',S_u')\}$.\\
+
+Consider a compact representation $CR(A)$ over a route $r$.
+$CR'(A)$ si a \textbf{neighbor} of $CR(A)$ if for all pair $(O_u,S_u)'$ of $CR'(A)$:
 \begin{itemize}
- \item If $u \notin r$, $(O,S)'_u = (O,S)_u$
- \item If $u \in r$, $(O,S)'_u \in \{(O,S');(O',S);(O',S')\}$
+ \item If $u \notin r$, $(O_u,S_u)' = (O_u,S_u)$
+ \item If $u \in r$, $(O_u,S_u)' \in N_u $
 \end{itemize}
 
-The \textbf{neighborhood} of a compact representation $CR(G,{\cal R})$ is defined by the set of compact representations: $$ \bigcup_{i\in{\cal R}} (\cup Neigh(CR(G,{\cal R}),i) ) $$.
+The \textbf{neighborhood of a compact representation} $CR$ \textbf{over a route} $r$  is thus the set of compact representations: $\prod_{u\in r} N_u$.
+
+The \textbf{\underline{neighborhood of a compact representation}} $CR$ is then the set of the compact representations over all routes, that is:
+$$ \bigcup_{r\in{\cal R}} (\prod_{u\in r} N_u ) $$.
 
  Consider that the routes are numeroted $1,\ldots,n$ and belongs to respectively $k_1,\ldots,k_n$ contention arcs, a compact representation has $\sum_{i=1}^n 2^{2k_i} $ neighbors.
 
