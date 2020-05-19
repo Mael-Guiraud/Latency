@@ -6,11 +6,10 @@
 #include <limits.h>
 
 
-#define NOMBRE_ROUTE 9
+#define NOMBRE_ROUTE 12
 #define PERIODE 200
 #define TAILLE 10
 #define DEBUG 0
-#define TEST_STOCKAGE 0
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -64,7 +63,7 @@ typedef struct{
 
 STOCK initialise_stock(){//
 	STOCK st = {0,100000*NOMBRE_ROUTE,malloc(sizeof(int)*NOMBRE_ROUTE*100000)};
-	printf("Allocation initiale de memoire pour le stock, suffisant pour %ld solutions\n",st.taille_max/NOMBRE_ROUTE);
+	printf("Allocation initiale de memoire pour le stock, suffisant pour %d Solutionss\n",st.taille_max/NOMBRE_ROUTE);
 	return st;
 }
 
@@ -76,7 +75,7 @@ int test_solution(int  *s1, int *s2){//return 1 if s1 is smaller than s2 on at l
 void insere_solution(SOLUTION *s, STOCK *st){
 	if(st->pos == st->taille_max){//on redimensionne
 		st->taille_max *= 2;
-		printf("Reallocation de memoire pour le stock, suffisant pour %ld solutions\n",st->taille_max/NOMBRE_ROUTE);
+		printf("Reallocation de memoire pour le stock, suffisant pour %d solutions\n",st->taille_max/NOMBRE_ROUTE);
 		st->contenu = realloc(st->contenu, sizeof(int)*st->taille_max);
 	}
 	// on contruit la solution directement en mémoire
@@ -105,7 +104,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 	int nombre_routes_traitees;//taille de la solution partielle 
 	int add; //0 si on vient d'enlever un élément, 1 sinon
 	long long unsigned int compteur = 0;
-	STOCK st = initialise_stock();
+	// STOCK st = initialise_stock();
 
 
 	char routes_utilisees[nombre_route]; //routes utilisées dans la solution courantes (1 en position i quand i est utilisé), on pourrait faire un bit set
@@ -137,7 +136,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 			if(nombre_routes_traitees == nombre_route ){
 				//coupe à faire sur solution complète à ajouter ici -> y-en-a-t-il ?
 				compteur++;
-				insere_solution(s,&st);
+				// insere_solution(s,&st);
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
 			}
@@ -199,7 +198,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 			}	
 		}
 	}
-	printf("Solutions minimales au nombre de %d\n", st.pos/NOMBRE_ROUTE);
+	// printf("Solutions minimales au nombre de %d\n", st.pos/NOMBRE_ROUTE);
 	return compteur;
 }
 
@@ -321,7 +320,34 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 	return min_delai_meilleure_sol;
 }
 
-//faire ici le calcul de la meilleure solution 
+/* Structure de données pour un graphe de conflit */
+
+typedef struct{
+	int disponible; //temps auquel le message est disponible dans un arc donné
+	int delai; //temps total sur la route
+	int suivant_niveau; //niveau du point de contention suivant (-1 si pas de suivant)
+	int suivant_indice;//indice du prochain point de contention
+} MESSAGE_CONTENTION;
+
+typedef struct{
+	int nombre_message;
+	MESSAGE_CONTENTION *mess;
+}POINT_CONTENTION;
+
+typedef struct{
+	int nombre_point;//nombre de point de contention du niveau
+	POINT_CONTENTION *cont;
+} NIVEAU;
+
+typedef struct{
+	int nombre_niveau;
+	NIVEAU *niv;
+}GRAPHE;
+
+//todo: génération aléatoire d'un graphe -> matrice des distances aléatoires
+//puis on tire des routes au hasard jusqu'au nombre fixé
+//en paramètre les largeurs de chaque niveau
+//todo: affichage d'un graphe  
 
 
 int main(){
