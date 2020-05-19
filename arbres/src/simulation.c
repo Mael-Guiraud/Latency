@@ -27,7 +27,7 @@
 
 void test()
 {
-	unsigned int seed = 1588843277;
+	unsigned int seed = 1589905425;
 	//unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
@@ -181,26 +181,26 @@ void test()
 		printf(GRN "FPT trouve au moins aussi bien que la descente ! \n" RESET);
 	}
 	/*
-	int tabo = taboo( g, P, message_size,100);
+	int tabo = taboo( &g, P, message_size,100);
 	printf("taboo %d \n",tabo);	
 	sprintf(nom,"taboo");
-	printf("Valeur de verifie_solution = %d \n",verifie_solution(g,message_size));
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
 	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
-	print_assignment(g,NULL,P,buf_dot);
+	print_assignment(&g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
-	print_assignment_backward(g,NULL,P,buf_dot);
+	print_assignment_backward(&g,P,buf_dot);
 	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	//free_assignment(a);
-	fprintf(f,"Graph after : \n");affiche_graph(g,P,f);
+	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
 	fprintf(f,"Reseting periods ...\n");
-	reset_periods(g,P);reinit_delays(g);
+	reset_periods(&g,P);reinit_delays(&g);
 	if(tabo<fpt)
 	{
 		printf(RED "!!!!!!!!!!FPT trouve moins bien que le taboo!!!!!!!!!!!! \n" RESET);
@@ -209,7 +209,8 @@ void test()
 	else
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le taboo ! \n" RESET);
-	}*/
+	}
+	*/
 	
 
 	printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
@@ -305,11 +306,11 @@ void simuldistrib(int seed)
 						nb_pas[0] += a->nb_routes_scheduled;*/
 				break;
 				case 3:
-					a = taboo( &g, P, message_size,100);
+					a = taboo( &g, P, message_size,10);
 					if(a)
 					{
 						#pragma omp critical
-							nb_pas[2] += 100;
+							nb_pas[2] += 1000;
 					}
 				break;
 				case 4:
@@ -357,9 +358,13 @@ void simuldistrib(int seed)
 					
 				else
 				{
+
 					if((algo != 1) && (algo != 5))
 					{
-						time[algo] = time[0];
+						if(algo == 4)
+							time[algo] = 15000;
+						else
+							time[algo] = time[0];
 					}
 				}
 					

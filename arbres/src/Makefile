@@ -26,6 +26,7 @@ dirs:
 tests: dirs runtest
 	dot -Tpdf ../view/view.dot -o ../view/view.pdf
 
+
 onos: dirs runonos
 
 star: dirs runstar 
