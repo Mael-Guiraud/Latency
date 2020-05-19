@@ -6,8 +6,8 @@
 #include <limits.h>
 
 
-#define NOMBRE_ROUTE 8
-#define PERIODE 100
+#define NOMBRE_ROUTE 9
+#define PERIODE 200
 #define TAILLE 10
 #define DEBUG 0
 #define TEST_STOCKAGE 0
@@ -63,8 +63,8 @@ typedef struct{
 } STOCK;
 
 STOCK initialise_stock(){//
-	STOCK st = {0,100000,malloc(sizeof(int)*NOMBRE_ROUTE*100000)};
-	printf("Allocation initiale de memoire pour le stock %ld \n",sizeof(int)*NOMBRE_ROUTE*st.taille_max);
+	STOCK st = {0,100000*NOMBRE_ROUTE,malloc(sizeof(int)*NOMBRE_ROUTE*100000)};
+	printf("Allocation initiale de memoire pour le stock, suffisant pour %ld solutions\n",st.taille_max/NOMBRE_ROUTE);
 	return st;
 }
 
@@ -76,8 +76,8 @@ int test_solution(int  *s1, int *s2){//return 1 if s1 is smaller than s2 on at l
 void insere_solution(SOLUTION *s, STOCK *st){
 	if(st->pos == st->taille_max){//on redimensionne
 		st->taille_max *= 2;
-		printf("Reallocation de memoire pour le stock %ld \n",sizeof(int)*NOMBRE_ROUTE*st->taille_max);
-		st->contenu = realloc(st->contenu, sizeof(int)*NOMBRE_ROUTE*st->taille_max);
+		printf("Reallocation de memoire pour le stock, suffisant pour %ld solutions\n",st->taille_max/NOMBRE_ROUTE);
+		st->contenu = realloc(st->contenu, sizeof(int)*st->taille_max);
 	}
 	// on contruit la solution directement en mémoire
 	int i;
