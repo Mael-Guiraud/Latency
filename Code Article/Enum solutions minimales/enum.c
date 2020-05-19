@@ -6,10 +6,11 @@
 #include <limits.h>
 
 
-#define NOMBRE_ROUTE 12
-#define PERIODE 200
+#define NOMBRE_ROUTE 8
+#define PERIODE 100
 #define TAILLE 10
 #define DEBUG 0
+#define TEST_STOCKAGE 0
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -53,6 +54,47 @@ void print_solution(int nombre_routes_traitees, SOLUTION *s, int *disponible_per
 	printf("\n");
 }
 
+/* Stockage des solutions */
+
+typedef struct{
+	int pos;
+	int taille_max;
+	int *contenu;
+} STOCK;
+
+STOCK initialise_stock(){//
+	STOCK st = {0,100000,malloc(sizeof(int)*NOMBRE_ROUTE*100000)};
+	printf("Allocation initiale de memoire pour le stock %ld \n",sizeof(int)*NOMBRE_ROUTE*st.taille_max);
+	return st;
+}
+
+int test_solution(int  *s1, int *s2){//return 1 if s1 is smaller than s2 on at least one component
+	int i;
+	for(i = 0; i < NOMBRE_ROUTE && s1[i] >= s2[i]; i++){}
+	return (i != NOMBRE_ROUTE); 	
+}
+void insere_solution(SOLUTION *s, STOCK *st){
+	if(st->pos == st->taille_max){//on redimensionne
+		st->taille_max *= 2;
+		printf("Reallocation de memoire pour le stock %ld \n",sizeof(int)*NOMBRE_ROUTE*st->taille_max);
+		st->contenu = realloc(st->contenu, sizeof(int)*NOMBRE_ROUTE*st->taille_max);
+	}
+	// on contruit la solution directement en mémoire
+	int i;
+	for(i = 0; i < NOMBRE_ROUTE; i++){
+		st->contenu[st->pos + s[i].numero] = s[i].depart;
+	}
+	//for(i = 0; i < NOMBRE_ROUTE; i++) printf("%d ",st->contenu[st->pos + i] );
+	//	printf("\n");
+	for(i = 0; i < st->pos && test_solution(&(st->contenu[st->pos]),&(st->contenu[i])); i+=NOMBRE_ROUTE){}//vérifie si aucune solution trouvée ne domine la nouvelle
+	if(i == st->pos) {st->pos += NOMBRE_ROUTE; //on valide la solution 
+	}
+}
+
+
+
+
+
 
 /* Algo principal d'énumération */
 
@@ -63,6 +105,8 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 	int nombre_routes_traitees;//taille de la solution partielle 
 	int add; //0 si on vient d'enlever un élément, 1 sinon
 	long long unsigned int compteur = 0;
+	STOCK st = initialise_stock();
+
 
 	char routes_utilisees[nombre_route]; //routes utilisées dans la solution courantes (1 en position i quand i est utilisé), on pourrait faire un bit set
 	for(int i = 0; i < nombre_route; i++) routes_utilisees[i] = 0;
@@ -93,6 +137,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 			if(nombre_routes_traitees == nombre_route ){
 				//coupe à faire sur solution complète à ajouter ici -> y-en-a-t-il ?
 				compteur++;
+				insere_solution(s,&st);
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
 			}
@@ -154,6 +199,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 			}	
 		}
 	}
+	printf("Solutions minimales au nombre de %d\n", st.pos/NOMBRE_ROUTE);
 	return compteur;
 }
 
@@ -287,15 +333,15 @@ int main(){
 		disponible[i] = rand()%PERIODE;
 		delai[i] = rand()%PERIODE + disponible[i];
 	}
-	/*
+	
 	long long unsigned int nb_enum = enumeration(disponible,NOMBRE_ROUTE,PERIODE);
 	long long unsigned int nb_exhaustif = 1;
 	for(int i = 2; i <= NOMBRE_ROUTE; i++) nb_exhaustif *= 2*i;
 	printf("Nombre de solutions énumérées %llu\n",nb_enum);
 	printf("Nombre de solutions total %llu, proportion %f\n",nb_exhaustif, (float) nb_enum / nb_exhaustif);
-	*/
+	/*
 	printf("Affichage des disponibilités et délais: ");
 	for(int i = 0; i < NOMBRE_ROUTE; i++) printf("(%d %d)",disponible[i],delai[i]);
 	printf("\nSolution optimale de délai %d \n", optim(disponible,delai,NOMBRE_ROUTE,PERIODE));
-
+	*/
 }
