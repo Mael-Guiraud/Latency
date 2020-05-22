@@ -34,7 +34,7 @@ inline int first_zero(BITSET x){
 	return ffs(~x);
 }
 
-void print_bitset(unsigned int x){
+void print_bitset(BITSET x){
 	for(int i = 0; i < 32; i++) printf("%d",get_bit(x,i));
 		printf("\n");
 }

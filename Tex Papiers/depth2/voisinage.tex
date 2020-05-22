@@ -23,7 +23,7 @@
  
 
 \newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
-\newcommand\spall{\textsc{SPALL}\xspace}
+\newcommand{\spall}{\textsc{SPALL}\xspace}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}{Definition}
@@ -48,31 +48,34 @@
 We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
   \subsubsection{Discrete time model}
-  In the model presented here, the time is discrete. The unit of time  is called a {\bf tic}. This is the time needed to transmit an atomic data over a link of the network. We consider that the speed of the links is the same over all the links of the network. 
-In this paper, the size of an atomic data is 64B, the speed of the links is considered to be 10Gbps, \todo{rajouter durée d'un tic}.
-  \subsubsection{Network modeling}
-  We study a communication network in which some pairs of source-destination nodes between which some messages are sent. Also, the routing between each such a pair of nodes is given.
-The network is modeled as a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three non intersecting subsets: a subset ${\cal S}$ of vertices modeling the sources of the messages, a subset ${\cal D}$ modeling the destination of the messages, and a subset ${\cal C}$ representing the contention points. Indeed, some links of the network are shared between several pairs of nodes source-destination, we represent the begining of this link (i.e. the pyhsical node which send the messages into this link) as a contention point. An arc in $G$ can represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. \\
-  A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_1,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \Omega(u_j, u_{j+1})$. It is the number of tics needed between the sending tic of a message in the first vertex of the route and the reception tic of this message at $u_i$. We also define $\lambda(u_1,r)=0$. The weight of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
-We denote by ${\cal R}$ a set of routes, the pair $(G,{\cal R})$ is called a {\bf routed network} and represents our telecommunication network.\\
-The \textbf{contention level} of a node $u_i \in {\cal C}$ on a route $r$ is defined by $c(u_i,r) = i-1$. This is the id of contention point on the route. The contention level of a node $u$ is $cl(u) = \max\limits_{r\in{\cal R}} cl(u,r)$, with $n$ the number of routes using the node $u$.
-\todo{petit dessin avec un reseau et sa représentation en graph}
-The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is denoted $CD$ and is equal to the maximum of the contention level of its vertices. It correspond to the number of contention point on the longest route of the network.
+  In the model presented here, the time is discrete. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We consider that the speed of the links is the same over all links of the network. 
+  In this paper, the size of an atomic data is 64B, the speed of the links is considered to be 10Gbps, and the length of a tic is thus 
+  \todo{rajouter durée d'un tic}.
+
+  \subsubsection{Modeling the periodic scheduling problem over the network}
+
+  We study a communication network in with pairs of source-destination nodes between which messages are sent periodically. The routing between each  pair of such nodes is given. The network is represented by a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three disjoint subsets:  ${\cal S}$ the set of sources of the messages, ${\cal D}$ the set of destination of the messages, and ${\cal C}$ the set of contention points in the network. Indeed, some links of the network are shared between several pairs of nodes source-destination, a contention point represent the beginning of this link, i.e. the pyhsical node of the network which sends the messages into the link. An arc in $G$ can represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the number of tics elapsed between the sending tic of the message in $u$ and the reception tic of this message in $v$ using this arc. \\
+  A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \omega(u_j, u_{j+1})$. It is the number of tics needed by a message to go from the first vertex of the route and to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
+	We denote by ${\cal R}$ a set of routes of the graph $G$, the pair $(G,{\cal R})$ is called a \textbf{routed network} and represents our telecommunication network.\\
+	Let $r \in {\cal R}$, with $r = (u_0,u_1,\dots,u_l)$, then we say that $u_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $c(u_i,r) = i$. The contention level of a node $u$ is the maximum of its contention level over all routes going through itself: 
+	$cl(u) = \max\limits_{r\in{\cal R} \text{ and } u \in r} cl(u,r)$.
+	\todo{petit dessin avec un reseau et sa représentation en graph}
+	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is denoted by \textsc{CD} and is equal to the maximum of the contention level over all vertices. It correspond to the number of contention point on the longest route of the network. 
+
+
  \subsection{Messages dynamic}
 	     
-        In the process we study, a {\bf datagrams} is sent on each route from the source node. The size of a datagram is an integer, and correspond to the number of tics needed by a node $u$ to emit the datagram through a link.  We denote by $\tau$ the number of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the datagram sent by a source node into the network is the same, regardless of the route. Once a datagram has been emitted, it cannot be fragmented during its travel in the network. We consider that the datagrams sent on each routes are all available to be sent at the same tic, which can be simplified, w.l.o.g. by $0$.
-      
-        
-          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid the contention, it is possible to buffer the datagrams in the contention points. The time a datagram on the route $r$ waits in buffer of a vertex $u_i$ is defined by $A(r,u_i), i \in \{0,\ldots,l\}$.
-          The function $A$, called \textbf{assingment} , associate an integer value, lower or equal to $0$, to each couple route-vertex of the routed network $(G,{\cal R})$. Those integers represent the buffering time of the datagram in each nodes of the route.\\
+        In the process we study, a {\bf datagram} is sent on each route from the source node. The size of a datagram is an integer, denoted by $\tau$, it corresponds to the number of tics needed by a node to emit the datagram through a link.  In this paper, we assume that $\tau$ is the same for all routes. It is justified by our application to cloud RAN, where all source nodes are RRH sending the same type of message. Once a datagram has been emitted, it cannot be fragmented during its travel in the network. We consider that the first datagram sent on each route is available to be sent at time $0$.
+
+          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid contention, it is possible to buffer datagrams in contention points. The time a datagram on the route $r$ waits in buffer of a vertex $u_i$ is defined by $A(r,u_i), i \in \{0,\ldots,l\}$.
+          The function $A$, called an \textbf{assignment}, associates an integer value, greater or equal to $0$, to each couple (route,vertex) of the routed network $(G,{\cal R})$. Those integers represent the buffering time of the datagrams in the nodes of the network. \\
        
 
- The \textbf{reception date} of a datagram in vertex $u_i$ in $r$, is the first tic at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} A(r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the physical delay of the links, plus the buffers determined by the logical solution proposed.\\
- \textbf{sending date} of a datagram by vertex $u_i$ in $r$, is the first tic at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the reception date of the datgram plus the buffer defined by the assignment for the datagram.\\
+ The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} A(r,u_k) $. In other words, the date at which a datagram reach a vertex $u_i$ correspond to the physical delay of the links before $u_i$, plus the buffers determined by the considered assignment.\\
+%  \textbf{sending date} of a datagram by vertex $u_i$ in $r$, is the first tic at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the reception date of the datgram plus the buffer defined by the assignment for the datagram.\\
  
-  Let $v_r$ be the last vertex of the route $r$.
-       We define the \textbf{full transmission time} of an assingment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} t(r,v_r) $. This is the time ellapsed before the reception of the first tic of the last datagram.
-         In the application we study the full transmission time is bounded . We define $Tmax$ such that $TR(A) \leq Tmax$.
+  Let $v_r$ be the last vertex of the route $r$. We define the \textbf{full transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} t(r,v_r) $. This is the time ellapsed before the reception of the first tic of the last datagram. 
+%   In the application we study the full transmission time is bounded . We define $Tmax$ such that $TR(A) \leq Tmax$.
          
   \subsection{Cloud-RAN context}
      \todo{completement ré ecrire cette section en disant qu'on peut ou non décomposer la BBU, et que le graph est symetrique car c'est full duplex mais que ce n'est pas obligé}
@@ -80,51 +83,80 @@ The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is denoted $CD
 
      
   \subsection{Periodic sending of the datagrams}
- The process we describe here is \textbf{periodic}: during each period of $P$ slots, a datagram is sent from each source node in the network at the same tic in the period. There is an infinite number of datagram sent during each period. Thus, we chose to study the behavior of the datagrams on each nodes of the network during one period, and to apply the pattern for every subsequent periods.
-             Let us call $[t(r,u)]_{P,\tau}$ the set of time slots used a datagram on the by route $r$ at vertex $u$ in a period $P$, that is $[t(r,u)]_{P,\tau} = \{t(r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
 
-      Let us consider two routes numbered $1$ and $2$.
-      We say that the two routes have a {\bf collision} at the contention point $u$ if $[t(1,u)]_{P,\tau} \cap [t(2,u)]_{P,\tau} \neq \emptyset$.\\
+ 	The process we modelize in this article is \textbf{periodic}: during each period of $P$ slots, a datagram is sent from each source node in the network. There is an infinite number of datagram sent during each period. We chose, because it is simplier to implement in real networks and 
+ 	also more tractable from a theoritical perspective to keep always the same buffering in all periods. In other words, at the same tic of two different periods, all messages are at the same position in the network. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply this pattern for every subsequent period. 
+    Let us call $[t(r,u)]_{P,\tau}$ the set of tics used by a datagram on $r$ at vertex $u$ in a period $P$, that is $[t(r,u)]_{P,\tau} = \{t(r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
 
-        An assignment $A$ of a routed network $(G,{\cal R})$ is said \textbf{valid} if \emph{no pair of routes has a collision}. This notion of valid assignment depends of the period $P$ and the size of the messages $\tau$ but to simplify the reading, we do not imply those paremeters in the notations.
+      Let us consider two routes numbered $r$ and $s$, they have a {\bf collision} at the contention point $u$ iff $[t(r,u)]_{P,\tau} \cap [t(s,u)]_{P,\tau} \neq \emptyset$.\\
+
+        An assignment $A$ of a routed network $(G,{\cal R})$ is said to be \textbf{valid} iff \emph{no pair of routes has a collision}. 
+        The validity of an assignment depends on period $P$ and the size of the messages $\tau$, but most of the time these value are clear from the context and we do not recall them (as it was done in previous work citer, P tau assignement).
+        Note that the period $P$, as well as the size of a message $\tau$ is fixed in our application, but not the buffering policy. Hence, the aim of our work is to find a valid assignment which minimizes the latency of transmissions over the network, that is $TR(A)$.
         
-\subsection{Problems}
        
        \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
 
       \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the period $P$, $Tmax$.
       
-      \noindent {\bf Question:} does there exist a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq Tmax$ ?
+      \noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq Tmax$ ?
 
-      \noindent {\bf Optimisation problem:} Minimizing $TR(A)$.
+      \noindent {\bf Optimisation problem:} find $A$ which minimizes $TR(A)$.
     
-     \todo{np completude, meme sur l'etoile, parler du papier avec PALL}
     
+
+\subsection{Contention level 1}
+
+C'est exactement le problème BRA du papier précédent (enfin chaque composante connexe du graphe).
+Si en plus on met $0$ comme poids à tous les arcs, on doit résoudre avec longest shortest.
+
+\subsection{Contention level 2}
+
+Si on a que deux sommets, ça correspond à l'étoile et donc au cas étudié dans nos deux autres papiers à citer ici
+(mais en version synchronisée). 
+
+\todo{np completude, meme sur l'etoile, parler du papier avec PALL}
+    
+
+
+
+
+
+
 \section{Compact representation of an assignment}
 
 
-
-
-
 We explain in this section how to represent an assignment for the problem 
-\spall in a compact way. 
-Not all assigments can be represented in a compact way, but there
-is at least one optimal valid assignment $A$ for \spall that is, that minimize $TR(A)$ .
-It allows to design FPT algorithm by going through all compact 
-representations. We obtain good heuristic algorithms using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.\\
+\spall in a compact way. All minimimal assignments (for a relevant notion of minimality) have 
+a compact representation, which implies that we do not need to consider assignment without such representation when solving \spall
+It allows to design an FPT algorithm for \spall by going through all compact representations, but also to 
+design good polynomial time heuristic using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation. Let us denote by $R_u$ the set of routes of $\mathcal{R}$ which contains $u$.
 
 
-\begin{definition}
-
-A compact representation of an assignment $A$ over a contention point $u$ routes is a pair $(O_u,S_u)$,
-where $O_u$ is an order on the routes and $S_u$ is a subset of the routes.\\
-A compact representation of an assignment $A$ on routed network is thus $CR(A) = \{(O_u,S_u)\}, u\in V$.
+\begin{definition}[Compact assignment]
+Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a list of pairs $(O_u,S_u)$
+for all contention points $u$ in $G$, where $O_u$ is an order on $R_u$ and $S_u$ is a subset of $R_u$.
 \label{definition:compact}
-
 \end{definition}
 
 
+\subsection{From a valid assignment to its compact representation}
 
+We now define a method to obtain a compact assignment from some valid assignment $A$, that we call the compact representation of $A$ and denote by $CR(A)$. Assume all routes are indexed by an integer in $[n]$ and let $u$ be a contention point of $G$.
+Let $i$ be the smallest index of a route, such that $A(r_i,u) = 0$. The datagram of $r_i$ arrives and goes to the next contention point at time $t(r_i,u)$. Let us define the \emph{normalized arrival time} of $r$ at $u$, for all $r \in R_u$, $nt(r_i,r,u) = (t(r,u) - t(r_i,u)) \mod P$. It is the time at which the datagram of $r$ goes through $u$, in a period normalized so that $r_i$ goes at time $0$. We define $O_u$ as the order on the routes of $R_u$ induced by the values $nt(r,u)$. The set $S_u$ is defined as the set of routes going through $u$ such that $n_t(r_i,r,u) + A(r,u) \geq P - \tau$. Intuitively, $S_u$ represents the set of routes which, if the time is cut into periods of origin $t(r_i,u)$,
+goes through $u$ in the period after the one they have been available.
+
+
+
+Faire ici un exemple pour expliquer !!!!
+
+Note that for $CR(A)$ to be defined, we need that on each contention point, a datagram is not buffered. It is not restrictive, since if all datagrams are buffered, we can always reduce the buffering time of the minimum of all buffering times and we still have a valid assignment, and the full transmission time is not worse.
+
+
+\subsection{From a compact assignment to an assignment}
+
+
+TODO: continuer à relire
 
 We now explain how to decompress a compact representation into an assignment.
 We only consider one contention point $u$, thus, we simplify the notation of the functions  $r(r,u)$ and, $s(r,u)$ by respectively $b(r)$, $r(r)$ and $s(r)$.
