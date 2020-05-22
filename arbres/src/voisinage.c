@@ -1047,7 +1047,7 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 			+route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
 			temps_restant = route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
 			deadline[i] = budget  +message_size - temps_restant;
-			//printf(" (%d(%d+%d) + %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),message_size,budget,2* route_length(g,g->arc_pool[arc_id].routes_id[i]),deadline[i]);
+			//printf(" (%d(%d+%d)  %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),message_size,budget,temps_restant,deadline[i]);
 		//	printf("(%d = (%d + %d) %d = (%d+%d+%d - %d)) \n",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),deadline[i],release[i],message_size,budget,2* route_length(g,g->arc_pool[arc_id].routes_id[i]));
 		}
 		
@@ -2218,8 +2218,8 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	int cmpt = 0;
 	int nb_step = 0;
 	int nb_amelio = 0;
-	//FILE * f = fopen("plotrecuit","w");
-	//FILE * f2 = fopen("plotrecuittemp","w");
+	FILE * f = fopen("plotrecuit","w");
+	FILE * f2 = fopen("plotrecuittemp","w");
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
@@ -2238,7 +2238,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 				b = travel_time_max_buffers(g);
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					//fprintf(f,"%d %d \n",nb_amelio,b);
+					fprintf(f,"%d %d \n",nb_amelio,b);
 					nb_amelio++;
 					//if(time_actuel != b)
 						nb_moves++;
@@ -2287,7 +2287,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			break;
 		//fprintf(f2,"%f \n",temperature);
 	}
-	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
+	printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
 
 	//On prend la meilleure solution vue
@@ -2316,8 +2316,8 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		exit(83);
 	}
 	*nb_pas = (float)nb_step;
-	//fclose(f);
-	//fclose(f2);
+	fclose(f);
+	fclose(f2);
 	return b;
 
 }

@@ -401,6 +401,7 @@ int route_length_untill_arc(Graph * g,int route, Arc * a,Period_kind kind)
 				return length;
 			length += g->routes[route][i]->length;
 			length += g->routes[route][i]->routes_delay_f[route];
+			//printf("Delay route %d = %d \n",route,g->routes[route][i]->routes_delay_f[route]);
 			/*if( g->routes[route][i]->routes_delay_f[route] < 0 )
 				printf("Impossible mec %d\n", g->routes[route][i]->routes_delay_f[route]);*/
 		}
