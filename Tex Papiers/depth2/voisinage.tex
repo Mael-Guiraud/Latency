@@ -122,8 +122,7 @@ Si on a que deux sommets, ça correspond à l'étoile et donc au cas étudié da
 
 \section{Compact representation of an assignment}
 
- We define a pointwise order on assignments $\prec$, we say that $A_1 \prec A_2$ if and only if for all $r\in \cal{R}$, $TR(A_1,r) \leq TR(A_2,r)$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments to compute an optimal one.
-
+ We define a pointwise order on assignments $\prec$: $A_1 \preceq A_2$ if for all $r\in \cal{R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments (for $\prec$) to compute an optimal one (for $TR$).
 
 We explain in this section how to represent an assignment for the problem 
 \spall in a compact way. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without such representation when solving \spall
@@ -160,31 +159,59 @@ Moreover, we will show that the obtained assignment is the smallest among all as
 
 Recall that the datagram of a route $r$ is available at time $t(r,u)$ in the vertex $u$.
 Let us consider a compact assignment $CA$, with a pair $(O_u,S_u)$ associated to $u$.
-We now define inductively how to build an assignment $Real(CA)$ from $CA$, that we call the realization of $CA$. To simplify the notation, we will denote $Real(CA)$ by $A$.
+We now define inductively how to build an assignment $Real(CA)$ from $CA$, that we call the realization of $CA$. Note that we can fail to build a realization from a compact representation,
+then $Real(CA)$ is undefined and we say that $CA$ is not realizable. To simplify the notation, we will denote $Real(CA)$ by $A$.
 
-Let say that the order $O_u$ is $r_1, \dots, r_l$. We fix $A(r_1,u)$ to zero, that is the first
-datagram in the period has ne buffering time. Then, in each period beginning by the first datagram, the datagrams will be in order $O_u$. 
+Let say that the order $O_u$ is $(r_1, \dots, r_l)$. We fix $A(r_1,u)$ to zero, that is the first
+datagram in the period has no buffering time. Then, in each period beginning by the first datagram, the datagrams will be in order $O_u$. Since the first datagram of the period is fixed, we use it to consider normalized arrival times and normalized sending times.
 Assume that $A(r_k,u)$ have been set for $k \leq i$, we explain how to 
-set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ to the minimum
-of 
+set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_{i+1},u)$ to the minimum of $ns(r_1,r_i,u) + \tau$ and $nt(r_1,r_{i+1},u)$. If $ns(r_1,r_{i+1},u) \leq P - \tau$, then $CA$ is not realizable. If $r_{i+1} \in S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1, r_{i+1},u) = ns(r_1,r_i,u) + \tau$. If $ns(r_1, r_{i+1},u) \geq nt(r_1,r_{i+1},u)$, then $CA$ is not realizable (the sending time is in the wrong period with regard to $S_u$). 
+
+                                    
+TODO: généraliser à un réseau quelconque.
 
 
-Say w.l.o.g. that the datagrams are indexed in the order given by $O$.
-We fix the sending date of the first datagram $s(1) = r(1)$, that is $A(1) = 0$, the datagram does not wait in a buffer.  To simplify, we assume that $s(1) = r(1) = 0$, which can be obtained by removing $r(1)$ to all arrival times. We fix the sending date of the datagram in order, when the first $i$ datagrams have their sending date computed, we fix $s(i+1)$ in the following way. 
+\begin{lemma}
+Let $CA$ be a realizable compact assignment, then $Real(A)$ is a valid assignment.
+\end{lemma}
+\begin{proof}
+TODO
+\end{proof}
 
-If $i+1 \notin S$, then $s(i+1) >= r(i+1)$ otherwise the datagram $i+1$ should go in the period after the one it is available in, that is $s(i+i) > (r(i+1)/P + 1)P$.
-The value of  $s(i+1)$ is the smallest value which satisfies the previous constraint,
-ensures that there are no collision with the first $i$ datagrams and  satisfies the order, that is $s(i+1) \mod P > s(i) \mod P$. 
-It is possible that the process fails to find a correct value for $s(i)$ at some point,
-in that case there are no assignment associated to this compact representation.
+\begin{lemma}
+For all compact assignments $CA$, $CR(Real(CA)) = CA$.
+\end{lemma}
+\begin{proof}
+TODO, est-ce utile comme lemme ?
+\end{proof}
 
-We denote this transformation by $Sol$, that is $Sol(O,S)$ is the solution previously defined
-(the routed network is implicit) or a special value to denote there is no assignment compatible with this compact representation. 
+\begin{lemma}
+Let $A$ be a valid assignment, then $Real(CR(A)) \preceq A$.
+\end{lemma}
+\begin{proof}
+TODO: utile pour le théorème suivant
+\end{proof}
 
-We can also define an inverse function which from most assignment $A$ computes a compact representation, that we already defined in def.~\ref{definition:compact} by $CR(A)$. The function is defined only for
-assignments $A$, such that the first datagram does not wait in a buffer, that is $s(1) = r(1)$. Assume w.l.o.g that $r(1) = s(1) = 0$, by considering the equivalent problem where $r(i)= r(i) -r(1)$ and $s(i) = s(i) - r(1)$.
-Compute the values $(s(i))\mod P$ and  call their order $O$. Let 
- $S$ be the set of $i$ such that $(s(i) \geq (r(i) / P + 1) P$. We let $CR(A) = (O,S)$.
+Notion d'assignement canoniques (images de compact, ça veut juste dire valide + contrainte sur les buffers (peut être introduit avant))
+
+% 
+% 
+% Say w.l.o.g. that the datagrams are indexed in the order given by $O$.
+% We fix the sending date of the first datagram $s(1) = r(1)$, that is $A(1) = 0$, the datagram does not wait in a buffer.  To simplify, we assume that $s(1) = r(1) = 0$, which can be obtained by removing $r(1)$ to all arrival times. We fix the sending date of the datagram in order, when the first $i$ datagrams have their sending date computed, we fix $s(i+1)$ in the following way. 
+% 
+% If $i+1 \notin S$, then $s(i+1) >= r(i+1)$ otherwise the datagram $i+1$ should go in the period after the one it is available in, that is $s(i+i) > (r(i+1)/P + 1)P$.
+% The value of  $s(i+1)$ is the smallest value which satisfies the previous constraint,
+% ensures that there are no collision with the first $i$ datagrams and  satisfies the order, that is $s(i+1) \mod P > s(i) \mod P$. 
+% It is possible that the process fails to find a correct value for $s(i)$ at some point,
+% in that case there are no assignment associated to this compact representation.
+% 
+% We denote this transformation by $Sol$, that is $Sol(O,S)$ is the solution previously defined
+% (the routed network is implicit) or a special value to denote there is no assignment compatible with this compact representation. 
+% 
+% We can also define an inverse function which from most assignment $A$ computes a compact representation, that we already defined in def.~\ref{definition:compact} by $CR(A)$. The function is defined only for
+% assignments $A$, such that the first datagram does not wait in a buffer, that is $s(1) = r(1)$. Assume w.l.o.g that $r(1) = s(1) = 0$, by considering the equivalent problem where $r(i)= r(i) -r(1)$ and $s(i) = s(i) - r(1)$.
+% Compute the values $(s(i))\mod P$ and  call their order $O$. Let 
+%  $S$ be the set of $i$ such that $(s(i) \geq (r(i) / P + 1) P$. We let $CR(A) = (O,S)$.
 
 \todo{donner un petit exemple en dessin, + parler de la complexité du changement de forme}
 A compact representation of a solution for an instance of depth larger than $k$
