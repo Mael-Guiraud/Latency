@@ -55,14 +55,15 @@ We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\
   \subsubsection{Modeling periodic scheduling over a network}
 
   We study a communication network with pairs of source-destination nodes between which messages are sent periodically. The routing between each  pair of such nodes is given. The network is represented by a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three disjoint subsets:  ${\cal S}$ the set of sources of the messages, ${\cal D}$ the set of destination of the messages, and ${\cal C}$ the set of contention points in the network. Indeed, some links of the network are shared between several pairs of source-destination nodes. A contention point represent the beginning of a shared link, i.e. the pyhsical node of the network which sends the messages into the link. An arc in $G$ can represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the number of tics elapsed between the sending time of the message in $u$ and the reception time of this message in $v$ using this arc. \\
-  A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The 	{\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \omega(u_j, u_{j+1})$. It is the number of tics needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
+  A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \omega(u_j, u_{j+1})$. It is the number of tics needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
 	We denote by ${\cal R}$ a set of routes of the graph $G$, the pair $(G,{\cal R})$ is called a \textbf{routed network} and represents our telecommunication network.\\
 	Let $r \in {\cal R}$, with $r = (u_0,u_1,\dots,u_l)$, then we say that $u_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $c(u_i,r) = i$. The contention level of a node $u$ is the maximum of its contention level over all routes going through itself: 
 	$cl(u) = \max\limits_{r\in{\cal R} \text{ and } u \in r} cl(u,r)$.
 
 	\todo{petit dessin avec un reseau et sa représentation en graphe}
 
-	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is denoted by \textsc{CD} and is equal to the maximum of the contention level over all vertices. It is the number of contention points on the longest route of the network. 
+	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level over all vertices. It is the number of contention points on the longest route of the network. In all the article, the number of routes
+	of the considered network $|\cal{R}|$ will be denoted by $n$ and its contention depth will be denoted by $d$.
 
 
  \subsection{Messages dynamic}
@@ -99,9 +100,9 @@ We use the notation $[n]$ to denote the interval of $n$ integers $\{0,\dots,n-1\
        
        \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
 
-      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the period $P$, $Tmax$.
+      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the period $P$, the size of a message $\tau$, a bound on the latency $T$.
       
-      \noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq Tmax$ ?
+      \noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
       \noindent {\bf Optimisation problem:} find $A$ which minimizes $TR(A)$.
     
@@ -167,32 +168,55 @@ datagram in the period has no buffering time. Then, in each period beginning by 
 Assume that $A(r_k,u)$ have been set for $k \leq i$, we explain how to 
 set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_{i+1},u)$ to the minimum of $ns(r_1,r_i,u) + \tau$ and $nt(r_1,r_{i+1},u)$. If $ns(r_1,r_{i+1},u) \leq P - \tau$, then $CA$ is not realizable. If $r_{i+1} \in S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1, r_{i+1},u) = ns(r_1,r_i,u) + \tau$. If $ns(r_1, r_{i+1},u) \geq nt(r_1,r_{i+1},u)$, then $CA$ is not realizable (the sending time is in the wrong period with regard to $S_u$). 
 
-                                    
-TODO: généraliser à un réseau quelconque.
+                       
+The function $Real$ can easily be generalized to any routed network. Indeed, one can first consider all vertices of contention level $1$, the routes going through them are disjoints. Hence, we can define $Real$ independently on each of them. 
+Then using the buffering computed for this vertices, one can compute the arrival time of each route in vertices of contention level $2$ and compute $Real$ for these vertices and so on. In the following lemmas and theorems, we always consider a single contention vertex, since it is trivial to extend any property for one contention vertex to the whole routed network as we just explained. 
 
 
 \begin{lemma}
-Let $CA$ be a realizable compact assignment, then $Real(A)$ is a valid assignment.
+The funtion $Real(A)$ can be computed in time $O(nd)$, where $d$ is the contention
+depth of thenetwork. If $CA$ is realizable, then $Real(A)$ is a valid assignment.
 \end{lemma}
 \begin{proof}
-TODO
+The inductive construction of $Real(A)$ only need to do a constant number of comparisons and additions to compute the 
+the buffer time of a route from the previous one. Hence, the time spent in a vertex $u$ is linear in $|\cal{R}_u|$. 
+A route can go through only one vertex of a given contention level, hence the time spent computing buffers for all vertices
+of contention level is in $O(n)$ and for the whole graph it is in $O(nd)$
+
+To prove that there are no collision between pair of routes for a given assignment, it is enough to 
+prove it for any interval of time of size $P$. Hence, it is enough to consider the normalized sending time and to verify
+they do not induce a collision. By construction,  $ns(r_1,r_{i+1},u)$ is always larger than $ns(r_1,r_{i},u) + \tau$ and less 
+than $P - \tau$, which proves the absence of collision.
 \end{proof}
 
+We now show that the function $CR$ is the inverse of $Real$ over realizable compact assignments.
+\todo{Trouver ou parler de ça, à l'introduction de CR. Notion d'assignements canonique, (avec toujours un buffer à zero) et de compact assignement canonique (dans la réalisation plus petit indice ) ?
+In other word, a realizable compact assignment can be seen as the representative of its equivalence class induced by CR over all valid assignments.}
+
 \begin{lemma}
-For all compact assignments $CA$, $CR(Real(CA)) = CA$.
+For all realizable compact assignments $CA$, $CR(Real(CA)) = CA$.
 \end{lemma}
 \begin{proof}
 TODO, est-ce utile comme lemme ?
 \end{proof}
 
-\begin{lemma}
+
+
+\begin{lemma}\label{lemma:prec}
 Let $A$ be a valid assignment, then $Real(CR(A)) \preceq A$.
 \end{lemma}
 \begin{proof}
-TODO: utile pour le théorème suivant
+Given a vertex $u$ and a route $r \in \cal{R}_u$, we prove by induction that $Real(CR(A))(r,u) \leq A(r,u)$.
+Let $(O_u,S_u)$ be the pair associated to $u$ by $CR(A)$, with $O_u = (r_1,\dots,r_l)$. By definition of $CR$, $r_1$ the first route in $O_u$, is such that $A(r_1,u) = 0$. By definition of $Real$, we have that  $Real(CR(A))(r_1,u) = 0 = A(r_1,u)$.
+Now assume that $Real(CR(A))(r_i,u) \leq A(r_i,u)$ for some $i$. 
+
+First, consider the case $r_{i+1} \notin S_u$. By definition of $CR$, $ns(r_1,r_{i+1},u)$ must be larger than 
+$ns(r_1,r_{i},u)+ \tau$ and because $r_{i+1} \notin S_u$ it must also be larger than $rs(r_1,r_{i+1},u)$. 
+Since $Real(CR(A))(r_{i+1},u)$ is the minimum value so that both constraints are true for $Real(CR(A))$, using
+the induction hypothesis, we have $Real(CR(A))(r_i,u) \leq A(r_i,u)$. The case $r_{i+1} \in S_u$ is similar
+and left to the reader.
 \end{proof}
 
-Notion d'assignement canoniques (images de compact, ça veut juste dire valide + contrainte sur les buffers (peut être introduit avant))
 
 % 
 % 
@@ -217,27 +241,29 @@ Notion d'assignement canoniques (images de compact, ça veut juste dire valide +
 A compact representation of a solution for an instance of depth larger than $k$
 is a list of compact representations, one for each contention arc. The following theorem explains why it is enough to explore the compact representations to solve \spall.
 
-\begin{theorem}
-Among all assignments $A$ for a routed network $G,{\cal R})$, there is a compact representation which minimizes $TR(A)$.
-\label{theorem:compact}
-\end{theorem}
-\begin{proof}
-Consider an assingment $A$ and a vertex $u$.
-If $A(r,u) > 0, \forall r \in {\cal R}$, it is possible to compute the assignment $A'$ such that
-$A'(r,u) = A(r,u)-\min\limits_{i \in {\cal R}} A(i,u)$. Consider a vertex $v$ such that $cl(v) = cl(u) +1$, or such that $v \in {\cal D}$ that is, $v$ comes after $u$ in any routes shared by both vertices.\\
-For all routes $r$ passing through $v$, by definition, and since $A'(r,u) \leq A(r,u)$: $$t'(r,v) = \lambda(v,r) + \sum_{u \in r, cl(u,r) < cl(v,r)} A'(r,u)  \leq t(r,v)$$\\
-Note that by reducing the buffers in a node $u_i$, we allow a datagram to reach the node $u_{i+1}$ earlier. Nevertheless, we do not change the order of the datagrams in $u_{i+1}$, even if it is possible.
-By induction, if $v$ is the last vertex of the route $r$, then : $$t'(r,v) \leq t(r,v) \implies TR(A') \leq TR(A)$$
-Thus, for all existing assignments $A$ solving \spall, it is possible to find an equivalent assignment $A'$ which have compact representation $CR(A')$ and such that $TR(A') \leq TR(A)$.\\
-\end{proof}
+%\begin{theorem}
+%Among all assignments $A$ for a routed network $G,{\cal R})$, there is a compact representation which minimizes $TR(A)$.
+%\label{theorem:compact}
+%\end{theorem}
+%\begin{proof}
+%Consider an assingment $A$ and a vertex $u$.
+%If $A(r,u) > 0, \forall r \in {\cal R}$, it is possible to compute the assignment $A'$ such that
+%$A'(r,u) = A(r,u)-\min\limits_{i \in {\cal R}} A(i,u)$. Consider a vertex $v$ such that $cl(v) = cl(u) +1$, or such that $v \in {\cal D}$ that is, $v$ comes after $u$ in any routes shared by both vertices.\\
+%For all routes $r$ passing through $v$, by definition, and since $A'(r,u) \leq A(r,u)$: $$t'(r,v) = \lambda(v,r) + \sum_{u \in r, cl(u,r) < cl(v,r)} A'(r,u)  \leq t(r,v)$$\\
+%Note that by reducing the buffers in a node $u_i$, we allow a datagram to reach the node $u_{i+1}$ earlier. Nevertheless, we do not change the order of the datagrams in $u_{i+1}$, even if it is possible.
+%By induction, if $v$ is the last vertex of the route $r$, then : $$t'(r,v) \leq t(r,v) \implies TR(A') \leq TR(A)$$
+%Thus, for all existing assignments $A$ solving \spall, it is possible to find an equivalent assignment $A'$ which have compact representation $CR(A')$ and such that $TR(A') \leq TR(A)$.\\
+%\end{proof}
 
 
-We want to find the assignment for which $TR(A)$ is minimal. To do so, as explained in theorem~\ref{theorem:compact}, we search between all the compact representations the one which minimize $TR(A)$.
+We want to find the assignment for which $TR(A)$ is minimal. To do so, because of Lemma~\ref{lemma:prec}, it is enough to 
+enumerate all compact representation, to compute their realization and the corresponding transmission time.
 
-\begin{lemma}
- The number of compact representation $(O,S)$ for a contention point with $k$ routes is $k!2^{k}$.
- \label{lemma:numberarcs}
-\end{lemma}
+
+%\begin{lemma}
+ %The number of compact representation $(O,S)$ for a contention point with $k$ routes is $k!2^{k}$.
+% \label{lemma:numberarcs}
+%\end{lemma}
 %\begin{proof}
 %Consider the datagrams are numeroted $d_1,\ldots,d_k$.
 % There is $k$ routes on the contention point. Thus, there is $k!$ possible orders for the sequence of datagram in a period.
@@ -246,25 +272,29 @@ We want to find the assignment for which $TR(A)$ is minimal. To do so, as explai
  %This mean there is $k!2^{k-1}$ pairs of different $(O,S)$, i.e. compact representation for this arc.
 %\end{proof}
 
-From lemma~\ref{lemma:numberarcs}, one can determine the numbre of compact representation of an entire router network.
-We define $k_1,\ldots,k_l$ the number of routes on the $l$ contention points of a routed network.
-\begin{lemma}
- The number of compact representation for a routed network $(G,{\cal R})$ is $\prod_{i=1}^l k_i!2^{k_i}$ .
- \label{lemma:numbergraph}
-\end{lemma}
+%From lemma~\ref{lemma:numberarcs}, one can determine the numbre of compact representation of an entire routed network.
+%We define $k_1,\ldots,k_l$ the number of routes on the $l$ contention points of a routed network.
+%\begin{lemma}
+ %The number of compact representation for a routed network $(G,{\cal R})$ is $\prod_{i=1}^l k_i!2^{k_i}$ .
+ %\label{lemma:numbergraph}
+%\end{lemma}
 
-We consider a routed network $(G,{\cal R})$. As a reminder, $CD$ is the contention depth of the routed network, and  there is $n$ routes in ${\cal R}$.
+%We consider a routed network $(G,{\cal R})$. As a reminder, $CD$ is the contention depth of the routed network, and  there is $n$ routes in ${\cal R}$.
 \begin{theorem}
- Problem \spall is FPT when parametrized by the number of routes and can be solved in time $O( ( n!2^{n})^{CD})$.
+For routed networks of fixed contention depth $CD$, the problem \spall is FPT, when parametrized by $n$ the number of routes,  and can be solved in time $O(( n!2^{n})^{CD})$.
 \end{theorem}
 \begin{proof}
- \todo{idée : faire Contention level par contention level, sur un level on a qu'une seule fois la route et $\prod 2^k<2^n, \prod k! < n!$. De plus, il faut rajouter le facteur multiplicatif pour passer d'un compact assignment a l'autre et decompser le compact en sol}
+ \todo{Mettre les lemmes dans la preuve -> on explique d'abord sur un contention vertex, puis sur un niveau et enfin sur le routed network
+
+ idée : faire Contention level par contention level, sur un level on a qu'une seule fois la route et $\prod 2^k<2^n, \prod k! < n!$. De plus, il faut rajouter le facteur multiplicatif pour passer d'un compact assignment a l'autre et decompser le compact en sol}
 \end{proof}
 
 
 
 
-\section{Find the best assignment}
+\section{Algorithms to solve \spall}
+
+
 \subsection{Greedy}
 Greedy sans buffers dans le graph -> greedy avec buffers dans le graph.
 
@@ -308,23 +338,38 @@ The function $Bound(Pcr)$ gives a lower bound of $TR(G,{\cal R})$, considering P
 In order to speed up the search, we made the following cuts:
 
 définition des différentes coupes.\\
+
 \section{Results}
 
 
 
 
-\subsection{Génération des instances}
+\subsection{Random generation of routed network}
 Dans le cas d'application C-RAN, on prends un nombre de routes limitées (<20) et des tailles de routes petites. Néanmoins, on regarde des instances pour lesquelles le problème est difficile.\
 
 Définition du type de graph regardés, expliquer que les instances sont plus dures quand les routes sont de tailles similaires et quand on augmente le nombre de points de contentions.\\
-\
-\subsection{Détails d'implémentations des algorithmes de voisinage}
+
+\subsection{Neighborood heuristics}
+
+Étudier empiriquement les différentes variantes, paramètres, solution de départ, cout en temps ...
+
+
 Taboo : Avec une hash table pour la mémoire, ce qui rend long la recherche quand on fait beaucoup de pas\\
+
 Recuit, expliquer comment j'ai réglé la température etc\\
 
-FPT ?
+\subsection{Branch and bound}
+
+Montrer avec des courbes (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques, et presque aucunes dont la réalisation n'est pas minimale.
+très peu de représentation compacte en  
+
+
+
+\subsection{Results comparison}
 
 \section{Conclusion}
+C'est vraiment génial comme travail, on va tuer le game du DETNET.
+
 \bibliographystyle{ieeetr}
 \bibliography{srcs}
 \end{document}
