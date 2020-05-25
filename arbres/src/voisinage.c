@@ -1032,9 +1032,11 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 	int temps_restant;
 
 	//printf("BUDGET = %d  arc id %d \n",budget,arc_id);
+	
 	for(int i=0;i<taille_tab;i++)
 	{
 		//printf("route %d ",i);
+
 		if(kind == FORWARD)
 		{
 			printf("On ne doit pas passer ici dans le simons a la fin  du fpt\n");
@@ -1048,24 +1050,33 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 			temps_restant = route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
 			deadline[i] = budget  +message_size - temps_restant;
 			//printf(" (%d(%d+%d)  %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),message_size,budget,temps_restant,deadline[i]);
-			//printf(" %d = (%d+%d - %d(=%d - %d))) \n",deadline[i],message_size,budget,temps_restant,route_length(g,g->arc_pool[arc_id].routes_id[i]), route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD));
+			printf(" (%d %d) ,",release[i], deadline[i]);
 		}
 		
 		//printf("%d (%d + %d + %d- %d) ) \n",deadline[i],release[i],message_size,budget,2*route_length(g,g->arc_pool[arc_id].routes_id[i]));	
 		ids[i]=g->arc_pool[arc_id].routes_id[i];
 		//printf("%d)\n",ids[i]);
 	}
-	//printf("\n");
+	printf("\n");
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
-
+	printf("solution trouvée par simons \n");
 	if(res)
 	{	
-
+		int idmin = 0;
+		int min = INT_MAX;
+		for(int i=0;i<taille_tab;i++)
+		{
+			if((release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]])%P < min){
+				min = (release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]])%P;
+				idmin=i;
+			}
+		}
+		printf("Première route %d \n",idmin);
 		for(int i=0;i<taille_tab;i++)
 		{
 			
 			g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]] = res[i];
-		//	printf("Delay route %d = %d %d\n",g->arc_pool[arc_id].routes_id[i],g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]],route_length_with_buffers( g,g->arc_pool[arc_id].routes_id[i]));		
+			printf("Date depart route %d = %d | Temps trajet pour cette route :  %d\n",g->arc_pool[arc_id].routes_id[i],(release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]])%P-min,route_length_with_buffers( g,g->arc_pool[arc_id].routes_id[i]));		
 		}
 	}
 	else

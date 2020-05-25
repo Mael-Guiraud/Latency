@@ -1,6 +1,7 @@
 
 CC=gcc
-CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs -ftest-coverage -std=c99
+CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs  -std=c99
+#-ftest-coverage
 LFLAGS = -fopenmp
 
 DIRbin = bin/

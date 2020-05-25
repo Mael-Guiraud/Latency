@@ -28,11 +28,12 @@ int main (int argc, char *argv[])
 	{
 		while(1)
 		{
+
 			
-			testfpt(1590413445);
-			return;
+			testfpt(1590418909);return 0;
 			
-			//testfpt(seed);
+
+			testfpt(seed);
 			seed++;
 		}
 		
