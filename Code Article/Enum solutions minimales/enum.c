@@ -140,59 +140,61 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
 			}
-			//on grossit la solution partielle en essayant d'ajouter un élément
-			if(add || s[nombre_routes_traitees].seconde_periode){//on vient d'ajouter un element ou on veut le prochain élément 
-				int i = 0;
-				if(!add) {
-					i = s[nombre_routes_traitees].numero + 1;
-					routes_utilisees[i-1] = 0;//on retire la route précédemment utilisée à ce niveau
-				}
-				add = 0;
-				//on ajoute le premier élément dispo en première période, à partir de la première route non traitée à cette position
-				for(; i < nombre_route && routes_utilisees[i]; i++){}  //si on fait un bitset, trouver la première route disponible est plus facile
-				if(i == nombre_route){//la route courante retirée était la plus grande route possible, retourne un cran en arriere
-					nombre_routes_traitees--;
-				}
-				else{
-					s[nombre_routes_traitees].depart = MAX(disponible_periode[i],s[nombre_routes_traitees - 1].depart + TAILLE);
-					s[nombre_routes_traitees].numero = i;
-					s[nombre_routes_traitees].seconde_periode = 0;
-					routes_utilisees[i] = 1;
-					//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
-					if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
-						(s[nombre_routes_traitees].numero < j || s[nombre_routes_traitees].depart > disponible_periode[(int) s[nombre_routes_traitees].numero])){
-						//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
-						int gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
-						int large_gap = gap - s[nombre_routes_traitees-1].depart >= TAILLE;
-						if(s[nombre_routes_traitees-1].seconde_periode || large_gap){
-							//il y a un trou/element de la seconde période dans lequel on pourrait mettre un element precedent de la deuxieme période
-							int k;
-							for(k = 0; k < nombre_routes_traitees && !( s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= gap); k++){}
-							if(k < nombre_routes_traitees) continue;		
-						}	
-						//il y a un trou dans lequel on pourrait mettre un élément non encore placé
-						if(large_gap){//on a trouvé un trou
-							int k;
-							for(k = 0; k < nombre_route && (routes_utilisees[k] || disponible_periode[k] <= gap); k++){}
-							if(k < nombre_route) continue;
+			else{
+				//on grossit la solution partielle en essayant d'ajouter un élément
+				if(add || s[nombre_routes_traitees].seconde_periode){//on vient d'ajouter un element ou on veut le prochain élément 
+					int i = 0;
+					if(!add) {
+						i = s[nombre_routes_traitees].numero + 1;
+						routes_utilisees[i-1] = 0;//on retire la route précédemment utilisée à ce niveau
+					}
+					add = 0;
+					//on ajoute le premier élément dispo en première période, à partir de la première route non traitée à cette position
+					for(; i < nombre_route && routes_utilisees[i]; i++){}  //si on fait un bitset, trouver la première route disponible est plus facile
+					if(i == nombre_route){//la route courante retirée était la plus grande route possible, retourne un cran en arriere
+						nombre_routes_traitees--;
+					}
+					else{
+						s[nombre_routes_traitees].depart = MAX(disponible_periode[i],s[nombre_routes_traitees - 1].depart + TAILLE);
+						s[nombre_routes_traitees].numero = i;
+						s[nombre_routes_traitees].seconde_periode = 0;
+						routes_utilisees[i] = 1;
+						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
+						if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
+							(s[nombre_routes_traitees].numero < j || s[nombre_routes_traitees].depart > disponible_periode[(int) s[nombre_routes_traitees].numero])){
+							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
+							int gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
+							int large_gap = gap - s[nombre_routes_traitees-1].depart >= TAILLE;
+							if(s[nombre_routes_traitees-1].seconde_periode || large_gap){
+								//il y a un trou/element de la seconde période dans lequel on pourrait mettre un element precedent de la deuxieme période
+								int k;
+								for(k = 0; k < nombre_routes_traitees && !( s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= gap); k++){}
+								if(k < nombre_routes_traitees) continue;		
+							}	
+							//il y a un trou dans lequel on pourrait mettre un élément non encore placé
+							if(large_gap){//on a trouvé un trou
+								int k;
+								for(k = 0; k < nombre_route && (routes_utilisees[k] || disponible_periode[k] <= gap); k++){}
+								if(k < nombre_route) continue;
+							}
+							nombre_routes_traitees++;	
+							add = 1;	
 						}
-						nombre_routes_traitees++;	
-						add = 1;	
 					}
 				}
-			}
-			else{//on vient d'enlever un element, on passe l'élément précédent dans la deuxième période
-				s[nombre_routes_traitees].seconde_periode = 1;
-				s[nombre_routes_traitees].depart = s[nombre_routes_traitees-1].depart + TAILLE;
-				if(s[nombre_routes_traitees].depart < disponible_periode[(int) s[nombre_routes_traitees].numero] &&
-					s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE){
-					//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
-					//pas l'échanger avec un autre élément dans la deuxième période
-					int k;
-					for(k = 0; k < nombre_routes_traitees && !(s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= s[nombre_routes_traitees-1].depart); k++){}
-					if(k == nombre_routes_traitees){	
-						nombre_routes_traitees++;
-						add = 1;	
+				else{//on vient d'enlever un element, on passe l'élément précédent dans la deuxième période
+					s[nombre_routes_traitees].seconde_periode = 1;
+					s[nombre_routes_traitees].depart = s[nombre_routes_traitees-1].depart + TAILLE;
+					if(s[nombre_routes_traitees].depart < disponible_periode[(int) s[nombre_routes_traitees].numero] &&
+						s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE){
+						//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
+						//pas l'échanger avec un autre élément dans la deuxième période
+						int k;
+						for(k = 0; k < nombre_routes_traitees && !(s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= s[nombre_routes_traitees-1].depart); k++){}
+						if(k == nombre_routes_traitees){	
+							nombre_routes_traitees++;
+							add = 1;	
+						}
 					}
 				}
 			}	
