@@ -253,7 +253,8 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
 			}
-			else{
+			else
+			{
 				//on grossit la solution partielle en essayant d'ajouter un élément
 				if(add || s[nombre_routes_traitees].seconde_periode){//on vient d'ajouter un element ou on veut le prochain élément 
 					int i = 0;
@@ -318,11 +319,11 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 							}
 						}
 					}
-				}
-			}	
+				}	
+			}
 		}
 	}
-	printf("Retour optim %d \n",min_delai_meilleure_sol); 
+	printf("Retour algo fpt yann %d \n",min_delai_meilleure_sol); 
 	//printf("Nombre de solutions visitées %llu \n", compteur);
 	return min_delai_meilleure_sol;
 }
