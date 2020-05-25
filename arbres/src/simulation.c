@@ -23,12 +23,13 @@
 #include <limits.h>
 #include "borneInf.h"
 #include "fpt.h"
+#include "enum.h"
 
 
 void test()
 {
-	//unsigned int seed = 1589930680;
-	unsigned int seed = time(NULL);
+	unsigned int seed = 1590158084;
+	//unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -114,7 +115,7 @@ void test()
 	int coupes[NB_COUPES];
 	for(int i=0;i<NB_COUPES;i++)coupes[i]=1; 
 		double coupes_m[NB_COUPES];
-	int fpt = branchbound( &g, P,  message_size,coupes,coupes_m);
+	int fpt = branchbound( &g, P,  message_size,coupes,coupes_m,0);
 	
 	printf("FPT = %d \n",fpt);
 	
@@ -144,7 +145,8 @@ void test()
 	if(recuits<fpt)
 	{
 		printf(RED "!!!!!!!!!!FPT trouve moins bien que le recuit!!!!!!!!!!!! \n" RESET);
-		exit(44);
+		exit(64);
+		
 	}
 	else
 	{
@@ -174,7 +176,7 @@ void test()
 	if(descent<fpt)
 	{
 		printf(RED "!!!!!!!!!!FPT trouve moins bien que la descente!!!!!!!!!!!! \n" RESET);
-		exit(44);
+		exit(64);
 	}
 	else
 	{
@@ -314,6 +316,8 @@ void simuldistrib(int seed)
 					}
 				break;
 				case 4:
+				
+					
 					a = best_of_x( &g, P, message_size,10,&nb);
 					#pragma omp critical
 						nb_pas[1] += nb;
@@ -330,11 +334,12 @@ void simuldistrib(int seed)
 				break;
 				case 6:
 					a = recuit( &g, P, message_size,1000,&nb);
+					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;
 					break;
 				case 7:
-					a = branchbound( &g, P, message_size,coupes,coupes_m);
+					a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					break;
 				}
 				gettimeofday (&tv2, NULL);	
@@ -401,6 +406,7 @@ void simuldistrib(int seed)
 			affiche_graph(&g,P,stdout);
 			exit(45);
 		}
+		
 		/*if(time[7]<time[6])
 			{
 				printf(GRN "FPT meilleur que recuit (%d %d).\n" RESET,time[7],time[6]);
@@ -515,7 +521,7 @@ void testcoupefpt(int seed)
 					P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 				
 				gettimeofday (&tv1, NULL);
-				branchbound( &g, P, message_size,coupes,coupes_m);
+				branchbound( &g, P, message_size,coupes,coupes_m,0);
 				gettimeofday (&tv2, NULL);	
 		
 				
@@ -552,4 +558,90 @@ void testcoupefpt(int seed)
 
 	
 		
+}
+void testfpt(int seed)
+{	
+
+	srand(seed);
+	Graph g;
+	int P;
+	int message_size = MESSAGE_SIZE;
+	int a,b;
+	int max = 0;
+	int result;
+	int nb = 1;
+	struct timeval tv1, tv2;
+	float temps_moyen_fpt=0.0;
+	float temps_moyen_simons=0.0;
+	printf("Seed = %u %lu\n",seed,time(NULL));
+	for(int k=0;k<nb;k++)
+	{
+
+		g= init_graph_random_tree(STANDARD_LOAD);
+		P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
+		reinit_delays(&g);
+
+		max = 0;
+		for(int i= g.nb_bbu;i<g.nb_bbu+g.nb_collisions;i++)
+		{
+			printf("arc %d , %d routes\n",i,g.arc_pool[i].nb_routes);
+			int release[g.arc_pool[i].nb_routes];
+			int delai[g.arc_pool[i].nb_routes];
+			for(int j=0;j<g.arc_pool[i].nb_routes;j++)
+			{
+
+				release[j] = route_length_with_buffers_forward(&g,g.arc_pool[i].routes_id[j])
+					+route_length_untill_arc(&g,g.arc_pool[i].routes_id[j],&g.arc_pool[i],BACKWARD);
+				delai[j]=route_length_with_buffers( &g,g.arc_pool[i].routes_id[j]);
+				printf("route %d (%d %d) \n",g.arc_pool[i].routes_id[j],release[j],delai[j]);
+			}	
+			gettimeofday (&tv1, NULL);	
+			result = optim(release, delai, g.arc_pool[i].nb_routes,  P, message_size);
+			gettimeofday (&tv2, NULL);	
+			temps_moyen_fpt += time_diff(tv1,tv2);
+			printf("arc %d temps %d\n",i,result);
+			max = (result>max)?result:max;
+		
+		}
+		a = max;
+		max = 0;
+		for(int i= g.nb_bbu;i<g.nb_bbu+g.nb_collisions;i++)
+		{	
+			gettimeofday (&tv1, NULL);
+			if(!simonslastarc(&g,  P,  message_size, a,i ,BACKWARD))
+				printf(RED"Simons Last Arc ne trouve pas une solution trouvée par le fpt\n"RESET);
+			gettimeofday (&tv2, NULL);	
+			
+			temps_moyen_simons += time_diff(tv1,tv2);
+			result =travel_time_max_buffers(&g);
+			max = (result>max)?result:max;
+			printf("arc %d tempss %d \n",i,result);
+		}
+		b=max;
+
+		reinit_delays(&g);
+		 if(a<b)
+		 {
+			printf(RED"LES DEUX ALGOS NE DONNENT PAS LE MÊME RESULTAT simons : %d FPT : %d\n"RESET,b,a);
+			print_graphvitz(&g,"../view/view.dot");
+			system("dot -Tpdf ../view/view.dot -o ../view/view.pdf");
+			affiche_graph_routes(&g,stdout);
+			exit(2);
+		 }
+		 	
+		 if(a>b){
+		 	printf(GRN"LES DEUX ALGOS NE DONNENT PAS LE MÊME RESULTAT  FPT : %d simons : %d \n"RESET,a,b);
+		 	print_graphvitz(&g,"../view/view.dot");
+		 	system("dot -Tpdf ../view/view.dot -o ../view/view.pdf");
+		 	affiche_graph_routes(&g,stdout);
+		 	exit(3);
+		}
+		
+		 free_graph(&g);
+		 fprintf(stdout,"\r%d/%d",k+1,nb);fflush(stdout);
+	}
+	printf("\nTemps moyen Fpt    = %f \nTemps moyen Simons = %f \n",temps_moyen_fpt/nb,temps_moyen_simons/nb);
+
+	//sleep(1);
+	return;
 }

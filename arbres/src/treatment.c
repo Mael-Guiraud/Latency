@@ -708,15 +708,17 @@ int route_length_with_buffers(Graph * g,int route)
 		length += g->routes[route][i]->routes_delay_f[route];
 		if( g->routes[route][i]->routes_delay_f[route]<0)
 			exit(34);
-		// printf("%d + %d + %d +",2*g->routes[route][i]->length,g->routes[route][i]->routes_delay_b[route],g->routes[route][i]->routes_delay_f[route]);
+		 // printf("%d + %d + %d \n",2*g->routes[route][i]->length,g->routes[route][i]->routes_delay_b[route],g->routes[route][i]->routes_delay_f[route]);
 	}
+	//printf("lgnth = %d \n",length);
 	return length;
 }
 int route_length_with_buffers_forward(Graph * g,int route)
 {
+	//printf("%d \n",route); 
 	int length = 0;
 	//printf("%d \n",g->size_routes[route]);
-	//For each arcs
+	//For each arcs&
 	for(int i=0;i<g->size_routes[route];i++)
 	{
 		length += g->routes[route][i]->length;

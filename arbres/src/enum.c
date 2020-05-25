@@ -48,7 +48,7 @@ typedef struct{
 } SOLUTION;
 
 
-void print_solution(int nombre_routes_traitees, SOLUTION *s, int *disponible_periode){
+void print_solutions(int nombre_routes_traitees, SOLUTION *s, int *disponible_periode){
 	for(int i = 0; i < nombre_routes_traitees; i++) printf("(%d,%d,%d,%d) ", s[i].numero, s[i].seconde_periode, disponible_periode[(int) s[i].numero],s[i].depart);
 	printf("\n");
 }
@@ -130,7 +130,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 		while(nombre_routes_traitees > 0){
 			if(DEBUG){ 
 				printf("%d   %llu   :",nombre_routes_traitees,compteur);
-			 	print_solution(nombre_routes_traitees, s, disponible_periode);
+			 	print_solutions(nombre_routes_traitees, s, disponible_periode);
 			}
 			//traitement de la solution complete
 			if(nombre_routes_traitees == nombre_route ){
@@ -206,7 +206,9 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 
 
 
-int optim(int *disponible, int *delai, int nombre_route, int P){
+int optim(int *disponible, int *delai, int nombre_route, int P,int message_size){
+
+	
 	SOLUTION s[nombre_route];//stocke la solution partielle courante
 	int disponible_periode[nombre_route];// temps auquel la route est disponible dans la période
 	int nombre_routes_traitees;//taille de la solution partielle 
@@ -237,7 +239,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 		while(nombre_routes_traitees > 0){
 			if(DEBUG){ 
 				printf("%d   %llu   :",nombre_routes_traitees,compteur);
-			 	print_solution(nombre_routes_traitees, s, disponible_periode);
+			 	print_solutions(nombre_routes_traitees, s, disponible_periode);
 			 	printf("%d \n",min_delai[nombre_routes_traitees - 1]);
 			}
 			//traitement de la solution complete
@@ -263,16 +265,16 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 					nombre_routes_traitees--;
 				}
 				else{
-					s[nombre_routes_traitees].depart = MAX(disponible_periode[i],s[nombre_routes_traitees - 1].depart + TAILLE);
+					s[nombre_routes_traitees].depart = MAX(disponible_periode[i],s[nombre_routes_traitees - 1].depart + message_size);
 					s[nombre_routes_traitees].numero = i;
 					s[nombre_routes_traitees].seconde_periode = 0;
 					routes_utilisees[i] = 1;
 					//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
-					if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
+					if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*message_size <= P &&
 						(s[nombre_routes_traitees].numero < j || s[nombre_routes_traitees].depart > disponible_periode[(int) s[nombre_routes_traitees].numero])){
 						//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
-						int gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
-						int large_gap = gap - s[nombre_routes_traitees-1].depart >= TAILLE;
+						int gap = s[nombre_routes_traitees].depart - message_size; //debut potentiel du gap
+						int large_gap = gap - s[nombre_routes_traitees-1].depart >= message_size;
 						if(s[nombre_routes_traitees-1].seconde_periode || large_gap){
 							//il y a un trou/element de la seconde période dans lequel on pourrait mettre un element precedent de la deuxieme période
 							int k;
@@ -296,17 +298,17 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 			}
 			else{//on vient d'enlever un element, on passe l'élément précédent dans la deuxième période
 				s[nombre_routes_traitees].seconde_periode = 1;
-				s[nombre_routes_traitees].depart = s[nombre_routes_traitees-1].depart + TAILLE;
+				s[nombre_routes_traitees].depart = s[nombre_routes_traitees-1].depart + message_size;
 				int route_courante = (int) s[nombre_routes_traitees].numero;
 				if(s[nombre_routes_traitees].depart < disponible_periode[route_courante] &&
-					s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE){
+					s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*message_size <= P){
 					//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
 					//pas l'échanger avec un autre élément dans la deuxième période
 					int k;
 					for(k = 0; k < nombre_routes_traitees && !(s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= s[nombre_routes_traitees-1].depart); k++){}
 					if(k == nombre_routes_traitees){	
 						min_delai[nombre_routes_traitees] =  MAX(min_delai[nombre_routes_traitees - 1], 
-						delai[route_courante] + PERIODE + s[nombre_routes_traitees].depart - disponible_periode[route_courante]);
+						delai[route_courante] + P + s[nombre_routes_traitees].depart - disponible_periode[route_courante]);
 						if(min_delai[nombre_routes_traitees] < min_delai_meilleure_sol){
 							nombre_routes_traitees++;	
 							add = 1;	
@@ -316,6 +318,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 			}	
 		}
 	}
+	printf("Retour optim %d \n",min_delai_meilleure_sol); 
 	//printf("Nombre de solutions visitées %llu \n", compteur);
 	return min_delai_meilleure_sol;
 }

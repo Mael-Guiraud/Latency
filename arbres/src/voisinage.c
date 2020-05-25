@@ -1048,7 +1048,7 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 			temps_restant = route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
 			deadline[i] = budget  +message_size - temps_restant;
 			//printf(" (%d(%d+%d)  %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),message_size,budget,temps_restant,deadline[i]);
-		//	printf("(%d = (%d + %d) %d = (%d+%d+%d - %d)) \n",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),deadline[i],release[i],message_size,budget,2* route_length(g,g->arc_pool[arc_id].routes_id[i]));
+			//printf(" %d = (%d+%d - %d(=%d - %d))) \n",deadline[i],message_size,budget,temps_restant,route_length(g,g->arc_pool[arc_id].routes_id[i]), route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD));
 		}
 		
 		//printf("%d (%d + %d + %d- %d) ) \n",deadline[i],release[i],message_size,budget,2*route_length(g,g->arc_pool[arc_id].routes_id[i]));	
@@ -1686,7 +1686,7 @@ Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace 
 	int a=0;
 	int b;
 	int min = INT_MAX;
-	int key;
+	//int key;
 	int **orders = malloc(sizeof(int*)*g->arc_pool_size*2);
 	for(int i=0;i<g->arc_pool_size;i++)
 	{
@@ -2287,7 +2287,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			break;
 		//fprintf(f2,"%f \n",temperature);
 	}
-	printf("Temperature %f, nb_step %d \n",temperature,nb_step);
+	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
 
 	//On prend la meilleure solution vue

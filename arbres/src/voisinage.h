@@ -9,6 +9,7 @@ int recuit(Graph * g, int P, int message_size,int param,float * nb_pas);
 int assignment_with_orders_vois1FPT(Graph* g, int P, int message_size, int print);
 int assignment_with_orders_vois1(Graph * g, int P, int message_size, int print);
 int assignOneArc(Graph * g,int arcid, Period_kind kind, int message_size, int P,int print);
+int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period_kind kind);
 void reinit_delays(Graph * g);
 typedef struct{
 	int delay;

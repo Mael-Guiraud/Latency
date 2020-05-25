@@ -10,7 +10,7 @@
 #include "treatment.h"
 #include "greedy_waiting.h"
 #include "borneInf.h"
-
+#include "enum.h"
 /* 
 Ce fichier permet de séléctionner les coupes à activer ou à désactiver pour le FPT.
 */
@@ -29,7 +29,7 @@ int SECONDE_DANS_PREMIERE ;
 int I_PLUS_1_PAS_COLLE ;
 
 /////// COUPES AU FUR ET A MESURE DU CALCUL DES ROUTES //////
-
+int MOD;
 
 //Si la route i est collée dans la première periode, on ne fait pas la seconde periode
 int I_COLLE ;
@@ -56,7 +56,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 	int val_G;
 	int nb_routes =g->arc_pool[arcid].nb_routes;
 	int premier;
-	int a;
+	
 	int old_offset;
 	//printf("arc %d profondeur %d \n",arcid,profondeur);
 	if(profondeur == 0)
@@ -166,21 +166,36 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 				if(arcid == 0)
 				{	
 					nb_feuilles++;
-					a = assignment_with_orders_vois1FPT(g, P, message_size, borneinf);
-					int b = travel_time_max_buffers(g);
-					if(!a)
-						return INT_MAX;
-					for(int i=0;i<g->nb_bbu+g->nb_collisions;i++)
+					if(MOD)
 					{
-						//printf("arc %d : \n",i);
-						for(int j=0;j<g->arc_pool[i].nb_routes;j++)
+						int max = 0;
+						int result;
+						for(int i= g->nb_bbu;i<g->nb_bbu+g->nb_collisions;i++)
 						{
-							//printf("route %d, delay (%d-%d) \n",g->arc_pool[i].routes_order_f[j],g->arc_pool[i].routes_delay_f[g->arc_pool[i].routes_order_f[j]],g->arc_pool[i].routes_delay_b[g->arc_pool[i].routes_order_f[j]]);
+						//	printf("%d ",i);
+							int release[g->arc_pool[i].nb_routes];
+							int delai[g->arc_pool[i].nb_routes];
+							for(int j=0;j<g->arc_pool[i].nb_routes;j++)
+							{
+
+								release[j] = route_length_with_buffers_forward(g,g->arc_pool[i].routes_id[j])
+									+route_length_untill_arc(g,g->arc_pool[i].routes_id[j],&g->arc_pool[i],BACKWARD);
+								delai[j]=route_length_with_buffers( g,g->arc_pool[i].routes_id[j]);
+								//printf("(%d %d %d %d) \n",release[j],delai[j],route_length_with_buffers_forward(g,g->arc_pool[i].routes_id[j]),route_length_untill_arc(g,g->arc_pool[i].routes_id[j],&g->arc_pool[i],BACKWARD));
+							}
+							result = optim(release, delai, g->arc_pool[i].nb_routes,  P, message_size);
+							//printf("%d %d \n",result,max);
+							max = (result>max)?result:max;
+							
+
+							//printf("%d\n",max);
+						
 						}
+						
+						return (max==0)?INT_MAX:max;
 					}
-				//	printf("b = %d \n",b); 
-					return b;
-					//return (!a)?INT_MAX:travel_time_max_buffers(g);
+					else			 
+						return (!assignment_with_orders_vois1FPT(g, P, message_size, borneinf))?INT_MAX:travel_time_max_buffers(g);
 
 					
 				}
@@ -385,7 +400,7 @@ long long count_feuilles_arbre(Graph * g)
 
 
 
-int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m)
+int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m, int m)
 {
 		
 	AFFICHE_RES = 0;
@@ -397,7 +412,7 @@ int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m
 	I_COLLE =coupes[2];
 	ROUTES_SUIVANTES_AVANT_I =coupes[3];
 	
-
+	MOD = m;
     struct timeval tv1, tv2;
 
 	nb_feuilles = 0;
