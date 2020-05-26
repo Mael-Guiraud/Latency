@@ -9,7 +9,7 @@
 #define NOMBRE_ROUTE 1
 #define PERIODE 200
 #define TAILLE 10
-#define DEBUG 0
+#define DEBUG 1
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -254,7 +254,6 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
 				memcpy(meilleure,s,sizeof(SOLUTION)*nombre_route);
-
 			}
 			else
 			{
@@ -328,20 +327,21 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 	}
 	printf("Retour algo fpt yann %d \n",min_delai_meilleure_sol); 
 	printf("Meilleure solution : ");
-
+	int premiere = meilleure[0].numero;
+	printf("Première route %d, date de dispo %d", premiere, disponible[premiere]);
 	for(int i=0;i<nombre_route;i++)
 	{
-		printf("\n-Route : %d(sec_periode %d), date départ =",meilleure[i].numero,meilleure[i].seconde_periode);
-		int premiere = meilleure[0].numero;
 		int numero = meilleure[i].numero;
 		int disponible_periode =   disponible[numero]%P - disponible[premiere]%P + (disponible[premiere]%P > disponible[numero]%P)*P;
-		if(meilleure[i].seconde_periode ==0)
+		printf("\n-Route : %d(sec_periode %d), disponible %d, depart %d, ",meilleure[i].numero,meilleure[i].seconde_periode,disponible_periode,meilleure[i].depart);
+		
+		if(meilleure[i].seconde_periode == 0)
 		{
-			printf("%d,",disponible[numero] + meilleure[numero].depart - disponible_periode );
+			printf("date départ = %d,",disponible[numero] + meilleure[i].depart - disponible_periode );
 		}
 		else
 		{
-			printf("%d,",disponible[numero] + meilleure[numero].depart - disponible_periode + P);
+			printf("date départ = %d,",disponible[numero] + meilleure[i].depart - disponible_periode + P);
 		}
 	}
 	printf("\n");
