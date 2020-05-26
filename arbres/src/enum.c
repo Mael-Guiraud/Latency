@@ -88,26 +88,27 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 						nombre_routes_traitees--;
 					}
 					else{
-						s[nombre_routes_traitees].depart = MAX(disponible_periode[i],s[nombre_routes_traitees - 1].depart + message_size);
+						int un_gap = disponible_periode[i] > s[nombre_routes_traitees - 1].depart + message_size;
+						s[nombre_routes_traitees].depart = un_gap ? disponible_periode[i] : s[nombre_routes_traitees - 1].depart + message_size;
 						s[nombre_routes_traitees].numero = i;
 						s[nombre_routes_traitees].seconde_periode = 0;
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
 						if( s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*message_size <= P &&
-							(s[nombre_routes_traitees].numero > j ||  disponible_periode[i] > s[nombre_routes_traitees - 1].depart +message_size)){
+							(i > j || un_gap)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
-							int gap = s[nombre_routes_traitees].depart - message_size; //debut potentiel du gap
-							int large_gap = gap - s[nombre_routes_traitees-1].depart >= message_size;
+							int debut_gap = s[nombre_routes_traitees].depart - message_size; //debut potentiel du gap
+							int large_gap = debut_gap - s[nombre_routes_traitees-1].depart >= message_size;
 							if(s[nombre_routes_traitees-1].seconde_periode || large_gap){
 								//il y a un trou/element de la seconde période dans lequel on pourrait mettre un element precedent de la deuxieme période
 								int k;
-								for(k = 0; k < nombre_routes_traitees && !( s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= gap); k++){}
+								for(k = 0; k < nombre_routes_traitees && ( !s[k].seconde_periode || disponible_periode[(int) s[k].numero] > debut_gap); k++){}
 								if(k < nombre_routes_traitees)  continue;		
 							}	
 							//il y a un trou dans lequel on pourrait mettre un élément non encore placé
 							if(large_gap){//on a trouvé un trou
 								int k;
-								for(k = 0; k < nombre_route && (routes_utilisees[k] || disponible_periode[k] <= gap); k++){}
+								for(k = 0; k < nombre_route && (routes_utilisees[k] || disponible_periode[k] > debut_gap); k++){}
 								if(k < nombre_route)  continue;
 							}
 							min_delai[nombre_routes_traitees] =  MAX(min_delai[nombre_routes_traitees -1], 
@@ -128,7 +129,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 						//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
 						//pas l'échanger avec un autre élément dans la deuxième période
 						int k;
-						for(k = 0; k < nombre_routes_traitees && !(s[k].seconde_periode && disponible_periode[(int) s[k].numero] <= s[nombre_routes_traitees-1].depart); k++){}
+						for(k = 0; k < nombre_routes_traitees && (!s[k].seconde_periode || disponible_periode[(int) s[k].numero] > s[nombre_routes_traitees].depart); k++){}
 						if(k == nombre_routes_traitees){	
 							min_delai[nombre_routes_traitees] =  MAX(min_delai[nombre_routes_traitees - 1], 
 							delai[route_courante] + P + s[nombre_routes_traitees].depart - disponible_periode[route_courante]);
