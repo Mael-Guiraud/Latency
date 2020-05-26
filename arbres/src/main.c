@@ -27,7 +27,7 @@ int main (int argc, char *argv[])
 	if(!strcmp(argv[1],"test"))
 	{
 		int i =0;
-		while( i < 100)
+		while( i < 10000)
 		{
 			i++;
 			
