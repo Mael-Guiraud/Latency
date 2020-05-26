@@ -407,7 +407,7 @@ int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m
 
 	BORNEINF_ON =1;
 	PAS_PLUS_PETIT_ID =1;
-	SECONDE_DANS_PREMIERE = coupes[0];
+	SECONDE_DANS_PREMIERE = 1;
 	I_PLUS_1_PAS_COLLE =coupes[1];
 	I_COLLE =coupes[2];
 	ROUTES_SUIVANTES_AVANT_I =coupes[3];

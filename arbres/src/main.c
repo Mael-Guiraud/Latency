@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"test"))
 	{
-		while(1)
+		/*while(1)
 		{
 
 			
@@ -35,10 +35,10 @@ int main (int argc, char *argv[])
 
 			testfpt(seed);
 			seed++;
-		}
+		}*/
 		
-		/*while(1)
-		test();*/
+		while(1)
+		test();
 	}
 	if(!strcmp(argv[1],"onos"))
 	{

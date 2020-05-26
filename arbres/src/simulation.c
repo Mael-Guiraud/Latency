@@ -550,12 +550,7 @@ void testcoupefpt(int seed)
 		printf("\n");
 
 		cuts[i]=0;
-		
-
 	}	
-
-
-
 	
 		
 }
