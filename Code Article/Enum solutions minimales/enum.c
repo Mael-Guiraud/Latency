@@ -6,10 +6,10 @@
 #include <limits.h>
 
 
-#define NOMBRE_ROUTE 1
+#define NOMBRE_ROUTE 3
 #define PERIODE 200
 #define TAILLE 10
-#define DEBUG 0
+#define DEBUG 1
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -161,10 +161,10 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
 						if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
-							(s[nombre_routes_traitees].numero < j || s[nombre_routes_traitees].depart > disponible_periode[(int) s[nombre_routes_traitees].numero])){
+							(s[nombre_routes_traitees].numero > j ||  disponible_periode[i] > s[nombre_routes_traitees - 1].depart + TAILLE)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
 							int gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
-							int large_gap = gap - s[nombre_routes_traitees-1].depart >= TAILLE;
+							int large_gap = (gap - s[nombre_routes_traitees-1].depart) >= TAILLE;
 							if(s[nombre_routes_traitees-1].seconde_periode || large_gap){
 								//il y a un trou/element de la seconde période dans lequel on pourrait mettre un element precedent de la deuxieme période
 								int k;
@@ -272,7 +272,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
 						if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
-							(s[nombre_routes_traitees].numero < j || s[nombre_routes_traitees].depart > disponible_periode[(int) s[nombre_routes_traitees].numero])){
+							(s[nombre_routes_traitees].numero > j || disponible_periode[i] > s[nombre_routes_traitees - 1].depart + TAILLE)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
 							int gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
 							int large_gap = gap - s[nombre_routes_traitees-1].depart >= TAILLE;
@@ -363,13 +363,13 @@ int main(){
 		disponible[i] = rand()%PERIODE;
 		delai[i] = rand()%PERIODE + disponible[i];
 	}
-	/*
+	
 	long long unsigned int nb_enum = enumeration(disponible,NOMBRE_ROUTE,PERIODE);
 	long long unsigned int nb_exhaustif = 1;
 	for(int i = 2; i <= NOMBRE_ROUTE; i++) nb_exhaustif *= 2*i;
 	printf("Nombre de solutions énumérées %llu\n",nb_enum);
 	printf("Nombre de solutions total %llu, proportion %f\n",nb_exhaustif, (float) nb_enum / nb_exhaustif);
-	*/
+	
 	printf("Affichage des disponibilités et délais: ");
 	for(int i = 0; i < NOMBRE_ROUTE; i++) printf("(%d %d)",disponible[i],delai[i]);
 	printf("\nSolution optimale de délai %d \n", optim(disponible,delai,NOMBRE_ROUTE,PERIODE));
