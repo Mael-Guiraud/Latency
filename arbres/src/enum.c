@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <strings.h>
 #include <limits.h>
-
+#include <string.h>
 
 #define NOMBRE_ROUTE 1
 #define PERIODE 200
@@ -212,6 +212,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 
 	
 	SOLUTION s[nombre_route];//stocke la solution partielle courante
+	SOLUTION meilleure[nombre_route];//stocke la solution partielle courante
 	int disponible_periode[nombre_route];// temps auquel la route est disponible dans la période
 	int nombre_routes_traitees;//taille de la solution partielle 
 	int add; //0 si on vient d'enlever un élément, 1 sinon
@@ -252,6 +253,8 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 				compteur++;
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
+				memcpy(meilleure,s,sizeof(SOLUTION)*nombre_route);
+
 			}
 			else
 			{
@@ -326,6 +329,24 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 		}
 	}
 	printf("Retour algo fpt yann %d \n",min_delai_meilleure_sol); 
+	printf("Meilleure solution : ");
+
+	for(int i=0;i<nombre_route;i++)
+	{
+		printf("\n-Route : %d(sec_periode %d), date départ =",meilleure[i].numero,meilleure[i].seconde_periode);
+		int premiere = meilleure[0].numero;
+		int numero = meilleure[i].numero;
+		int disponible_periode =   disponible[numero]%P - disponible[premiere]%P + (disponible[premiere]%P > disponible[numero]%P)*P;
+		if(meilleure[i].seconde_periode ==0)
+		{
+			printf("%d,",disponible[numero] + meilleure[numero].depart - disponible_periode );
+		}
+		else
+		{
+			printf("%d,",disponible[numero] + meilleure[numero].depart - disponible_periode + P);
+		}
+	}
+	printf("\n");
 	//printf("Nombre de solutions visitées %llu \n", compteur);
 	return min_delai_meilleure_sol;
 }

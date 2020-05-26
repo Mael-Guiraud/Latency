@@ -30,7 +30,7 @@ int main (int argc, char *argv[])
 		{
 
 			
-			testfpt(1590418909);return 0;
+			testfpt(1590497575);return 0;
 			
 
 			testfpt(seed);

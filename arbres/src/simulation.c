@@ -637,7 +637,7 @@ void testfpt(int seed)
 		 	print_graphvitz(&g,"../view/view.dot");
 		 	system("dot -Tpdf ../view/view.dot -o ../view/view.pdf");
 		 	//affiche_graph_routes(&g,stdout);
-		 	exit(3);
+		 	//exit(3);
 		}
 		
 		 free_graph(&g);

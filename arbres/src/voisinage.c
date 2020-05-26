@@ -1062,21 +1062,24 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 	printf("solution trouvée par simons \n");
 	if(res)
 	{	
+		for(int i=0;i<taille_tab;i++)
+		{
+			
+			g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]] = res[i];
+		}
 		int idmin = 0;
 		int min = INT_MAX;
 		for(int i=0;i<taille_tab;i++)
 		{
-			if((release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]])%P < min){
-				min = (release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]])%P;
+			if(release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]] < min){
+				min = release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]];
 				idmin=i;
 			}
 		}
 		printf("Première route %d \n",idmin);
 		for(int i=0;i<taille_tab;i++)
 		{
-			
-			g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]] = res[i];
-			printf("Date depart route %d = %d | Temps trajet pour cette route :  %d\n",g->arc_pool[arc_id].routes_id[i],(release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]])%P-min,route_length_with_buffers( g,g->arc_pool[arc_id].routes_id[i]));		
+						printf("Date depart route %d = %d (%d dans la periode) | Temps trajet pour cette route :  %d\n",g->arc_pool[arc_id].routes_id[i],release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]],release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]]-min,route_length_with_buffers( g,g->arc_pool[arc_id].routes_id[i]));		
 		}
 	}
 	else
