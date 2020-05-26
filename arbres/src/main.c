@@ -27,11 +27,6 @@ int main (int argc, char *argv[])
 	if(!strcmp(argv[1],"test"))
 	{
 
-	
-			
-
-			//testfpt(seed);
-			
 		
 		
 		
@@ -50,25 +45,24 @@ int main (int argc, char *argv[])
 		char * noms[]={"FPTSPALL"};
 		print_gnuplot("fptaspall",noms, 1, "performance of fptspall", "margin", ylabels);
 	}
-	else
+	
+	if(!strcmp(argv[1],"simulDistrib") )
 	{
-		
-		if(!strcmp(argv[1],"simulDistrib") || !strcmp(argv[1],"simulAll"))
-		{
 
-			simuldistrib(seed);
-		}
-		if(!strcmp(argv[1],"simulFPT") )
-		{
-			testcoupefpt(seed);
-		}
-			
-
-		
-
-		
-		
+		simuldistrib(seed);
 	}
+	if(!strcmp(argv[1],"simulFPT") )
+	{
+		testfpt(seed);
+		//testcoupefpt(seed);
+	}
+		
+
+	
+
+		
+		
+	
 	
 	return 0;
 }

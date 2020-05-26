@@ -92,7 +92,9 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 						s[nombre_routes_traitees].seconde_periode = 0;
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
+
 						if(DEBUG)printf("courante :%d premiere :%d un gap ? :%d\n",i,j,un_buffer);
+
 						if( s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*message_size <= P &&
 							(i > j || un_buffer)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
