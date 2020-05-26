@@ -109,13 +109,14 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 							int j ;
 
 							//Recherche de la route qui termine juste après i ou qui commence avant i
-							for(j=0;j<nb_routes;j++)
+							for(j=1;j<nb_routes;j++)
 							{
 								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > P)//j aussi dans la seconde periode
 								{
 									continue;
 								}
 								temps_min_j = (begin+r_t[j]+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]])%P;
+								//printf("temps_min_j = %d \n",temps_min_j);
 								if((temps_min_j < temps_min_i) && (temps_min_j+message_size > temps_min_i))
 								{
 									//la route j finit juste apres le temps d'arrivé de i, on prends j = i+1 et on fixe la date de départ de i a la fin du message
@@ -129,7 +130,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 								}
 							}
 							
-
+							//printf("j = %d \n",j);
 							//printf("%d est en seconde periode  tempsmin i = %d \n",i,temps_min_i);
 							if(temps_min_i < P)
 							{
@@ -145,7 +146,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 									//Si il y a la place de mettre i en première preiode, on coupe
 									if( abs( temps_min_j-temps_min_i) >= message_size)
 									{
-										//printf("on coupe\n");
+										//printf("on coupe arc %d, begin %d route %d i %d j %d tempsi %d tempsj %d\n",arcid,begin%P,g->arc_pool[arcid].routes_order_f[0],g->arc_pool[arcid].routes_order_f[i],g->arc_pool[arcid].routes_order_f[j],temps_min_i,temps_min_j);
 										nb_coupes[0]++;
 										coupe_moy[0]+=g->nb_bbu+g->nb_collisions-1 - arcid;
 										return INT_MAX;
@@ -407,7 +408,7 @@ int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m
 
 	BORNEINF_ON =1;
 	PAS_PLUS_PETIT_ID =1;
-	SECONDE_DANS_PREMIERE = 1;
+	SECONDE_DANS_PREMIERE = coupes[0];
 	I_PLUS_1_PAS_COLLE =coupes[1];
 	I_COLLE =coupes[2];
 	ROUTES_SUIVANTES_AVANT_I =coupes[3];

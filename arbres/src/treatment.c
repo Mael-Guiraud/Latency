@@ -656,7 +656,7 @@ int  load_max(Graph * g)
 	int loadmax=0;
 	for(int i=0;i<g->arc_pool_size;i++)
 	{
-	
+		
 		if(g->arc_pool[i].nb_routes > loadmax)
 		loadmax = g->arc_pool[i].nb_routes;
 

@@ -6,9 +6,7 @@
 #include <limits.h>
 #include <string.h>
 
-#define NOMBRE_ROUTE 1
-#define PERIODE 200
-#define TAILLE 10
+
 #define DEBUG 0
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
@@ -88,14 +86,15 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 						nombre_routes_traitees--;
 					}
 					else{
-						int un_gap = disponible_periode[i] > s[nombre_routes_traitees - 1].depart + message_size;
-						s[nombre_routes_traitees].depart = un_gap ? disponible_periode[i] : s[nombre_routes_traitees - 1].depart + message_size;
+						int un_buffer = disponible_periode[i] < s[nombre_routes_traitees - 1].depart + message_size;
+						s[nombre_routes_traitees].depart = un_buffer ? s[nombre_routes_traitees - 1].depart + message_size : disponible_periode[i] ;
 						s[nombre_routes_traitees].numero = i;
 						s[nombre_routes_traitees].seconde_periode = 0;
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
+						if(DEBUG)printf("courante :%d premiere :%d un gap ? :%d\n",i,j,un_buffer);
 						if( s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*message_size <= P &&
-							(i > j || un_gap)){
+							(i > j || un_buffer)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
 							int debut_gap = s[nombre_routes_traitees].depart - message_size; //debut potentiel du gap
 							int large_gap = debut_gap - s[nombre_routes_traitees-1].depart >= message_size;
@@ -143,26 +142,29 @@ int optim(int *disponible, int *delai, int nombre_route, int P,int message_size)
 			}
 		}
 	}
-	printf("Retour algo fpt yann %d \n",min_delai_meilleure_sol); 
-	printf("Meilleure solution : ");
-	int premiere = meilleure[0].numero;
-	printf("Première route %d, date de dispo %d", premiere, disponible[premiere]);
-	for(int i=0;i<nombre_route;i++)
+	if(DEBUG)
 	{
-		int numero = meilleure[i].numero;
-		int disponible_periode =   disponible[numero]%P - disponible[premiere]%P + (disponible[premiere]%P > disponible[numero]%P)*P;
-		printf("\n-Route : %d(sec_periode %d), disponible %d, depart %d, ",meilleure[i].numero,meilleure[i].seconde_periode,disponible_periode,meilleure[i].depart);
-		
-		if(meilleure[i].seconde_periode == 0)
+		printf("Retour algo fpt yann %d \n",min_delai_meilleure_sol); 
+		printf("Meilleure solution : ");
+		int premiere = meilleure[0].numero;
+		printf("Première route %d, date de dispo %d", premiere, disponible[premiere]);
+		for(int i=0;i<nombre_route;i++)
 		{
-			printf("date départ = %d,",disponible[numero] + meilleure[i].depart - disponible_periode );
+			int numero = meilleure[i].numero;
+			int disponible_periode =   disponible[numero]%P - disponible[premiere]%P + (disponible[premiere]%P > disponible[numero]%P)*P;
+			printf("\n-Route : %d(sec_periode %d), disponible %d, depart %d, ",meilleure[i].numero,meilleure[i].seconde_periode,disponible_periode,meilleure[i].depart);
+			
+			if(meilleure[i].seconde_periode == 0)
+			{
+				printf("date départ = %d,",disponible[numero] + meilleure[i].depart - disponible_periode );
+			}
+			else
+			{
+				printf("date départ = %d,",disponible[numero] + meilleure[i].depart - disponible_periode + P);
+			}
 		}
-		else
-		{
-			printf("date départ = %d,",disponible[numero] + meilleure[i].depart - disponible_periode + P);
-		}
+		printf("\n");
 	}
-	printf("\n");
 	//printf("Nombre de solutions visitées %llu \n", compteur);
 	return min_delai_meilleure_sol;
 }

@@ -70,7 +70,7 @@ dot:
 compil: $(DIRbin)enum.o $(DIRbin)fpt.o $(DIRbin)hash.o $(DIRbin)borneInf.o $(DIRbin)voisinage.o $(DIRbin)inputonos.o $(DIRbin)starSPALL.o $(DIRbin)simulation_star.o $(DIRbin)simons.o $(DIRbin)fptPAZL.o $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
 	$(CC) $(LFLAGS) -o $@ $^ -lm -lgcov
 
-$(DIRbin)%.o: %.c config.h structs.h
+$(DIRbin)%.o: %.c config.h structs.h nb_bbu.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 depend:

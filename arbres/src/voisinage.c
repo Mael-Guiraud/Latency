@@ -1050,16 +1050,16 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 			temps_restant = route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
 			deadline[i] = budget  +message_size - temps_restant;
 			//printf(" (%d(%d+%d)  %d +%d -%d = %d)",release[i],route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i]),route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD),message_size,budget,temps_restant,deadline[i]);
-			printf(" (%d %d) ,",release[i], deadline[i]);
+			//printf(" (%d %d) ,",release[i], deadline[i]);
 		}
 		
 		//printf("%d (%d + %d + %d- %d) ) \n",deadline[i],release[i],message_size,budget,2*route_length(g,g->arc_pool[arc_id].routes_id[i]));	
 		ids[i]=g->arc_pool[arc_id].routes_id[i];
 		//printf("%d)\n",ids[i]);
 	}
-	printf("\n");
+	//printf("\n");
 	int *res = FPT_PALL(g,ids,release,deadline,taille_tab,message_size,P);
-	printf("solution trouvée par simons \n");
+	//printf("solution trouvée par simons \n");
 	if(res)
 	{	
 		for(int i=0;i<taille_tab;i++)
@@ -1067,7 +1067,7 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 			
 			g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]] = res[i];
 		}
-		int idmin = 0;
+	/*	int idmin = 0;
 		int min = INT_MAX;
 		for(int i=0;i<taille_tab;i++)
 		{
@@ -1080,7 +1080,7 @@ int simonslastarc(Graph *g, int P, int message_size,int budget,int arc_id,Period
 		for(int i=0;i<taille_tab;i++)
 		{
 						printf("Date depart route %d = %d (%d dans la periode) | Temps trajet pour cette route :  %d\n",g->arc_pool[arc_id].routes_id[i],release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]],release[i]+g->arc_pool[arc_id].routes_delay_b[g->arc_pool[arc_id].routes_id[i]]-min,route_length_with_buffers( g,g->arc_pool[arc_id].routes_id[i]));		
-		}
+		}*/
 	}
 	else
 	{

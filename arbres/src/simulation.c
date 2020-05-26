@@ -564,20 +564,21 @@ void testfpt(int seed)
 	int a,b;
 	int max = 0;
 	int result;
-	int nb = 1;
+	int nb = 10000;
 	struct timeval tv1, tv2;
 	float temps_moyen_fpt=0.0;
 	float temps_moyen_simons=0.0;
-	printf("Seed = %u \n",seed);
+	//printf("Seed = %u \n",seed);
+	printf("Nb_bbu = %d \n",NB_BBU);
 	for(int k=0;k<nb;k++)
 	{
 
 		g= init_graph_random_tree(STANDARD_LOAD);
 		P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 		reinit_delays(&g);
-		printf("Periode = %d \n",P);
+		//printf("Periode = %d \n",P);
 		max = 0;
-		printf("Input algo FPT yann :\n");
+		//printf("Input algo FPT yann :\n");
 		for(int i= g.nb_bbu;i<g.nb_bbu+g.nb_collisions;i++)
 		{
 			
@@ -589,9 +590,9 @@ void testfpt(int seed)
 				release[j] = route_length_with_buffers_forward(&g,g.arc_pool[i].routes_id[j])
 					+route_length_untill_arc(&g,g.arc_pool[i].routes_id[j],&g.arc_pool[i],BACKWARD);
 				delai[j]=route_length_with_buffers( &g,g.arc_pool[i].routes_id[j]);
-				printf(" (%d %d),",release[j],delai[j]);
+				//printf(" (%d %d),",release[j],delai[j]);
 			}	
-			printf("\n");
+			//printf("\n");
 			gettimeofday (&tv1, NULL);	
 			result = optim(release, delai, g.arc_pool[i].nb_routes,  P, message_size);
 			gettimeofday (&tv2, NULL);	
@@ -601,7 +602,7 @@ void testfpt(int seed)
 		}
 		a = max;
 		max = 0;
-		printf("Input algo simons : \n");
+		//printf("Input algo simons : \n");
 		for(int i= g.nb_bbu;i<g.nb_bbu+g.nb_collisions;i++)
 		{	
 			gettimeofday (&tv1, NULL);
@@ -632,14 +633,17 @@ void testfpt(int seed)
 		 	print_graphvitz(&g,"../view/view.dot");
 		 	system("dot -Tpdf ../view/view.dot -o ../view/view.pdf");
 		 	//affiche_graph_routes(&g,stdout);
-		 	//exit(3);
+		 	exit(3);
 		}
 		
 		 free_graph(&g);
 		 fprintf(stdout,"\r%d/%d",k+1,nb);fflush(stdout);
 	}
-	printf("\nTemps moyen Fpt    = %f \nTemps moyen Simons = %f \n",temps_moyen_fpt/nb,temps_moyen_simons/nb);
+	//printf("\nTemps moyen Fpt    = %f \nTemps moyen Simons = %f \n",temps_moyen_fpt/nb,temps_moyen_simons/nb);
+	FILE *f =fopen("resulttime","a+");
 
+	fprintf(f,"%d %f %f\n",NB_BBU *NB_ROUTES_PER_FLOW,temps_moyen_fpt/nb,temps_moyen_simons/nb);
+	fclose(f);
 	//sleep(1);
 	return;
 }

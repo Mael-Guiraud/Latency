@@ -26,18 +26,15 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"test"))
 	{
-		/*while(1)
-		{
 
-			
-			testfpt(1590497575);return 0;
+	
 			
 
-			testfpt(seed);
-			seed++;
-		}*/
+			//testfpt(seed);
+			
 		
-		while(1)
+		
+		
 		test();
 	}
 	if(!strcmp(argv[1],"onos"))
