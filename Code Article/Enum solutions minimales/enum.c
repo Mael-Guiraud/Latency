@@ -6,7 +6,7 @@
 #include <limits.h>
 
 
-#define NOMBRE_ROUTE 12
+#define NOMBRE_ROUTE 7
 #define PERIODE 200
 #define TAILLE 10
 #define DEBUG 0
@@ -104,7 +104,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 	int nombre_routes_traitees;//taille de la solution partielle 
 	int add; //0 si on vient d'enlever un élément, 1 sinon
 	long long unsigned int compteur = 0;
-	// STOCK st = initialise_stock();
+	STOCK st = initialise_stock();
 
 
 	char routes_utilisees[nombre_route]; //routes utilisées dans la solution courantes (1 en position i quand i est utilisé), on pourrait faire un bit set
@@ -136,7 +136,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 			if(nombre_routes_traitees == nombre_route ){
 				//coupe à faire sur solution complète à ajouter ici -> y-en-a-t-il ?
 				compteur++;
-				// insere_solution(s,&st);
+				insere_solution(s,&st);
 				nombre_routes_traitees--;//retourne en arriere
 				add = 0;
 			}
@@ -155,14 +155,14 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 						nombre_routes_traitees--;
 					}
 					else{
-						int un_gap = disponible_periode[i] > s[nombre_routes_traitees - 1].depart + TAILLE;
-						s[nombre_routes_traitees].depart = un_gap ? disponible_periode[i] : s[nombre_routes_traitees - 1].depart + TAILLE;
+						int un_buffer = disponible_periode[i] < s[nombre_routes_traitees - 1].depart + TAILLE;
+						s[nombre_routes_traitees].depart = un_buffer ? s[nombre_routes_traitees - 1].depart + TAILLE : disponible_periode[i];
 						s[nombre_routes_traitees].numero = i;
 						s[nombre_routes_traitees].seconde_periode = 0;
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
 						if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
-							(i > j || un_gap)){
+							(i > j || un_buffer)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
 							int debut_gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
 							int large_gap = debut_gap >= s[nombre_routes_traitees-1].depart + TAILLE;
@@ -201,7 +201,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 			}	
 		}
 	}
-	// printf("Solutions minimales au nombre de %d\n", st.pos/NOMBRE_ROUTE);
+    printf("Solutions minimales au nombre de %d\n", st.pos/NOMBRE_ROUTE);
 	return compteur;
 }
 
@@ -267,14 +267,14 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 						nombre_routes_traitees--;
 					}
 					else{
-						int un_gap = disponible_periode[i] > s[nombre_routes_traitees - 1].depart + TAILLE;
-						s[nombre_routes_traitees].depart = un_gap ? disponible_periode[i] : s[nombre_routes_traitees - 1].depart + TAILLE;
+						int un_buffer = disponible_periode[i] < s[nombre_routes_traitees - 1].depart + TAILLE;
+						s[nombre_routes_traitees].depart = un_buffer ? s[nombre_routes_traitees - 1].depart + TAILLE : disponible_periode[i];
 						s[nombre_routes_traitees].numero = i;
 						s[nombre_routes_traitees].seconde_periode = 0;
 						routes_utilisees[i] = 1;
 						//par défaut ça coupe et si toutes les conditions sont vérifiées on passe à la suite
 						if(s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= PERIODE &&
-							(i > j || un_gap)){
+							(i > j || un_buffer)){
 							//vérifie qu'on a la place pour prolonger la solution et que la solution est canonique (l'élément placé en première position est le plus petit avec 0 délai)
 							int debut_gap = s[nombre_routes_traitees].depart - TAILLE; //debut potentiel du gap
 							int large_gap = debut_gap - s[nombre_routes_traitees-1].depart >= TAILLE;
@@ -371,9 +371,9 @@ int main(){
 	for(int i = 2; i <= NOMBRE_ROUTE; i++) nb_exhaustif *= 2*i;
 	printf("Nombre de solutions énumérées %llu\n",nb_enum);
 	printf("Nombre de solutions total %llu, proportion %f\n",nb_exhaustif, (float) nb_enum / nb_exhaustif);
-	
+	/*
 	printf("Affichage des disponibilités et délais: ");
 	for(int i = 0; i < NOMBRE_ROUTE; i++) printf("(%d %d)",disponible[i],delai[i]);
 	printf("\nSolution optimale de délai %d \n", optim(disponible,delai,NOMBRE_ROUTE,PERIODE));
-	
+	*/
 }

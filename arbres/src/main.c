@@ -26,11 +26,12 @@ int main (int argc, char *argv[])
 	}
 	if(!strcmp(argv[1],"test"))
 	{
-		while(1)
+		int i =0;
+		while( i < 100)
 		{
-
+			i++;
 			
-			testfpt(1590497575);return 0;
+			//testfpt(1590496287);return 0;
 			
 
 			testfpt(seed);
