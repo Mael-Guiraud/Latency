@@ -185,9 +185,9 @@ set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that 
 The function $Real$ can easily be generalized to any routed network. Indeed, one can first consider all vertices of contention level $1$, the routes going through them form disjoint sets. Hence, we can define $Real$ independently on each vertex of contention level $1$. 
 Then using the buffering computed for this vertices, one can compute the arrival time of each route in vertices of contention level $2$ and compute $Real$ for these vertices in the exact same way, and so on for all contention levels. In the following lemmas and theorems, we always consider a single contention vertex, since it is trivial to extend any property for one contention vertex to the whole routed network as we just explained. 
 
-\begin{lemma}
+\begin{lemma}\label{lemma:canonical}
 The funtion $Real(CA)$ can be computed in time $O(nd)$, where $d$ is the contention
-depth of thenetwork. If $CA$ is realizable, then $Real(CA)$ is a valid canonical assignment.
+depth of the network. If $CA$ is realizable, then $Real(CA)$ is a valid canonical assignment.
 \end{lemma}
 \begin{proof}
 In the inductive construction of $Real(CA)$,  only a constant number of comparisons and additions are needed to compute the 
@@ -264,7 +264,10 @@ is a list of compact representations, one for each contention arc. The following
 %\end{proof}
 
 
-We want to find the assignment for which $TR(A)$ is minimal. To do so, because of Lemma~\ref{lemma:prec}, it is enough to 
+To solve \spall, we need to find an assignment for which $TR(A)$ is minimal. Using the previous Lemmas, it is easy to see
+that it can be done by a buteforce enumeration of the compact representations, 
+
+To do so, because of Lemma~\ref{lemma:prec}, it is enough to 
 enumerate all canonical compact representation, to compute their realization and the corresponding transmission time.
 
 
@@ -288,15 +291,20 @@ enumerate all canonical compact representation, to compute their realization and
 %\end{lemma}
 
 %We consider a routed network $(G,{\cal R})$. As a reminder, $CD$ is the contention depth of the routed network, and  there is $n$ routes in ${\cal R}$.
-\begin{theorem}
-For routed networks of fixed contention depth $d$, the problem \spall is FPT, when parametrized by $n$ the number of routes,  and can be solved in time $O(( n!2^{n})^{d})$.
+\begin{theorem}\label{theorem:FPT}
+For routed networks of fixed contention depth $d$, the problem \spall parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
 \end{theorem}
 \begin{proof}
+The algorithm to solve \spall is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time
+$O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
+to compute the minimum of $TR(Real(CA))$.
 
-
- \todo{Mettre les lemmes dans la preuve -> on explique d'abord sur un contention vertex, puis sur un niveau et enfin sur le routed network
-
- idée : faire Contention level par contention level, sur un level on a qu'une seule fois la route et $\prod 2^k<2^n, \prod k! < n!$. De plus, il faut rajouter le facteur multiplicatif pour passer d'un compact assignment a l'autre et decompser le compact en sol}
+ Now, we need to evaluate the number of compact assignments. 
+On a single contention point $u$ with $s = |\mathcal{R}_u|$ routes going through, there are $s!2^s$ possible restrictions of a compact assignment by counting the number of pairs of set and order over $\mathcal{R}_u$.
+On a given contention level consisting in the vertices $\{u_1,\dots,u_l\}$, with $s_i = |\mathcal{R}_{u_{i}}|$, there are 
+$\prod_{1 \leq i\leq l} s_i!2^{s_i}$. On a given contention level, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. 
+By convexity of the exponential and factorial functions, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$ and since there are $d$ contention levels,
+we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
 \end{proof}
 
 
@@ -310,7 +318,9 @@ Greedy sans buffers dans le graph -> greedy avec buffers dans le graph.
 
 \subsection{Local Search Heuristics}
 
-There is a large number of compact representation and to find the one which minimize $TR(A)$, we try serveral local search technique like ill climbing, Simulated annealing or Tabu search.
+The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: hill climbing, tabu search and simulated annealing. This methods works as long as a relevant notion of neighborood of a solution is proposed. 
+The neighborood relation must satisfy several properties: it must be quick to compute (hence not to large) and the implicit graph of solutions defined
+by the neighborood relation should be connected. We now propose a simple neighborood relation over compact assignments.
 
 Let $u$ be a contention vertex of a network, and let $CA$ be a compact assignment for this network, 
  which associates the pair $(O_u,S_u)$ to $u$. Let $r \in \mathcal{R}_u$, the \emph{$r$-neighborood} of $(O_u,S_u)$ is the set of pairs $(O,S)$ such that:
@@ -348,8 +358,9 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 % $$ \bigcup_{r\in{\cal R}} (\prod_{u\in r} N_u ) $$.
 
  Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
- a routed network $(G,\cal{R})$. Then, a compact representation has at most $\sum_{i=1}^n 4^{k_i}$ neighbors. Since we always work with networks of bounded contention depth ($2$ or $3$ in practice),
- the size of a neighborhood is linear in the number of routes.
+ a routed network $(G,\cal{R})$. Then, a compact representation has at most $\sum_{i=1}^n 4^{k_i}$ neighbors. Since we always work with networks of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.
+ Remark that, with this definition, we allow to include unrealizable compact assignment in a neighborood. We can easily forbid them and we will, since it is much more practical for several of our algorithms. 
+ \todo{Expliquer que le graphe des solutions réalisable est connexe (il suffit d'utiliser des datagrams en position 2, les bouger ne peut pas rendre la soluce non réalisable)}
  
 \subsection{Branch and Bound}
 We define a \textbf{partial compact representation} $Pcr$ of a routed network $(G,R)$ as a choice of pairs $(O,S)$ on a subset of the arcs of the graph.
