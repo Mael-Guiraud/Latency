@@ -6,7 +6,7 @@
 #include <limits.h>
 
 
-#define NOMBRE_ROUTE 6
+#define NOMBRE_ROUTE 8
 #define PERIODE 100
 #define TAILLE 10
 #define DEBUG 0
@@ -126,6 +126,7 @@ float moyenne_minimale = 0;
 long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 	SOLUTION s[nombre_route];//stocke la solution partielle courante
 	int disponible_periode[nombre_route];// temps auquel la route est disponible dans la période
+	int first_gap = 0;//O valeur par défaut pour dire qu'il n'y a pas de gap dans la solution, sinon position dans l'ordre de l'élément après le gap
 	int nombre_routes_traitees;//taille de la solution partielle 
 	int add; //0 si on vient d'enlever un élément, 1 sinon
 	long long unsigned int compteur = 0;
@@ -169,6 +170,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 					insere_solution(s,disponible_periode,disponible,&st);
 				}
 				nombre_routes_traitees--;//retourne en arriere
+				if (first_gap > nombre_routes_traitees) first_gap = 0;//the gap has been removed from the solution, change state
 				add = 0;
 			}
 			else{
@@ -184,6 +186,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 					for(; i < nombre_route && routes_utilisees[i]; i++){}  //si on fait un bitset, trouver la première route disponible est plus facile
 					if(i == nombre_route){//la route courante retirée était la plus grande route possible, retourne un cran en arriere
 						nombre_routes_traitees--;
+						if (first_gap > nombre_routes_traitees) first_gap = 0;//the gap has been removed from the solution, change state
 					}
 					else{
 						int un_buffer = disponible_periode[i] < s[nombre_routes_traitees - 1].depart + TAILLE;
@@ -211,6 +214,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 								//existe_large_gap[nombre_routes_traitees] = 1;
 							}
 							nombre_routes_traitees++;	
+							if(!first_gap && large_gap) first_gap = nombre_routes_traitees;
 							add = 1;	
 						}
 					}
@@ -218,7 +222,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 				else{//on vient d'enlever un element, on passe l'élément précédent dans la deuxième période
 					s[nombre_routes_traitees].seconde_periode = 1;
 					s[nombre_routes_traitees].depart = s[nombre_routes_traitees-1].depart + TAILLE;
-					if(s[nombre_routes_traitees].depart < disponible_periode[(int) s[nombre_routes_traitees].numero] &&
+					if(!first_gap && s[nombre_routes_traitees].depart < disponible_periode[(int) s[nombre_routes_traitees].numero] &&
 						s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= P){
 						//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
 						//pas l'échanger avec un autre élément dans la deuxième période
