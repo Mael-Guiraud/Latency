@@ -28,8 +28,8 @@
 
 void test()
 {
-	unsigned int seed = 1590158084;
-	//unsigned int seed = time(NULL);
+	//unsigned int seed = 1590158084;
+	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -568,6 +568,11 @@ void testfpt(int seed)
 	struct timeval tv1, tv2;
 	float temps_moyen_fpt=0.0;
 	float temps_moyen_simons=0.0;
+	int min;
+	int ret;
+	int maxsimons;
+
+
 	//printf("Seed = %u \n",seed);
 	printf("Nb_bbu = %d \n",NB_BBU);
 	for(int k=0;k<nb;k++)
@@ -576,6 +581,9 @@ void testfpt(int seed)
 		g= init_graph_random_tree(STANDARD_LOAD);
 		P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 		reinit_delays(&g);
+		min = 2*longest_route(&g);
+		maxsimons = min+P;
+
 		//printf("Periode = %d \n",P);
 		max = 0;
 		//printf("Input algo FPT yann :\n");
@@ -594,7 +602,7 @@ void testfpt(int seed)
 			}	
 			//printf("\n");
 			gettimeofday (&tv1, NULL);	
-			result = optim(release, delai, g.arc_pool[i].nb_routes,  P, message_size);
+			result = optim(release, delai, g.arc_pool[i].nb_routes,  P, message_size,INT_MAX);
 			gettimeofday (&tv2, NULL);	
 			temps_moyen_fpt += time_diff(tv1,tv2);
 			max = (result>max)?result:max;
@@ -606,10 +614,15 @@ void testfpt(int seed)
 		for(int i= g.nb_bbu;i<g.nb_bbu+g.nb_collisions;i++)
 		{	
 			gettimeofday (&tv1, NULL);
-			if(!simonslastarc(&g,  P,  message_size, a,i ,BACKWARD))
-				printf(RED"Simons Last Arc ne trouve pas une solution trouvée par le fpt\n"RESET);
+			ret =  dichosimons(&g, P,  message_size,i , BACKWARD, min,maxsimons);
 			gettimeofday (&tv2, NULL);	
+			//if(!simonslastarc(&g,  P,  message_size, a,i ,BACKWARD))
+			if(!ret)
+				printf(RED"Simons Last Arc ne trouve pas une solution trouvée par le fpt\n"RESET);
 			
+			simonslastarc(&g,P,message_size,ret,i,BACKWARD) ;
+			if(ret > min)
+				min = ret;
 			temps_moyen_simons += time_diff(tv1,tv2);
 			result =travel_time_max_buffers(&g);
 			max = (result>max)?result:max;

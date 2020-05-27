@@ -16,3 +16,4 @@ typedef struct{
 	int new_offset;
 } retval;
 retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int bool_p);
+int dichosimons(Graph * g, int P, int message_size,int arcid,Period_kind kind,int min,int budget);

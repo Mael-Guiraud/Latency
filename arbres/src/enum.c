@@ -25,14 +25,14 @@ void print_solutions(int nombre_routes_traitees, SOLUTION *s, int *disponible_pe
 }
 
 
-int optim(int *disponible, int *delai, int nombre_route, int P,int message_size){
+int optim(int *disponible, int *delai, int nombre_route, int P,int message_size,int bornesup){
 	
 	SOLUTION s[nombre_route];//stocke la solution partielle courante
 	SOLUTION meilleure[nombre_route];//stocke la solution partielle courante
 	int disponible_periode[nombre_route];// temps auquel la route est disponible dans la période
 	int nombre_routes_traitees;//taille de la solution partielle 
 	int add; //0 si on vient d'enlever un élément, 1 sinon
-	int min_delai_meilleure_sol = INT_MAX;//valeur qu'on va calculer, plus petit delai pour une solution, initialisée de manière brutale
+	int min_delai_meilleure_sol = bornesup;//valeur qu'on va calculer, plus petit delai pour une solution, initialisée de manière brutale
 	long long unsigned int compteur = 0;
 	int min_delai[nombre_route];//pile des valeurs de delai de la solution courante
 	char routes_utilisees[nombre_route]; //routes utilisées dans la solution courantes (1 en position i quand i est utilisé), on pourrait faire un bit set

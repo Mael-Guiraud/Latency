@@ -184,7 +184,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 								delai[j]=route_length_with_buffers( g,g->arc_pool[i].routes_id[j]);
 								//printf("(%d %d %d %d) \n",release[j],delai[j],route_length_with_buffers_forward(g,g->arc_pool[i].routes_id[j]),route_length_untill_arc(g,g->arc_pool[i].routes_id[j],&g->arc_pool[i],BACKWARD));
 							}
-							result = optim(release, delai, g->arc_pool[i].nb_routes,  P, message_size);
+							result = optim(release, delai, g->arc_pool[i].nb_routes,  P, message_size,borneinf);
 							//printf("%d %d \n",result,max);
 							max = (result>max)?result:max;
 							
@@ -208,7 +208,23 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 					//coupe si on dépasse la borneinf du greedy
 					if(BORNEINF_ON)
 					{
-						int cut = borneInfFPT( g, P, message_size,borneinf);
+						int cut;
+						if(MOD)
+						{
+							int release[g->arc_pool[arcid].nb_routes];
+							int delai[g->arc_pool[arcid].nb_routes];
+							for(int j=0;j<g->arc_pool[arcid].nb_routes;j++)
+							{
+
+								release[j] = route_length_with_buffers_forward(g,g->arc_pool[arcid].routes_id[j])
+									+route_length_untill_arc(g,g->arc_pool[arcid].routes_id[j],&g->arc_pool[arcid],BACKWARD);
+								delai[j]=route_length_with_buffers( g,g->arc_pool[arcid].routes_id[j]);
+								//printf("(%d %d %d %d) \n",release[j],delai[j],route_length_with_buffers_forward(g,g->arc_pool[i].routes_id[j]),route_length_untill_arc(g,g->arc_pool[i].routes_id[j],&g->arc_pool[i],BACKWARD));
+							}
+							cut = optim(release, delai, g->arc_pool[arcid].nb_routes,  P, message_size,borneinf);
+						}
+						else
+							cut = borneInfFPT( g, P, message_size,borneinf);
 						if(( cut > borneinf)||(cut == 0))
 						{
 							nb_coupes[4]++;
