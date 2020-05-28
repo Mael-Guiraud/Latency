@@ -63,8 +63,18 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	Let $r \in {\cal R}$, with $r = (u_0,u_1,\dots,u_l)$, then we say that $u_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(u_i,r) = i$. The contention level of a node $u$ is the maximum of its contention level over all routes going through itself: 
 	$cl(u) = \max\limits_{r\in{\cal R} \text{ and } u \in r} cl(u,r)$.
 
-	\todo{petit dessin avec un reseau et sa représentation en graphe}
-
+	\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{fronthaul}
+\caption{A C-RAN fronthaul network}
+\label{fig:fronthaul}
+\end{figure}
+	\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{graphmodel}
+\caption{The corresponding routed network }
+\label{fig:graph}
+\end{figure}
 	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level over all vertices. It is the number of contention points on the longest route of the network. In all the article, $(G,{\cal R})$ is the routed network, the number of routes, $|\cal{R}|$, is denoted by $n$ and the contention depth is denoted by $d$. The set ${\cal C}$ denotes the set of contention vertices.
 
 
@@ -130,7 +140,7 @@ Si on a que deux sommets, ça correspond à l'étoile et donc au cas étudié da
 
  We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in \cal{R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments (for $\prec$) to solve \spall.
 
-We explain in this section how to represent most assignment in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without sa compact representation when solving \spall. 
+We explain in this section how to represent most assignment in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without a compact representation when solving \spall. 
 It allows to design an FPT algorithm for \spall by going through all compact representations, but also to design good polynomial time heuristics using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.
 
 Let us denote by $\mathcal{R}_u$ the subset of routes of $\mathcal{R}$ which contains $u$.
@@ -146,10 +156,15 @@ Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is, for ea
 
 We first define a method to obtain a compact assignment from some valid assignment $A$, that we call the compact representation of $A$ and that we denote by $CR(A)$. Assume all routes are indexed by an integer in $[n]$ and let $u$ be a contention point of $G$. We also assume that for all vertices $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r_i,u) = 0$.
 
-Let $r_0$ be route of smallest index such that $A(r_i,u) = 0$. The datagram of $r_0$ arrives and goes to the next contention point at time $t(r_0,u)$. Let us define the \emph{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \emph{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
+Let $r_0$ be route of smallest index such that $A(r_0,u) = 0$. The datagram of $r_0$ arrives and goes to the next contention point at time $t(r_0,u)$. Let us define the \emph{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \emph{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
 
 We define $O_u$ as the order on the routes of $R_u$ induced by the values $ns(r,u)$. The set $S_u$ is defined as the set of routes going through $u$ such that $ns(r_0,r,u) < nt(r_0,r,u)$. Imagine the time is cut into periods $[t(r_0,u) + iP,t(r_0,u) + iP [$, with $i \in \mathbb{N}$. Intuitively, $S_u$ represents the set of routes with a datagram going through $u$ in the period \emph{after} the one they have been available in. 
-
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1]{normalizedassignment}
+\caption{A compact representation of an assignment. }
+\label{fig:normalizedassignment}
+\end{figure}
 \todo{
 Faire un exemple sur un noeud pour illustrer la transformation
 }
@@ -178,9 +193,9 @@ We now define inductively how to build an assignment $Real(CA)$ from $CA$, that 
 
 Let say that the order $O_u$ is $(r_1, \dots, r_l)$. We fix $A(r_1,u)$ to zero, that is the first
 datagram in the period has no buffering time. Then, in each period beginning by the first datagram, the datagrams will be in order $O_u$. Since the first datagram of the period is fixed, we use it to consider normalized arrival times and normalized sending times.
-Assume that $A(r_k,u)$ have been set for $k \leq i$, we explain how to 
-set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_{i+1},u)$ to the minimum of $ns(r_1,r_i,u) + \tau$ and $nt(r_1,r_{i+1},u)$. If $ns(r_1,r_{i+1},u) \leq P - \tau$, then $CA$ is not realizable. If $r_{i+1} \in S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1, r_{i+1},u) = ns(r_1,r_i,u) + \tau$. If $ns(r_1, r_{i+1},u) \geq nt(r_1,r_{i+1},u)$, then $CA$ is not realizable (the sending time is in the wrong period with regard to $S_u$). 
-
+Assume that $A(r_i,u)$ have been set for $i \leq l$, we explain how to 
+set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_{i+1},u)$ is the minimum of $ns(r_1,r_i,u) + \tau$ and $nt(r_1,r_{i+1},u)$. If $ns(r_1,r_{i+1},u) \leq P - \tau$, then $CA$ is not realizable. If $r_{i+1} \in S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1, r_{i+1},u) = ns(r_1,r_i,u) + \tau$. If $ns(r_1, r_{i+1},u) \geq nt(r_1,r_{i+1},u)$, then $CA$ is not realizable (the sending time is in the wrong period with regard to $S_u$). 
+\todo{verifier le sens des inegalités}
                        
 The function $Real$ can easily be generalized to any routed network. Indeed, one can first consider all vertices of contention level $1$, the routes going through them form disjoint sets. Hence, we can define $Real$ independently on each vertex of contention level $1$. 
 Then using the buffering computed for this vertices, one can compute the arrival time of each route in vertices of contention level $2$ and compute $Real$ for these vertices in the exact same way, and so on for all contention levels. In the following lemmas and theorems, we always consider a single contention vertex, since it is trivial to extend any property for one contention vertex to the whole routed network as we just explained. 
@@ -245,6 +260,12 @@ and left to the reader.
 % Compute the values $(s(i))\mod P$ and  call their order $O$. Let 
 %  $S$ be the set of $i$ such that $(s(i) \geq (r(i) / P + 1) P$. We let $CR(A) = (O,S)$.
 
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1]{compacttoassignment}
+\caption{A cannonical assignment built from a compact assignment. }
+\label{fig:normalizedassignment}
+\end{figure}
 \todo{donner un petit exemple en dessin, + parler de la complexité du changement de forme}
 A compact representation of a solution for an instance of depth larger than $k$
 is a list of compact representations, one for each contention arc. The following theorem explains why it is enough to explore the compact representations to solve \spall.
