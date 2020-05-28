@@ -5,7 +5,7 @@
 
 #define NB_COLLISIONS 3
 
-#define NB_ROUTES_PER_FLOW 1
+#define NB_ROUTES_PER_FLOW 2
 #define PROBA 1
 
 
