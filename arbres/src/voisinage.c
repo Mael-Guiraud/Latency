@@ -1458,11 +1458,10 @@ int ** parcours_voisinage(Graph * g,int P, int message_size,Voisin v, int mintim
 }
 Voisin init_voisinage_greedy(Voisin v, Graph * g, int P, int message_size)
 {
-	if(!greedy_deadline(g, P, message_size))
+	if(!greedy_deadline(g, P, message_size,0))
 	{
-		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-		v.route = -1;
-		return v;
+		greedy_deadline(g, P, message_size,1);
+		
 	}
 	v.route=0;
 	v.pos = malloc(sizeof(int)* g->nb_levels[v.route]);
@@ -1581,7 +1580,7 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 	float pas=0.0;
 	for(int i=0;i<tmax;i++)
 	{
-		a = descente(g,P,message_size,1,nb_pas);
+		a = descente(g,P,message_size,0,nb_pas);
 		if(a)
 		{
 			
@@ -1791,7 +1790,7 @@ int taboo(Graph * g, int P, int message_size,int nb_steps)
 	//for(int i=0;i<sizehash;i++)hash_table[i]=NULL;
 
 	
-	if(!greedy_deadline(g, P, message_size))
+	if(!greedy_deadline(g, P, message_size,0))
 	{
 		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
 		return a;
@@ -2191,7 +2190,9 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	float seuil_incr_cmpt = 0.001;
 
 	int a=0;
-
+	descente( g,  P, message_size, 0, nb_pas);
+	b = travel_time_max_buffers(g);
+	/*
 		if(!greedy_deadline(g, P, message_size))
 		{
 			printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
@@ -2212,7 +2213,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		exit(35);
 		return 0;
 	}
-	 
+	 	*/
 	int min = b;
 	int time_actuel = min;
 	reinit_delays(g);

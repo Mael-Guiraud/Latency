@@ -440,9 +440,12 @@ int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m
 		coupe_moy[i]=0.0;
 		//printf("%d ",coupes[i]);
 	}
+	float nb;
 	//printf("\n");
-
-	int borneinf=greedy_deadline_assignment( g, P, message_size);
+	
+	//int borneinf=greedy_deadline_assignment( g, P, message_size);
+	int borneinf = descente( g,  P,  message_size, 0,&nb);
+	//int borneinf = recuit( g,  P,  message_size,  1000,&nb);
 	if(!borneinf)
 		return 0;
 	//printf("borneinf %d \n",borneinf);
