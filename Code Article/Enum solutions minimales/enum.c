@@ -10,8 +10,8 @@
 #define PERIODE 100
 #define TAILLE 10
 #define DEBUG 0
-#define VERBOSE 0
-#define NOMBRE_EXPERIENCE 1000
+#define VERBOSE 1
+#define NOMBRE_EXPERIENCE 1
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -122,6 +122,29 @@ float moyenne_minimale = 0;
 
 /* Algo principal d'énumération */
 
+int filtre(SOLUTION *s, int *disponible_periode, int nombre_route){//renvoie 0 si on détecte une permutation permettant d'améliorer la solution, 1 sinon
+	for(int i = 0; i < nombre_route; i++){ //inverser la boucle pour perf ?
+		if(s[i].seconde_periode && disponible_periode[(int)s[i].numero] <= PERIODE - TAILLE ){//pour chaque route en position 2, qu'il est possible de placer en seconde période
+			int depart = s[i].depart;
+			int dispo = disponible_periode[(int)s[i].numero];
+			int new = 1;
+			while(new){//trouve l'élément avec qui échanger l'élément courant qui parte après dispo et  qui soit de dispo minimum
+				new = 0;
+				int j;
+				for(j = i + 1; j < nombre_route -1 && s[j+1].depart < dispo + TAILLE; j++){}//trouve la première route qui si on la déplacait permettrait de placer la route courante
+				if(j == nombre_route -1) j++; //on peut toujours déplacer le dernier élément
+				for(; j < nombre_route; j++){//on cherche la dispo minimum des routes restantes
+					if(s[j].seconde_periode || disponible_periode[(int) s[j].numero] <= depart) return 1;//on a trouvé un élément qu'on peut mettre à la place de l'élément i
+					if(disponible_periode[(int) s[j].numero] < dispo){//on a trouvé un nouvel élément qu'on peut permuter et placer avant
+						dispo = disponible_periode[(int) s[j].numero];
+						new = 1;
+					}					
+				}	
+			}	
+		}
+	}
+	return 1;
+}
 
 long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 	SOLUTION s[nombre_route];//stocke la solution partielle courante
@@ -164,7 +187,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 				if(s[nombre_routes_traitees-1].depart < P - 2*TAILLE){
 					for(k = 0; k< nombre_route && (!s[k].seconde_periode || disponible_periode[(int) s[k].numero] > P-TAILLE); k++){}	
 				}
-				if(k == nombre_route){
+				if(k == nombre_route && filtre(s,disponible_periode,nombre_route)){
 				//ne prend pas en compte la solution s'il y a un gap à la fin et un élément en deuxième période qu'on pourrait y mettre 
 					compteur++;
 					insere_solution(s,disponible_periode,disponible,&st);
@@ -222,12 +245,12 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 				else{//on vient d'enlever un element, on passe l'élément précédent dans la deuxième période
 					s[nombre_routes_traitees].seconde_periode = 1;
 					s[nombre_routes_traitees].depart = s[nombre_routes_traitees-1].depart + TAILLE;
-					if(!first_gap && s[nombre_routes_traitees].depart < disponible_periode[(int) s[nombre_routes_traitees].numero] &&
-						s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= P){
-						//on passe l'élément en deuxième période uniquement si ça fait gagner du temps, qu'il reste assez de place et qu'on ne peut 
-						//pas l'échanger avec un autre élément dans la deuxième période
+					if(!first_gap && s[nombre_routes_traitees].depart < disponible_periode[(int) s[nombre_routes_traitees].numero] && //on passe l'élément en deuxième période uniquement si ça fait gagner du temps
+						s[nombre_routes_traitees].depart + (nombre_route - nombre_routes_traitees)*TAILLE <= P //qu'il reste assez de place 
+						){
 						int k;
 						for(k = 0; k < nombre_routes_traitees && (!s[k].seconde_periode || disponible_periode[(int) s[k].numero] > s[nombre_routes_traitees].depart); k++){}
+							//on vérifie qu'on ne peut pas l'échanger avec un autre élément dans la deuxième période qui passerait en première période
 						if(k == nombre_routes_traitees){	
 							nombre_routes_traitees++;
 							add = 1;	
@@ -396,7 +419,7 @@ typedef struct{
 
 int main(){
 	
-	srand(0);//srand(time(NULL));	
+	srand(10);//srand(time(NULL));	
 	int *disponible = malloc(sizeof(int)*NOMBRE_ROUTE);
 	int *delai = malloc(sizeof(int)*NOMBRE_ROUTE);
 	float moyenne_proportion = 0;
