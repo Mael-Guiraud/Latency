@@ -28,8 +28,8 @@
 
 void test()
 {
-	unsigned int seed = 1591093330;
-	//unsigned int seed = time(NULL);
+	//unsigned int seed = 1591282431;
+	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -272,7 +272,35 @@ void test()
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le greedy 2! \n" RESET);
 	}
-
+	int gd3 = greedy_deadline_assignment3( &g, P, message_size);
+	printf("greedy 3 %d \n",gd3);	
+	sprintf(nom,"greedy3");
+	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
+	sprintf(buf_dot,"../view/assignments/%sf.dot",nom);
+	print_assignment(&g,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sf.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf_dot,"../view/assignments/%sb.dot",nom);
+	print_assignment_backward(&g,P,buf_dot);
+	sprintf(buf,"dot -Tpdf %s -o ../view/assignments/%sb.pdf",buf_dot,nom);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	sprintf(buf,"rm -rf %s",buf_dot);
+	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
+	//free_assignment(a);
+	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
+	fprintf(f,"Reseting periods ...\n");
+	reset_periods(&g,P);reinit_delays(&g);
+	if(gd2<fpt)
+	{
+		printf(RED "!!!!!!!!!!FPT trouve moins bien que le greedy 3!!!!!!!!!!!! \n" RESET);
+		exit(44);
+	}
+	else
+	{
+		printf(GRN "FPT trouve au moins aussi bien que le greedy 3! \n" RESET);
+	}
 	printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
 	printf("\n printing python ...");print_python(&g);printf("Ok.\n");
 	printf("\n printing json arcs ..."); print_json_arcs(&g);
@@ -287,7 +315,7 @@ void test()
 void simuldistrib(int seed)
 {
 	
-	int nb_algos =10 ;
+	int nb_algos =3 ;
 	char * noms[] = {"GreedyDeadlineTime","GreedyDeadlineSuccess","GreedyDeadlineNormalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 
 	srand(seed);

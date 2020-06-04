@@ -346,7 +346,7 @@ The contention vertices are sorted by contention level. The contention vertices 
 \begin{enumerate}
 \item The budget $2\times \lambda(u,r) - t(r,u)$  is computed for each routes. Note that this value can be negative since a datagram can be buffered in contention vertices before $u$.
  \item The datagram with the lowest $t(r,u)$ is sent without buffers.
- \item If one or several datagrams are available at the end of the emmision of the last datagrams.
+ \item If one or several datagrams are available at the end of the emmision of the last datagram.
     \begin{itemize}
         \item Chose the datagram with the lowest budget, compute the delay and send it as soon as it is possible avoiding contention.
         \item Go back to step 3.
@@ -392,12 +392,27 @@ If a datagram cannot be placed in the period because of there is no gap of $\tau
 	\end{algorithm}
 
 \todo{ajouter la routine FIRST VALID qui donne la premiere position a laquelle on peut placer le message a partir de l'offset donné}
-
-This algorithm can fail, thus, it does not give a compact assignment for all routed networks. Since a compact assignment is needed to initilize our local search algorithms, we propose a greedy algorithm that always ensure to find an assignment, even if the performances are degraded.
-\subsubsection{Greedy Deadline Packed}
-\todo{Cet algo prends les temps normalisés, peut être que je devrais prendre les temps absolus ? Pas sur car pour choisir le gars a placé on utilise les temps normalisés, mais si je place d'abbord par ordre d'arrivé absolu ca peut peut être améliorer les deux}
 \subsubsection{Greedy deadline Normalized}
-\todo{Celui ci n'est vraiment pas bon du tout, je ne pense pas en parler, sur les routes bien distribuées il fail bcp, et sur les routes tirées dans le même intervalle il ne trouve pas mieux que le greedy deadline assignment}
+A variant of the Greedy deadline assignment algorithm consists in choosing the datagrams by lowest normalised arrival times instead of arrival times when several datagrams are available on a given offset. In practice, it seems that this algorithm performs better.
+
+The two previous algorithm can fail, thus, they do not give a compact assignment for all routed networks. Since a compact assignment is needed to initilize our local search algorithms, we propose a greedy algorithm that always ensure to find an assignment, even if the performances are degraded.
+\subsubsection{Greedy Deadline Packed}
+In order to always find an assignment with a greedy routine, we propose the following algorithm.
+\begin{enumerate}
+\item The budget $2\times \lambda(u,r) - t(r,u)$  is computed for each routes. Note that this value can be negative since a datagram can be buffered in contention vertices before $u$.
+ \item The datagram with the lowest $t(r,u)$ is sent without buffers.
+ \item The normalized arrival time is computed for each datagrams.
+ \item If one or several datagrams are available at the end of the emmision of the last datagram:
+    \begin{itemize}
+        \item Chose the datagram with the lowest budget, compute the delay and send it as soon as it is possible avoiding contention.
+        \item Go back to step 3.
+    \end{itemize}
+    \item If no datagrams are available, we compute for each datagram the additional latency $ad$ needed to put the datagram in second period.
+    \item We take the datagram with the largest value of $budget - ad$, that is the datagram which is the less impacted beeing sent in the second period.
+    \item Go back to step 3.
+\end{enumerate}
+\todo{Ecrire en pseudo code, utiliser les notations du papier, par exemple pour second period, dire que ca n'a pas de sens de prendre les routes non normalisés, car l'algo travaille la dessus et que de tte facon c'est meilleur pour les algos d'avant}
+
 \subsection{Local Search Heuristics}
 
 The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: hill climbing, tabu search and simulated annealing. This methods works as long as a relevant notion of neighborood of a solution is proposed. 

@@ -40,7 +40,7 @@
 
 
 //openMP parallel
-#define PARALLEL 1
+#define PARALLEL 0
 
 //for logs 
 #define SHOW_EVERY 100
