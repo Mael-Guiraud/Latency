@@ -316,7 +316,7 @@ void simuldistrib(int seed)
 {
 	
 	int nb_algos =3 ;
-	char * noms[] = {"GreedyDeadlineTime","GreedyDeadlineSuccess","GreedyDeadlineNormalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	char * noms[] = {"GreedyDeadlineTime","GreedyDeadlinePacked","GreedyDeadlineNormalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 
 	srand(seed);
 	int message_size = MESSAGE_SIZE;

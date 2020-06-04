@@ -10,8 +10,8 @@
 
 void init_arc(Arc * a)
 {
-	//a->length = rand()%MAX_LENGTH;
-	a->length = MAX_LENGTH - rand()%(int)(MAX_LENGTH*0.1);
+	a->length = rand()%MAX_LENGTH;
+	//a->length = MAX_LENGTH - rand()%(int)(MAX_LENGTH*0.1);
 	a->nb_routes = 0;
 	a->period_f = NULL;
 	a->period_b = NULL;
