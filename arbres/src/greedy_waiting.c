@@ -405,14 +405,14 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 
 				delay[id[current_route]] = 0;
 				offset = release[current_route];
-				//printf("pas collé delay %d offset %d \n",delay[id[current_route]],offset);
+			//	printf("pas collé delay %d offset %d \n",delay[id[current_route]],offset);
 			}
 			else
 			{
 
 				delay[id[current_route]] = offset-release[current_route];
 				
-				//printf("collé delay %d offset %d \n",delay[id[current_route]],offset);
+			//	printf("collé delay %d offset %d \n",delay[id[current_route]],offset);
 			}
 			int check_value = 1;
 			int total_check = 0;
@@ -424,7 +424,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 				total_check += check_value;
 				if(total_check >= P)
 				{
-					printf("fail\n");
+				//	printf("fail\n");
 					return 0;
 				}
 			}
@@ -439,7 +439,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 				
 			}
 			
-			
+		//	printf("total check = %d \n",total_check);
 			delay[id[current_route]] += total_check;
 
 			if((total_check == 0)||(boolp && ((release[current_route]+total_check)%P==offset) ))
@@ -464,12 +464,13 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 	}
 	if(mod == 1)
 	{
-		
+	//	printf("debut, current route = %d \n",current_route);
 		//On normalise les temps dans la periode
 		for(int i=0;i<size;i++)
 		{
 			release[i] -= tmp;
 			release[i]%=P;
+			//printf("route %d releas %d \n",id[i],release[i]);
 		}
 		release[current_route]= INT_MAX;
 		offset = message_size;
@@ -481,7 +482,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			min = INT_MAX;
 			for(int k=0;k<size;k++)
 			{
-				if(release[k]<=offset)//route dispo
+				if((release[k]<=offset)&&(release[k]>0))//route dispo
 				{
 					if(budget[k]<min)//le plus de reste a parcourir
 					{
@@ -498,15 +499,17 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 				//Recherche de la route a mettre en seconde periode la plus opti
 				for(int k=0;k<size;k++)
 				{ 	// budget    -  Delai suplémentaire
-					if(budget[k] - offset+P-release[k]  > max )
-					{
-						//On prends celui que ca impact le moins d'être placé en seconde periode
-						max = budget[k] - offset+P-release[k] ;
-						current_route = k;
-						boolp = 1;
-					}
+					if(release[k] != INT_MAX)
+						if(budget[k] - offset+P-release[k]  > max )
+						{
+							//On prends celui que ca impact le moins d'être placé en seconde periode
+							max = budget[k] - offset+P-release[k] ;
+							current_route = k;
+							boolp = 1;
+						}
 				}
 			}
+			//printf("current route = %d \n",current_route);
 			order[i]=id[current_route];
 			if(boolp)
 			{
@@ -519,7 +522,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			}
 			else
 				delay[id[current_route]] = offset-release[current_route];
-
+			//printf("delay = %d \n",delay[id[current_route]]);
 			offset+=message_size;
 			release[current_route]= INT_MAX;
 			fill_Per(period, id[current_route], release_time[current_route]+delay[id[current_route]], message_size,P);
@@ -712,7 +715,27 @@ int greedy_deadline(Graph * g, int P, int message_size, int mod)
  					}
  					//printf("\n");
  					if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f,mod))
+ 					{
+ 						/*memset(g->arc_pool[j].routes_delay_f,0,sizeof(int)*g->arc_pool[j].id_max);
+ 						memset(g->arc_pool[j].period_f,0,sizeof(int)*P);
+ 						for(int l=0;l<g->arc_pool[j].nb_routes;l++)
+ 						{
+ 							ids[l] = g->arc_pool[j].routes_id[l];
+ 							release[l] = route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 						//	printf("retourlenghtuntillarc %d \n",route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
+ 							budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 							//printf("route %d(%d) : %d = %d - %d\n ",ids[l], release[l],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
+ 						}
+ 						//printf("\n");
+ 						if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f,1))
+ 							{
+ 								printf("Gros gros probleme ici ... \n");
+ 								exit(42);
+ 							}*/
  						return 0;
+ 					}
+
+ 					
  				}
  					
  				else
@@ -724,7 +747,22 @@ int greedy_deadline(Graph * g, int P, int message_size, int mod)
  						budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
  					}
  					if(!oderinarc( release, budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_b, g->arc_pool[j].routes_delay_b,ids,g->arc_pool[j].period_b,mod))
- 						return 0;
+ 					{
+ 						/*memset(g->arc_pool[j].routes_delay_b,0,sizeof(int)*g->arc_pool[j].id_max);
+ 						memset(g->arc_pool[j].period_b,0,sizeof(int)*P);
+ 						for(int l=0;l<g->arc_pool[j].nb_routes;l++)
+ 						{
+ 							ids[l] = g->arc_pool[j].routes_id[l];
+ 							release[l] = route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
+ 							budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
+ 						}
+ 						if(!oderinarc( release, budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_b, g->arc_pool[j].routes_delay_b,ids,g->arc_pool[j].period_b,1))
+ 						{
+							printf("Gros gros probleme la ... \n");
+							exit(42);
+						}*/
+						return 0;
+ 					}
  				}
  					
  			
@@ -746,7 +784,8 @@ int greedy_deadline_assignment(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,0))
 	{
-		printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
+
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
 		return 0;
 	}
 
@@ -798,7 +837,7 @@ int greedy_deadline_assignment2(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,1))
 	{
-		printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
 		exit(64);
 		return 0;
 	}
@@ -851,7 +890,7 @@ int greedy_deadline_assignment3(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,2))
 	{
-		printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
 		return 0;
 	}
 

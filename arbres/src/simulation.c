@@ -28,7 +28,7 @@
 
 void test()
 {
-	//unsigned int seed = 1591282431;
+	//unsigned int seed = 1591350435;
 	unsigned int seed = time(NULL);
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
@@ -115,14 +115,15 @@ void test()
 	int coupes[NB_COUPES];
 	for(int i=0;i<NB_COUPES;i++)coupes[i]=1; 
 		double coupes_m[NB_COUPES];
-	int fpt = branchbound( &g, P,  message_size,coupes,coupes_m,0);
+	//int fpt = branchbound( &g, P,  message_size,coupes,coupes_m,0);
+	int fpt = 0;
 	
 	printf("FPT = %d \n",fpt);
 	
 	reset_periods(&g,P);reinit_delays(&g);
 		
 	float nb_pas = 0;	
-	int recuits = recuit( &g, P, message_size,1000,&nb_pas);
+	/*int recuits = recuit( &g, P, message_size,1000,&nb_pas);
 	printf("Recuit %d, %f pas \n",recuits,nb_pas);	
 	sprintf(nom,"recuit");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
@@ -151,7 +152,7 @@ void test()
 	else
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le recuit ! \n" RESET);
-	}
+	}*/
 	nb_pas = 0.0;	
 	int descent = descente( &g, P, message_size,0,&nb_pas);
 	printf("descente %d , %f pas\n",descent,nb_pas);	
@@ -380,11 +381,7 @@ void simuldistrib(int seed)
 			switch(algo){
 				case 0:
 					a =  greedy_deadline_assignment( &g, P, message_size);
-					if(!a)
-					{
-						free_graph(&g);
-						goto saut;
-					}
+
 				break;
 				case 1:
 					a =  greedy_deadline_assignment2( &g, P, message_size);
@@ -451,12 +448,8 @@ void simuldistrib(int seed)
 					
 				else
 				{
+					time[algo] = INT_MAX;
 
-	
-					
-						time[algo] = INT_MAX;
-					
-				
 				}
 					
 		
@@ -519,20 +512,24 @@ void simuldistrib(int seed)
 	}
 	//int interval_size = max / NB_POINTS;
 	long long moy = 0;
+	int cmpt ;
 	for(int i=0;i<nb_algos;i++)
 	{
+		cmpt = 0;
 		moy = 0;
 		printf("%s : %f ms - temps moyen = ",noms[i],running_time[i]/NB_SIMULS);
 		for(int j=0;j<NB_SIMULS;j++)
 		{
 			if(res[i][j]!=INT_MAX)
 			{
+				cmpt++;
 				moy += res[i][j];
 				fprintf(f[i],"%d \n",res[i][j]);
 			}
 			
 			//fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
 		}
+		printf("Sucess algo %s = %f \n",noms[i],(float)cmpt/NB_SIMULS);
 		printf("%lld \n",moy/NB_SIMULS);
 		fclose(f[i]);
 	}

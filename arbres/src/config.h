@@ -5,7 +5,7 @@
 
 #define NB_COLLISIONS 3
 
-#define NB_ROUTES_PER_FLOW 1
+#define NB_ROUTES_PER_FLOW 3
 #define PROBA 1
 
 
@@ -36,7 +36,7 @@
 //For star simulation
 #define NB_ROUTES 8
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel
