@@ -6,12 +6,12 @@
 #include <limits.h>
 #include <string.h>
 
-#define NOMBRE_ROUTE 6
+#define NOMBRE_ROUTE 11
 #define PERIODE 150
 #define TAILLE 10
 #define DEBUG 0
 #define VERBOSE 0
-#define NOMBRE_EXPERIENCE 100000
+#define NOMBRE_EXPERIENCE 1000
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -295,12 +295,12 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 	return compteur;
 }
 
+//Autre borne inf en listant les routes dans l'autre sens et en gérant les dispo.
 
 int verifie_delai(int pos, int *depart_max, int * ordre, char* routes_utilisees){//renvoie 1 si ça peut passer, 0 si on est sur de faire pire que la meilleur sol
-	int j = 0;
 	int i;
-	for(i = 0; i < NOMBRE_ROUTE && (routes_utilisees[ordre[i]] || depart_max[i] >= pos + j*TAILLE); i++){
-		j += !routes_utilisees[ordre[i]];
+	for(i = 0; i < NOMBRE_ROUTE && (routes_utilisees[ordre[i]] || depart_max[i] >= pos); i++){
+		pos += !routes_utilisees[ordre[i]]*TAILLE;
 	}
 	return i == NOMBRE_ROUTE;
 }
@@ -379,6 +379,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 		if(DEBUG) printf("\nCalcul des temps de départ max selon le premier élément courant et le min_delai actuel: \n");
 		for(int i = 0; i < nombre_route ; i++) {
 			depart_max[i] = disponible_periode[i] + min_delai_meilleure_sol - delai[i];
+			if(disponible_periode[i] > P - TAILLE) depart_max[i] -= P;
 			if(DEBUG) printf("%d ", depart_max[i]);
 		}
 		trier(depart_max,ordre_depart_max,nombre_route);
