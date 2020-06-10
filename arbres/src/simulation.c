@@ -26,10 +26,11 @@
 #include "enum.h"
 
 
-void test()
+void test(unsigned int seed)
 {
-	//unsigned int seed = 1591350435;
-	unsigned int seed = time(NULL);
+	//unsigned int seed = 1591624286;
+	//unsigned int seed = time(NULL);
+	seed = 1591753760;
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -317,9 +318,10 @@ void simuldistrib(int seed)
 {
 	
 	int nb_algos =3 ;
-	char * noms[] = {"GreedyDeadlineTime","GreedyDeadlinePacked","GreedyDeadlineNormalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
-
-	srand(seed);
+	char * noms[] = {"Greedy Deadline","Greedy Packed","Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	
+	
+	
 	int message_size = MESSAGE_SIZE;
 	Graph  g;
 	int P ;
@@ -352,12 +354,12 @@ void simuldistrib(int seed)
 	  struct timeval tv1, tv2;
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
 	for(int i=0;i<3;i++)nb_pas[i] = 0;
-	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
+	//#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
 		saut:
 		a = 0;
-
+		
 		g= init_graph_random_tree(STANDARD_LOAD);
 		int l = 2*longest_route(&g);
 		
@@ -517,6 +519,7 @@ void simuldistrib(int seed)
 	{
 		cmpt = 0;
 		moy = 0;
+	
 		printf("%s : %f ms - temps moyen = ",noms[i],running_time[i]/NB_SIMULS);
 		for(int j=0;j<NB_SIMULS;j++)
 		{
@@ -535,8 +538,8 @@ void simuldistrib(int seed)
 	}
 	
 	sprintf(buf,"%d_%d_%d",NB_BBU,NB_COLLISIONS,MAX_LENGTH);
-	char * ylabels2[] = {"Nombre d'instances"};
-	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Latency", ylabels2);
+	char * ylabels2[] = {"Number of instances"};
+	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Additional latency (tics)", ylabels2);
 	
 	printf("Nombre de pas moyen : Descente %f | DescenteX %f | Taboo %f | Recuit %f \n",nb_pas[0]/NB_SIMULS,nb_pas[1]/NB_SIMULS,nb_pas[2]/NB_SIMULS,nb_pas[3]/NB_SIMULS);
 	

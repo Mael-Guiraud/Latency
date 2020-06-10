@@ -428,7 +428,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 					return 0;
 				}
 			}
-		
+		//	printf("%d totalcheck, %d",offset+total_check,total_check);
 			if(offset + total_check>=P)
 			{
 
@@ -454,7 +454,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			//printf("offset = %d per %d release %d totalcheck %d\n \n",offset,Per[i],release[current_route],total_check);
 			release[current_route]= INT_MAX;
 			fill_Per(period, id[current_route], release_time[current_route]+delay[id[current_route]], message_size,P);
-			//printf("route %d order %d \n", current_route,order[i]);
+		//	printf("route %d order %d \n", current_route,order[i]);
 			if(offset >= P)
 				return 0;
 		}
@@ -500,10 +500,10 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 				for(int k=0;k<size;k++)
 				{ 	// budget    -  Delai suplémentaire
 					if(release[k] != INT_MAX)
-						if(budget[k] - offset+P-release[k]  > max )
+						if(budget[k] -( offset+P-release[k])  > max )
 						{
 							//On prends celui que ca impact le moins d'être placé en seconde periode
-							max = budget[k] - offset+P-release[k] ;
+							max = budget[k] - (offset+P-release[k]) ;
 							current_route = k;
 							boolp = 1;
 						}
@@ -613,9 +613,9 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		int total_check = 0;
 		while(check_value)
 		{
-			//printf("Check value for route %d offset %d \n",current_route,offset+total_check);
+		//	printf("Check value for route %d offset %d \n",current_route,offset+total_check);
 			check_value = cols_check(Per,offset+total_check,message_size,P,i);
-			//printf("check = %d \n ",check_value);
+		//	printf("check = %d \n ",check_value);
 			total_check += check_value;
 			if(total_check >= P)
 			{
@@ -629,12 +629,10 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		//begin offset est forcement le plus petit release, donc on cherche a decaler begin offset de P* le nombre de period qu'il faut
 		int begin2 = begin_offset;
 	  
-		while( release[current_route] > begin2 + P )
+		while( release[current_route] >= begin2 + P )
 		{
-			if(release[current_route]>(begin2 + P))
-			{
 				begin2 +=P;
-			}
+			
 		}
 
 		if(VOISINAGE)
@@ -666,7 +664,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		Per[i] = Per[i] % P;
 	}
 	tri_bulles_inverse(Per,order,size);
-
+	//for(int i=0;i<size;i++)printf("%d ",order[i]);printf("\n");
 	if(order[0] != firstorder)
 	{
 		printf("impossible, le tri a mélangé les ordres (greedy) \n");
@@ -700,6 +698,7 @@ int greedy_deadline(Graph * g, int P, int message_size, int mod)
 
  			if(g->arc_pool[j].contention_level == CL)
  			{
+ 			//	printf("arc %d, kind %d \n",j,kind);
  				int release[g->arc_pool[j].nb_routes];
  				int budget[g->arc_pool[j].nb_routes];
  				int ids[g->arc_pool[j].nb_routes];
@@ -784,18 +783,24 @@ int greedy_deadline_assignment(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,0))
 	{
-
-		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
 		return 0;
+			reset_periods( g, P); 
+				reinit_delays(g);
+		greedy_deadline(g, P, message_size,1);
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
+		//return 0;
 	}
 
 	int t = travel_time_max_buffers(g);
+	//printf("T = %d, verif = %d \n",t,verifie_solution( g,message_size));
 	if(verifie_solution( g,message_size))
 	{
 		printf("La solution trouvée par l'algo greedy de base n'est pas correcte GD (error %d) ",verifie_solution( g,message_size));
 		affiche_graph(g,P,stdout);
 		exit(84);
 	}
+	reset_periods( g, P); 
+				reinit_delays(g);
 	if(VOISINAGE)
 	{
 		if( assignment_with_orders_vois1(g,P,message_size,1)==0)
@@ -871,7 +876,7 @@ int greedy_deadline_assignment2(Graph * g, int P, int message_size)
 
 	if(t!= t2)
 	{
-		printf("Les deux algos sont pas pareils, impossible (%d %d).\n",t,t2);
+		printf("Les deux algos sont pas pareils, impossible 2(%d %d).\n",t,t2);
 		exit(85);
 	}
 	if(verifie_solution( g,message_size))
@@ -890,8 +895,12 @@ int greedy_deadline_assignment3(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,2))
 	{
-		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
 		return 0;
+		reset_periods( g, P); 
+				reinit_delays(g);
+				greedy_deadline(g, P, message_size,1);
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
+		//return 0;
 	}
 
 	int t = travel_time_max_buffers(g);
@@ -923,7 +932,7 @@ int greedy_deadline_assignment3(Graph * g, int P, int message_size)
 
 	if(t!= t2)
 	{
-		printf("Les deux algos sont pas pareils, impossible (%d %d).\n",t,t2);
+		printf("Les deux algos sont pas pareils, impossible3 (%d %d).\n",t,t2);
 		exit(85);
 	}
 	if(verifie_solution( g,message_size))
