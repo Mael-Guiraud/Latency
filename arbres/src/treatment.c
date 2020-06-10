@@ -715,7 +715,7 @@ int route_length_with_buffers(Graph * g,int route)
 }
 int route_length_with_buffers_forward(Graph * g,int route)
 {
-	//printf("%d \n",route); 
+	//printf("route %d :",route); 
 	int length = 0;
 	//printf("%d \n",g->size_routes[route]);
 	//For each arcs&
@@ -724,6 +724,7 @@ int route_length_with_buffers_forward(Graph * g,int route)
 		length += g->routes[route][i]->length;
 		length += g->routes[route][i]->routes_delay_f[route];
 	}
+	//printf("lenght = %d \n",length);
 	return length;
 }
 int travel_time_max_buffers(Graph * g)
@@ -734,7 +735,7 @@ int travel_time_max_buffers(Graph * g)
 	for(int i=1;i<g->nb_routes;i++)
 	{
 		lenght = route_length_with_buffers(g,i);
-	//	printf("taille de la route %d = %d \n",i,lenght);
+		//printf("taille de la route %d = %d \n",i,lenght);
 		max = (max>lenght)?max:lenght;
 		
 	}

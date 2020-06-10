@@ -17,7 +17,7 @@
 #include "borneInf.h"
 int main (int argc, char *argv[])
 {
-	int seed = time(NULL);
+	unsigned int seed = time(NULL);
 
 	if(argc < 2)
 	{
@@ -30,7 +30,11 @@ int main (int argc, char *argv[])
 		
 		
 		while(1)
-		test();
+		{
+				test(seed);
+				seed++;
+		}
+	
 	}
 	if(!strcmp(argv[1],"onos"))
 	{

@@ -819,9 +819,16 @@ retval calcul_delay(int begin,int offset,int P, int r_t,int message_size,int boo
 			begin -=P;
 			offset -= P;
 		}
+		
+	}
+	if(r_t == (begin+P))
+	{
+		decalage -= P;
+		begin +=P;
+		offset += P;
 	}
 	//On est dans la premiere periode
-
+	//printf("offset %d rt %d \n",offset,r_t);
 	if(bool_p == 0)
 	{
 		/*if(rt > (begin+P-message_size))
@@ -934,7 +941,7 @@ int assignOneArc(Graph * g,int arcid, Period_kind kind,int message_size, int P,i
 		}
 		else
 		{
-			//printf("arcpoolbackward %d \n",g->arc_pool[j].routes_order_b[k]);
+		//	printf("arcpoolbackward %d \n",g->arc_pool[j].routes_order_b[k]);
 			if((g->arc_pool[j].routes_order_b[k] >= 0)&&(g->arc_pool[j].routes_order_b[k] != INT_MAX))
 			{
 				if(g->arc_pool[j].routes_order_b[k] != premier)
@@ -972,7 +979,7 @@ int assignOneArc(Graph * g,int arcid, Period_kind kind,int message_size, int P,i
 				bool_p = 1;
 			}
 		}
-		//printf("currentourte %d boolp %d \n",current_route, bool_p);
+	//	printf("currentourte %d boolp %d \n",current_route, bool_p);
 		if(current_route == -1)
 			continue;
 		//printf("route %d boolp %d \n",current_route,bool_p);
@@ -991,7 +998,7 @@ int assignOneArc(Graph * g,int arcid, Period_kind kind,int message_size, int P,i
 			g->arc_pool[j].routes_delay_b[current_route] =  r.delay;
 		}
 		offset = r.new_offset;
-		// printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
+		 //printf("offset %d , rdelay %d begin %d p %d\n",offset,r.delay,begin,P);
 		if(offset > begin+P)
 		{
 		//	printf("													Ca a débordé, on quitte\n");
@@ -1007,7 +1014,7 @@ int assignOneArc(Graph * g,int arcid, Period_kind kind,int message_size, int P,i
 		}
 
 	}
-		
+	//	printf("fin assignment_with_orders\n");
 	return 1;
 }
 
@@ -1230,7 +1237,7 @@ int assignment_with_orders_vois1(Graph * g, int P, int message_size, int print)
  			
  			if(g->arc_pool[j].contention_level == CL)
  			{
- 				//printf("On fixe arc %d kind %d\n",j,kind);
+ 			//	printf("On fixe arc %d kind %d\n",j,kind);
 	 			if(!assignOneArc( g, j,  kind, message_size,  P, print))
 	 				return 0;
 	 		}
@@ -1460,6 +1467,8 @@ Voisin init_voisinage_greedy(Voisin v, Graph * g, int P, int message_size)
 {
 	if(!greedy_deadline(g, P, message_size,0))
 	{
+			reset_periods( g, P); 
+				reinit_delays(g);
 		greedy_deadline(g, P, message_size,1);
 		
 	}
