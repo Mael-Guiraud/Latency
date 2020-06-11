@@ -1801,8 +1801,11 @@ int taboo(Graph * g, int P, int message_size,int nb_steps)
 	
 	if(!greedy_deadline(g, P, message_size,0))
 	{
-		printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-		return a;
+		reset_periods( g, P); 
+			reinit_delays(g);
+		greedy_deadline(g, P, message_size,1);
+		//printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
+		//return a;
 	}
 
 	if(VOISINAGE)

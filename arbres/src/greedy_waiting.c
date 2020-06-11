@@ -783,7 +783,7 @@ int greedy_deadline_assignment(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,0))
 	{
-		return 0;
+		
 			reset_periods( g, P); 
 				reinit_delays(g);
 		greedy_deadline(g, P, message_size,1);
@@ -895,7 +895,7 @@ int greedy_deadline_assignment3(Graph * g, int P, int message_size)
 
 	if(!greedy_deadline(g, P, message_size,2))
 	{
-		return 0;
+		
 		reset_periods( g, P); 
 				reinit_delays(g);
 				greedy_deadline(g, P, message_size,1);

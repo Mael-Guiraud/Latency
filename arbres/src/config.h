@@ -5,9 +5,9 @@
 
 #define NB_COLLISIONS 3
 
-#define NB_ROUTES_PER_FLOW 3
+#define NB_ROUTES_PER_FLOW 1
 #define PROBA 1
-
+#define DISTRIBUTED 1
 
 //Mod synch or not
 #define SYNCH 1
@@ -21,7 +21,7 @@
 #define MARGIN_MIN 8000
 #define MARGIN_MAX 10000
 #define MARGIN_GAP 1000
-#define STANDARD_LOAD 0.9
+#define STANDARD_LOAD 1
 #define LAT_GAP 100
 
 
@@ -36,7 +36,7 @@
 //For star simulation
 #define NB_ROUTES 8
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 100
 
 
 //openMP parallel

@@ -113,10 +113,8 @@ void test(unsigned int seed)
 	
 	reset_periods(&g,P);reinit_delays(&g);
 
-	int coupes[NB_COUPES];
-	for(int i=0;i<NB_COUPES;i++)coupes[i]=1; 
-		double coupes_m[NB_COUPES];
-	//int fpt = branchbound( &g, P,  message_size,coupes,coupes_m,0);
+
+	//int fpt = branchbound( &g, P,  message_size,NULL,NULL,0);
 	int fpt = 0;
 	
 	printf("FPT = %d \n",fpt);
@@ -316,21 +314,16 @@ void test(unsigned int seed)
 
 void simuldistrib(int seed)
 {
-	
-	int nb_algos =3 ;
-	char * noms[] = {"Greedy Deadline","Greedy Packed","Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	srand(seed);
+	int nb_algos =10 ;
+	char * noms[] = {"Greedy Deadline Success","Greedy Packed","Greedy Normalized Success","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 	
 	
 	
 	int message_size = MESSAGE_SIZE;
 	Graph  g;
 	int P ;
-	int coupes[NB_COUPES];
-	double coupes_m[NB_COUPES];
-	for(int i=0;i<NB_COUPES;i++)
-	{
-		coupes[i]=1;
-	}
+	
 
 	char buf[256];
 	FILE * f[nb_algos];
@@ -357,7 +350,7 @@ void simuldistrib(int seed)
 	//#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
-		saut:
+	
 		a = 0;
 		
 		g= init_graph_random_tree(STANDARD_LOAD);
@@ -375,6 +368,7 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
+			printf("Algorithm %s \n",noms[algo]);
 			a= 0;
 			nb = 0;
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
@@ -434,7 +428,7 @@ void simuldistrib(int seed)
 						nb_pas[3] += nb;
 					break;
 				case 9:
-					a = branchbound( &g, P, message_size,coupes,coupes_m,1);
+					a = branchbound( &g, P, message_size,NULL,NULL,1);
 					break;
 				}
 				gettimeofday (&tv2, NULL);	
