@@ -419,15 +419,26 @@ long long count_feuilles_arbre(Graph * g)
 
 int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m, int m)
 {
-		
+	
 	AFFICHE_RES = 0;
 
 	BORNEINF_ON =1;
 	PAS_PLUS_PETIT_ID =1;
-	SECONDE_DANS_PREMIERE = coupes[0];
-	I_PLUS_1_PAS_COLLE =coupes[1];
-	I_COLLE =coupes[2];
-	ROUTES_SUIVANTES_AVANT_I =coupes[3];
+	if(!coupes)
+	{
+		SECONDE_DANS_PREMIERE = 1;
+		I_PLUS_1_PAS_COLLE =1;
+		I_COLLE =1;
+		ROUTES_SUIVANTES_AVANT_I =1;
+	}
+	else
+	{
+		SECONDE_DANS_PREMIERE = coupes[0];
+		I_PLUS_1_PAS_COLLE =coupes[1];
+		I_COLLE =coupes[2];
+		ROUTES_SUIVANTES_AVANT_I =coupes[3];
+	}
+	
 	
 	MOD = m;
     struct timeval tv1, tv2;
@@ -471,11 +482,16 @@ int branchbound(Graph * g,int P, int message_size,int * coupes,double * coupes_m
 	for(int i=0;i<NB_COUPES;i++)
 	{
 	
-		coupes[i] = nb_coupes[i];
-		if(coupes[i])
-			coupes_m[i] = coupe_moy[i]/nb_coupes[i];
-		else
-			coupes_m[i] = 0.0;
+		if(coupes)
+			coupes[i] = nb_coupes[i];
+		if(coupes_m)
+		{
+			if(coupes[i])
+				coupes_m[i] = coupe_moy[i]/nb_coupes[i];
+			else
+				coupes_m[i] = 0.0;
+		}
+		
 	
 	
 	}

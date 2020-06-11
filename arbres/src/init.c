@@ -10,8 +10,10 @@
 
 void init_arc(Arc * a)
 {
-	a->length = rand()%MAX_LENGTH;
-	//a->length = MAX_LENGTH - rand()%(int)(MAX_LENGTH*0.1);
+	if(DISTRIBUTED)
+		a->length = rand()%MAX_LENGTH;
+	else
+		a->length = MAX_LENGTH - rand()%(int)(MAX_LENGTH*0.1);
 	a->nb_routes = 0;
 	a->period_f = NULL;
 	a->period_b = NULL;
@@ -75,12 +77,13 @@ int* random_number_routes(int l)
 	int * tab = malloc(sizeof(int)*(l));
 	for(int i=0;i<(l);i++)
 	{
-		if(NB_ROUTES_PER_FLOW == 1)
+		/*if(NB_ROUTES_PER_FLOW == 1)
 		{
 			tab[i] = 1;
 		}
 		else
-			tab[i] = rand()%(NB_ROUTES_PER_FLOW) +1;
+			tab[i] = rand()%(NB_ROUTES_PER_FLOW) +1;*/
+		tab[i] = NB_ROUTES_PER_FLOW;
 	}
 	return tab;
 }
