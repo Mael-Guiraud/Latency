@@ -6,12 +6,12 @@
 #include <limits.h>
 #include <string.h>
 
-#define NOMBRE_ROUTE 11
-#define PERIODE 150
+#define NOMBRE_ROUTE 13
+#define PERIODE 140
 #define TAILLE 10
 #define DEBUG 0
 #define VERBOSE 0
-#define NOMBRE_EXPERIENCE 1000
+#define NOMBRE_EXPERIENCE 1
 #define MAX(X,Y) ((X) < (Y)) ? Y : X
 
 
@@ -96,6 +96,8 @@ int insere_solution(SOLUTION *s, int *disponible_periode, int *disponible, STOCK
 	for(i = 0; i < NOMBRE_ROUTE; i++){
 		st->contenu[st->pos + s[i].numero] = disponible[(int) s[i].numero] + s[i].depart - disponible_periode[(int) s[i].numero] + PERIODE*(s[i].seconde_periode);
 	}
+	//on a pas besoin de la vraie valeur -> on pourrait virer des choses dans l'équation
+
 	//for(i = 0; i < NOMBRE_ROUTE; i++) printf("%d ",st->contenu[st->pos + i] );
 	//	printf("\n");
 	for(i = 0; i < st->pos; i+=NOMBRE_ROUTE){
@@ -104,7 +106,9 @@ int insere_solution(SOLUTION *s, int *disponible_periode, int *disponible, STOCK
 			if(st->contenu[i + j] < st->contenu[st->pos + j]){//la solution à insérer a une valeur strictement supérieure 
 				for(j++; j < NOMBRE_ROUTE && st->contenu[i + j] <= st->contenu[st->pos + j]; j++){}
 				if(j == NOMBRE_ROUTE){//on a trouvé une solution strictement plus petite que celle qu'on veut insérer, on ne l'insère pas
-					//printf("refus de la solution \n");
+					printf("refus de la solution \n");
+					for(j = 0; j < NOMBRE_ROUTE; j++) printf("%d ", st->contenu[i + j]);
+					printf("\n");
 					return 0;
 				}
 				break;
@@ -142,7 +146,7 @@ float moyenne_minimale = 0;
 int filtre(SOLUTION *s, int *disponible_periode, int nombre_route){//renvoie 0 si on détecte une permutation permettant d'améliorer la solution, 1 sinon
 	for(int i = 0; i < nombre_route; i++){ //inverser la boucle pour perf ?
 		if(s[i].seconde_periode && disponible_periode[(int)s[i].numero] <= PERIODE - TAILLE ){//pour chaque route en position 2, qu'il est possible de placer en seconde période
-			int depart = s[i].depart;//on veut placer un paquet qui en profiterai ici 
+			int depart = s[i+1].depart - TAILLE;//on veut placer un paquet qui en profiterai ici 
 			int dispo = disponible_periode[(int)s[i].numero];//disponibilité du paquet, on veut le mettre en premiere periode, donc on cherche une place à partir de là
 			int new = 1;
 			while(new){//tant qu'on trouve un élément qu'on peut améliorer
@@ -212,8 +216,14 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 				if(k == nombre_route && filtre(s,disponible_periode,nombre_route)){
 				//ne prend pas en compte la solution s'il y a un gap à la fin et un élément en deuxième période qu'on pourrait y mettre 
 					compteur++;
-					insere_solution(s,disponible_periode,disponible,&st); 
-					
+					int res = insere_solution(s,disponible_periode,disponible,&st); 
+					if(!res) {
+						printf("solution générée mais pas minimale \n");
+						print_solution(nombre_routes_traitees, s, disponible_periode);
+						for(int i = 0; i < NOMBRE_ROUTE; i++) printf("%d ", disponible[i]);
+						printf("\n");
+						return 1;
+					}
 				}
 				nombre_routes_traitees--;//retourne en arriere
 				if (first_gap > nombre_routes_traitees) first_gap = 0;//the gap has been removed from the solution, change state
@@ -297,6 +307,7 @@ long long unsigned int enumeration(int *disponible, int nombre_route, int P){
 
 //Autre borne inf en listant les routes dans l'autre sens et en gérant les dispo.
 
+
 int verifie_delai(int pos, int *depart_max, int * ordre, char* routes_utilisees){//renvoie 1 si ça peut passer, 0 si on est sur de faire pire que la meilleur sol
 	int i;
 	for(i = 0; i < NOMBRE_ROUTE && (routes_utilisees[ordre[i]] || depart_max[i] >= pos); i++){
@@ -314,6 +325,7 @@ int verifie_delai(int pos, int *depart_max, int * ordre, char* routes_utilisees)
 }*/
 
 
+//pourrait etre optimisé si nécessaire
 void trier(int *val, int *ordre, int taille){
 	for(int i = 0; i < taille; i++) ordre[i] = i;
 	//fais un tri à bulle car il y a peu de valeurs 
@@ -404,7 +416,7 @@ int optim(int *disponible, int *delai, int nombre_route, int P){
 				//on grossit la solution partielle en essayant d'ajouter un élément
 				if(add || s[nombre_routes_traitees].seconde_periode){//on vient d'ajouter un element ou on veut le prochain élément 
 					int i = 0;
-					if(!add) {
+					if(!add){
 						i = s[nombre_routes_traitees].numero + 1;
 						routes_utilisees[i-1] = 0;//on retire la route précédemment utilisée à ce niveau
 					}
@@ -507,7 +519,7 @@ typedef struct{
 
 int main(){
 	
-	srand(0);//srand(time(NULL));	
+	srand(time(NULL));	
 	int *disponible = malloc(sizeof(int)*NOMBRE_ROUTE);
 	int *delai = malloc(sizeof(int)*NOMBRE_ROUTE);
 	float moyenne_proportion = 0;
@@ -521,14 +533,14 @@ int main(){
 			disponible[i] = rand()%PERIODE;
 			delai[i] = rand()%PERIODE + disponible[i];
 		}
-		/*
+		
 		long long unsigned int nb_enum = enumeration(disponible,NOMBRE_ROUTE,PERIODE);
 		if(VERBOSE){
 			printf("Nombre de solutions énumérées %llu\n",nb_enum);
 			printf("Nombre de solutions total %llu, proportion %f\n",nb_exhaustif, (float) nb_enum / nb_exhaustif);	
 		}
 		moyenne_proportion += (float) nb_enum / (float) nb_exhaustif;
-		*/
+		/*
 		if(VERBOSE) {
 			printf("Affichage des disponibilités et délais: ");
 			for(int i = 0; i < NOMBRE_ROUTE; i++) printf("(%d %d)",disponible[i],delai[i]);
@@ -537,8 +549,9 @@ int main(){
 		else{
 			optim(disponible,delai,NOMBRE_ROUTE,PERIODE);	
 		}
+		*/
 	}		
-	//printf("Moyenne de la proportion de solutions énumérées %f.\n",moyenne_proportion/NOMBRE_EXPERIENCE);
-	//printf("Moyenne de la proportion de solution minimales parmi les énuméres %f.\n",moyenne_minimale/NOMBRE_EXPERIENCE);
+	printf("Moyenne de la proportion de solutions énumérées %f.\n",moyenne_proportion/NOMBRE_EXPERIENCE);
+	printf("Moyenne de la proportion de solution minimales parmi les énuméres %f.\n",moyenne_minimale/NOMBRE_EXPERIENCE);
 	
 }
