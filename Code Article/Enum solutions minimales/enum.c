@@ -141,7 +141,8 @@ void afficher_stock(STOCK st){
 float moyenne_minimale = 0;
 
 
-//Élimine des solutions qu'on peut optimiser 
+//Élimine des solutions qu'ont peut rendre meilleure
+//un filtre plus lourd qui effectuerait les permutations serait meilleur -> caractersitation des éléments minimaux
 
 int filtre(SOLUTION *s, int *disponible_periode, int nombre_route){//renvoie 0 si on détecte une permutation permettant d'améliorer la solution, 1 sinon
 	for(int i = 0; i < nombre_route; i++){ //inverser la boucle pour perf ?
@@ -154,6 +155,7 @@ int filtre(SOLUTION *s, int *disponible_periode, int nombre_route){//renvoie 0 s
 			//et qui soit de dispo minimum
 				new = 0;
 				int j;
+				//on peut sans doute commencer à i+1
 				for(j = i; j < nombre_route -1 && s[j+1].depart < dispo + TAILLE; j++){}//trouve la première route qui si on la déplacait permettrait de placer la route courante
 				//if(j == nombre_route -1) on peut toujours déplacer le dernier élément
 				for(; j < nombre_route; j++){//on cherche la dispo minimum des routes restantes
