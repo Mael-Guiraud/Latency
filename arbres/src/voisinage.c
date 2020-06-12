@@ -1587,9 +1587,16 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 	
 	int prev = INT_MAX;
 	float pas=0.0;
+	int **best = malloc(sizeof(int*)*g->arc_pool_size*2);
+	for(int i=0;i<g->arc_pool_size;i++)
+	{
+		best[i] = malloc(sizeof(int)*g->arc_pool[i].nb_routes);
+		best[i+g->arc_pool_size] = malloc(sizeof(int)*g->arc_pool[i].nb_routes);
+	}
+	
 	for(int i=0;i<tmax;i++)
 	{
-		a = descente(g,P,message_size,0,nb_pas);
+		a = descente(g,P,message_size,1,nb_pas);
 		if(a)
 		{
 			
@@ -1598,15 +1605,31 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 					//printf("a->time %d\n ",a->time);
 					pas = *nb_pas;
 					prev = a;
+					cpy_orders(best,g,1);
 				}			
 				
 		}
 		
 	}
-	*nb_pas = pas;
-	reset_periods(g,P);
 	
+	*nb_pas = pas;
+	cpy_orders(best,g,0);
 	reinit_delays(g);
+	reset_periods(g,P);
+	a= assignment_with_orders_vois1(g,P,message_size,1);
+	if(!a)
+	{
+		printf("impossible ... \n");
+		exit(74);
+		return 0;
+	}
+
+
+	if(travel_time_max_buffers(g)!=prev)
+	{
+		printf("weird.... descente x %d %d \n",travel_time_max_buffers(g),prev);
+		exit(70);
+	}
 	return (prev == INT_MAX)?0:prev;
 }
 
@@ -2182,8 +2205,9 @@ int CritMetropolis(int delta, float t)
 	{
 
 		float proba = (float)delta/t;
+
 		float random = (float)rand() / (float)RAND_MAX;
-		//printf("on va la quand meme ?%d %f  %f %f %f\n",delta, t,proba,random, expf(-proba));
+		
 		if(random < expf(-proba))
 		{
 			return 1;
@@ -2202,8 +2226,9 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	float seuil_incr_cmpt = 0.001;
 
 	int a=0;
-	descente( g,  P, message_size, 0, nb_pas);
-	b = travel_time_max_buffers(g);
+	//b=descente( g,  P, message_size, 0, nb_pas);
+
+	b = best_of_x( g, P, message_size,100,nb_pas);
 	/*
 		if(!greedy_deadline(g, P, message_size))
 		{
