@@ -315,7 +315,7 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =10 ;
+	int nb_algos =9 ;
 	char * noms[] = {"Greedy Deadline Success","Greedy Packed","Greedy Normalized Success","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 	
 	
@@ -368,10 +368,10 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
-			if(algo < 2)
+			/*if(algo < 2)
 				algo = 2;
 			if(algo > 2)
-				algo = 9;
+				algo = 9;*/
 		//	printf("Algorithm %s \n",noms[algo]);
 			a= 0;
 			nb = 0;
@@ -536,7 +536,7 @@ void simuldistrib(int seed)
 		fclose(f[i]);
 	}
 	
-	sprintf(buf,"%d_%d_%d",NB_BBU,NB_COLLISIONS,MAX_LENGTH);
+	sprintf(buf,"%d_%d_%d_%d_%f",NB_BBU,NB_COLLISIONS,MAX_LENGTH,DISTRIBUTED,STANDARD_LOAD);
 	char * ylabels2[] = {"Number of instances"};
 	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Additional latency (tics)", ylabels2);
 	
