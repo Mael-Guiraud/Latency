@@ -1,6 +1,6 @@
 // CONFIG OF THE TOPOLOGY
 #include "nb_bbu.h"
-#define MAX_LENGTH 20000
+#define MAX_LENGTH 700
 #define MESSAGE_SIZE 2500
 
 #define NB_COLLISIONS 3
@@ -21,7 +21,7 @@
 #define MARGIN_MIN 8000
 #define MARGIN_MAX 10000
 #define MARGIN_GAP 1000
-#define STANDARD_LOAD 1
+#define STANDARD_LOAD 0.8
 #define LAT_GAP 100
 
 

@@ -368,6 +368,10 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
+			if(algo < 2)
+				algo = 2;
+			if(algo > 2)
+				algo = 9;
 		//	printf("Algorithm %s \n",noms[algo]);
 			a= 0;
 			nb = 0;
@@ -515,7 +519,7 @@ void simuldistrib(int seed)
 		cmpt = 0;
 		moy = 0;
 	
-		printf("%s : %f ms - temps moyen = ",noms[i],running_time[i]/NB_SIMULS);
+		printf("%s : %f ms ",noms[i],running_time[i]/NB_SIMULS);
 		for(int j=0;j<NB_SIMULS;j++)
 		{
 			if(res[i][j]!=INT_MAX)
@@ -773,7 +777,7 @@ void simuldescente(int seed)
 	  struct timeval tv1, tv2;
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
 	for(int i=0;i<3;i++)nb_pas[i] = 0;
-	//#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
+	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
 	

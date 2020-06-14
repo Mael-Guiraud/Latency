@@ -1611,25 +1611,29 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 		}
 		
 	}
-	
+
 	*nb_pas = pas;
-	cpy_orders(best,g,0);
-	reinit_delays(g);
-	reset_periods(g,P);
-	a= assignment_with_orders_vois1(g,P,message_size,1);
-	if(!a)
+	if(prev != INT_MAX)
 	{
-		printf("impossible ... \n");
-		exit(74);
-		return 0;
-	}
+		cpy_orders(best,g,0);
+		reinit_delays(g);
+		reset_periods(g,P);
+		a= assignment_with_orders_vois1(g,P,message_size,1);
+		if(!a)
+		{
+			printf("impossible ... \n");
+			exit(74);
+			return 0;
+		}
 
 
-	if(travel_time_max_buffers(g)!=prev)
-	{
-		printf("weird.... descente x %d %d \n",travel_time_max_buffers(g),prev);
-		exit(70);
+		if(travel_time_max_buffers(g)!=prev)
+		{
+			printf("weird.... descente x %d %d \n",travel_time_max_buffers(g),prev);
+			exit(70);
+		}
 	}
+	
 	return (prev == INT_MAX)?0:prev;
 }
 
@@ -2226,9 +2230,9 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	float seuil_incr_cmpt = 0.001;
 
 	int a=0;
-	//b=descente( g,  P, message_size, 0, nb_pas);
+	b=descente( g,  P, message_size, 0, nb_pas);
 
-	b = best_of_x( g, P, message_size,100,nb_pas);
+	//b = best_of_x( g, P, message_size,100,nb_pas);
 	/*
 		if(!greedy_deadline(g, P, message_size))
 		{
