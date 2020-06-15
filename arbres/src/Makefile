@@ -61,6 +61,8 @@ fpt: dirs compil
 descente: dirs compil 
 	./compil simuldescente
 
+taboo: dirs compil 
+	./compil simultaboo
 
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*

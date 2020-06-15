@@ -64,6 +64,12 @@ int main (int argc, char *argv[])
 	{
 		simuldescente(seed);
 	}
+	if(!strcmp(argv[1],"simultaboo") )
+	{
+		simultaboo(seed);
+	}
+
+
 
 
 	

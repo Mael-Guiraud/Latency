@@ -9,3 +9,5 @@ void testcoupefpt(int seed);
 void testfpt(int seed);
 
 void simuldescente(int seed);
+
+void simultaboo(int seed);

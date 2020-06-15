@@ -1,7 +1,7 @@
 int descente(Graph * g, int P, int message_size,int tmax,float * nb_pas);
 int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas);
 int cols_check(int *P, int offset, int message_size,int per, int nb_routes);
-int taboo(Graph * g, int P, int message_size,int nb_steps);
+int taboo(Graph * g, int P, int message_size,int nb_steps, int mem,float * nb_pas);
 int assignment_with_orders(Graph * g, int P, int message_size,int print);
 void fill_Per(int * P, int route, int offset, int message_size, int per);
 int cols_check(int *P, int offset, int message_size,int per, int nb_routes);
