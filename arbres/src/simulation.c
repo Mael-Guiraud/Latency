@@ -183,7 +183,7 @@ void test(unsigned int seed)
 		printf(GRN "FPT trouve au moins aussi bien que la descente ! \n" RESET);
 	}
 	/*
-	int tabo = taboo( &g, P, message_size,100);
+	int tabo = taboo( &g, P, message_size,100,100);
 	printf("taboo %d \n",tabo);	
 	sprintf(nom,"taboo");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
@@ -315,7 +315,7 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =9 ;
+	int nb_algos =8 ;
 	char * noms[] = {"Greedy Deadline Success","Greedy Packed","Greedy Normalized Success","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 	
 	
@@ -346,7 +346,7 @@ void simuldistrib(int seed)
 	float running_time[nb_algos];
 	  struct timeval tv1, tv2;
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
-	for(int i=0;i<3;i++)nb_pas[i] = 0;
+	for(int i=0;i<4;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
@@ -416,12 +416,11 @@ void simuldistrib(int seed)
 					
 				break;
 				case 7:
-					a = taboo( &g, P, message_size,10);
-					if(a)
-					{
-						#pragma omp critical
-							nb_pas[2] += 1000;
-					}
+					a = taboo( &g, P, message_size,100,10,&nb);
+					
+					#pragma omp critical
+						nb_pas[2] += nb;
+					
 				break;
 				
 				
@@ -776,7 +775,7 @@ void simuldescente(int seed)
 	float running_time[nb_algos];
 	  struct timeval tv1, tv2;
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
-	for(int i=0;i<3;i++)nb_pas[i] = 0;
+	for(int i=0;i<4;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
@@ -915,4 +914,165 @@ void simuldescente(int seed)
 	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Additional latency (tics)", ylabels2);
 	
 	
+}
+
+
+void simultaboo(int seed)
+{
+	srand(seed);
+	int nb_algos =1 ;
+	char * noms[] = {"1.000 Steps","100 Steps","1.000 Steps"};
+	
+	
+	
+	int message_size = MESSAGE_SIZE;
+	Graph  g;
+	int P ;
+	
+
+	char buf[256];
+	FILE * f[nb_algos];
+	for(int i=0;i<nb_algos;i++)
+	{
+		sprintf(buf,"../data/%s.plot",noms[i]);
+		f[i] = fopen(buf,"w");
+		if(!f[i])perror("Error while opening file\n");
+	}
+
+
+	int a=0;
+	
+	float nb;
+	
+	
+	int time[nb_algos];
+	int res[nb_algos][NB_SIMULS];
+	float nb_pas[3];
+	float running_time[nb_algos];
+	  struct timeval tv1, tv2;
+	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
+	for(int i=0;i<3;i++)nb_pas[i] = 0;
+	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
+	for(int i=0;i<NB_SIMULS;i++)
+	{
+	
+		a = 0;
+		
+		g= init_graph_random_tree(STANDARD_LOAD);
+		int l = 2*longest_route(&g);
+		
+		//printf("%d \n",longest_route);
+		if(FIXED_PERIOD_MOD)
+		{
+			if(PERIOD < load_max(&g)*MESSAGE_SIZE)
+				printf("			WARNING, not enought space to schedule all the message on the loadest link.\n");
+			P = PERIOD;
+		}
+		else
+			P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
+		
+		for(int algo = 0;algo<nb_algos;algo++)
+		{
+			/*if(algo < 2)
+				algo = 2;
+			if(algo > 2)
+				algo = 9;*/
+		//	printf("Algorithm %s \n",noms[algo]);
+			a= 0;
+			nb = 0;
+			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
+				gettimeofday (&tv1, NULL);	
+		
+			switch(algo){
+				case 0:
+					a = taboo( &g, P, message_size,1000,1000,&nb);
+					
+					#pragma omp critical
+						nb_pas[0] += nb;
+				break;
+				case 1:
+					a = taboo( &g, P, message_size,1000,100,&nb);
+					
+					#pragma omp critical
+						nb_pas[1] += nb;
+				break;
+				case 2:
+					a = taboo( &g, P, message_size,1000,1000,&nb);
+					
+					#pragma omp critical
+						nb_pas[2] += nb;
+				break;
+				
+				
+				
+				}
+				gettimeofday (&tv2, NULL);	
+				#pragma omp critical
+					running_time[algo] += time_diff(tv1,tv2);
+
+
+				if(a)
+				{
+					time[algo] = a-l;
+
+				}
+					
+				
+				
+				
+				reset_periods(&g,P);
+				
+				reinit_delays(&g);
+			
+		}
+		for(int algo = 0;algo<nb_algos;algo++)
+		{
+				#pragma omp critical
+					res[algo][i]=time[algo];
+		}
+		
+		
+		free_graph(&g);
+		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
+		fflush(stdout);
+	}	
+
+	//int max=0;
+	for(int i=0;i<nb_algos;i++)
+	{
+		tri_bulles_classique_croissant(res[i],NB_SIMULS);
+		/*if(res[i][NB_SIMULS-1] > max)
+			max = res[i][NB_SIMULS-1];*/
+		
+	}
+	//int interval_size = max / NB_POINTS;
+	long long moy = 0;
+	int cmpt ;
+	for(int i=0;i<nb_algos;i++)
+	{
+		cmpt = 0;
+		moy = 0;
+	
+		printf("%s : %f ms , nb_pas = %f\n",noms[i],running_time[i]/NB_SIMULS,nb_pas[i]/NB_SIMULS);
+		for(int j=0;j<NB_SIMULS;j++)
+		{
+			if(res[i][j]!=INT_MAX)
+			{
+				cmpt++;
+				moy += res[i][j];
+				fprintf(f[i],"%d \n",res[i][j]);
+			}
+			
+			//fprintf(f[i],"%d \n",(res[i][j]/interval_size)  * interval_size);
+		}
+		printf("Sucess algo %s = %f \n",noms[i],(float)cmpt/NB_SIMULS);
+		printf("%lld \n",moy/NB_SIMULS);
+		fclose(f[i]);
+	}
+	
+	sprintf(buf,"taboo");
+	char * ylabels2[] = {"Number of instances"};
+	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Additional latency (tics)", ylabels2);
+	
+		
 }

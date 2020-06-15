@@ -1465,7 +1465,7 @@ int ** parcours_voisinage(Graph * g,int P, int message_size,Voisin v, int mintim
 }
 Voisin init_voisinage_greedy(Voisin v, Graph * g, int P, int message_size)
 {
-	if(!greedy_deadline(g, P, message_size,0))
+	if(!greedy_deadline(g, P, message_size,2))
 	{
 			reset_periods( g, P); 
 				reinit_delays(g);
@@ -1644,7 +1644,7 @@ typedef struct trace{
 	int time;
 	struct trace * suiv;
 }trace_s;
-#define MEMORY 10
+
 typedef trace_s * Trace;
 
 Trace ajouter_orders(Trace t,int ** order, int time)
@@ -1673,11 +1673,15 @@ int ordersequal(int**  cpy, Graph * g)
 	return 1;
 }
 
-int jamais_vu2(Trace tab, Graph * g)
+int jamais_vu2(Trace tab, Graph * g, int mem)
 {
 	//printf("%d \n",tab[0].time);
-	for(int i=0;(tab[i].time < INT_MAX)&&(i<MEMORY);i++)
+	for(int i=0;i<mem;i++)
 	{
+	//	printf("i = %d tab i %d \n",i,tab[i].time);
+		if((tab[i].time == INT_MAX))
+			break;
+
 		if(ordersequal(tab[i].order,g))
 		{
 			//aff_orders(t->order,g);
@@ -1728,14 +1732,14 @@ void free_trace(Trace t,int arcpoolsize)
 }
 
 
-//Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace * hash_table,int sizehash)
-Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace t,Trace tab,int * id)
+Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace * hash_table,int sizehash)
+//Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace t,Trace tab,int * id,int mem)
 {
 
 	int a=0;
 	int b;
 	int min = INT_MAX;
-	//int key;
+	int key;
 	int **orders = malloc(sizeof(int*)*g->arc_pool_size*2);
 	for(int i=0;i<g->arc_pool_size;i++)
 	{
@@ -1748,8 +1752,9 @@ Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace 
 	{
 
 		//printf("nouveau voisin \n");
-		//key = hash_graph(g,sizehash);
-		while(!jamais_vu2(tab,g))
+		key = hash_graph(g,sizehash);
+		//while(!jamais_vu2(tab,g,mem))
+		while(!jamais_vu(hash_table[key],g))
 		{
 			//printf("Voisin interdit \n");
 
@@ -1758,11 +1763,11 @@ Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace 
 			if(v.route == -1)
 			{
 				cpy_orders(orders,g,0);//on remet le graph optimal
-				//hash_table[key] = ajouter_orders(hash_table[key],orders,min);
-				//return hash_table[key];
-				return t;
+				hash_table[key] = ajouter_orders(hash_table[key],orders,min);
+				return hash_table[key];
+				//return t;
 			}
-			//key = hash_graph(g,sizehash);
+			key = hash_graph(g,sizehash);
 		}
 		if(VOISINAGE)
 			a= assignment_with_orders_vois1(g,P,message_size,0);
@@ -1787,14 +1792,14 @@ Trace parcours_voisinage_tabou(Graph * g,int P, int message_size,Voisin v,Trace 
 		v= nouveau_voisin(v,g);
 	}
 	cpy_orders(orders,g,0);//on remet le graph optimal
-	//key = hash_graph(g,sizehash);
-	//hash_table[key] = ajouter_orders(hash_table[key],orders,min);
-	t = ajouter_orders(t,orders,min);
+	key = hash_graph(g,sizehash);
+	hash_table[key] = ajouter_orders(hash_table[key],orders,min);
+	/*t = ajouter_orders(t,orders,min);
 	tab[*id].order = orders;
 	tab[*id].time = min;
-	(*id) = (*id +1)%MEMORY;
-	return t;
-	//return hash_table[key];
+	(*id) = (*id +1)%mem;
+	return t;*/
+	return hash_table[key];
 }
 int size(Trace t)
 {
@@ -1806,27 +1811,28 @@ int size(Trace t)
 	}
 	return cmpt;
 }
-int taboo(Graph * g, int P, int message_size,int nb_steps)
+int taboo(Graph * g, int P, int message_size,int nb_steps, int mem,float * nb_pas)
 {
 	Voisin v;
 	int a=0,b; 
-	int sizehash = MEMORY;
+
+	//int sizehash = mem;
 	int id = 0;
-	//int sizehash = nb_steps*2;
-	//Trace * hash_table = malloc(sizeof(Trace) *sizehash);
+	int sizehash = nb_steps*2;
+	Trace * hash_table = malloc(sizeof(Trace) *sizehash);
 	FILE * f = fopen("../data/trace","w");
 	Trace t=NULL;
-	Trace tab = malloc(sizeof(trace_s)*sizehash);
+	/*Trace tab = malloc(sizeof(trace_s)*sizehash);
 	for(int i=0;i<sizehash;i++)
 	{
 		tab[i].order = NULL;
 		tab[i].time = INT_MAX;
 		tab[i].suiv = NULL;
-	}
-	//for(int i=0;i<sizehash;i++)hash_table[i]=NULL;
+	}*/
+	for(int i=0;i<sizehash;i++)hash_table[i]=NULL;
 
 	
-	if(!greedy_deadline(g, P, message_size,0))
+	if(!greedy_deadline(g, P, message_size,2))
 	{
 		reset_periods( g, P); 
 			reinit_delays(g);
@@ -1860,12 +1866,12 @@ int taboo(Graph * g, int P, int message_size,int nb_steps)
 	//aff_orders(orders,g);
 	cpy_orders(orders,g,1);
 
-	//int key = hash_graph(g,sizehash);
-	//hash_table[key] = ajouter_orders(hash_table[key],orders,b);
-	t = ajouter_orders(t,orders,b);
+	int key = hash_graph(g,sizehash);
+	hash_table[key] = ajouter_orders(hash_table[key],orders,b);
+	/*t = ajouter_orders(t,orders,b);
 	tab[id].order=orders;
 	tab[id].time=b;
-	id++;
+	id++;*/
 	//fprintf(f,"%d %d \n",0,hash_table[key]->time);
 	//free_assignment(a);
 	
@@ -1884,21 +1890,22 @@ int taboo(Graph * g, int P, int message_size,int nb_steps)
 	
 	int cmpt = 0;
 	
-	//int nb_steps_better=1;
+	int nb_steps_better=1;
 	int ** best_order = orders;
 	//printf("Taboo \n");
 	
 	while(cmpt < nb_steps)
 	{
 		cmpt ++;
-		t= parcours_voisinage_tabou( g, P,  message_size, v,t,tab,&id);
+		//t= parcours_voisinage_tabou( g, P,  message_size, v,t,tab,&id,mem);
+		t= parcours_voisinage_tabou( g, P,  message_size, v,hash_table,sizehash);
 		//fprintf(f,"%d %d \n",cmpt,t->time);
 		//printf("step :%d best = %d \n",cmpt, t->time);
 		if(t->time<min)
 		{
 			best_order = t->order;
 			min = t->time;
-			//nb_steps_better = cmpt;
+			nb_steps_better = cmpt;
 		}
 		v=reinit_voins(g,v);
 		//fprintf(stdout,"\r step %d/%d",cmpt,nb_steps);
@@ -1931,14 +1938,16 @@ int taboo(Graph * g, int P, int message_size,int nb_steps)
 	//printf("%d nb step \n",nb_steps_better);
 	
 	
-/*	for(int i=0;i<sizehash;i++)
+	for(int i=0;i<sizehash;i++)
 	{
 		//printf("%d , \n",size(hash_table[i]));
 		free_trace(hash_table[i],g->arc_pool_size);
-	}*/
-	//free(hash_table);
-	free(tab);
-	free_trace(t,g->arc_pool_size);
+	}
+	free(hash_table);
+	printf("fin taboo better = %d \n",nb_steps_better);
+	*nb_pas = nb_steps_better;
+	//free(tab);
+	//free_trace(t,g->arc_pool_size);
 	//printf("\n");
 	fclose(f);
 	return b;
