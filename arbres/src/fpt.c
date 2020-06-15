@@ -78,7 +78,7 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 				for(int i=1;i<nb_routes;i++)
 				{
 					//route dans la seconde periode
-					if((r_t[i]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[i]] >= P)
+					if((r_t[i]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[i]] > begin%P+P)
 					{
 
 						/*if(I_PLUS_1_PAS_COLLE)
@@ -107,11 +107,11 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 							int temps_min_i = (begin+r_t[i])%P;
 							int temps_min_j;
 							int j ;
-
+							
 							//Recherche de la route qui termine juste après i ou qui commence avant i
-							for(j=1;j<nb_routes;j++)
+							for(j=0;j<nb_routes;j++)
 							{
-								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > P)//j aussi dans la seconde periode
+								if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > begin%P+P)//j aussi dans la seconde periode
 								{
 									continue;
 								}
@@ -132,13 +132,14 @@ int rec_orders(Graph* g, int arcid, int message_size, int P,int profondeur,int b
 							
 							//printf("j = %d \n",j);
 							//printf("%d est en seconde periode  tempsmin i = %d \n",i,temps_min_i);
-							if(temps_min_i < P)
+							if(temps_min_i < begin%P+P)
 							{
 								for(;j<nb_routes;j++)
 								{
 									//printf("route j = %d \n",j);
-									if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > P)//j aussi dans la seconde periode
+									if((r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]] > begin%P+P)//j aussi dans la seconde periode
 									{
+										//printf("j en seconde periode %d \n",(r_t[j]+begin)%P+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]]);
 										continue;
 									}
 									temps_min_j = (begin+r_t[j]+g->arc_pool[arcid].routes_delay_f[g->arc_pool[arcid].routes_order_f[j]])%P;

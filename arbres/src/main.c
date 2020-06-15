@@ -29,11 +29,11 @@ int main (int argc, char *argv[])
 
 		
 		
-		//while(1)
-		//{
+		while(1)
+		{
 				test(seed);
 				seed++;
-		//}
+		}
 	
 	}
 	if(!strcmp(argv[1],"onos"))
@@ -60,7 +60,11 @@ int main (int argc, char *argv[])
 		testfpt(seed);
 		//testcoupefpt(seed);
 	}
-		
+	if(!strcmp(argv[1],"simuldescente") )
+	{
+		simuldescente(seed);
+	}
+
 
 	
 

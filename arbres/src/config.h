@@ -3,11 +3,11 @@
 #define MAX_LENGTH 20000
 #define MESSAGE_SIZE 2500
 
-#define NB_COLLISIONS 3
+#define NB_COLLISIONS 4
 
 #define NB_ROUTES_PER_FLOW 1
 #define PROBA 1
-#define DISTRIBUTED 1
+#define DISTRIBUTED 0
 
 //Mod synch or not
 #define SYNCH 1
@@ -21,7 +21,7 @@
 #define MARGIN_MIN 8000
 #define MARGIN_MAX 10000
 #define MARGIN_GAP 1000
-#define STANDARD_LOAD 1
+#define STANDARD_LOAD 0.8
 #define LAT_GAP 100
 
 

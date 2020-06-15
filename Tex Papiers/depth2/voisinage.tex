@@ -10,6 +10,7 @@
 \usepackage{color}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{caption}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{amssymb}
@@ -526,9 +527,6 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 \subsection{Hill climbing}
 The first local search heuristic is hill climbing. This algorithm works step by step. For a step, start from a compact assignment $CA$, explore the entire neighborhood of $CA$, and retain the compact assignment $CA'$ such that $ Real(CA')\preceq Real(CA)$. If, during a step, there does not exsists such a compact assignment, the algorithm stop and returns $Real(CA)$ which is a local minimum. Otherwise, do the next step browsing the neighborhood of $CA'$.
 
-The quality of hill climbing depends of the the intial compact assignment. A first natural intialisation is to consider the compact representation $CR(A)$ of the assignment $A$ given by the Greedy Normalized Success algorithm. Also, a random compact assignment can be taken. Since a compact assignment does not always give a valid assignment, the last idea is to execetue several hill climbing starting from a random compact assignment, and to return the best assignment given.
-
-Figure avec init GNS, 1,10,100 random points.
 
 \subsection{Tabu search}
 The core tabu search algorithm is similar to the hill climbing. On a given step, the entire neighborhood of a given compact assignment is considerd. Exploring the neighborhood of a compact assignment $CA$, we want to remember the compact assignment $CA'$ which minimize $TR(Real(CA'))$ and for which we did not explore its neighborhood yet. Thus, the tabu search remembers all the compact assignment it already explored.
@@ -539,7 +537,10 @@ Figure avec mémoire 100,1000.
 
 \subsection{Simulated annealing}
 
-A simulated annealing search works as follow. A {\emph temperature}
+A simulated annealing search works as follow. A {\emph temperature} is set. Considering a compact assignment $CA$, we draw in its neighborhood a compact assignment $CA'$. Then, considering the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, the compact assignment $CA'$ is or accepeted or rejected. If it is accepted, the neighborhood of $CA'$ is then explored. During the simulated annealing, the temperature decrease. The lower is the temperature, the lower are the chance to accept a compact assignment that worsen the solution.
+
+The first objective is to fix the temperature. 
+
 
 \subsection{Branch and Bound}
 We define a \textbf{partial compact representation} $Pcr$ of a routed network $(G,R)$ as a choice of pairs $(O,S)$ on a subset of the arcs of the graph.
@@ -564,22 +565,89 @@ In this paper, we focus on Cloud-RAN networks. For the results presented here, w
 Also, we consider that the contention level of the networks studied here is $3$. Indeed, there is two contention point in the way forward for the messages, and one in the way backward, since once the datagrams have been scheduled to go in the datacenter, they go out of it in the exact same order because the size of the arcs is the same for all routes of a same datacenter.
 
 To generate a routed network, several synthetic datas might be fixed: The load of the network, the number of routes, the length of the routes, the distribution of the length of the routes, and the number of contention points.  We first want to determine the impact in terms of computation time and quality of the results of those synthetic datas on the algorithms studied.
-In order to lighten the number of experiences presented here, we consider that the number of datacenter is set to $2$, and the number of contention points of level $1$ (and $3$, since the network is symetric) is set to $3$. Indeed, the results are not significantly impacted if we change those values. 
+In order to lighten the number of experiences presented here, we consider that the number of datacenter (i.e. the number of contention points of level $2$) is set to $2$, and the number of contention points of level $1$ (and $3$, since the network is symetric) is set to $4$. The results are not significantly impacted if we change those values. 
+Also, in a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the numer of routes in the graph at the end of this section.
 
-Dans le cas d'application C-RAN, on prends un nombre de routes limitées (<20) et des tailles de routes petites. Néanmoins, on regarde des instances pour lesquelles le problème est difficile.\
+Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
+\todo{expliquer pourquoi ces valeurs}
 
-Définition du type de graph regardés, expliquer que les instances sont plus dures quand les routes sont de tailles similaires et quand on augmente le nombre de points de contentions.\\
+Figure~\ref{tab:instances} shows the average additional latency needed by the branch and bound and the GNS for the different ways to draw the length of the arcs. Those values are draw for $1000$ instances of each kind.
+
+\begin{center}
+\begin{figure}
+\centering
+\begin{tabular}{ |c|c|c|c|c| }
+\hline
+    Range & $0$ and $\tau/3$ & $0$ and $P$& $P-0.1\times P$ and $P$\\
+    \hline
+    Branch and bound & $4273$ & $222$& $2704$ \\
+ 
+    GNS & $12177$ & $10628$& $9648$\\
+   
+    \hline
+  
+ \end{tabular}
+ \caption{Difference between the optimal solution of the greedy algorithms, for different kind of instances generated.}
+ \label{tab:instances}
+ \end{figure}
+ \end{center}
+ The objective is to find the instances in which a solution given GNS can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the additional latency needed by GNS remains in the same order of magnitude.
+ 
+ Also, we investigated the impact of the load on the quality of the results. When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load.
+
+ 
+\todo{definition de load et additional lattency ici ? + mettre la partie sur les greedy ici} 
 
 \subsection{Neighborood heuristics}
 
-Étudier empiriquement les différentes variantes, paramètres, solution de départ, cout en temps ...
+The quality of hill climbing depends of the the intial compact assignment. A first natural intialisation is to consider the compact representation $CR(A)$ of the assignment $A$ given by the Greedy Normalized Success algorithm. Also, a random compact assignment can be taken. Since a compact assignment does not always give a valid assignment, the last idea is to execetue several hill climbing starting from a random compact assignment, and to return the best assignment given.
 
+Figure~\ref{fig:descente07} shows the difference between initalizing the hill climbing with the greedy normalized success algorithm, or with one or several random compact representation. Those resultas are drawn on $1000$ random instances, with $80\%$ of load.
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.3]{descente07}
+\caption{ Additional latency needed to find a solution for hill climbing, intialized with GNS, 1,10 or 100 random compact representation.}
+\label{fig:descente07}
+\end{figure}
+Initializing the hill climbing with 100 randoms compact representation seems to give better results. Nevertheless remember that the set of compact representation does not always give a valid assignment. Drawing some random compact representation can be a limited option when the set of compact representation grows, because the chance of drawing a non valid, or bad random compact representation grows too.
 
-Taboo : Avec une hash table pour la mémoire, ce qui rend long la recherche quand on fait beaucoup de pas\\
+Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes} shows the success rate of the hill climbing when drawing $1$,$10$ or $100$ random compact representations. Each result is computed on $1000$ random instances.
 
-Recuit, expliquer comment j'ai réglé la température etc\\
+\begin{minipage}[c]{.45\linewidth}
+\vspace{-0.4cm}
+\begin{tabular}{ |c|c|c|c|c| }
+\hline
+    Load & $80\%$& $90\%$ & $100\%$\\
+    \hline
+    GNS & $100\%$ & $100\%$& $100\%$ \\
+    1 rand & $7\%$ & $4\%$& $6\%$\\
+   10 rand & $49\%$& $42\%$& $28\%$\\
+   100 rand & $100\%$ & $97\%$& $92\%$\\
+    \hline
+ \end{tabular}
+   \captionof{figure}{Success rate of hill climbing with different initialization, varying the load.}
+ \label{tab:descenteload}
+\vfill
+ \end{minipage}
+ \hfill
+\begin{minipage}[c]{.45\linewidth}
+\vfill
+\begin{tabular}{ |c|c|c|c|c| }
+\hline
+    Nb routes & $8\%$& $10\%$ & $12\%$\\
+    \hline
+    GNS & $100\%$ & $100\%$& $100\%$ \\
+    1 rand & $7\%$ & $2\%$& $1\%$\\
+   10 rand & $49\%$& $23\%$& $5\%$\\
+   100 rand & $100\%$ & $86\%$& $56\%$\\
+    \hline
+ \end{tabular}
+ \captionof{figure}{Success rate of hill climbing with different initialization, varying the number of routes on the graph.}
+ \label{tab:descentenbroutes}
+\vfill
+\end{minipage}
 
-
+Those experiences shows that, even if initializing the hill climbing with $100$ random instances performs better when the number of routes and the load are low, this initialization is not robust when the load of the number of routes increases. Furthermore, the computation time induced by executing the hill climbing on a lot of random compact representation instead of only one (for GNS) makes it less effective.
 \subsection{Branch and bound}
 
 Montrer avec des courbes (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques, et presque aucunes dont la réalisation n'est pas minimale.

@@ -58,6 +58,9 @@ distrib: dirs compil
 fpt: dirs compil 
 	./compil simulFPT
 
+descente: dirs compil 
+	./compil simuldescente
+
 
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*
