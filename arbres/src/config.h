@@ -3,7 +3,7 @@
 #define MAX_LENGTH 20000
 #define MESSAGE_SIZE 2500
 
-#define NB_COLLISIONS 3
+#define NB_COLLISIONS 4
 
 #define NB_ROUTES_PER_FLOW 1
 #define PROBA 1

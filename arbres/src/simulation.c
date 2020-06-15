@@ -315,7 +315,7 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =8 ;
+	int nb_algos =10 ;
 	char * noms[] = {"Greedy Deadline Success","Greedy Packed","Greedy Normalized Success","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 	
 	
@@ -350,6 +350,7 @@ void simuldistrib(int seed)
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
+
 	
 		a = 0;
 		
@@ -368,11 +369,16 @@ void simuldistrib(int seed)
 		
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
-			/*if(algo < 2)
+
+			if(algo < 2)
 				algo = 2;
+			if(algo > 8)
+				break;
 			if(algo > 2)
-				algo = 9;*/
-		//	printf("Algorithm %s \n",noms[algo]);
+				algo = 8;
+			
+				
+			//printf("Algorithm %s \n",noms[algo]);
 			a= 0;
 			nb = 0;
 			//printf("thread %d Starting algo %d :\n",omp_get_thread_num(),algo);
@@ -425,7 +431,7 @@ void simuldistrib(int seed)
 				
 				
 				case 8:
-					a = recuit( &g, P, message_size,1000,&nb);
+					a = recuit( &g, P, message_size,10,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;
