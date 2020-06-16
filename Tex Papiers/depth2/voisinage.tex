@@ -45,7 +45,7 @@
 
 \maketitle
 
-\section*{Introduction}
+\section{Introduction}
 
 TODO: doner le contexte CRAN, puis l'objectif d'optimisation de latence. 
 Dire qu'on a déjà fait désynchronisé mais que dans les architectures actuelles il faut plutot faire synchronisé.
@@ -54,12 +54,12 @@ Comparer à nos travaux antérieurs et à d'autres qu'on a déjà cité (voir le
 
 
 
-\section{Modeling Periodic Scheduling of datagrams over a Network}
+\section{Scheduling of Periodic Datagrams over a Network: the problem \spall}
 
 
 Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
-  \subsection{Modeling the Networks and its Contention Points}
+  \subsection{Modeling the Network and its Contention Points}
 
   We study a communication network with pairs of source-destination nodes between which messages are sent periodically. The routing between each  pair of such nodes is given. The network is represented by a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three disjoint subsets:  ${\cal S}$ the set of sources of the messages, ${\cal D}$ the set of destination of the messages, and ${\cal C}$ the set of contention points in the network. Indeed, some links of the network are shared between several pairs of source-destination nodes. A contention point represents the beginning of a shared link, i.e. the physical node of the network which sends the messages into the link. An arc in $G$ can represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time elapsed between the sending time of the message in $u$ and the reception time of this message in $v$ using this arc. \\
   A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \omega(u_j, u_{j+1})$. It is the number of tics needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
@@ -89,7 +89,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level over all vertices. It is the number of contention points on the longest route of the network. In all the article, $(G,{\cal R})$ is the routed network, ${\cal C}$ is the set of its contention vertices, $n$ denotes $|\cal{R}|$ the number of routes and $d$ is the contention depth.  
 
 
- \subsection{Datagram Transmission over the Network}
+ \subsection{Dynamic of Datagrams Transmissions}
 	    
  		In this article, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. In practice, the size of an atomic data is usually 64B, the speed of the links is considered to be 10Gbps, and the length of a tic is thus  \todo{rajouter durée d'un tic}.
 
@@ -106,7 +106,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
   $r$ is denoted by $TR(A,r)$ and is equal to $t(r,u_l)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
 %   In the application we study the full transmission time is bounded . We define $Tmax$ such that $TR(A) \leq Tmax$.
          
-  \subsection{Modeling of C-RAN Networks}
+  \subsection{From C-RAN Networks to Contention Graphs}
   \label{subsection:CRANGRAPH}
 
   This study is motivated by a problem from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this article is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU does not appear explicitely in the routed network, the message arrives at the BBU somewhere on an arc of the route. Once a message arrives to a BBU, the answer is computed and sent back in the network. The computation time is usually the same for all messages; it is encoded into the arc by adding it to the physical delay of transmission over the arc.
@@ -119,10 +119,13 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
      \todo{faire un dessin pour illustrer tout ca} 
 
-     
-  \subsection{Periodic Datagrams}
 
- 	The process we modelize in this article is \textbf{periodic}: for each period of $P$ tics, a datagram is ready to be sent from each source node in the network at time zero of the period. The process is assumed to be infinite, since it should work for an arbitrary number of periods. We chose to always use the same buffering in all periods, for simplicity of implementation in real networks but also to make our problem more tractable from a theoritical perspective. In other words, at the same time of two different periods, all messages are at the same position in the network: the assignments we build are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
+\todo{Parler de la propriété de routage cohérent, ça implique qu'on obtient bien des DAG.}
+
+     
+  \subsection{Periodic Emission of Datagrams}
+
+ 	The process we modelize in this article is \emph{periodic}: for each period of $P$ tics, a datagram is ready to be sent from each source node in the network at time zero of the period. The process is assumed to be infinite, since it should work for an arbitrary number of periods. We chose to always use the same buffering in all periods, for simplicity of implementation in real networks but also to make our problem more tractable from a theoritical perspective. In other words, at the same time of two different periods, all messages are at the same position in the network: the assignments we build are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
     Let us call $[r,u]_{P,\tau}$ the set of tics used by a datagram on $r$ at vertex $u$ in a period $P$, that is $[r,u]_{P,\tau} = \{s(r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
 
       Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.\\
@@ -130,15 +133,16 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
         An assignment $A$ of a routed network $(G,{\cal R})$ is said to be \textbf{valid} if \emph{no pair of routes has a collision}. 
         The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages, but in this article these values are fixed and we do not recall them (contrarily to previous work~\cite{Guir1806:Deterministic}).
         Note that the period $P$, as well as the size of a message $\tau$ is fixed in our $C-RAN$ application, but not the buffering policy. Hence, the aim of our work is to find a valid assignment which minimizes the latency of transmissions over the network, that is $TR(A)$.
-        
+       \\ 
        
        \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
 
-      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, period $P$, datagram size $\tau$.%, a bound on the latency $T$.
+      \noindent {\bf Input:}  Symmetric routed network $(G,{\cal R})$, period $P$, datagram size $\tau$.%, a bound on the latency $T$.
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
       \noindent {\bf Question:} find $A$ which minimizes $TR(A)$.
+      \\
     
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
     depending on $n$ the number of routes and $d$ the contention level, but not on $P$ or $G$.
@@ -150,7 +154,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 \subsection{Contention Depth and \spall}
 
-\paragraph{Contention Depth One}
+\paragraph*{Contention Depth One}
 
 Each contention vertex of a routed network of contention depth one induces a connected component. 
 Problem \spall can be independently solved on each connected componentes, hence the case with a single contention point
@@ -166,7 +170,7 @@ are the same or equivalently all weigths from the contention point to the destio
 Then, it is enough to consider all datagrams and their time of avalabality in the contention point ...
 \todo{décrire proprement l'algo greedy GD qui marche ici, puisqu'on s'en sert pas mal après} 
 
-\paragraph{Contention Depth 2}
+\paragraph*{Star Shaped Network}
 
 The most simple case of contention depth $2$ is a routed network with two contention points. 
 This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
@@ -175,17 +179,14 @@ This topology, called star shaped network in previous work, is common in real ne
 The problem $\spall$ on star shaped network is $\NP$-hard, since it is a periodic version of 
 the two flow shop problem studied in \cite{}. \todo{mettre un peu plus de détails et pourquoi la périodicité ne change rien}
 
+\paragraph*{Contention Depth Two and More}
+
 However, star shaped networks may not be the most general topology with regard to problem \spall.
 \todo{Que peut-on dire des tpologies de profondeur 2 en général ?}
-
-\paragraph{Contention Depth 3}
-
 Introduire les réseaux plus généraux de contention depth 3.
 Dire comment ce qu'on veut modéliser est un cas particulier et lequel (profondeur 2 dans le réseau, même
 distance de tous les datacenters dans les BBUs). Donner un exemple illustré.
 
-\todo{Parler de la propriété de routage cohérent, ça implique qu'on a des DAG. Est-ce qu'il faut le mettre dans le modèle,
-utilise-t-on ça implicitement ? On définirait alors des multi DAGs.}
 
 \section{Compact Representation of an Assignment}
 
@@ -201,7 +202,7 @@ Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a funct
 \end{definition}
 
 
-\subsection{From a valid assignment to its compact representation}
+\subsection{From Valid Assignments to Compact Representation}
 
 We first define a method to obtain a compact assignment from some valid assignment $A$, that we call the compact representation of $A$ and that we denote by $CR(A)$. Assume all routes are indexed by an integer in $[n]$ and let $u$ be a contention point of $G$. We also assume that for all vertices $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r_i,u) = 0$.
 
@@ -230,7 +231,7 @@ We apply this transformation by increasing contention level. Since, the transfor
 \end{proof}
 
 
-\subsection{From a compact assignment to it realization}
+\subsection{From a Compact Assignment to its Realization}
 
 
 We now explain how to transform a compact representation into a canonical assignment.
@@ -238,9 +239,9 @@ Moreover, we will show that the obtained assignment is the smallest among all as
 
 Recall that the datagram of a route $r$ is available at time $t(r,u)$ in the vertex $u$.
 Let us consider a compact assignment $CA$, which maps $u$ to the pair $(O_u,S_u)$.
-We define inductively how to build an assignment $Real(CA)$ from $CA$, that we call the realization of $CA$. Note that we can fail to build a realization from a compact representation, then $Real(CA)$ is undefined and we say that $CA$ is not realizable. To lighten the notation in the next paragraphs, we will denote $Real(CA)$ by $A$.
+We define inductively how to build an assignment $Real(CA)$ from $CA$, that we call the realization of $CA$. Note that we can fail to build a realization from a compact representation, then $Real(CA)$ is undefined and we say that $CA$ is not realizable. In the next paragraphs, we build an assignment $A$ by setting the buffering time of the routes in the order
+ $(O_u)$. If the construction suceeds, we set $Real(CA) = A$ 
 
-\todo{expliquer la construction avant de la faire, dans lordre croissant en terme de valeur}
 Let say that the order $O_u$ is $(r_1, \dots, r_l)$. We fix $A(r_1,u)$ to zero, that is the first
 datagram in the period has no buffering time. Then, in each period beginning by the first datagram, the datagrams will be in order $O_u$. Now the first datagram of the period is fixed, we use it to consider normalized arrival times and normalized sending times.
 Assume that $A(r_i,u)$ have been set for $i \leq l$, we explain how to 
@@ -377,18 +378,16 @@ $\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention 
 \end{proof}
 
 Note that for the vertices of the last contention level, compact assignments can be considered independently, since
-they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_i!2^{s_i})$ assignments. This makes a large difference for our practical implementation where $d$ is two or three.
+they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_i!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this paper, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
 
 
-\section{Algorithms to solve \spall}
 
-
-\subsection{Greedy Algorithm}
+\section{Greedy Algorithms}
 
 Given a routed network, the local search algorithms explore all compact assignments in order to find a compact assignment $CA$ such that $TR(Real(CA))$ is as small as possible. A first compact assignment is needed to intialize any local search algorithm. We present in this section three greedy algorithms which try to build canonical valid assigments, which can then 
 turned into the corresponding compact representation by the $CR$ function.
 
-\subsubsection{Greedy Deadline}
+\subsection{Greedy Deadline}
 
 We first present an intuitive algorithm, which is the natural solution in a context witout \emph{periodicity}.
 The contention vertices are sorted by contention level, and the contention level are computed in ascending order. The assignment on contention vertices of the same contention level is computed independently. The \emph{Greedy Deadline} algorithm or GD consists in selecting all routes of arrival time less than the current time and among them,
