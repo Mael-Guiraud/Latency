@@ -30,8 +30,10 @@
 \newcommand{\spall}{\textsc{SPALL}\xspace}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{definition}{Definition}
-\newtheorem{corollary}{Corollary}
+
 \author[1]{\bf{ {Dominique Barth}}}
 \author[1,2]{\bf{ {Ma\"el Guiraud}}}
 \author[2]{\bf{ {Brice Leclerc}}}
@@ -389,14 +391,13 @@ turned into the corresponding compact representation by the $CR$ function.
 
 \subsection{Greedy Deadline}
 
-We first present an intuitive algorithm, which is the natural solution in a context witout \emph{periodicity}.
-The contention vertices are sorted by contention level, and the contention level are computed in ascending order. The assignment on contention vertices of the same contention level is computed independently. The \emph{Greedy Deadline} algorithm or GD consists in selecting all routes of arrival time less than the current time and among them,
+We first present an intuitive algorithm, which is the natural approach in a context witout \emph{periodicity}.
+The contention vertices are sorted by contention level, and the contention levels are computed in ascending order. Each assignment on contention vertices of the same contention level is computed independently. The \emph{Greedy Deadline} algorithm or GD consists in selecting all routes of arrival time less than the current time and among them,
 select the one with the worst transmission time. If no route are available at the current time, select the one with the
 smallest arrival time.
 
-GD works precisely as follow. For a vertex $u$, first, select the route $r$ such that the arrival time $t(r,u)$ is minimal. and fix $A(r,u) = 0$.
-Consider that some datagrams have been scheduled, the last one on the route $r$ at time $s(r,u)$, we explain here how to schedule the next route.  If there are several routes $r'$ for which $t(r',u) < s(r,u) + \tau $, we need to select one of those. For each $r'$, we compute the value $2\times \lambda(u,r) - t(r',u)$ and select the one which minimizes this value. Then, the selected datagram $r'$ is sent with a delay $A(r',u) = t(r,u) + \tau - t(r',u)$. If no route satifies $t(r',u) < s(r,u) + \tau$, the route with the lowest $t(r,u)$ is sent without delay ($A(r',u) = 0$). 
-Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ computed, it is possible that there is a collision. If so, $s(r',u)$ is increased to the first time such that there is no collisio. If there is no such a time, the algorithm fails.
+GD works precisely as follow. For a vertex $u$, first, select the route $r$ such that the arrival time $t(r,u)$ is minimal. and fix $A(r,u) = 0$. Consider that some datagrams have been scheduled, the last one on the route $r$ at time $s(r,u)$, we explain here how to schedule the next route.  If there are several routes $r'$ for which $t(r',u) < s(r,u) + \tau $, we need to select one of those. For each $r'$, we compute the value $2\times \lambda(u,r) - t(r',u)$ and select the one which minimizes this value. Then, the selected datagram $r'$ is sent with a delay $A(r',u) = t(r,u) + \tau - t(r',u)$. If no route satifies $t(r',u) < s(r,u) + \tau$, the route with the lowest $t(r,u)$ is sent without delay ($A(r',u) = 0$). 
+Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ computed, it is possible that there is a collision. If so, $s(r',u)$ is increased to the first time such that there is no collision. If there is no such time, the algorithm fails.
 
 
 \begin{algorithm}[H]
@@ -436,19 +437,35 @@ Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ comp
 	\end{algorithm}
 
 \todo{ajouter la routine FIRST VALID qui donne la premiere position a laquelle on peut placer le message a partir de l'offset donné}
-\subsubsection{Greedy Normalized (GN)}
-A variant of the Greedy deadline assignment algorithm consists in, having set the first datagram as the one that have the minimal $t(r,u)$, selecting the datagrams by lowest normalised arrival times instead of arrival times. In practice, it seems that this algorithm performs better.
 
-The two previous algorithm can fail, thus, they do not give a compact assignment for all routed networks. Since a compact assignment is needed to initilize the local search algorithms, we propose a greedy algorithm that always ensure to find an assignment, even if the performances are degraded.
-\subsubsection{Greedy Packed (GP)}
-In order to always find an assignment with a greedy routine, we propose the following algorithm.
+\subsection{Greedy Normalized}
+
+A variant of the Greedy deadline assignment algorithm is as follows: select for first datagram the one with minimal $t(r,u)$, then select the datagrams by lowest normalised arrival times instead of arrival times. We will show that in practice, this algorithm performs better than GD.
+
+However, GD and GN may fail to give a compact assignment for all routed networks. The way we select departure times for the routes can make sequences of times of size less than $\tau$ unusable for unscheduled routes. If too much time is wasted, 
+the algorithms will fail while there is always a solution when the load is less or equal to $1$. Each datagram wastes at most $2\tau -1$ tics in the period, hence by a simple pigeonhole argument, all routes can be scheduled when the load is less than $0.5$ by any greedy algorithm considering all departure times.
+
+\todo{donner un exemple ou ça fail pour chacun des deux algorithmes} 
+
+
+\subsection{Greedy Packed}
+
+
+A compact assignment is needed to initialize the local search algorithms presented in the next section. Hence, we propose the following greedy algorithm that is guaranteed to find an assignment, even if the transmission time may be worse on average.
 The contention vertices are still managed level by level. For a vertex $u$, we explain how to determine the pair $(O_u,S_u)$. First, the datagram $d_0$ is fixed and sent without buffer. This is the datagrams with the lowest arrival time. This datagram is also the reference to compute the normalized arrival and sending times. Once $i$ datagrams are fixed, if serveral datagrams have a normalized arrival time lower or equal than $ns(d_0,d_i,u)+\tau$, the datagram $i+1$ is selected in the same way as in GN, that is, choose the datagram on the route $r$ with the lowest value of $2\times \lambda(u,r) - t(r,u)$. If no datagram can be selected, then the datagram on the route $r$ which maximize the value $2\times \lambda(u,r) - t(r,u) - (ns(d_0,d_r,u)+\tau+P-nt(d_0,d_r,u)$ is selected to be the $i+1^{th}$ in the order $O_u$ and $S_u = S_u + (i+1)$. In other word, select the datagram which is the less impacted by the additional latency needed to send the datagram without gap in the period.
 
-\subsubsection{Success rate of the greedy algorithms}
-We want to compare the succes rate and the performance of the different algorithms presented here.
-First, we watch at the impact of the load of the network on the succes rate of our greed algorithms. The load is defined as the ratio between the number of tics needed to send the datagrams on the contention vertex which has the most routes and the period. Indeed, the more we increase this ratio, the less the algorithms whill have some margin to schedule the datagrams, and so, the more the algorithms will fail.
 
-Figure~\ref{tab:success} shows the success rate of the three greedy algorithms on $1000$ random instances for some loads increasing from $70\%$ to $100\%$. The graph are gererated as explained in section~\ref{subsection:CRANGRAPH}.
+\subsection{Success Rate and Performance of the Greedy Algorithms}
+
+\todo{Mettre les settings expérimentaux ici, sans s'attarder sur leur justification pour l'instant. Définir la additionnal latency qui va servir de mesure de performance.}
+
+
+
+
+We want to compare the succes rate and the performance of the different algorithms presented here.
+First, we consider the impact of the load of the network on the succes rate of the three greedy algorithms.
+The more we increase the load, the less margin the algorithms will have to schedule the datagrams. We have seen that all greedy algorithms succeeds when the load is less than $0.5$ and that GP will always succeed.
+Figure~\ref{tab:success} shows the success rate of Greedy Deadline and Greedy Normalized on $1000$ random instances for loads from $70\%$ to $100\%$. %The graph are gererated as explained in section~\ref{subsection:CRANGRAPH}.
 \begin{center}
 \begin{figure}
 \centering
@@ -460,7 +477,7 @@ Figure~\ref{tab:success} shows the success rate of the three greedy algorithms o
  
     GN & $99.9\%$ & $95.5\%$& $68.3\%$& $0\%$ \\
    
-    GP & $100\%$ & $100\%$& $100\%$& $100\%$ \\
+  %  GP & $100\%$ & $100\%$& $100\%$& $100\%$ \\
     \hline
   
  \end{tabular}
@@ -469,12 +486,13 @@ Figure~\ref{tab:success} shows the success rate of the three greedy algorithms o
  \end{figure}
  \end{center}
  
- Greedy deadline fails less than greedy normalized on highly loaded networks, while greedy normalised seems more robust on loads between $80\%$ and $90\%$. We now want to compare the performance of those algorithms. Figure~\ref{fig:90load} shows the additional latency induced by the assignments given by the algorithms, when there is one. 
- 
+ Greedy Deadline fails less than Greedy Normalized on highly loaded networks, while Greedy Normalized seems more robust on loads between $80\%$ and $90\%$. We now want to compare the performance of those algorithms. Figure~\ref{fig:90load} shows the additional latency induced by the assignments given by the algorithms, when there is one. As expected, the additional latency increases when the load increases and Greedy Packed, that trades additional latency for success rate, performs worst than GD and GN when they are able to find an assignment.
+ Greedy Normalized performs better than Greedy Deadline when it finds an assignment.  On vertices with high load,
+ the three algorithm almost always find the same assignment (or fail). On vertices of small load, the constraint of packing the datagram imposed by GD worsen the latency.
 
-Greedy normalized performs well than greedy deadline when it sucess to find an assignment. As expected, greedy packed, that induces a lot of additional lattency performs worst than GD and GN when they are able to find a solution. Indeed, in most of the cases, on the loaded arcs, the algorithms gives the same assignment. Nevertheless, in the less loaded arcs, the constraint of packing the datagram imposed by GD worsen the latency.
+We propose improved version of GD and GN that always find a solution. For each contention point, we first try GD (or GN), 
+and if the algorithm fails, we apply GP. Let us call Hybrid Greedy Deadline (HGD) and Hybrid Greedy Normalized (HGN) those two algorithms. Figure~\ref{fig:greedysuccess} shows the performances of HGD, HGS, and GP on $1000$ routed networks with a load of $90\%$.
 
-We thus propose an updated version of GD and GN that always find a solution. For each contention point, try GD (or GN), if the algorithm fails, then find apply GP on this contention point. Let us cann Greedy Deadline Sucess and Greedy Normalized Sucess those two algorithms. Figure~\ref{fig:greedysuccess} shows the performances of GDS, GNS, and GP on $1000$ graphs under $90\%$ loads. 
  	\begin{minipage}[c]{.45\linewidth}
 	\centering
 	\includegraphics[scale=0.23]{90load}
@@ -488,12 +506,13 @@ We thus propose an updated version of GD and GN that always find a solution. For
 \label{fig:greedysuccess}
 \end{minipage}
 
-The greedy normalized success always gives a lower additional latency, and then, never fails. Thus, for the rest of the paper, GNS will be the greedy algorithm used to find the compact assignment needed to initialize the local search algorithms.
+Algorithm Hybrid Greedy Normalized seems much better than the other two. Hence, in the rest of the paper HGN will serve 
+as a baseline of assignment quality since it can be obtained in very short time. It will also serve to initialize 
+local search algorithms with a first assignment of sufficient quality.
 
-\subsection{Local Search Heuristics}
+\section{Local Search Heuristics}
 
-The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: hill climbing, tabu search and simulated annealing. This methods works as long as a relevant notion of neighborood of a solution is proposed. 
-The neighborood relation must satisfy several properties: it must be quick to compute (hence not to large) and the implicit graph of solutions defined
+The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: hill climbing, tabu search and simulated annealing. These methods works as long as a relevant notion of neighborood of a solution is proposed. The neighborood relation must satisfy two properties: it must be quick to compute (hence not to large) and the implicit graph of solutions defined
 by the neighborood relation should be connected. We now propose a simple neighborood relation over compact assignments.
 
 Let $u$ be a contention vertex of a network, and let $CA$ be a compact assignment for this network, 
@@ -533,16 +552,42 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 
  Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
  a routed network $(G,\cal{R})$. Then, a compact representation has at most $\sum_{i=1}^n 4^{k_i}$ neighbors. Since we always work with networks of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.
- Remark that, with this definition, we allow to include unrealizable compact assignment in a neighborood. We can easily forbid them and we will, since it is much more practical for several of our algorithms. 
- \todo{Expliquer que le graphe des solutions réalisable est connexe (il suffit d'utiliser des datagrams en position 2, les bouger ne peut pas rendre la soluce non réalisable)}
-\subsection{Hill climbing}
-The first local search heuristic is hill climbing. This algorithm works step by step. For a step, start from a compact assignment $CA$, explore the entire neighborhood of $CA$, and retain the compact assignment $CA'$ such that $ Real(CA')\preceq Real(CA)$. If, during a step, there does not exsists such a compact assignment, the algorithm stop and returns $Real(CA)$ which is a local minimum. Otherwise, do the next step browsing the neighborhood of $CA'$.
+ We further restrict the notion of neighborood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. All algorithms presented in this section will traverse the graph defined by the neighborood relation. 
+
+ \todo{un nom pour ce graphe ?}
+
+ \begin{proposition}
+ The graph defined over realizable compact solutions by the neighborood relation is connected.
+ \end{proposition}
+ \begin{proof}
+ Sketch (should prove a fact before on solutions with the same order but included sets)
+
+Consider two realizable compact solutions $(O_u,S_u)$ and $(O'_u,S'_u)$. 
+First set $S_u$ to be equal to $\mathcal{R}_u$. This can be done by adding repeateadly elements in $\bar{S_u}$.
+This always leads to realizable compact assignment, since the constraints becomes weaker. (to check)
+
+Then, when $S_u = \mathcal{R}_u$, all orders yield a realizable compact assignment. Hence there is a path from
+$(O_u,\mathcal{R}_u)$ to $(O'_u,\mathcal{R}_u)$. Finally, we can remove elements from $\mathcal{R}_u$ to obtain 
+$S'_u$, since $(O'_u,S'_u)$ is realizable, the intermediate solutions are also realizable (less constraints)
+ \end{proof}
 
 
-\subsection{Tabu search}
-The core tabu search algorithm is similar to the hill climbing. On a given step, the entire neighborhood of a given compact assignment is considerd. Exploring the neighborhood of a compact assignment $CA$, we want to remember the compact assignment $CA'$ which minimize $TR(Real(CA'))$ and for which we did not explore its neighborhood yet. Thus, the tabu search remembers all the compact assignment it already explored.
 
-One can change the size of the memory of the tabu search. 
+
+\subsection{Hill Climbing}
+
+The most simple local search heuristic is hill climbing. This algorithm starts from a compact assignment $CA$, explore the entire neighborhood of $CA$, and select the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then algorithm stops and returns $Real(CA)$ which is a local minimum. 
+
+
+\subsection{Tabu Search}
+
+Tabu search is a variation on hill climbing using memory. We also select the compact assignment $CA'$ which minimizes 
+$TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid loop in local minimum, we use a memory of the last 
+$N$ solutions explored and we forbid to visit them again. This algorithm can still loop on a cycle larger than $N$,
+hence we must fix some integer $M$ and stop the algorithm after $M$ steps.
+
+
+One can change the size $N$ and $M$ in tabu search -> explore how to fix these parameters. 
 
 Figure avec mémoire 100,1000.
 
@@ -597,7 +642,6 @@ Figure~\ref{tab:instances} shows the average additional latency needed by the br
  Also, we investigated the impact of the load on the quality of the results. When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load.
 
  
-\todo{definition de load et additional lattency ici ? + mettre la partie sur les greedy ici} 
 
 \subsection{Neighborood heuristics}
 
