@@ -27,7 +27,7 @@
 %\newtheorem{fact}{Fact}
 
 \newcommand\pma{\textsc{pma}\xspace}
-%\newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
+\newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
 
 \bibliographystyle{plainurl}% the mandatory bibstyle
 
@@ -84,43 +84,53 @@
 \begin{abstract}
 Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol time constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a sending scheme of these periodic messages without contention nor buffering.
 
-We focus on a simple but common star shaped topology, where all contentions are on a single link shared by all antennas. For messages of arbitrary size, we show that there is always a solution as soon as the load of the network is less than $40\%$. Moreover, we explain how we can restrict our study to message of size $1$ without increasing too much the global latency. 
+We study the theoritical problem \pma modeling this setting on a simple but common topology, where all contentions are on a single link shared by all antennas. The problem is reminiscent of classical scheduling and packing problems, but the periodicity introduces a new twist. We study how the problem behave with regard to the load of the shared link.
+The two main contribution are polynomial time algorithms which \textbf{always} finds a solution for arbitrary size of messages an load less than $0.4$ or for messages of size one and load less than $\phi - 1$ ($\phi$ being the golden ration $(\sqrt{5}+1)/2)$. We also present a randomized greedy algorithm, which almost always find a solution when the number of antennas increases, explaining why most greedy algorithms work so well in our experiments.
 
-For message of size $1$, we prove that it is always possible to schedule them, when the load is less than $61\%$  using a polynomial time algorithm. Moreover, using a simple random greedy algorithm, we show that almost all instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
+
+
+%We focus on a simple but common star shaped topology, where all contentions are on a single link shared by all antennas. For messages of arbitrary size, we show that there is always a solution as soon as the load of the network is less than $40\%$. Moreover, we explain how we can restrict our study to message of size $1$ without increasing too much the global latency. 
+
+%For message of size $1$, we prove that it is always possible to schedule them, when the load is less than $61\%$  using a polynomial time algorithm. Moreover, using a simple random greedy algorithm, we show that almost all instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
 \end{abstract}
 
 \section{Introduction}
 
 Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU) in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network. 
 
- Statistical multiplexing even with a large bandwidth does not satisfies the latency requirements of C-RAN~\cite{dominique2018deterministic,barth2018deterministic}. The current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point, an RRH on one side and a BBU on the other side is connected through direct fiber or full optical switches. This eliminates all contentions since each message flow has its own link, but it is extremely expensive and do not scale in the case of a mobile network composed of about $10,000$ base stations. 
+ %Statistical multiplexing even with a large bandwidth does not satisfies the latency requirements of C-RAN~\cite{dominique2018deterministic,barth2018deterministic}. The current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point, an RRH on one side and a BBU on the other side is connected through direct fiber or full optical switches. This eliminates all contentions since each message flow has its own link, but it is extremely expensive and do not scale in the case of a mobile network composed of about $10,000$ base stations. 
 
-The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention. This kind of deterministic approach has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
+The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention. This kind of deterministic approach has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. 
+%Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
 
 
 The algorithmic problem studied in the present article, called Periodic Message Assignment or \pma, is the following.
-Given a period, a message size and delay between the two contention points different for each message, choose an offset (departure time in the period) for each message, so that it goes through the two contention points when they are free. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since messages from consecutive periods can interact. The objective is usually to minimize the makespan, or schedule length, but in our periodic variant it is infinite. Hence, we choose to look for any periodic schedule without buffering, which minimizes the trip time of each message. 
+Given a period, a message size and delay between the two contention points for each message, choose an offset (departure time in the period) for each message, so that it goes through the two contention points when they are free. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since messages from consecutive periods can interact. The objective is usually to minimize the makespan, or schedule length, but in our periodic variant it is infinite. Hence, we choose to look for any periodic schedule without buffering, which minimizes the trip time of each message. 
 
 
  To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
 Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic}, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem, since they take into account 
-a fixed period and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard), they usually allow for some delay and most of the work is devising good algorithms using branch and bound, mixed integer programming, genetic algorithms \dots~\cite{lusby2011railway}
+a fixed period and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard), they usually allow for some delay and most of the research done~\cite{lusby2011railway} is devising good algorithms using branch and bound, mixed integer programming, genetic algorithms \dots
 
 
-In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks has been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantes on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside a car or a plane, or logistic problems in production lines.
+In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks has been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantes on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside a car or a plane, or logistic problems in production lines and we hope our approach can be brought to these settings.
 
 
 
-\paragraph{Organization of the paper}
+\paragraph*{Organization of the paper}
+\todo{Donner quelques détailes de plus sur les outils introduits, deux ou trois phrases. Une phrase de plus sur la load.
+Virer route partout et remplacer par message !}
 
 In Sec.~\ref{sec:model}, we present the model and the problem \pma. In Sec.~\ref{sec:large},
-we present several greedy algorithms and prove that they always find a solution to \pma for increasing load. Then, we illustrate their surprisingly good performances on random inputs in Sec.~\ref{sec:perf_large}. It turns out that the message size can be assumed to be one for a small price in added latency, as explained in Sec.~\ref{sec:reduction}. Hence, we develop a deterministic and a probabilistic algorithm for this special case in Sec.~\ref{sec:small}, which work for much higher loads than the algorithms for large message size and we illustrate their performances on random inputs in Sec.~\ref{sec:perf_small}.
+we present several greedy algorithms and prove that they always find a solution to \pma for increasing load.  It turns out that the message size can be assumed to be one for a small price in added latency, as explained in Sec.~\ref{sec:reduction}. Hence, we develop a deterministic and a probabilistic algorithm for this special case in Sec.~\ref{sec:small}, which work for much higher loads than the algorithms for large messages. 
+In the Appendix, we illustrate the performance of all our algorithms on random inputs both on 
+large messages in Sec.~\ref{sec:perf_large}) and small messages in Sec.~\ref{sec:perf_small}.
 
 
 \section{Model}\label{sec:model}
+\todo{mettre tout les concepts importants en bold}
 
-
-In this article, we model a simple network (see fig.~\ref{fig:model}) in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic graph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoretical results. 
+In this article, we model a simple network in which periodic messages flow through a single link. The answer to each message is then sent back through the same bidirectional link. The model and problem can easily be generalized to any network, that is any directed acyclic multigraph with any number of contention points, see \cite{dominique2018deterministic}. We choose here to present the simplest non trivial such network, for which we can still obtain some theoretical results. 
 
 The time is discretized and the process we consider is periodic of fixed integer period $P$. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. In the C-RAN network we model, represented in Fig.\ref{fig:model}, all messages are of the same nature, hence they are all of the same size denoted by $\tau$. This size corresponds to the time needed to send a message through some contention point of the network, here a link shared by all antennas. We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its delay $d_i$. It means that if the message number $i$ arrives at the link at time $t$, then it returns to the other end of the link on its way back at time $t + d_i$. 
 \begin{center}
@@ -130,40 +140,36 @@ The time is discretized and the process we consider is periodic of fixed integer
 \includegraphics[scale=0.35]{network.pdf}
 %\end{minipage}
 %\begin{minipage}[c]{.5\linewidth}
-\centering
-\scalebox{0.5}{
-\begin{tikzpicture}
-    \SetGraphUnit{5}
-      \node[black] at (8,5.9) {$d_0$};
-       \node[black] at (4,4.6) {$C_1$};
-        \node[black] at (12,4.6) {$C_2$};
-         \node[black] at (8,5.3) {$d_1$};
-            \node[black] at (8,2.9) {$d_{n-1}$};
-            \node[black] at (8,4.15) {.};
-            \node[black] at (8,4.0) {.};
-            \node[black] at (8,3.85) {.};
-  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 10pt]
-  \SetUpVertex[FillColor=black]  
-  \Vertex[x=4,y=4]{1}
-  \Vertex[x=12,y=4]{2}  
+%\centering
+%\scalebox{0.5}{
+%\begin{tikzpicture}
+ %   \SetGraphUnit{5}
+  %    \node[black] at (8,5.9) {$d_0$};
+   %    \node[black] at (4,4.6) {$C_1$};
+    %    \node[black] at (12,4.6) {$C_2$};
+     %    \node[black] at (8,5.3) {$d_1$};
+      %      \node[black] at (8,2.9) {$d_{n-1}$};
+       %     \node[black] at (8,4.15) {.};
+        %    \node[black] at (8,4.0) {.};
+         %   \node[black] at (8,3.85) {.};
+%  \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 10pt]
+%  \SetUpVertex[FillColor=black]  
+ % \Vertex[x=4,y=4]{1}
+  %\Vertex[x=12,y=4]{2}  
+% \draw[->,line width=2pt,black] (4,4) parabola bend (8,5.6) (12,4);
+ % \draw[->,line width=2pt,black] (4,4) parabola bend (8,5) (12,4);
+  %    \draw[->,line width=2pt,black] (4,4) parabola bend (8,2.6) (12,4);
 
-
-
-  \draw[->,line width=2pt,black] (4,4) parabola bend (8,5.6) (12,4);
-  \draw[->,line width=2pt,black] (4,4) parabola bend (8,5) (12,4);
-      \draw[->,line width=2pt,black] (4,4) parabola bend (8,2.6) (12,4);
-
-\end{tikzpicture}
-}
+%\end{tikzpicture}
+%}
 %\end{minipage}
-\caption{An example of a network with two contention points}
+\caption{A network with a single shared link corresponding to two contention points}
 \label{fig:model}
 \end{figure}
 \end{center}
 
 Since the process we describe is periodic, we may consider any interval of $P$ units of time
-to represent the state of our system. Describing the messages going through the two contention points during such an interval
-completely defines the periodic process. We call the representation of the interval
+to represent the state of our system. Describing the messages going through the two contention points during such an interval completely defines the periodic process. We call the representation of the interval
 of time in the first contention point the \emph{first period} and the \emph{second period}
 for the second contention point.
 
@@ -205,7 +211,7 @@ A partial assignment $A$ is a function defined from a subset $S$ of $[n]$ to $[P
 We say that $|S|$, the cardinal of the domain of $A$, is its \emph{size}.
 We say that a message in $S$ is \emph{scheduled} (by $A$), and a message not in $S$ is \emph{unscheduled}. We only consider partial assignments such that no pair of messages of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the message $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, the function defined as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
-All presented algorithms build an assignment incrementally, by growing the size of the domain of a partial assignment. Moreover, the algorithm of this section are greedy since once an offset is chosen for a message, it is never changed.
+All presented algorithms build an assignment incrementally, by growing the size of the domain of a partial assignment. Moreover, the algorithms of this section are greedy since once an offset is chosen for a message, it is never changed.
 
 
 \subsection{First Fit}
@@ -226,6 +232,8 @@ First Fit always solves \pma positively on instances of load less than $1/3$.
 \begin{proof}
 To prove the theorem, we show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -1$.  For $S = 1$, it is clear since a single message forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a route $i \notin S$ such that First Fit builds $A[i \rightarrow o]$ from $A$. By definition of First Fit, choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled message between $o - \tau $ and $o-1$ (modulo $P$), hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, then only $3\tau -1$ new offsets are forbidden, that is $Fo(A[i \rightarrow o]) \leq Fo(A) + (3\tau -1)$, which proves the induction and the theorem.
 \end{proof}
+
+\todo{Remarques sur la complexité (pas besoin de tout tester, complexité en $O(n^2)$)}
 
 
 \subsection{Meta-Offset}
@@ -250,7 +258,9 @@ We now propose a more involved family of greedy algorithms which
 solves \pma positively for larger loads. We try to combine the good properties of the two previous algorithms: the compacity of the assignments produced by First Fit and the use of meta-offsets to reduce collisions on the first period. The idea is to schedule several messages at once, using meta-offsets, to maximize the compacity of the obtained solution. 
 We first describe the algorithm which schedules pairs of routes and then explain quickly how we can extend it by scheduling any tuples of messages instead of pairs.
 
-We first prove a lemma which allows to assume that the period $P$ is a multiple of $\tau$, since it makes the analysis of our algorithms much simpler and tighter. It only changes the load from $n \tau / P$ to at most $n (\tau +1)/ P$: the difference is less than $n /P < 1/\tau$, and thus very small for large $\tau$.
+We first prove a lemma which allows to assume that the period $P$ is a multiple of $\tau$, since it makes the analysis of our algorithms simpler and tighter. It only changes the load from $n \tau / P$ to at most $n (\tau +1)/ P$: the difference is less than $n /P < 1/\tau$, and thus very small for large $\tau$.
+
+\todo{On peut passer le lemme et la preuve en annexe}
 
 \begin{lemma}
 Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = P / \tau$. There is an instance $I'$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that an assignment of $I'$ can be transformed into an assignment of $I$ in polynomial time.
@@ -316,8 +326,7 @@ $$ n_2*5 + n_1*3 \leq m$$
 $$ n_1 \leq \frac{8m - 5m }{24}$$
 $$n_1 \leq \frac{m}{8}$$
 
-Hence, we can guarantee $n_1 = \frac{m}{8}$ and the number of routes scheduled is at least $2n_2 + n_1$,
-which is $\frac{3}{8}m$. Remark that we need to be able to schedule two third of the messages as compact pairs, which is possible by Lemma~\ref{lemma:pair_find}. Therefore an assignment is always produced when the load is less then $\frac{3}{8}$.
+Hence, we can guarantee $n_1 = \frac{m}{8}$ and $n_2 \geq \frac{m}{8}$, the number of routes scheduled is at least $2n_2 + n_1 \geq \frac{3}{8}m$. Assuming there are $\frac{3}{8}m$ messages to schedule, we need to be able to schedule $\frac{m}{4}$ compact pairs in the first phase, that is two third of the messages. By Lemma~\ref{lemma:pair_find}, we can organize two third of the messages as compact pairs. Therefore an assignment is always produced when the load is less or equal to $\frac{3}{8}$.
 \end{proof}
 
 The algorithm can be improved by forming compact tuples instead of compact pairs.
@@ -361,56 +370,6 @@ The code computing the $n_i$ can be found on the author's website at \url{https:
 To make the algorithm Compact $10$-tuples work, we need to have enough messages to be able to
 produce enough compact $10$-tuples. Theoretically, we need more than $333$ messages. This bound can be improved
 by a better algorithm to find compact tuples than the one described in Lemma~\ref{lemma:uple_find}. On random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and we can just build the tuples greedily. Therefore, for random instances, forming compact $k$-uples is almost never a problem and the algorithm works even for small $n$.
-
-\subsection{Experimental Results} \label{sec:perf_large}
-
-We present results of simulations of the algorithms presented above, to experimentally assess their performance on
-random instances. The implementation in C of these algorithms can be found on the author's website at \url{https://yann-strozecki.github.io/}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
-
-The algorithms we consider are the following:
-\begin{itemize}
-	\item First Fit
-	\item Meta Offset
-	\item Compact Pair
-	\item Greedy Uniform (see Sec.~\ref{sec:small})
-	\item Exact Resolution using an algorithm from~\cite{dominique2018deterministic}  
-\end{itemize}
-
-On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the theoretical best value given by the exact resolution is only available in the experiment with at most $10$ messages. 
-\begin{figure}
-\begin{center}
-\includegraphics[scale=0.3]{100messBig}
-\end{center}
-\caption{Experiment for $\tau = 1000$, $P=100,000$}
-\label{fig:100messBig}
-\end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[scale=0.3]{100messSmall}
-\end{center}
-\caption{Experiment for $\tau = 10$, $P=1,000$}
-\label{fig:100messSmall}
-\end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[scale=0.3]{10mess}
-\end{center}
-\caption{Experiment for $\tau = 1000$, $P=10,000$}
-\label{fig:10mess}
-\end{figure}
-
-For the tree sets of parameters, the algorithms have the same relative performances. Meta Offset and Greedy Uniform
-perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
-less than $1/2$ while it is easy to build an instance of \pma of load $1/3 +\epsilon$ which makes them fail. 
-The difference between the worst case analysis and the average case analysis is explained for Greedy Uniform in Sec.~\ref{sec:small}.
-
-First Fit performs better than Meta Offset while they have the same worst case.  Compact Pair, which is the best theoretically also performs the best in the experiments, always finding assignments for load of 
-$0.6$. As Shown in Fig.\ref{fig:100messBig} and Fig.\ref{fig:100messSmall}, it appears that the size of the messages have little impact on the success rate of the algorithms. Comparing Fig.\ref{fig:10mess} and Fig.\ref{fig:100messBig} shows that with more messages, the transition between success rate of $1$ to a success rate of $0$ is faster.
-Finally, the results of Exact Resolution in Fig.~\ref{fig:10mess} show that the greedy algorithm are fare from always finding 
-a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which there is always a solution to \pma.
-
  
 
 \section{From Large Message to Message of Size one}\label{sec:reduction}
@@ -649,25 +608,105 @@ $f(\lambda) < 1$ when $\lambda < 1$. The probability that Greedy Uniform fails i
 by $C \lambda m f(\lambda)^m$, whose limit is zero when $m$ goes to infinity. 
 It explains why Greedy Uniform is good for large $m$. 
 
-\subsection{Experimental results} \label{sec:perf_small}
+
+%\section{Conclusion}
+
+%In this article, we have proved that there is always a solution to \pma and that it can be found in polynomial time 
+%for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoretically for Greedy Uniform.
+%Hence, we can use the simple algorithms presented here to schedule C-RAN messages \emph{without buffer nor additional latency}, if we are willing to use only half the bandwidth of the shared link. 
+
+%Many questions on \pma are still unresolved, the first one being its complexity.
+%Moreover, we plan to adapt the Swap algorithm to the case $\tau > 1$. While the potential
+%can be defined in the same way, it is not yet clear that it would help as much in this setting.
+%We could also analyze the behavior of the presented algorithms over random instances in the case $\tau > 1$.
+%For instance, it is possible to form very long compact tuples over random instances and we could
+%use that to obtain an algorithm which works with high probability for load less than $0.5$. 
+%First Fit or Meta Offset can easily be adapted to network topologies with more than a single link, but we could also try to adapt Compact Tuples and Swap. Finally, to capture networks carrying several types of messages, it would be interesting to allow for different message sizes, which makes methods using meta-offsets seemingly useless.
 
 
-We present results of simulations of the algorithms of the previous section, to experimentally assess their performance on
-random instances. The settings are as in Sec.~\ref{sec:perf_large}, with $\tau = 1$.
+
+%\section{Lower bounds}
+
+%Pour m=6, on peut toujours placer 5 éléments, que dire pour plus grand ?
+%Remarque si tous les delais sont différents, on peut les placer, expliquer ça. 
+%Example/family of examples for which some greedy alg fail -> facile pour le first fit
+%Example/family of examples with a given load such that there are no feasible solution.
+
+\newpage
+\appendix
+ \section{Appendix}
+\label{app:experiment}
+
+We provide in this appendix experimentations of all algorithms presented in the paper over synthetic data.
+We also give the proofs of some theorems, ommited in the main part for space.
+
+
+\subsection{Experimental Results for Large Messages} \label{sec:perf_large}
+
+We present results of simulations of the algorithms presented in Section~\ref{sec:large}, to experimentally assess their performance on random instances. The implementation in C of these algorithms can be found on the author's website at \url{https://yann-strozecki.github.io/}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+
+The algorithms we consider are the following:
+\begin{itemize}
+  \item First Fit
+  \item Meta Offset
+  \item Compact Pair
+  \item Greedy Uniform, the algorithm introduced and analyzed in Sec.~\ref{sec:small}, used for arbitrary $\tau$
+  \item Exact Resolution using an algorithm from~\cite{dominique2018deterministic}  
+\end{itemize}
+
+On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the theoretical best value given by the exact resolution is only available in the experiment with at most $10$ messages (it computes a solution in less an hour for twenty messages). 
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.3]{100messBig}
+\end{center}
+\caption{Experiment for $\tau = 1000$, $P=100,000$}
+\label{fig:100messBig}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.3]{100messSmall}
+\end{center}
+\caption{Experiment for $\tau = 10$, $P=1,000$}
+\label{fig:100messSmall}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.3]{10mess}
+\end{center}
+\caption{Experiment for $\tau = 1000$, $P=10,000$}
+\label{fig:10mess}
+\end{figure}
+
+For the tree sets of parameters, the algorithms have the same relative performances. Meta Offset and Greedy Uniform
+perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
+less than $1/2$, while it is easy to build an instance of \pma of load $1/3 +\epsilon$ which makes them fail. 
+The difference between the worst case analysis and the average case analysis is explained for Greedy Uniform, when $\tau = 1$ in Sec.~\ref{sec:small}.
+
+First Fit performs better than Meta Offset while they have the same worst case.  Compact Pair, which is the best theoretically also performs the best in the experiments, always finding assignments for load of 
+$0.6$. As Shown in Fig.\ref{fig:100messBig} and Fig.\ref{fig:100messSmall}, it appears that the size of the messages have little impact on the success rate of the algorithms. Comparing Fig.\ref{fig:10mess} and Fig.\ref{fig:100messBig} shows that with more messages, the transition between success rate of $1$ to a success rate of $0$ is faster.
+Finally, the results of Exact Resolution in Fig.~\ref{fig:10mess} show that the greedy algorithm are fare from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which there is always a solution to \pma.
+
+
+
+\subsection{Experimental Results for Small Messages} \label{sec:perf_small}
+
+
+We present results of simulations of the algorithms presented in~\ref{sec:small}, to experimentally assess their performance on random instances. The settings are as in Sec.~\ref{sec:perf_large}, with $\tau = 1$.
 The evaluated algorithms are:
 
 \begin{itemize}
-	\item First Fit
-	\item Greedy Uniform 
-	\item Greedy Potential, it schedules the messages in arbitrary order, choosing the possible offset which 
-	maximizes the potential of the unscheduled messages
-	\item Swap 
-	\item Exact Resolution
+  \item First Fit
+  \item Greedy Uniform 
+  \item Greedy Potential, a greedy algorithm which leverages the notion of potential introduced for Swap. 
+  It schedules the messages in arbitrary order, choosing the possible offset which maximizes the potential of the unscheduled messages
+  \item Swap 
+  \item Exact Resolution
 \end{itemize}
 
-As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than the worst case analysis.
-In Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. Greedy Uniform behaves exactly as proved in Theorem~\ref{theorem:uniform}, with a very small variance. The performances of Swap and of its simpler variant Greedy Potential, which optimizes the potential in a greedy way, are much better than First Fit or Greedy Uniform. Amazingly, Swap always finds an assignment when the load is less than $0.95$. Swap is extremely close to Exact Resolution, but it fails 
-to find some assignments for load $0.9$ and $1$, as shown in Fig.~\ref{fig:tau1-10mess}.
+As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than bound given by worst case analysis. In Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. Greedy Uniform behaves exactly as proved in Theorem~\ref{theorem:uniform}, with a very small variance. The performance of Swap and of its simpler variant Greedy Potential, which optimizes the potential in a greedy way, are much better than First Fit or Greedy Uniform. Amazingly, Swap always finds an assignment when the load is less than $0.95$. Swap is extremely close to Exact Resolution, but it fails to find some assignments for load $0.9$ and $1$, as shown in Fig.~\ref{fig:tau1-10mess}.
 
 \begin{figure}
 \begin{center}
@@ -684,30 +723,6 @@ to find some assignments for load $0.9$ and $1$, as shown in Fig.~\ref{fig:tau1-
 \caption{Success rate for $\tau = 1$ and $P=10$}
 \label{fig:tau1-10mess}
 \end{figure}
-
-\section{Conclusion}
-
-In this article, we have proved that there is always a solution to \pma and that it can be found in polynomial time 
-for large $\tau$ and load  $0.4$ or for $\tau = 1$ and load $0.61$. Moreover, the performance of the presented algorithms over average instances are shown to be excellent empirically but also theoretically for Greedy Uniform.
-Hence, we can use the simple algorithms presented here to schedule C-RAN messages \emph{without buffer nor additional latency}, if we are willing to use only half the bandwidth of the shared link. 
-
-Many questions on \pma are still unresolved, the first one being its complexity.
-Moreover, we plan to adapt the Swap algorithm to the case $\tau > 1$. While the potential
-can be defined in the same way, it is not yet clear that it would help as much in this setting.
-We could also analyze the behavior of the presented algorithms over random instances in the case $\tau > 1$.
-For instance, it is possible to form very long compact tuples over random instances and we could
-use that to obtain an algorithm which works with high probability for load less than $0.5$. 
-First Fit or Meta Offset can easily be adapted to network topologies with more than a single link, but we could also try to adapt Compact Tuples and Swap. Finally, to capture networks carrying several types of messages, it would be interesting to allow for different message sizes, which makes methods using meta-offsets seemingly useless.
-
-
-
-%\section{Lower bounds}
-
-%Pour m=6, on peut toujours placer 5 éléments, que dire pour plus grand ?
-%Remarque si tous les delais sont différents, on peut les placer, expliquer ça. 
-%Example/family of examples for which some greedy alg fail -> facile pour le first fit
-%Example/family of examples with a given load such that there are no feasible solution.
-
  \bibliography{Sources}
 
 \end{document}
