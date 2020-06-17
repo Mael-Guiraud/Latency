@@ -386,6 +386,43 @@ they do not interact. Hence, if the last level contains the vertices $\{u_1,\dot
 
 \section{Greedy Algorithms}
 
+
+\subsection{Random generation of routed network}
+In this paper, we focus on Cloud-RAN networks. For the results presented here, we consider that the networks\todo{dessin} have a meshed shape. Also, we consider that each datacenter is preceded by a switch in the network, and that the lenght of the routes comming to this datacenter is the same between this switch and each BBU contained in the datacenter.
+Also, we consider that the contention level of the networks studied here is $3$. Indeed, there is two contention point in the way forward for the messages, and one in the way backward, since once the datagrams have been scheduled to go in the datacenter, they go out of it in the exact same order because the size of the arcs is the same for all routes of a same datacenter.
+
+To generate a routed network, several synthetic datas might be fixed: The load of the network, the number of routes, the length of the routes, the distribution of the length of the routes, and the number of contention points.  We first want to determine the impact in terms of computation time and quality of the results of those synthetic datas on the algorithms studied.
+In order to lighten the number of experiences presented here, we consider that the number of datacenter (i.e. the number of contention points of level $2$) is set to $2$, and the number of contention points of level $1$ (and $3$, since the network is symetric) is set to $4$. The results are not significantly impacted if we change those values. 
+Also, in a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the numer of routes in the graph at the end of this section.
+
+Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
+\todo{expliquer pourquoi ces valeurs}
+
+Figure~\ref{tab:instances} shows the average additional latency needed by the branch and bound and the greedy algorithm that we call GNS presented in next section (used to intialize the local search algorithms) for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
+
+\begin{center}
+\begin{figure}
+\centering
+\begin{tabular}{ |c|c|c|c|c| }
+\hline
+    Range & $0$ and $\tau/3$ & $0$ and $P$& $P-0.1\times P$ and $P$\\
+    \hline
+    Branch and bound & $4273$ & $222$& $2704$ \\
+ 
+    GNS & $12177$ & $10628$& $9648$\\
+   
+    \hline
+  
+ \end{tabular}
+ \caption{Difference between the optimal solution of the greedy algorithms, for different kind of instances generated.}
+ \label{tab:instances}
+ \end{figure}
+ \end{center}
+ The objective is to find the instances in which a solution given can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the additional latency needed by GNS remains in the same order of magnitude.
+ 
+ Also, we investigated the impact of the load on the quality of the results. When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load.
+
+ 
 Given a routed network, the local search algorithms explore all compact assignments in order to find a compact assignment $CA$ such that $TR(Real(CA))$ is as small as possible. A first compact assignment is needed to intialize any local search algorithm. We present in this section three greedy algorithms which try to build canonical valid assigments, which can then 
 turned into the corresponding compact representation by the $CR$ function.
 
@@ -578,74 +615,6 @@ $S'_u$, since $(O'_u,S'_u)$ is realizable, the intermediate solutions are also r
 
 The most simple local search heuristic is hill climbing. This algorithm starts from a compact assignment $CA$, explore the entire neighborhood of $CA$, and select the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then algorithm stops and returns $Real(CA)$ which is a local minimum. 
 
-
-\subsection{Tabu Search}
-
-Tabu search is a variation on hill climbing using memory. We also select the compact assignment $CA'$ which minimizes 
-$TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid loop in local minimum, we use a memory of the last 
-$N$ solutions explored and we forbid to visit them again. This algorithm can still loop on a cycle larger than $N$,
-hence we must fix some integer $M$ and stop the algorithm after $M$ steps.
-
-
-One can change the size $N$ and $M$ in tabu search -> explore how to fix these parameters. 
-
-Figure avec mémoire 100,1000.
-
-\subsection{Simulated annealing}
-
-A simulated annealing search works as follow. A {\emph temperature} is set. Considering a compact assignment $CA$, we draw in its neighborhood a compact assignment $CA'$. Then, considering the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, the compact assignment $CA'$ is or accepeted or rejected. If it is accepted, the neighborhood of $CA'$ is then explored. During the simulated annealing, the temperature decrease. The lower is the temperature, the lower are the chance to accept a compact assignment that worsen the solution.
-
-
-\subsection{Branch and Bound}
-
-
-définition des différentes coupes.\\
-
-\section{Results}
-
-
-
-
-\subsection{Random generation of routed network}
-In this paper, we focus on Cloud-RAN networks. For the results presented here, we consider that the networks\todo{dessin} have a meshed shape. Also, we consider that each datacenter is preceded by a switch in the network, and that the lenght of the routes comming to this datacenter is the same between this switch and each BBU contained in the datacenter.
-Also, we consider that the contention level of the networks studied here is $3$. Indeed, there is two contention point in the way forward for the messages, and one in the way backward, since once the datagrams have been scheduled to go in the datacenter, they go out of it in the exact same order because the size of the arcs is the same for all routes of a same datacenter.
-
-To generate a routed network, several synthetic datas might be fixed: The load of the network, the number of routes, the length of the routes, the distribution of the length of the routes, and the number of contention points.  We first want to determine the impact in terms of computation time and quality of the results of those synthetic datas on the algorithms studied.
-In order to lighten the number of experiences presented here, we consider that the number of datacenter (i.e. the number of contention points of level $2$) is set to $2$, and the number of contention points of level $1$ (and $3$, since the network is symetric) is set to $4$. The results are not significantly impacted if we change those values. 
-Also, in a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the numer of routes in the graph at the end of this section.
-
-Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
-\todo{expliquer pourquoi ces valeurs}
-
-Figure~\ref{tab:instances} shows the average additional latency needed by the branch and bound and the GNS for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
-
-\begin{center}
-\begin{figure}
-\centering
-\begin{tabular}{ |c|c|c|c|c| }
-\hline
-    Range & $0$ and $\tau/3$ & $0$ and $P$& $P-0.1\times P$ and $P$\\
-    \hline
-    Branch and bound & $4273$ & $222$& $2704$ \\
- 
-    GNS & $12177$ & $10628$& $9648$\\
-   
-    \hline
-  
- \end{tabular}
- \caption{Difference between the optimal solution of the greedy algorithms, for different kind of instances generated.}
- \label{tab:instances}
- \end{figure}
- \end{center}
- The objective is to find the instances in which a solution given GNS can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the additional latency needed by GNS remains in the same order of magnitude.
- 
- Also, we investigated the impact of the load on the quality of the results. When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load.
-
- 
-
-\subsection{Neighborood heuristics}
-
-\subsubsection{Hill climbing}
 The quality of hill climbing depends of the the intial compact assignment. A first natural intialisation is to consider the compact representation $CR(A)$ of the assignment $A$ given by the Greedy Normalized Success algorithm. Also, a random compact assignment can be taken. Since a compact assignment does not always give a valid assignment, the last idea is to execetue several hill climbing starting from a random compact assignment, and to return the best assignment given.
 
 Figure~\ref{fig:descente07} shows the difference between initalizing the hill climbing with the greedy normalized success algorithm, or with one or several random compact representation. Those resultas are drawn on $100$ random instances, with $80\%$ of load.
@@ -696,7 +665,16 @@ Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes} shows the success 
 Those experiences shows that, even if initializing the hill climbing with $100$ random instances performs better when the number of routes and the load are low, this initialization is not robust when the load of the number of routes increases. Furthermore, the computation time induced by executing the hill climbing on a lot of random compact representation instead of only one (for GNS) makes it less effective.
 
 \todo{rajouter un tableau sur le nombre de pas de descente}
-\subsubsection{Tabu search}
+\subsection{Tabu Search}
+
+Tabu search is a variation on hill climbing using memory. We also select the compact assignment $CA'$ which minimizes 
+$TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid loop in local minimum, we use a memory of the last 
+$N$ solutions explored and we forbid to visit them again. This algorithm can still loop on a cycle larger than $N$,
+hence we must fix some integer $M$ and stop the algorithm after $M$ steps.
+
+
+One can change the size $N$ and $M$ in tabu search -> explore how to fix these parameters. 
+
 After reaching a local optimum, tabu search continues it execution untill it has executed a given number of steps.
 Thus, we investigate the average number of steps needed by the tabu search to find the assignment it returns. Remember that, to each step, the search explores the entire neighborhood of a solution. The computation of a large number of steps is then long.
 
@@ -712,18 +690,24 @@ It appears that, the more steps tabu search remember, the better the assignment 
 In order to understand what happends during the tabu search, we investigate the distribution of the step at which the tabu search finds its best solution.
 For $10$ steps of memory, tabu search finds the best assignment in average in $3.8$ steps, with a memory of $100$ steps, the average step that gives the best assignment is $18.1$, and for $1000$ steps, tabu search needs in average $84.3$ steps to find the best solution. 
 Also, it appears that, in most of $60\%$ of the cases, tabu search finds it's best assignment before $10$ steps, but some computation finds a better assignment up to the $900^{th}$ step. This means that running the tabu search longer could improove the quality of the result. Nevertheless, this the computation is really expensive, using simulated annealing is more interesting.
-\subsubsection{Simulated annealing}
+
+\subsection{Simulated annealing}
+
+A simulated annealing search works as follow. A {\emph temperature} is set. Considering a compact assignment $CA$, we draw in its neighborhood a compact assignment $CA'$. Then, considering the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, the compact assignment $CA'$ is or accepeted or rejected. If it is accepted, the neighborhood of $CA'$ is then explored. During the simulated annealing, the temperature decrease. The lower is the temperature, the lower are the chance to accept a compact assignment that worsen the solution.
+
  Simulated annealing needs two parameters to run. A temperature, and a number of steps.
  The temperature must be fixed in order to accept to worsen the solution at the begining of the execution, must decrease slowly. When the temperature is low, the simulated annealing rejects bad compact representations.
  Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the exection of the simulated annealing. An compact assignment $CA'$ is accepted or rejected with the probability $e^{-\frac{TR(REAL(CA'))-TR(REAL(CA))}{t}} $, where $t$ is the temperature.
  This means that $\frac{TR(REAL(CA'))-TR(REAL(CA))}{t}$ must be close to $0$ at the begining, and must approaches infinity at the end of the execution. 
-\subsection{Branch and bound}
+\subsection{Branch and Bound}
+
+
+définition des différentes coupes.\\
 Montrer avec des courbes (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques, et presque aucunes dont la réalisation n'est pas minimale.
 très peu de représentation compacte en  
 
-
-
 \subsection{Results comparison}
+\section{Long routes}
 
 \section{Conclusion}
 C'est vraiment génial comme travail, on va tuer le game du DETNET.
