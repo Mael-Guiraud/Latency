@@ -85,7 +85,7 @@
 Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol time constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a sending scheme of these periodic messages without contention nor buffering.
 
 We study the theoritical problem \pma modeling this setting on a simple but common topology, where all contentions are on a single link shared by all antennas. The problem is reminiscent of classical scheduling and packing problems, but the periodicity introduces a new twist. We study how the problem behave with regard to the load of the shared link.
-The two main contributions are polynomial time algorithms which \textbf{always} find a solution for arbitrary size of messages an load less than $0.4$ or for size one and load less than $\phi - 1$ ($\phi$ being the golden ratio $(\sqrt{5}+1)/2)$. We also prove that a randomized greedy algorithm, almost always finds a solution on random instances, explaining why most greedy algorithms work so well in our experiments.
+The two main contributions are polynomial time algorithms which \textbf{always} find a solution for arbitrary size of messages an load less than $0.4$ or for size one and load less than $\phi - 1$ ($\phi$ being the golden ratio $(\sqrt{5}+1)/2)$. We also prove that, a randomized greedy algorithm almost always finds a solution on random instances, explaining why most greedy algorithms work so well in our experiments.
 %We focus on a simple but common star shaped topology, where all contentions are on a single link shared by all antennas. For messages of arbitrary size, we show that there is always a solution as soon as the load of the network is less than $40\%$. Moreover, we explain how we can restrict our study to message of size $1$ without increasing too much the global latency. 
 %For message of size $1$, we prove that it is always possible to schedule them, when the load is less than $61\%$  using a polynomial time algorithm. Moreover, using a simple random greedy algorithm, we show that almost all instances of a given load admit a solution, explaining why most greedy algorithms work so well in practice.  
 \end{abstract}
@@ -99,23 +99,22 @@ The derived theoritical question we address is the following: \emph{is it possib
 %Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
 
 The algorithmic problem studied, called \emph{Periodic Message Assignment} or \pma, is as follows:
-Given a period, a message size and a delay between the two contention points for each message, set a departure time in the period for each message, so that they go through both contention points without collision. It is similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since messages from consecutive periods can interact. In flow shop problem, the aim is usually to minimize the makespan, or schedule length, but in our periodic variant it is infinite. Hence, we choose to look for any periodic schedule without buffering, which minimizes the trip time of each message. 
+Given a period, a message size and a delay between the two contention points for each message, set a departure time in the period for each message, so that they go through both contention points without collision. It is similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since messages from consecutive periods can interact. In flow shop problems, the aim is usually to minimize the makespan, or schedule length, but in our periodic variant it is infinite. Hence, we choose to look for any periodic schedule without buffering, to minimize the trip time of each message. 
 
 
  To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
-In some works~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem, since they take have the period as an input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising good algorithms using branch and bound, mixed integer programming, genetic algorithms \dots
+In some works~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem, since they take have the period as an input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms \dots
 
-In previous articles of the authors, generalizations of \pma allowing buffering are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using classical scheduling algorithms as subroutines) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks have been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside a car or a plane, or logistic problems in production lines and we hope our approach can be brought to these settings.
+In previous articles of the authors, generalizations of \pma allowing buffering are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using classical scheduling algorithms as subroutines) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we consider only sending scheme with \emph{no additional latency}. More complex scheduling problems for time sensitive networks have been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines. We think our approach can be brought to these settings.
 
 
 
 \paragraph*{Organization of the paper}
 
 In Sec.~\ref{sec:model}, we present the model and the problem \pma. In Sec.~\ref{sec:large},
-we present several greedy algorithms and prove that they always find a solution to \pma for increasing load. 
-They rely on bounding measures of the size wasted when scheduling messages by coming up with schemes to
-build more compact solutions. Then, we present deterministic and probabilistic algorithms for the case $\tau = 1$ in Sec.~\ref{sec:small}, which work for much higher loads than the algorithms for large messages. The deterministic algorithm is not greedy, contrarily to the previous ones, since it uses a swap mechanism which can move already scheduled messages. 
- In Sec.~\ref{sec:reduction} of the Appendix, we justify why we can reduce to message of size one for the price of doubling the load or a small additional latency. Also in the Appendix, the performance of all presented algorithms (and some more) are shown on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}. It turns out that our algorithms work even better on random instances than what we have established for their worst case.
+we present several greedy algorithms and prove they always find a solution to \pma for moderate loads. 
+These algorithms relies on schemes to build compact enough solutions, to bound measures of the size wasted when scheduling messages. Then, we present deterministic and probabilistic algorithms for the case $\tau = 1$ in Sec.~\ref{sec:small}, which work for much higher loads than the algorithms for large messages. The deterministic algorithm is not greedy, contrarily to the previous ones, since it uses a swap mechanism which can move already scheduled messages. 
+ In Sec.~\ref{sec:reduction} of the Appendix, we justify why we can reduce to messages of size one for the price of doubling the load or adding some latency. Also in the Appendix, the performance of all presented algorithms (and some more) are shown on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}. It turns out that our algorithms work even better on random instances than what we have established for their worst case.
 
 
 \section{Model}\label{sec:model}
@@ -163,9 +162,9 @@ of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 
 
 We want to send all messages, so that there is no collision in the shared link.
 In other word, we look for a way to send the messages without using buffering and 
-hence limiting the latency of messages to the physical length of the links. An assignment is a
+hence limiting the latency of messages to the physical length of the links. An \textbf{assignment} is a
 choice of an offset for each message such that \emph{no pair of messages collide}, as shown in Fig.~\ref{fig:assignment}.
-Formally, an \textbf{assignment} is a function from the messages in $[n]$ to their offsets in $[P]$.  
+Formally, an assignment is a function from the messages in $[n]$ to their offsets in $[P]$.  
 
 \begin{figure}
 \begin{center}
@@ -189,7 +188,7 @@ To overcome the supposed hardness of \pma, we study it when the load of the syst
 
 \section{Greedy Algorithms for Large Messages} \label{sec:large}
 
-In this section, we study the case of arbitrary $\tau$ values. When modeling real problems,
+In this section, we study the case of arbitrary values for $\tau$. When modeling real problems,
 it is relevant to have $\tau > 1$ when the transmission time of a single message is large with regard to its delay,
 which is the case in C-RAN networks.
 
@@ -217,7 +216,7 @@ It turns out that First Fit always creates compact assignments (as defined in~\c
 First Fit solves \pma positively on instances of load less than $1/3$. 
 \end{theorem}
 \begin{proof}
-We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -1$. For $S = 1$, it is clear since a single message forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a route $i \notin S$ such that First Fit builds $A[i \rightarrow o]$ from $A$. By definition of First Fit, choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled message between $o - \tau $ and $o-1$ (modulo $P$), hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, then only $3\tau -1$ new offsets are forbidden, that is $Fo(A[i \rightarrow o]) \leq Fo(A) + (3\tau -1)$, which proves the induction and the theorem.
+We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -1$. For $S = 1$, it is clear since a single message forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a route $i \notin S$ such that First Fit builds $A[i \rightarrow o]$ from $A$. By definition of First Fit, choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled message between $o - \tau $ and $o-1$, hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, then only $3\tau -1$ new offsets are forbidden, that is $Fo(A[i \rightarrow o]) \leq Fo(A) + (3\tau -1)$, which proves the induction and the theorem.
 \end{proof}
 
 \subsection{Meta-Offset}
@@ -247,7 +246,7 @@ We first describe the algorithm which schedules pairs of routes and then explain
 
 
 
-From now on, we use Lemma~\ref{lemma:multiple} to always assume that $P = m\tau$ and the load is $n/m$. It makes the analysis of the next algorithms simpler and tighter. It only changes the load from $n \tau / P$ to at most $n (\tau +1)/ P$: the difference is less than $n /P < 1/\tau$, thus very small for large $\tau$. Note that the transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
+From now on, we use Lemma~\ref{lemma:multiple} to always assume that $P = m\tau$, thus the load is $n/m$. It makes the analysis of the next algorithms simpler and tighter. It only changes the load from $n \tau / P$ to at most $n (\tau +1)/ P$: the difference is less than $n /P < 1/\tau$, thus very small for large $\tau$. Note that the transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
 
 \begin{lemma}\label{lemma:multiple}
 Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = P / \tau$. There is an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that an assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
@@ -255,7 +254,8 @@ Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and 
 \begin{proof}
 Let $P = m \tau + r$ with $r \leq \tau$. We define the instance $I'$ as follows: $P' = mP$, $d_{i}' = m d_i$ and $\tau' = m \tau + r$. With this choice, we have $P' = m(m \tau + r) = m \tau'$.
 Consider an assignment $A'$ of the instance $I'$.
-If we let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions. We then use a compactification procedure on $A'$ as in Th.4 of~\cite{dominique2018deterministic}. w.l.o.g., the first message is positioned at offset zero. The first time it uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Then, all other messages are translated to the left by removing increasing values to their offsets, until there is a collision. It guarantees that some message $j$ is in contact with the first one on the first or second period. It implies that either $A(j)$ or $A(j)+d_j \mod P'$ is a multiple of $m$ and since $d_j$ is a multiple of $m$, then both $A(j)$ and $A(j)+d_j \mod P'$ are multiples of $m$. This procedure can be repeated until we get an assignment $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Finally, we define $A$ as $A(i) = A''(i)/m$ and we obtain an assignment of $I$.
+If we let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions. We then use a compactification procedure on $A'$ seen as an assignment of $I''$,
+with size of messages multiple of $m$ (see Th.4 of~\cite{dominique2018deterministic} for a similar compactification). W.l.o.g., the first message is positioned at offset zero. The first time it uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Then, all other messages are translated to the left by removing increasing values to their offsets, until there is a collision. It guarantees that some message $j$ is in contact with the first one on the first or second period. It implies that either $A'(j)$ or $A'(j)+d_j \mod P'$ is a multiple of $m$ and since $d_j$ is a multiple of $m$, then both $A'(j)$ and $A'(j)+d_j \mod P'$ are multiples of $m$. This procedure can be repeated until we get an assignment $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Finally, we define $A$ as $A(i) = A''(i)/m$ and we obtain an assignment of $I$.
 \end{proof}
 
 
@@ -319,7 +319,7 @@ The algorithm can be improved by forming compact tuples instead of compact pairs
 A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ (with $r_{i_1},\dots,r_{i_k}$ increasing), for which meta-offsets can be chosen so that, there is no collision, the messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau = A(i_{l+1}) + d'_{i_{l+1}}\tau$.
 The algorithm \emph{Compact k-tuples} works by scheduling compact $k$-tuples
 using meta offsets while possible, then scheduling compact $k-1$-tuples and so on until $k=1$.
-The theorem we give is obtained for $k=8$, but taking arbitrary large $k$ and using more refined bounds on $Fmo_i(A)$ is not enough to an algorithm working for a load of $41/100$ (and it only works from larger $n$).
+The theorem we give is obtained for $k=8$, but taking arbitrary large $k$ and using refined bounds on $Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$).
 
 
 \begin{lemma}\label{lemma:uple_find}
@@ -339,22 +339,21 @@ It is equal to $k + k(k-1)(2k-1)/6$ which proves the induction.
 Compact $8$-tuples always solves \pma positively on instances of load less than $4/10$, for instances with $n \geq 220$.
 \end{theorem}
 \begin{proof}
-We need the following fact, which generalizes ~\ref{lemma:pair_forbid}. A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. If the remainder of the messages in the $j$-tuples are larger than the remainder in the $k$-tuples, it forbids $k+j$ messages only.
+We need the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. %If the remainder of the messages in the $j$-tuples are larger than the remainder in the $k$-tuples, it forbids $k+j$ messages only.
 It allows to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $Fmo_i(A)$, the number of forbidden meta-offsets when placing $i$-tuple in the algorithm.
 If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
 we have the following equation:  $$ Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
 The equation for $n_1$ is slightly better: 
 $$ Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
 A bound on $n_i$ can be computed, using the fact that $A$ can be extended while $Fmo_i(A) < m$. 
-Lemma~\ref{lemma:uple_find} ensures there are enough compact $k$-tuples, if there are enough messages,
-that is $n - \sum_{j \leq i \leq 8} n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
+Lemma~\ref{lemma:uple_find} ensures there are enough compact $k$-tuples, when $n - \sum_{j \leq i \leq 8} n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
 A numerical computation of the $n_i$'s shows that the algorithm always finds a solution when the load is less than $4/10$
 and for $n \geq 220$.
 \end{proof}
 
 The code computing the $n_i$ can be found on the author's website at \url{https://yann-strozecki.github.io/}.
 To make the algorithm Compact $8$-tuples work, we need to have $220$ messages to be able to
-produce enough compact $8$-tuples in the first phase. It turns out, is not a problem for two reasons. First, Lemma~\ref{lemma:uple_find} can be improved by using a better polynomial time algorithm to find compact tuples, by better taking into account the repetitions of values. We do not present it here because it is more complex to analyze. Second, on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and we can just build the tuples greedily. Therefore, for most instances, forming compact $k$-uples is not a problem and in practice the algorithm works even for small $n$.
+produce enough compact $8$-tuples in the first phase. It is not a real restriction for two reasons. First, Lemma~\ref{lemma:uple_find} can be improved, using a smarter polynomial time algorithm to find compact tuples, which better takes into account repetitions of values and compute the compact tuples in both directions. Second, on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and we can just build the tuples greedily. Therefore, for most instances, forming compact $k$-uples is not a problem and in practice the algorithm works even for small $n$.
 
 \section{Messages of Size One} \label{sec:small}
 
@@ -397,7 +396,7 @@ as a sum over positions, as stated in the next lemma.
 The sum of potentials of all positions used in the first period by messages scheduled by $A$ is equal to $Pot(A)$.  
 \end{lemma}
 
-By definition of the potential of the positions, we have the following simple invariant.
+By definition of the potential of a position, we obtain the following simple invariant.
 
 \begin{lemma}\label{lemma:inv}
 The sum of potentials of all positions for a partial assignment with $k$ scheduled messages is $nk$.  
@@ -414,10 +413,10 @@ Let $A$ be some partial assignment of size $k$ and let $i$ be an unscheduled mes
 \end{lemma}
 
 \begin{proof}
-The positions in the first period can be partitioned into two parts: $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
-Let $V_f$ be the sum of the potentials of the positions in $P_f$ and by $V_u$ the sum of the potentials of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partitions the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
+The positions in the first period can be partitioned into $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
+Let $V_f$ be the sum of the potentials of the positions in $P_f$ and let $V_u$ be the sum of the potentials of the positions of $P_u$. By Lemma~\ref{lemma:pot_pos}, since $P_f$ and $P_u$ partition the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
-By hypothesis, since $i$ cannot be scheduled, for all $p \in P_{f}$, $p+d_i$ is used in the second period. We now define the function $F$ which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d$ in the second period, that is $A(j) + d_j = p + d \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark now that, if we compare $Swap(i,p,A)$ to $A$, on the second period the positions are used. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ add to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
+By hypothesis, since $i$ cannot be scheduled, for all $p \in P_{f}$, $p+d_i$ is used in the second period. We now define the function $F$ which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d$ in the second period, that is $A(j) + d_j = p + d \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark now that, if we compare $Swap(i,p,A)$ to $A$, on the second period the same positions are used. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ add to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
 
 Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Hence, since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$. Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
@@ -425,7 +424,7 @@ Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$
 %\subsubsection*{The Swap Algorithm}
 
 
-We now precisely describe the \textbf{Swap and Move} algorithm:  messages are scheduled while possible by First Fit and then the Swap operation is applied while it increases the potential. When the potential is maximal, the algorithm tries to schedule a new message by moving one or two scheduled messages to other available offsets. If it fails to find such messages the algorithm stops, otherwise it continues repeating the same steps. We now give an analysis of the algorithm, showing that it always works for a load striclty larger than $1/2$.
+We now precisely describe the \textbf{Swap and Move} algorithm:  messages are scheduled while possible by First Fit and then the Swap operation is applied while it increases the potential. When the potential is maximal, the algorithm tries to schedule a new message by moving at most two scheduled messages to other available offsets. If it fails to schedule a new message, the algorithm stops, otherwise the whole procedure is repeated. We now give an analysis of the algorithm, showing that it always works for a load striclty larger than $1/2$.
 
 \begin{theorem}
 The Swap and Move algorithm solves positively \pma, in polynomial time, for instances with $\tau =1$ and load $1/2 + (\sqrt{5}/2 -1) \approx 0,618$.
@@ -454,9 +453,9 @@ By expanding, we obtain a second degree expression in $\epsilon$.
 $$1/4 - 2\epsilon - \epsilon ^2 \geq  0.$$
 Solving this equation yields $\epsilon \leq \sqrt{5}/2 -1$.
 
-To prove the algorithm is in polynomial time, it is enough to remark that all Swap operations 
+We now prove that Swap and Move is in polynomial time. Remark that all Swap operations 
 strictly increase the potential. On the other hand, when one or two messages are moved, the potential can decrease but
-a message is added to the partial assignement. The potential is bounded by $O(n^2)$ and the move operation all together can only remove $O(n^2)$ to the potential, hence there are at most $O(n^2)$ Swap operations during the algorithm. A Swap operation can be performed in time $O(n^2)$, since for a given message, all free offsets must be tested and the potential must be computed in time $O(n)$, which proves that Swap and Move is in $O(n^4)$.  
+a message is added to the partial assignement. The potential is bounded by $O(n^2)$ and the move operations all together can only remove $O(n^2)$ to the potential, hence there are at most $O(n^2)$ Swap operations during the algorithm. A Swap operation can be performed in time $O(n)$, since for a given message, all free offsets must be tested and the potential is evaluated in time $O(1)$ (by maintaining the potential of each position). This proves that Swap and Move is in $O(n^3)$.  
 \end{proof}
 
 Consider a partial assignment of size $n' = (1/2 + \epsilon)P$, and a message of delay $d$.
