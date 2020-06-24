@@ -1,11 +1,15 @@
 // CONFIG OF THE TOPOLOGY
 
-#define MAX_LENGTH 700
+#include "nb_bbu.h"
+#define MAX_LENGTH 20000
+
 #define MESSAGE_SIZE 2500
-#define NB_BBU 2
-#define NB_COLLISIONS 3
+
+#define NB_COLLISIONS 4
+
 #define NB_ROUTES_PER_FLOW 1
-#define PROBA 0.5
+#define PROBA 1
+#define DISTRIBUTED 0
 
 //Mod synch or not
 #define SYNCH 1
@@ -13,13 +17,13 @@
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.3
 #define LOAD_MAX 1
-#define LOAD_GAP 0.1
+#define LOAD_GAP 0.9
 
 // CONFIG OF THE SIMULATIONS FOR ALGORITHMS WITH WAITING TIME
 #define MARGIN_MIN 8000
 #define MARGIN_MAX 10000
 #define MARGIN_GAP 1000
-#define STANDARD_LOAD 0.7
+#define STANDARD_LOAD 0.8
 #define LAT_GAP 100
 
 
@@ -32,9 +36,9 @@
 
 
 //For star simulation
-#define NB_ROUTES 7
+#define NB_ROUTES 8
 
-#define NB_SIMULS 10
+#define NB_SIMULS 100
 
 
 //openMP parallel
@@ -48,3 +52,6 @@
 #define NB_COUPES 7
 
 #define VOISINAGE 1
+
+#define DATA_CENTER_ROUTES 0
+

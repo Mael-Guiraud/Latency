@@ -309,19 +309,27 @@ Assignment loaded_greedy_collisions(Graph * g, int P, int message_size)
 
 
 
-int oderinarc(int* release, int * budget, int  P , int size,int message_size,int * order, int * delay,int * id,int * period)
+int oderinarc(int* release, int * budget, int  P , int size,int message_size,int * order, int * delay,int * id,int * period,int mod)
 {
+
 	/*printf("ARc :");
 	for(int i=0;i<size;i++)printf(" %d ",id[i]);printf("\n");
 		printf("Release :");
 	for(int i=0;i<size;i++)printf(" %d ",release[i]);printf("\n");
 		printf("Budget :");
 	for(int i=0;i<size;i++)printf(" %d ",budget[i]);printf("\n");*/
+	int Per[size];
 
 	int offset = 0;
 	//Recherche de la premiere route à arriver.
+	int release_time[size];
+	for(int i=0;i<size;i++)
+	{
+		release_time[i]=release[i];
+	}
 	int min = release[0];
-	//int max;
+	int max;
+	int boolp;
 	int current_route = 0;
 	for(int i=1;i<size;i++)
 	{
@@ -331,10 +339,197 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 			current_route = i;
 		}
 	}
+
+	
+
 	//int order = calloc(size,sizeof(int));
 	order[0]=id[current_route];
 	delay[id[current_route]] = 0;
-	int Per[size];
+	int tmp = release[current_route];
+	fill_Per(period, id[current_route], release_time[current_route], message_size,P);
+	//printf("premier = %d id = %d\n",current_route,id[current_route]);
+	if(mod == 2)
+	{
+		Per[0]=0;
+		//printf("new P = %d\n",P);
+		//On normalise les temps dans la periode
+		for(int i=0;i<size;i++)
+		{
+
+			release[i] -= tmp;
+			release[i]%=P;
+			//printf("Release %d = %d \n",i,release[i]);
+		}
+		release[current_route]= INT_MAX;
+		offset = message_size;
+		for(int i=1;i<size;i++)
+		{
+			//Choix de la route éligible
+			current_route = -1;
+			min = INT_MAX;
+			for(int k=0;k<size;k++)
+			{
+				if(release[k]<=offset)//route dispo
+				{
+					if(budget[k]<min)//le plus de reste a parcourir
+					{
+						min = budget[k];
+						current_route = k;
+					}
+				}
+			}
+			//printf("current = %d \n", current_route);
+			boolp=0;
+			//Si on ne trouve pas de routes eligible
+			if(current_route == -1)
+			{
+				boolp = 1;
+				min = release[0];
+				current_route = 0;
+				for(int k=1;k<size;k++)
+				{
+					if(release[k] < min)
+					{
+						min = release[k];
+						current_route = k;
+						
+					}
+				}
+			//	printf("current route = %d \n", current_route);
+			}
+			order[i]=id[current_route];
+			//printf("id %d = %d\n",current_route,id[current_route]);
+			//printf("%d %d \n",release[current_route],offset);
+			if(boolp)
+			{
+
+				delay[id[current_route]] = 0;
+				offset = release[current_route];
+			//	printf("pas collé delay %d offset %d \n",delay[id[current_route]],offset);
+			}
+			else
+			{
+
+				delay[id[current_route]] = offset-release[current_route];
+				
+			//	printf("collé delay %d offset %d \n",delay[id[current_route]],offset);
+			}
+			int check_value = 1;
+			int total_check = 0;
+			while(check_value)
+			{
+				//printf("Check value for route %d offset %d \n",current_route,offset+total_check);
+				check_value = cols_check(Per,offset+total_check,message_size,P,i);
+				//printf("check = %d \n ",check_value);
+				total_check += check_value;
+				if(total_check >= P)
+				{
+				//	printf("fail\n");
+					return 0;
+				}
+			}
+		//	printf("%d totalcheck, %d",offset+total_check,total_check);
+			if(offset + total_check>=P)
+			{
+
+				if(id[current_route] == 0)
+					order[i]= INT_MAX;
+				else
+					order[i]=-order[i];
+				
+			}
+			
+		//	printf("total check = %d \n",total_check);
+			delay[id[current_route]] += total_check;
+
+			if((total_check == 0)||(boolp && ((release[current_route]+total_check)%P==offset) ))
+			{
+				Per[i]=offset;
+				offset+=message_size;
+			}
+			else
+			{
+				Per[i] = (release[current_route]+delay[id[current_route]])%P;
+			}
+			//printf("offset = %d per %d release %d totalcheck %d\n \n",offset,Per[i],release[current_route],total_check);
+			release[current_route]= INT_MAX;
+			fill_Per(period, id[current_route], release_time[current_route]+delay[id[current_route]], message_size,P);
+		//	printf("route %d order %d \n", current_route,order[i]);
+			if(offset >= P)
+				return 0;
+		}
+
+			tri_bulles_inverse(Per,order,size);
+		return 1;
+	}
+	if(mod == 1)
+	{
+	//	printf("debut, current route = %d \n",current_route);
+		//On normalise les temps dans la periode
+		for(int i=0;i<size;i++)
+		{
+			release[i] -= tmp;
+			release[i]%=P;
+			//printf("route %d releas %d \n",id[i],release[i]);
+		}
+		release[current_route]= INT_MAX;
+		offset = message_size;
+
+		for(int i=1;i<size;i++)
+		{
+			//Choix de la route éligible
+			current_route = -1;
+			min = INT_MAX;
+			for(int k=0;k<size;k++)
+			{
+				if((release[k]<=offset)&&(release[k]>0))//route dispo
+				{
+					if(budget[k]<min)//le plus de reste a parcourir
+					{
+						min = budget[k];
+						current_route = k;
+					}
+				}
+			}
+			boolp=0;
+			//Si on ne trouve pas de routes eligible
+			if(current_route == -1)
+			{
+				max = -INT_MAX;
+				//Recherche de la route a mettre en seconde periode la plus opti
+				for(int k=0;k<size;k++)
+				{ 	// budget    -  Delai suplémentaire
+					if(release[k] != INT_MAX)
+						if(budget[k] -( offset+P-release[k])  > max )
+						{
+							//On prends celui que ca impact le moins d'être placé en seconde periode
+							max = budget[k] - (offset+P-release[k]) ;
+							current_route = k;
+							boolp = 1;
+						}
+				}
+			}
+			//printf("current route = %d \n",current_route);
+			order[i]=id[current_route];
+			if(boolp)
+			{
+
+				if(id[current_route] == 0)
+					order[i]= INT_MAX;
+				else
+					order[i]=-order[i];
+				delay[id[current_route]] = offset+P-release[current_route];
+			}
+			else
+				delay[id[current_route]] = offset-release[current_route];
+			//printf("delay = %d \n",delay[id[current_route]]);
+			offset+=message_size;
+			release[current_route]= INT_MAX;
+			fill_Per(period, id[current_route], release_time[current_route]+delay[id[current_route]], message_size,P);
+		}
+		
+		return 1;
+	}
 	Per[0]=release[current_route];
 	int firstorder = order[0];
 
@@ -418,9 +613,9 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		int total_check = 0;
 		while(check_value)
 		{
-			//printf("Check value for route %d offset %d \n",current_route,offset+total_check);
+		//	printf("Check value for route %d offset %d \n",current_route,offset+total_check);
 			check_value = cols_check(Per,offset+total_check,message_size,P,i);
-			//printf("check = %d \n ",check_value);
+		//	printf("check = %d \n ",check_value);
 			total_check += check_value;
 			if(total_check >= P)
 			{
@@ -433,13 +628,11 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		//il faut d'abbord chercher le debut de la periode courrante
 		//begin offset est forcement le plus petit release, donc on cherche a decaler begin offset de P* le nombre de period qu'il faut
 		int begin2 = begin_offset;
-	
-		while( release[current_route] > begin2 + P )
+	  
+		while( release[current_route] >= begin2 + P )
 		{
-			if(release[current_route]>(begin2 + P))
-			{
 				begin2 +=P;
-			}
+			
 		}
 
 		if(VOISINAGE)
@@ -471,7 +664,7 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 		Per[i] = Per[i] % P;
 	}
 	tri_bulles_inverse(Per,order,size);
-
+	//for(int i=0;i<size;i++)printf("%d ",order[i]);printf("\n");
 	if(order[0] != firstorder)
 	{
 		printf("impossible, le tri a mélangé les ordres (greedy) \n");
@@ -481,11 +674,10 @@ int oderinarc(int* release, int * budget, int  P , int size,int message_size,int
 }
 
 
-int greedy_deadline(Graph * g, int P, int message_size)
+int greedy_deadline(Graph * g, int P, int message_size, int mod)
 {
 	Period_kind kind;
-	int CL;
-
+	int CL; 
  	//for each contention  level
  	for(int i=0;i<g->contention_level;i++)
  	{
@@ -506,6 +698,7 @@ int greedy_deadline(Graph * g, int P, int message_size)
 
  			if(g->arc_pool[j].contention_level == CL)
  			{
+ 			//	printf("arc %d, kind %d \n",j,kind);
  				int release[g->arc_pool[j].nb_routes];
  				int budget[g->arc_pool[j].nb_routes];
  				int ids[g->arc_pool[j].nb_routes];
@@ -515,12 +708,33 @@ int greedy_deadline(Graph * g, int P, int message_size)
  					{
  						ids[l] = g->arc_pool[j].routes_id[l];
  						release[l] = route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 					//	printf("retourlenghtuntillarc %d \n",route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
  						budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
- 						//printf("route %d(%d) : %d = %d - %d ",ids[l], g->size_routes[ids[l]],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
+ 						//printf("route %d(%d) : %d = %d - %d\n ",ids[l], release[l],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
  					}
  					//printf("\n");
- 					if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f))
+ 					if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f,mod))
+ 					{
+ 						/*memset(g->arc_pool[j].routes_delay_f,0,sizeof(int)*g->arc_pool[j].id_max);
+ 						memset(g->arc_pool[j].period_f,0,sizeof(int)*P);
+ 						for(int l=0;l<g->arc_pool[j].nb_routes;l++)
+ 						{
+ 							ids[l] = g->arc_pool[j].routes_id[l];
+ 							release[l] = route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 						//	printf("retourlenghtuntillarc %d \n",route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
+ 							budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 - route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD);
+ 							//printf("route %d(%d) : %d = %d - %d\n ",ids[l], release[l],budget[l], route_length(g,g->arc_pool[j].routes_id[l])*2,route_length_untill_arc_without_delay(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],FORWARD));
+ 						}
+ 						//printf("\n");
+ 						if(!oderinarc(release,  budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_f, g->arc_pool[j].routes_delay_f,ids,g->arc_pool[j].period_f,1))
+ 							{
+ 								printf("Gros gros probleme ici ... \n");
+ 								exit(42);
+ 							}*/
  						return 0;
+ 					}
+
+ 					
  				}
  					
  				else
@@ -531,8 +745,23 @@ int greedy_deadline(Graph * g, int P, int message_size)
  						release[l] = route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
  						budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
  					}
- 					if(!oderinarc( release, budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_b, g->arc_pool[j].routes_delay_b,ids,g->arc_pool[j].period_b))
- 						return 0;
+ 					if(!oderinarc( release, budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_b, g->arc_pool[j].routes_delay_b,ids,g->arc_pool[j].period_b,mod))
+ 					{
+ 						/*memset(g->arc_pool[j].routes_delay_b,0,sizeof(int)*g->arc_pool[j].id_max);
+ 						memset(g->arc_pool[j].period_b,0,sizeof(int)*P);
+ 						for(int l=0;l<g->arc_pool[j].nb_routes;l++)
+ 						{
+ 							ids[l] = g->arc_pool[j].routes_id[l];
+ 							release[l] = route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) + route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
+ 							budget[l]= route_length(g,g->arc_pool[j].routes_id[l])*2 -route_length_with_buffers_forward(g,g->arc_pool[j].routes_id[l]) -route_length_untill_arc(g,g->arc_pool[j].routes_id[l], &g->arc_pool[j],BACKWARD);
+ 						}
+ 						if(!oderinarc( release, budget,P ,  g->arc_pool[j].nb_routes,message_size,g->arc_pool[j].routes_order_b, g->arc_pool[j].routes_delay_b,ids,g->arc_pool[j].period_b,1))
+ 						{
+							printf("Gros gros probleme la ... \n");
+							exit(42);
+						}*/
+						return 0;
+ 					}
  				}
  					
  			
@@ -552,16 +781,76 @@ int greedy_deadline_assignment(Graph * g, int P, int message_size)
 //printf("\n\n\n\nnew greedy \n\n\n");
 	reset_periods( g, P);
 
-	if(!greedy_deadline(g, P, message_size))
+	if(!greedy_deadline(g, P, message_size,0))
 	{
-		printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
+		
+			reset_periods( g, P); 
+				reinit_delays(g);
+		greedy_deadline(g, P, message_size,1);
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
+		//return 0;
+	}
+
+	int t = travel_time_max_buffers(g);
+	//printf("T = %d, verif = %d \n",t,verifie_solution( g,message_size));
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution trouvée par l'algo greedy de base n'est pas correcte GD (error %d) ",verifie_solution( g,message_size));
+		affiche_graph(g,P,stdout);
+		exit(84);
+	}
+	reset_periods( g, P); 
+				reinit_delays(g);
+	if(VOISINAGE)
+	{
+		if( assignment_with_orders_vois1(g,P,message_size,1)==0)
+			{
+				printf("Assignmentwithordervois1 ne trouve pas de solution alors que l'algo d'init si ?? \n");
+				exit(87);
+			}
+	}
+	else
+	{
+		if( assignment_with_orders(g,P,message_size,1)==0)
+		{
+			printf("Assignmentwithorder ne trouve pas de solution alors que l'algo d'init si ?? \n");
+			exit(87);
+		}
+	}
+
+
+	int t2 = travel_time_max_buffers(g);
+
+	if(t!= t2)
+	{
+		printf("Les deux algos sont pas pareils, impossible (%d %d).\n",t,t2);
+		exit(85);
+	}
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution de assignment with order n'est pas correcte (error %d) ",verifie_solution( g,message_size));
+		exit(86);
+	}
+
+	return t2;
+}
+int greedy_deadline_assignment2(Graph * g, int P, int message_size)
+{
+	
+//printf("\n\n\n\nnew greedy \n\n\n");
+	reset_periods( g, P);
+
+	if(!greedy_deadline(g, P, message_size,1))
+	{
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
+		exit(64);
 		return 0;
 	}
 
 	int t = travel_time_max_buffers(g);
 	if(verifie_solution( g,message_size))
 	{
-		printf("La solution trouvée par l'algo greedy de base n'est pas correcte GD (error %d) ",verifie_solution( g,message_size));
+		printf("La solution trouvée par l'algo greedy de base n'est pas correcte GD 2(error %d) ",verifie_solution( g,message_size));
 		affiche_graph(g,P,stdout);
 		exit(84);
 	}
@@ -587,7 +876,63 @@ int greedy_deadline_assignment(Graph * g, int P, int message_size)
 
 	if(t!= t2)
 	{
-		printf("Les deux algos sont pas pareils, impossible (%d %d).\n",t,t2);
+		printf("Les deux algos sont pas pareils, impossible 2(%d %d).\n",t,t2);
+		exit(85);
+	}
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution de assignment with order n'est pas correcte (error %d) ",verifie_solution( g,message_size));
+		exit(86);
+	}
+
+	return t2;
+}
+int greedy_deadline_assignment3(Graph * g, int P, int message_size)
+{
+	
+//printf("\n\n\n\nnew greedy \n\n\n");
+	reset_periods( g, P);
+
+	if(!greedy_deadline(g, P, message_size,2))
+	{
+		
+		reset_periods( g, P); 
+				reinit_delays(g);
+				greedy_deadline(g, P, message_size,1);
+		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
+		//return 0;
+	}
+
+	int t = travel_time_max_buffers(g);
+	if(verifie_solution( g,message_size))
+	{
+		printf("La solution trouvée par l'algo greedy de base n'est pas correcte GD 2(error %d) ",verifie_solution( g,message_size));
+		affiche_graph(g,P,stdout);
+		exit(84);
+	}
+	if(VOISINAGE)
+	{
+		if( assignment_with_orders_vois1(g,P,message_size,1)==0)
+			{
+				printf("Assignmentwithordervois1 ne trouve pas de solution alors que l'algo d'init si ?? \n");
+				exit(87);
+			}
+	}
+	else
+	{
+		if( assignment_with_orders(g,P,message_size,1)==0)
+		{
+			printf("Assignmentwithorder ne trouve pas de solution alors que l'algo d'init si ?? \n");
+			exit(87);
+		}
+	}
+
+
+	int t2 = travel_time_max_buffers(g);
+
+	if(t!= t2)
+	{
+		printf("Les deux algos sont pas pareils, impossible3 (%d %d).\n",t,t2);
 		exit(85);
 	}
 	if(verifie_solution( g,message_size))

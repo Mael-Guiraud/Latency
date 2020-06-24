@@ -77,7 +77,7 @@ int coreBorneInf(Graph * g, int P, int message_size,int budget,int arc_id,Period
 	int release[taille_tab];
 	int deadline[taille_tab];
 	int ids[taille_tab];
-
+	int temps_restant;
 	//printf("BUDGETABCD = %d \n",budget);
 	
 	for(int i=0;i<taille_tab;i++)
@@ -86,7 +86,9 @@ int coreBorneInf(Graph * g, int P, int message_size,int budget,int arc_id,Period
 		{
 			release[i] = route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],FORWARD);
 			
-			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g->arc_pool[arc_id].routes_id[i]);
+			temps_restant = 2*route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],FORWARD);
+			deadline[i] = budget  +message_size - temps_restant;
+			//deadline[i] = release[i]+message_size+budget - 2* route_length(g,g->arc_pool[arc_id].routes_id[i]);
 			//printf("(%d %d %d)",release[i],g->routes[g->arc_pool[arc_id].routes_id[i]][0]->routes_delay_f[g->arc_pool[arc_id].routes_id[i]],deadline[i]);
 			//printf("(%d %d)",release[i],deadline[i]);
 		}
@@ -96,7 +98,9 @@ int coreBorneInf(Graph * g, int P, int message_size,int budget,int arc_id,Period
 			release[i] = route_length_with_buffers_forward(g,g->arc_pool[arc_id].routes_id[i])
 			+route_length_untill_arc(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
 			
-			deadline[i] = release[i]+message_size+budget - 2* route_length(g,g->arc_pool[arc_id].routes_id[i]);
+			temps_restant = route_length(g,g->arc_pool[arc_id].routes_id[i]) - route_length_untill_arc_without_delay(g,g->arc_pool[arc_id].routes_id[i],&g->arc_pool[arc_id],BACKWARD);
+			deadline[i] = budget  +message_size - temps_restant;
+			//deadline[i] = release[i]+message_size+budget - 2* route_length(g,g->arc_pool[arc_id].routes_id[i]);
 			//printf("(%d %d)",release[i],deadline[i]);
 		}
 		
@@ -168,7 +172,7 @@ int borneInfDicho(Graph * g, int P, int message_size,int arcid,Period_kind kind)
 		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
 		if(tmp)
 		{
-		//	printf("On a trouvé, tmp = %d, res = %d\n",tmp, res);
+			//printf("arc %d On a trouvé, tmp = %d, res = %d\n",arcid,tmp, res);
 			max = milieu;
 			res = tmp;
 		}

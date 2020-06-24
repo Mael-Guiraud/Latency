@@ -1,6 +1,7 @@
 
-CC=gcc-7
-CFLAGS=-W -Wall -g -O3 -fopenmp -fprofile-arcs -ftest-coverage -std=c99
+CC=gcc
+CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs  -std=c99
+#-ftest-coverage
 LFLAGS = -fopenmp
 
 DIRbin = bin/
@@ -25,6 +26,7 @@ dirs:
 
 tests: dirs runtest
 	dot -Tpdf ../view/view.dot -o ../view/view.pdf
+
 
 onos: dirs runonos
 
@@ -56,6 +58,11 @@ distrib: dirs compil
 fpt: dirs compil 
 	./compil simulFPT
 
+descente: dirs compil 
+	./compil simuldescente
+
+taboo: dirs compil 
+	./compil simultaboo
 
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*
@@ -65,10 +72,10 @@ nowaiting: dirs compil
 dot:
 	./tpdf.sh
 
-compil: $(DIRbin)fpt.o $(DIRbin)hash.o $(DIRbin)borneInf.o $(DIRbin)voisinage.o $(DIRbin)inputonos.o $(DIRbin)starSPALL.o $(DIRbin)simulation_star.o $(DIRbin)simons.o $(DIRbin)fptPAZL.o $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
+compil: $(DIRbin)enum.o $(DIRbin)fpt.o $(DIRbin)hash.o $(DIRbin)borneInf.o $(DIRbin)voisinage.o $(DIRbin)inputonos.o $(DIRbin)starSPALL.o $(DIRbin)simulation_star.o $(DIRbin)simons.o $(DIRbin)fptPAZL.o $(DIRbin)reusePrime.o $(DIRbin)jsondump.o $(DIRbin)spall_waiting.o $(DIRbin)multiplexing.o $(DIRbin)treatment.o $(DIRbin)main.o $(DIRbin)test.o $(DIRbin)init.o $(DIRbin)greedy_waiting.o $(DIRbin)greedy_without_waiting.o $(DIRbin)simulation.o $(DIRbin)biparti.o $(DIRbin)data_treatment.o $(DIRbin)connexe.o
 	$(CC) $(LFLAGS) -o $@ $^ -lm -lgcov
 
-$(DIRbin)%.o: %.c config.h structs.h
+$(DIRbin)%.o: %.c config.h structs.h nb_bbu.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 depend:

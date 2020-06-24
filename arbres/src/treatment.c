@@ -401,6 +401,9 @@ int route_length_untill_arc(Graph * g,int route, Arc * a,Period_kind kind)
 				return length;
 			length += g->routes[route][i]->length;
 			length += g->routes[route][i]->routes_delay_f[route];
+			//printf("Delay route %d = %d \n",route,g->routes[route][i]->routes_delay_f[route]);
+			/*if( g->routes[route][i]->routes_delay_f[route] < 0 )
+				printf("Impossible mec %d\n", g->routes[route][i]->routes_delay_f[route]);*/
 		}
 	}
 	else
@@ -411,9 +414,9 @@ int route_length_untill_arc(Graph * g,int route, Arc * a,Period_kind kind)
 			if(a == g->routes[route][i])
 				return length;
 			length += g->routes[route][i]->length;
-			/*if( g->routes[route][i]->routes_delay_b[route] > 0 )
-				printf("Impossible mec %d\n", g->routes[route][i]->routes_delay_b[route]);
-			*/
+			/*if( g->routes[route][i]->routes_delay_b[route] < 0 )
+				printf("Impossible mec %d\n", g->routes[route][i]->routes_delay_b[route]);*/
+			
 			length += g->routes[route][i]->routes_delay_b[route];
 		}
 	}	
@@ -438,6 +441,11 @@ void free_graph(Graph * g)
 			{
 				free(g->routes[i][j]->period_f);
 				free(g->routes[i][j]->period_b);
+				free(g->routes[i][j]->routes_order_f); 
+				free(g->routes[i][j]->routes_order_b); 
+				free(g->routes[i][j]->routes_delay_f); 
+				free(g->routes[i][j]->routes_delay_b); 
+			
 				g->routes[i][j]->nb_routes = 0;
 				
 			}
@@ -648,7 +656,7 @@ int  load_max(Graph * g)
 	int loadmax=0;
 	for(int i=0;i<g->arc_pool_size;i++)
 	{
-	
+		
 		if(g->arc_pool[i].nb_routes > loadmax)
 		loadmax = g->arc_pool[i].nb_routes;
 
@@ -700,19 +708,23 @@ int route_length_with_buffers(Graph * g,int route)
 		length += g->routes[route][i]->routes_delay_f[route];
 		if( g->routes[route][i]->routes_delay_f[route]<0)
 			exit(34);
+		 // printf("%d + %d + %d \n",2*g->routes[route][i]->length,g->routes[route][i]->routes_delay_b[route],g->routes[route][i]->routes_delay_f[route]);
 	}
+	//printf("lgnth = %d \n",length);
 	return length;
 }
 int route_length_with_buffers_forward(Graph * g,int route)
 {
+	//printf("route %d :",route); 
 	int length = 0;
 	//printf("%d \n",g->size_routes[route]);
-	//For each arcs
+	//For each arcs&
 	for(int i=0;i<g->size_routes[route];i++)
 	{
 		length += g->routes[route][i]->length;
 		length += g->routes[route][i]->routes_delay_f[route];
 	}
+	//printf("lenght = %d \n",length);
 	return length;
 }
 int travel_time_max_buffers(Graph * g)
@@ -727,6 +739,7 @@ int travel_time_max_buffers(Graph * g)
 		max = (max>lenght)?max:lenght;
 		
 	}
+	//printf("max = %d \n",max);
 	return max;
 }
 //return a mod b
