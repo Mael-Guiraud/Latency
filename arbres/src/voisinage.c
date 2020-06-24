@@ -2223,7 +2223,7 @@ int CritMetropolis(int delta, float t)
 	
 		if(random < expf(-proba))
 		{
-				printf("exp(-%f/%f ) = %f\n",(float)delta,t,expf(-proba));
+				//printf("exp(-%f/%f ) = %f\n",(float)delta,t,expf(-proba));
 			return 1;
 		}
 	}
@@ -2233,7 +2233,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 {
 	//Parametres du recuit
 	int nb_paliers = param;
-	float temperature = 10.0;
+	float temperature = 10000.0;
 	float coeff= 0.90;
 	int b;
 	int seuil_arret = 3;
