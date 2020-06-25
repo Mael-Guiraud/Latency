@@ -11,9 +11,9 @@ All rights reserved.
 
 #include<sys/time.h>
 
-#define PERIODE 100
-#define NB_ROUTES 100
-#define TAILLE_ROUTES 100
+#define PERIODE 1000
+#define NB_ROUTES 1000
+#define TAILLE_ROUTES 1000
 #define NB_SIMUL 100
 
 #define DEBUG 0
@@ -655,6 +655,7 @@ float statistique(int periode, int nb_routes, int taille_max, int nb_simul, int 
 		init_etoile(e,taille_max);
 		success += (algo(e) == nb_routes);
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMUL);
+		fflush(stdout);
 	}
 	printf("Algo %s: %f réussite\n",name, (double)success/(double)nb_simul);
 	float return_value = (double)success/(double)nb_simul;
@@ -705,9 +706,10 @@ int main()
 	int nb_algos = 5;
 	struct timeval tv1, tv2;
 	float running_time[nb_algos];
-	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap"};//,"ExhaustiveSearch"};
+	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move"};//,"ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
+	FILE * time = fopen("time.plot","w");
 	for(int i=0;i<nb_algos;i++)
 	{
 		sprintf(buf,"%s.plot",noms[i]);
@@ -718,8 +720,12 @@ int main()
 		running_time[i]=0.0;
 	}
 	float success = 0.0;
-	for(int i=1;i<=NB_ROUTES;i++)
+	for(int i=100;i<=NB_ROUTES;i+=100)
 	{
+		for(int i=0;i<nb_algos;i++)
+		{
+			running_time[i]=0.0;
+		}
 		printf("%d Routes \n",i);
 		gettimeofday (&tv1, NULL);	
 		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
@@ -743,14 +749,22 @@ int main()
 		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,swap,"Swap"));
 		gettimeofday (&tv2, NULL);	
 		running_time[4] += time_diff(tv1,tv2);
+		fprintf(time,"%d ",i);
+		for(int i=0;i<nb_algos;i++)
+		{
+			printf("Temps d'execution %s = %f \n",noms[i],running_time[i]/NB_SIMUL);
+			fprintf(time,"%f ",running_time[i]);
+		}
+		fprintf(time,"\n");
 
 		//fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{
-		printf("Temps d'execution %s = %f \n",noms[i],running_time[i]);
+		
 		fclose(f[i]);
 	}
+	fclose(time); 
 	print_gnuplot( noms,  nb_algos);
 	return 0;
 }
