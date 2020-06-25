@@ -11,9 +11,9 @@ All rights reserved.
 
 #include<sys/time.h>
 
-#define PERIODE 1000
-#define NB_ROUTES 1000
-#define TAILLE_ROUTES 1000
+#define PERIODE 100
+#define NB_ROUTES 100
+#define TAILLE_ROUTES 100
 #define NB_SIMUL 100
 
 #define DEBUG 0
@@ -645,7 +645,7 @@ float statistique(int periode, int nb_routes, int taille_max, int nb_simul, int 
 
 	srand(seed);
 	entree e;
-	e.periode = PERIODE;
+	e.periode = periode;
 	e.nb_routes = nb_routes;
 	e.aller = malloc(sizeof(int)*e.periode);
 	e.retour = malloc(sizeof(int)*e.periode);
@@ -703,10 +703,10 @@ int main()
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
 		//Toujours mettre exhaustivesearch en derniere
-	int nb_algos = 5;
+	int nb_algos = 6;
 	struct timeval tv1, tv2;
 	float running_time[nb_algos];
-	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move"};//,"ExhaustiveSearch"};
+	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	FILE * time = fopen("time.plot","w");
@@ -720,7 +720,7 @@ int main()
 		running_time[i]=0.0;
 	}
 	float success = 0.0;
-	for(int i=100;i<=NB_ROUTES;i+=100)
+	for(int i=1;i<=NB_ROUTES;i++)
 	{
 		for(int i=0;i<nb_algos;i++)
 		{
@@ -746,7 +746,7 @@ int main()
 		//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
 		//algo bugué, ne marche pas pour 50%
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,swap,"Swap"));
+		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,swap,"Swap and Move"));
 		gettimeofday (&tv2, NULL);	
 		running_time[4] += time_diff(tv1,tv2);
 		fprintf(time,"%d ",i);
@@ -757,7 +757,7 @@ int main()
 		}
 		fprintf(time,"\n");
 
-		//fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
+		fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{

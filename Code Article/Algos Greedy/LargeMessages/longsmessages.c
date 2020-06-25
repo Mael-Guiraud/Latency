@@ -13,10 +13,10 @@ All rights reserved.
 #include<sys/time.h>
 #include <omp.h>
 #define MESSAGE_SIZE 1000
-#define PERIOD 1000000
-#define ROUTES_SIZE_MAX 1000000
-#define NB_SIMULS 1000
-#define PARALLEL 1
+#define PERIOD 100000
+#define ROUTES_SIZE_MAX 1000
+#define NB_SIMULS 10000
+#define PARALLEL 0
 #define EXHAUSTIVE_SEARCH 0
 double time_diff(struct timeval tv1, struct timeval tv2)
 {
@@ -1215,19 +1215,19 @@ int main(int argc,char * argv[])
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
 	struct timeval tv1, tv2;
-	int nb_algos = 1;
+	int nb_algos = 5;
 	if(EXHAUSTIVE_SEARCH)
 		nb_algos++;
 	int tmp[nb_algos];
 	float running_time[nb_algos]; 
 		//Toujours mettre exhaustivesearch en derniere
-	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","CompactPairs","MetaFit","ExhaustiveSearch"};
+	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","CompactPairs","CompactFit","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	float success[nb_algos];
 	for(int i=0;i<nb_algos;i++)
 	{
-		sprintf(buf,"%s2.plot",noms[i]);
+		sprintf(buf,"%s.plot",noms[i]);
 		printf("Opening %s ...",buf);
 		f[i] = fopen(buf,"w");
 		if(!f[i])perror("Error while opening file\n");
@@ -1236,7 +1236,7 @@ int main(int argc,char * argv[])
 		running_time[i] = 0.0;
 	}
 
-	for(int i=100;i<=nb_routes;i+=100)
+	for(int i=3;i<=nb_routes;i++)
 	{
 		
 
