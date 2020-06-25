@@ -10,13 +10,18 @@ All rights reserved.
 #include <time.h>
 #include <string.h>
 #include <limits.h>
+#include<sys/time.h>
 #include <omp.h>
 #define MESSAGE_SIZE 1000
-#define PERIOD 10000
-#define ROUTES_SIZE_MAX 10000
+#define PERIOD 100000
+#define ROUTES_SIZE_MAX 1000
 #define NB_SIMULS 10000
-#define PARALLEL 1
-#define EXHAUSTIVE_SEARCH 1
+#define PARALLEL 0
+#define EXHAUSTIVE_SEARCH 0
+double time_diff(struct timeval tv1, struct timeval tv2)
+{
+    return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
+}
 int * random_graph(int nb_routes,int size_route)
 {
 	int * graph;
@@ -56,6 +61,38 @@ int offset_ok(int * p,int*p2, int offset, int decalage,int period, int message_s
 	}
 	return 1;
 }
+//trie le tableau decalage en fonction des releases
+void tri_bulles(int* releases,int* decalage,int taille)
+{
+	int sorted;
+	int tmp;
+	int tmp_ordre;
+
+	int tabcpy[taille];
+	for(int i=0;i<taille;i++)tabcpy[i]=releases[i];
+
+	for(int i=taille-1;i>=1;i--)
+	{
+		sorted = 1;
+		for(int j = 0;j<=i-1;j++)
+		{
+
+			if(tabcpy[j+1]<tabcpy[j])
+			{
+				tmp_ordre = decalage[j+1];
+				decalage[j+1]=decalage[j];
+				decalage[j]=tmp_ordre;
+				tmp = tabcpy[j+1];
+				tabcpy[j+1]= tabcpy[j];
+				tabcpy[j]= tmp;
+				sorted = 0;
+			}
+		}
+		if(sorted){return;}
+	}
+
+}
+
 //renvoie la distance en slot a laquelle est la fin du message avec lequel on colissione dans la periode, ou 0 si l'offset est ok
 int cols_check(int *P, int offset, int message_size,int per, int nb_routes)
 {
@@ -181,7 +218,81 @@ int first_fit(int* graph,int nb_routes,int period,int message_size)
 	return nb_ok;
 	
 }
+int first_fit_random(int* graph,int nb_routes,int period,int message_size)
+{
 
+	if(period%message_size != 0)
+	{
+		printf("Warning, P/tau != 0, meta offset firstfit cannot run\n");
+		return 0;
+	}
+	int aller[nb_routes] ;
+	int retour[nb_routes] ;
+	int out;
+	int cpygraph[nb_routes];
+	memcpy(cpygraph,graph,sizeof(int)*nb_routes);
+	int release[nb_routes];
+	for(int i=0;i<nb_routes;i++)
+	{
+		release[i]= graph[i]%message_size;
+	}
+	tri_bulles(release,graph,nb_routes);
+	for(int i=0;i<nb_routes;i++)
+	{
+		aller[i]=0;
+		retour[i]=0;
+	}
+	int nb_routes_ok=0;
+	for(int i=0;i<nb_routes;i++)
+	{
+		
+		out = 0;
+		for(int offset=0;offset<period;offset+= message_size)
+		{
+			
+			if(!cols_check(aller,offset,message_size,period,nb_routes_ok) && !cols_check(retour,offset+graph[i],message_size,period,nb_routes_ok) )
+			{
+			
+				if(cols_check(retour,offset+graph[i]-message_size,message_size,period,nb_routes_ok)|| (nb_routes_ok == 0))
+				{
+					aller[nb_routes_ok]=offset;
+					retour[nb_routes_ok]=(offset+graph[i])%period;
+					nb_routes_ok++;
+					out = 1;
+				}
+				
+			}
+			if(out)
+				break;
+		}
+		if(!out)
+		{	//Si on a pas pu agrandire la compact uple, on fait first fit meta offset
+			for(int offset=0;offset<period;offset+= message_size)
+			{
+				
+				if(!cols_check(aller,offset,message_size,period,nb_routes_ok) && !cols_check(retour,offset+graph[i],message_size,period,nb_routes_ok) )
+				{
+					
+					aller[nb_routes_ok]=offset;
+					retour[nb_routes_ok]=(offset+graph[i])%period;
+					nb_routes_ok++;
+					out = 1;			
+				}
+				if(out)
+					break;
+			}
+		}
+	
+	}	
+	if(!verifie_solution(aller,retour,message_size,nb_routes_ok,period))
+	{
+		printf("Error verifie solution MetaOffset firstfit\n") ;
+		exit(4);
+		}
+	memcpy(graph,cpygraph,sizeof(int)*nb_routes);
+	return nb_routes_ok;
+	
+}
 int trouve_plus_proche_supp(int *t, int n, int size,int message_size,int period,int decalage, int type)
 {
 	int maxtmp=INT_MAX;
@@ -628,37 +739,6 @@ int meta_offset(int *graph,int nb_routes,int period,int message_size)
 		}
 	
 	return nb_routes_ok;
-}
-//trie le tableau decalage en fonction des releases
-void tri_bulles(int* releases,int* decalage,int taille)
-{
-	int sorted;
-	int tmp;
-	int tmp_ordre;
-
-	int tabcpy[taille];
-	for(int i=0;i<taille;i++)tabcpy[i]=releases[i];
-
-	for(int i=taille-1;i>=1;i--)
-	{
-		sorted = 1;
-		for(int j = 0;j<=i-1;j++)
-		{
-
-			if(tabcpy[j+1]<tabcpy[j])
-			{
-				tmp_ordre = decalage[j+1];
-				decalage[j+1]=decalage[j];
-				decalage[j]=tmp_ordre;
-				tmp = tabcpy[j+1];
-				tabcpy[j+1]= tabcpy[j];
-				tabcpy[j]= tmp;
-				sorted = 0;
-			}
-		}
-		if(sorted){return;}
-	}
-
 }
 
 //check if two messages are a pair or not
@@ -1134,14 +1214,14 @@ int main(int argc,char * argv[])
 	int nb_routes = PERIOD / message_size;
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
-	
-	int nb_algos = 4;
+	struct timeval tv1, tv2;
+	int nb_algos = 5;
 	if(EXHAUSTIVE_SEARCH)
 		nb_algos++;
 	int tmp[nb_algos];
-
+	float running_time[nb_algos]; 
 		//Toujours mettre exhaustivesearch en derniere
-	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","CompactPairs","ExhaustiveSearch"};
+	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","CompactPairs","CompactFit","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	float success[nb_algos];
@@ -1153,6 +1233,7 @@ int main(int argc,char * argv[])
 		if(!f[i])perror("Error while opening file\n");
 		success[i]=0.0;
 		printf("OK\n");
+		running_time[i] = 0.0;
 	}
 
 	for(int i=3;i<=nb_routes;i++)
@@ -1170,9 +1251,11 @@ int main(int argc,char * argv[])
 			fprintf(stdout,"\r Computing %d routes :  %d/%d",i,j+1,nb_simuls);fflush(stdout);
 			graph = random_graph(i,size_route);
 			pair(graph,i,period,message_size);
+				
+			
 			for(int algo = 0;algo<nb_algos;algo++)
 			{
-				
+				gettimeofday (&tv1, NULL);	
 				switch(algo){
 					case 0:
 						tmp[algo] =  first_fit(graph,i,period,message_size);
@@ -1195,10 +1278,19 @@ int main(int argc,char * argv[])
 					case 3:
 						tmp[algo] = pair_meta_offset(graph,i,period,message_size);
 						break;
+					
+						
 					case 4:
+						tmp[algo] = first_fit_random(graph,i,period,message_size);
+						break;
+					case 5:
 						tmp[algo] = search(graph,i,period,message_size);
 						break;
 					}
+					gettimeofday (&tv2, NULL);	
+					#pragma omp critical
+					running_time[algo] += time_diff(tv1,tv2);
+		
 					
 						if(tmp[algo] == i)
 							#pragma omp atomic
@@ -1234,6 +1326,7 @@ int main(int argc,char * argv[])
 
 	for(int i=0;i<nb_algos;i++)
 	{
+		printf("Temps d'execution %s = %f \n",noms[i],running_time[i]);
 		fclose(f[i]);
 	}
 	print_gnuplot( noms,  nb_algos,period, message_size,nb_routes);
