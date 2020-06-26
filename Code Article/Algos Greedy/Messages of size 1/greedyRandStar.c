@@ -14,7 +14,7 @@ All rights reserved.
 #define PERIODE 100
 #define NB_ROUTES 100
 #define TAILLE_ROUTES 100
-#define NB_SIMUL 100
+#define NB_SIMUL 10000
 
 #define DEBUG 0
 
@@ -703,7 +703,7 @@ int main()
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
 		//Toujours mettre exhaustivesearch en derniere
-	int nb_algos = 6;
+	int nb_algos = 5;
 	struct timeval tv1, tv2;
 	float running_time[nb_algos];
 	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move","ExhaustiveSearch"};
@@ -720,7 +720,7 @@ int main()
 		running_time[i]=0.0;
 	}
 	float success = 0.0;
-	for(int i=1;i<=NB_ROUTES;i++)
+	for(int i=60;i<=NB_ROUTES;i++)
 	{
 		for(int i=0;i<nb_algos;i++)
 		{
@@ -757,7 +757,7 @@ int main()
 		}
 		fprintf(time,"\n");
 
-		fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
+		//fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{
