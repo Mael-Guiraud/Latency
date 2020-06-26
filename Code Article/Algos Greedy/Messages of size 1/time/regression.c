@@ -11,7 +11,7 @@ float y[nb_points];
 void lire_fichier(int algo_choisi)
 {
 	FILE * f = fopen("time.plot","r");
-	printf("Fichier ouvert. \n");
+	
 	float nombre_lu;
 	int colonne=0;
 	int ligne = 0;
@@ -100,10 +100,13 @@ float coefficient_correlation()
 }
 int main()
 {
-	for(int i=1;i<5;i++)
+		char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move"};
+	for(int i=0;i<5;i++)
 	{
-		lire_fichier(i);
-		printf("L'équation de la droite est : y = %f x + %f.\n Le coefficient de corélation est : %f.\n Moyenne = %f.\n\n",coef_dir(),ordonee_origine(),coefficient_correlation(),moyenne(y));
+	
+		lire_fichier(i+1);
+		//printf("L'équation de la droite est : y = %f x + %f.\n Le coefficient de corélation est : %f.\n Moyenne = %f.\n\n",coef_dir(),ordonee_origine(),coefficient_correlation(),moyenne(y));
+		printf("Algo %s : coffe dir = %f\n Le coefficient de corélation est : %f.\n ",noms[i],coef_dir(),coefficient_correlation());
 
 	}
 }

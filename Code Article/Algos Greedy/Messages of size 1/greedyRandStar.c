@@ -14,7 +14,7 @@ All rights reserved.
 #define PERIODE 100
 #define NB_ROUTES 100
 #define TAILLE_ROUTES 100
-#define NB_SIMUL 10000
+#define NB_SIMUL 1000
 
 #define DEBUG 0
 
@@ -720,7 +720,7 @@ int main()
 		running_time[i]=0.0;
 	}
 	float success = 0.0;
-	for(int i=60;i<=NB_ROUTES;i++)
+	for(int i=50;i<=1000;i+=100)
 	{
 		for(int i=0;i<nb_algos;i++)
 		{
@@ -728,25 +728,25 @@ int main()
 		}
 		printf("%d Routes \n",i);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
+		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
 		gettimeofday (&tv2, NULL);	
 		running_time[0] += time_diff(tv1,tv2);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i,PERIODE));
+		fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i,i));
 		gettimeofday (&tv2, NULL);	
 		running_time[1] += time_diff(tv1,tv2);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[2],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_first_fit,"FirstFit"));
+		fprintf(f[2],"%f %f\n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,greedy_first_fit,"FirstFit"));
 		gettimeofday (&tv2, NULL);	
 		running_time[2] += time_diff(tv1,tv2);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,greedy_profit,"Profit"));
+		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,greedy_profit,"Profit"));
 		gettimeofday (&tv2, NULL);	
 		running_time[3] += time_diff(tv1,tv2);
 		//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
 		//algo bugué, ne marche pas pour 50%
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,swap,"Swap and Move"));
+		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,swap,"Swap and Move"));
 		gettimeofday (&tv2, NULL);	
 		running_time[4] += time_diff(tv1,tv2);
 		fprintf(time,"%d ",i);
