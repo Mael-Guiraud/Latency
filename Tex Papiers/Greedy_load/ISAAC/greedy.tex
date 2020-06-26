@@ -211,7 +211,7 @@ time is periodic and these are relative positions on a circle. Moreover, when it
 
 Consider some partial assignment $A$, the message $i$ uses all times from $A(i)$ to $A(i) + \tau -1$ in the first period. If a message $j$ is scheduled by $A$, with $A(j) < A(i)$, then the last time it uses in the first period is $A(j)+\tau-1$ and it should be less than $A(i)$, which implies that $A(j) \leq A(i) - \tau$. Symmetrically, if $A(j) > A(i)$, to avoid collision between messages $j$ and $i$, we have $A(j) \geq A(i) + \tau$. Hence, message $i$ forbids the interval $]A(i) - \tau, A(i) + \tau[$ as offsets for messages still not scheduled because of its use of time in the first period. The same reasoning shows that $2\tau -1$ offsets are also forbidden because of the times used in the second period. Hence, if $|S|$ messages are already scheduled, then $|S|(4\tau -2)$ offsets are forbidden for any unscheduled message. It is an upper bound on the number of forbidden offsets, since the same offset can be forbidden twice because of a message on the first and on the second period.
 
-Let $Fo(A)$ be the maximum number of forbidden offsets when extending $A$. Formally, assume $A$ is defined over $S$ and $i\notin S$, $Fo(A)$ is the maximum over all possible values of $d_i$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has no collision}\right\}|$. The previous paragraph shows that $Fo(A)$ is always bounded by $(4 \tau -2)|S|$. 
+Let $Fo(A)$ be the maximum number of forbidden offsets when extending $A$. Formally, assume $A$ is defined over $S$ and $i\notin S$, $Fo(A)$ is the maximum over all possible values of $d_i$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has no collision}\right\}|$. The previous paragraph shows that $Fo(A)$ is always bounded by $(4 \tau -2)|S|$. 
 
 Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), it tests all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment and use it to extend the assignment. If $Fo(A) < P$, then whatever the delay of the route we want to extend $A$ with, there is an offset to do so. Since $Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, \firstfit (or any greedy algorithm) will always succeed when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
 It turns out that \firstfit always creates compact assignments (as defined in~\cite{dominique2018deterministic}), that is a message is always next to another one in one of the two periods. Hence, we can prove a better bound on $Fo(A)$, when $A$ is built by \firstfit, as stated in the following theorem.
@@ -256,9 +256,16 @@ Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and 
 Let $P = m \tau + r$ with $r \leq \tau$. We define the instance $I'$ as follows: $P' = mP$, $d_{i}' = m d_i$ and $\tau' = m \tau + r$. With this choice, we have $P' = m(m \tau + r) = m \tau'$.
 Consider an assignment $A'$ of the instance $I'$.
 If we let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions. We then use a compactification procedure on $A'$ seen as an assignment of $I''$,
-with size of messages multiple of $m$ (see Th.4 of~\cite{dominique2018deterministic} for a similar compactification). W.l.o.g., the first message is positioned at offset zero. The first time it uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Then, all other messages are translated to the left by removing increasing values to their offsets, until there is a collision. It guarantees that some message $j$ is in contact with the first one on the first or second period. It implies that either $A'(j)$ or $A'(j)+d_j \mod P'$ is a multiple of $m$ and since $d_j$ is a multiple of $m$, then both $A'(j)$ and $A'(j)+d_j \mod P'$ are multiples of $m$. This procedure can be repeated until we get an assignment $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Finally, we define $A$ as $A(i) = A''(i)/m$ and we obtain an assignment of $I$.
+with size of messages multiple of $m$ (see Th.4 of~\cite{dominique2018deterministic} for a similar compactification). W.l.o.g., the first message is positioned at offset zero. The first time it uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Then, all other messages are translated to the left by removing increasing values to their offsets, until there is a collision. It guarantees that some message $j$ is in contact with the first one on the first or second period. It implies that either $A'(j)$ or $A'(j)+d_j \mod P'$ is a multiple of $m$ and since $d_j$ is a multiple of $m$, then both $A'(j)$ and $A'(j)+d_j \mod P'$ are multiples of $m$. This procedure can be repeated until we get an assignment $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Finally, we define $A$ as $A(i) = A''(i)/m$ and we obtain an assignment of $I$. Figure~\ref{fig:multipleperiod} illustrate how to transform an instance $A'$ into an instance  $A$.
 \end{proof}
 
+\begin{figure}
+ \begin{center}
+\includegraphics[scale=0.75]{multipleperiod}
+\end{center}
+\caption{Transformation from $A''$ to $A$}
+\label{fig:multipleperiod}
+\end{figure}
 
 
 We are interested in the remainder modulo $\tau$ of the delays, let $d_i = d_{i}'\tau + r_i$ be the Euclidean division of $d_i$ by $\tau$. We assume, from now on, that \emph{messages are sorted by increasing $r_i$}.
@@ -370,7 +377,14 @@ is the number of integers $i \in [P]$ such that $i$ is used in the first period 
 
 The potential of a message counts the configurations which reduce the number of forbidden offsets.
 Indeed, when $i$ is used in the first period and $i+d \mod P$ is used in the second period,
-then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
+then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. Figure~\ref{fig:messagepotential} illustrate the computation of the potential of a message of delay $3$ in a partial assignment.
+\begin{figure}
+ \begin{center}
+\includegraphics[scale=1]{messagepotential}
+\end{center}
+\caption{A message with a potential $2$}
+\label{fig:messagepotential}
+\end{figure}
 
 \begin{lemma}
 Given a partial assignment $A$ of size $s$, and $i$ an unscheduled message of potential 
@@ -383,8 +397,15 @@ We call our measure \textbf{the potential of an assignment} and we denote it by 
 
 
 \begin{definition}
-The potential of a position $i$, for a partial assignment $A$, is the number of messages of delay $d$ such that $i+d \mod P$ is used by a route scheduled by $A$. 
+The potential of a position $i$, for a partial assignment $A$, is the number of messages of delay $d$ such that $i+d \mod P$ is used by a route scheduled by $A$ (Illustration in figure~\ref{fig:positionpotential}). 
 \end{definition}
+\begin{figure}
+ \begin{center}
+\includegraphics[scale=1]{positionspotential}
+\end{center}
+\caption{A position of potential $3$}
+\label{fig:positionpotential}
+\end{figure}
 
 Instead of decomposing the global potential as a sum over messages, it can be understood
 as a sum over positions, as stated in the next lemma.
@@ -529,7 +550,7 @@ It explains why \greedyuniform is good in practice for large $m$.
 
 
 
-%\section{Lower bounds}
+%\section{Lower bounds} 
 
 %Pour m=6, on peut toujours placer 5 éléments, que dire pour plus grand ?
 %Remarque si tous les delais sont différents, on peut les placer, expliquer ça. 
@@ -642,11 +663,19 @@ The algorithms we consider are the following:
   \item \texttt{Exact Resolution} using an algorithm from~\cite{dominique2018deterministic}  
 \end{itemize}
 
+\begin{figure}[h]
+ \begin{center}
+\includegraphics[scale=1]{compactfit}
+\end{center}
+\caption{An execution of \compactfit creating $2$ compact pairs}
+\label{fig:compactfit}
+\end{figure}
 The only algorithm, we have yet not described is \compactfit. The idea is, as for \compactpair, to combine 
 the absence of collision on the first period of \metaoffset and the compactness of assignments given by \firstfit.
 The messages are ordered by increasing remainder of delay modulo $\tau$, and each message is scheduled so that 
 it extends an already scheduled compact tuples. In other words, it is scheduled using meta offsets, so that using one less for meta offset creates a collision on \emph{the second period}. If it is not possible to schedule the message in that way, the first possible meta-offset is chosen. This algorithm is designed to work well on random instances. Indeed, it 
 is easy to evaluate the average size of the created compact tuples, and from that, to prove Compact Fit works with high probability when the load is strictly less than $1/2$.
+Figure~\ref{fig:compactfit} shows how \compactfit builds an asssignment from a given instance. The messages are ordered by increasing remainder of delay modulo $\tau$. A compact pair is built with messages $0$ and $1$. Message $2$ cannot increase the size of the compact pair, it so create a new uple, completed by message $3$
 
 
 On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the exact value of the success rate given by the exact resolution is only available in the experiment with at most $10$ messages (the algorithm cannot compute a solution in less than an hour for twenty messages and high load). %Version longue: Also, even if \firstfit, \compactpair, \metaoffset, \compactfit and \greedyuniform run in the same range of time ($0.5s$ for instances with $100$ routes), \greedyuniform seems to be three times longer than the other algorithms to run. Dire pourquoi et ajouter une courbe sur la croissance du temps.
@@ -730,7 +759,7 @@ As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much be
 \label{fig:tau1}
 \end{minipage}
 \begin{minipage}[c]{.45\linewidth} 
-\vspace{0.4cm}
+
 \begin{center}
 \includegraphics[scale=0.275]{tau110}
 \end{center}
