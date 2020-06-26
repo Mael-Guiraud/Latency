@@ -1,7 +1,7 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <math.h>
-#define nb_points 10
+#define nb_points 8
 
 
 float x[nb_points];
@@ -11,14 +11,15 @@ float y[nb_points];
 void lire_fichier(int algo_choisi)
 {
 	FILE * f = fopen("time.plot","r");
-	printf("Fichier ouvert. \n");
+	
 	float nombre_lu;
 	int colonne=0;
 	int ligne = 0;
 	while(fscanf(f,"%f",&nombre_lu))
 	{
+
 		if(colonne == 0)
-			x[ligne] = nombre_lu;
+			x[ligne] = log(nombre_lu);
 
 		if(colonne == algo_choisi)
 		{
@@ -100,10 +101,13 @@ float coefficient_correlation()
 }
 int main()
 {
-	for(int i=1;i<5;i++)
+		char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move"};
+	for(int i=0;i<5;i++)
 	{
-		lire_fichier(i);
-		printf("L'équation de la droite est : y = %f x + %f.\n Le coefficient de corélation est : %f.\n Moyenne = %f.\n\n",coef_dir(),ordonee_origine(),coefficient_correlation(),moyenne(y));
+	
+		lire_fichier(i+1);
+		//printf("L'équation de la droite est : y = %f x + %f.\n Le coefficient de corélation est : %f.\n Moyenne = %f.\n\n",coef_dir(),ordonee_origine(),coefficient_correlation(),moyenne(y));
+		printf("Algo %s : coffe dir = %f\n Le coefficient de corélation est : %f.\n ",noms[i],coef_dir(),coefficient_correlation());
 
 	}
 }
