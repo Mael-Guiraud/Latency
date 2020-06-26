@@ -1,7 +1,7 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <math.h>
-#define nb_points 10
+#define nb_points 8
 
 
 float x[nb_points];
@@ -17,8 +17,9 @@ void lire_fichier(int algo_choisi)
 	int ligne = 0;
 	while(fscanf(f,"%f",&nombre_lu))
 	{
+
 		if(colonne == 0)
-			x[ligne] = nombre_lu;
+			x[ligne] = log(nombre_lu);
 
 		if(colonne == algo_choisi)
 		{
