@@ -68,6 +68,23 @@ void next(int * tab, int id)
 		tab[id]++;
 	}
 }
+void next3(int * tab, int id)
+{
+	if(tab[id] == 1)
+	{
+		if(id==0)
+		{
+			printf("Error, the number max is reached.\n");
+			exit(94);
+		}
+		tab[id]=0;
+		next(tab,id-1);
+	}
+	else
+	{
+		tab[id]++;
+	}
+}
 int fin_vois(int * tab, int size)
 {
 	for(int i=0;i<size;i++)
@@ -2231,13 +2248,14 @@ int CritMetropolis(int delta, float t)
 }
 int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 {
+	static int instance = 0;
 	//Parametres du recuit
 	int nb_paliers = param;
-	float temperature = 10000.0;
+	float temperature = 2200.0;
 	float coeff= 0.90;
 	int b;
-	int seuil_arret = 3;
-	float seuil_incr_cmpt = 0.001;
+	int seuil_arret = 2;
+	float seuil_incr_cmpt = 0.01;
 
 	int a=0;
 	b=descente( g,  P, message_size, 0, nb_pas);
@@ -2284,16 +2302,20 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	int cmpt = 0;
 	int nb_step = 0;
 	int nb_amelio = 0;
-	FILE * f = fopen("plotrecuit","w");
-	FILE * f2 = fopen("plotrecuittemp","w");
+	char nom[64];
+	int av = 0;
+	sprintf(nom,"../recuittrace/plotrecuit%d",instance);
+	instance++;
+	FILE * f = fopen(nom,"w");
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
+
 		//printf("Tour\n");
 		for(int i=0;i<nb_paliers;i++)
 		{
 			v = Voisin_alea(g);
-			nb_step++;
+			
 			//aff_orders(orders,g);
 			if(VOISINAGE)
 				a= assignment_with_orders_vois1(g,P,message_size,0);
@@ -2301,19 +2323,23 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 				a = assignment_with_orders(g,P,message_size,0);
 			if(a)
 			{
+				nb_step++;
 				b = travel_time_max_buffers(g);
+				/*av+= b-time_actuel;
+				printf("%d %d %d \n",nb_step,b-time_actuel,av/nb_step);
+				if(nb_step == 100)exit(12);*/
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					fprintf(f,"%d %d \n",nb_amelio,b);
-					nb_amelio++;
+					
 					//if(time_actuel != b)
-						nb_moves++;
+						
 					time_actuel = b;
 					//Le graph a ete changé dans voisin alea, on a donc rien a faire
-
+					nb_moves++;
 					//Sauvegarde du mec le plus opti
 					if(b < min)
 					{
+						
 						cpy_orders(orders,g,1);// de g vers orders
 						min = b;
 						
@@ -2338,6 +2364,8 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			//free_assignment(a);
 
 		}
+		fprintf(f,"%d %d %f %d\n",nb_amelio,time_actuel,temperature,min);
+		nb_amelio++;
 		acceptance_rate = (float)nb_moves/nb_paliers;
 		//printf("rate %f \n",acceptance_rate);
 		if(acceptance_rate < seuil_incr_cmpt)
@@ -2346,8 +2374,10 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			cmpt++;
 		}
 		//printf("Cmpt = %d \n",cmpt);
-			
-		temperature *=  coeff;
+		if((temperature < 7000) && (temperature>4000))
+			temperature *=  0.95;
+		else
+			temperature *=  0.99;
 	//	printf("%10f \n",temperature);
 		if(temperature < 0.0000009)
 			break;
@@ -2383,7 +2413,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	}
 	*nb_pas = (float)nb_step;
 	fclose(f);
-	fclose(f2);
+
 	return b;
 
 }
