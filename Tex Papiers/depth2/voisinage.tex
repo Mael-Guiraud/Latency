@@ -108,7 +108,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
   $r$ is denoted by $TR(A,r)$ and is equal to $t(r,u_l)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
 %   In the application we study the full transmission time is bounded . We define $Tmax$ such that $TR(A) \leq Tmax$.
          
-  \subsection{From C-RAN Networks to Contention Graphs}
+  \subsection{From C-RAN Networks to Routed Networks}
   \label{subsection:CRANGRAPH}
 
   This study is motivated by a problem arising from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this article is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU does not appear explicitely in the routed network, the message arrives at the BBU somewhere on an arc of the route. Once a message arrives to a BBU, the answer is computed and sent back in the network. The computation time is usually the same for all messages; it is encoded into the arc by adding it to the physical delay of transmission over the arc.
@@ -203,7 +203,7 @@ Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a funct
 \end{definition}
 
 
-\subsection{From Valid Assignments to Compact Representation}
+\subsection{From a Valid Assignment to its Compact Representation}
 
 Let us define a function which maps valid assignment $A$ to a compact assignment, called the compact representation of $A$, denoted by $CR(A)$. Let assume that for all contention vertices $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r,u) = 0$.
 
@@ -390,12 +390,13 @@ they do not interact. Hence, if the last level contains the vertices $\{u_1,\dot
 
 
 \subsection{Random generation of routed network}
+
 In this paper, we focus on Cloud-RAN networks. For the results presented here, we consider that the networks\todo{dessin} have a meshed shape. Also, we consider that each datacenter is preceded by a switch in the network, and that the lenght of the routes comming to this datacenter is the same between this switch and each BBU contained in the datacenter.
-Also, we consider that the contention level of the networks studied here is $3$. Indeed, there is two contention point in the way forward for the messages, and one in the way backward, since once the datagrams have been scheduled to go in the datacenter, they go out of it in the exact same order because the size of the arcs is the same for all routes of a same datacenter.
+Also, we consider that the contention level of the networks studied here is $3$. Indeed, there is two contention points in the way forward for the messages, and one in the way backward, since once the datagrams have been scheduled to go in the datacenter, they go out of it in the exact same order because the size of the arcs is the same for all routes of a same datacenter.
 
 To generate a routed network, several synthetic datas might be fixed: The load of the network, the number of routes, the length of the routes, the distribution of the length of the routes, and the number of contention points.  We first want to determine the impact in terms of computation time and quality of the results of those synthetic datas on the algorithms studied.
 In order to lighten the number of experiences presented here, we consider that the number of datacenter (i.e. the number of contention points of level $2$) is set to $2$, and the number of contention points of level $1$ (and $3$, since the network is symetric) is set to $4$. The results are not significantly impacted if we change those values. 
-Also, in a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the numer of routes in the graph at the end of this section.
+Also, in a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the number of routes in the graph at the end of this section.
 
 Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
 \todo{expliquer pourquoi ces valeurs}
@@ -527,7 +528,7 @@ Figure~\ref{tab:success} shows the success rate of Greedy Deadline and Greedy No
  
  Greedy Deadline fails less than Greedy Normalized on highly loaded networks, while Greedy Normalized seems more robust on loads between $80\%$ and $90\%$. We now want to compare the performance of those algorithms. Figure~\ref{fig:90load} shows the additional latency induced by the assignments given by the algorithms, when there is one. As expected, the additional latency increases when the load increases and Greedy Packed, that trades additional latency for success rate, performs worst than GD and GN when they are able to find an assignment.
  Greedy Normalized performs better than Greedy Deadline when it finds an assignment.  On vertices with high load,
- the three algorithm almost always find the same assignment (or fail). On vertices of small load, the constraint of packing the datagram imposed by GD worsen the latency.
+ the three algorithms almost always find the same assignment (or fail). On vertices of small load, the constraint of packing the datagram imposed by GD worsen the latency.
 
 We propose improved version of GD and GN that always find a solution. For each contention point, we first try GD (or GN), 
 and if the algorithm fails, we apply GP. Let us call Hybrid Greedy Deadline (HGD) and Hybrid Greedy Normalized (HGN) those two algorithms. Figure~\ref{fig:greedysuccess} shows the performances of HGD, HGS, and GP on $1000$ routed networks with a load of $90\%$.
@@ -555,19 +556,19 @@ The number of compact representations grows extremely quickly with $n$. Hence, t
 by the neighborood relation should be connected. We now propose a simple neighborood relation over compact assignments.
 
 Let $u$ be a contention vertex of a network, and let $CA$ be a compact assignment for this network, 
- which associates the pair $(O_u,S_u)$ to $u$. Let $r \in \mathcal{R}_u$, the \emph{$r$-neighborood} of $(O_u,S_u)$ is the set of pairs $(O,S)$ such that:
+ which associates the pair $(O_u,S_u)$ to $u$. Let $O_u = (r_1,\dots,r_l)$.
+  Let $r_i \in \mathcal{R}_u$, the \emph{$r_i$-neighborood} of $(O_u,S_u)$ is the set of pairs $(O,S)$ such that:
  
  \begin{enumerate} 
- \item $O_u = O$ or $O_u = (r_1,\dots,r_l)$ with $r_i = r$ and $O = (r_1,\dots,r_{i-2},r_{i},r_{i-1},\dots,r_{l})$ 
- \item $S_u = S \cup \{r\}$ or  $S_u = S \setminus \{r\}$ 
+ \item $O = O_u$ and $S_u = S$ or $S \triangle \{r_i\}$  
+ \item $O = (r_1,\dots,r_{i-2},r_{i},r_{i-1},\dots,r_{l})$ and $S_u = S$ or $S \triangle \{r_i\}$ or  $S \triangle \{r_{i-1}\}$ or $S \triangle \{r_i,r_{i-1}\}$ 
  \end{enumerate}
 
 Informally, a compact representation is in the $r$-neighborood of another one if it can be obtained by 
-moving down $r$ once (or not changing it) in the order and adding or removing $r$ from the set. 
-Remark that the $r$-neighborood of any pair $(O_u,S_u)$ has at most $4$ members (it can be $2$ when the route $r$ is in first position and cannot be exchanged with the previous one). 
+moving down $r$ once (or not changing it) in the order and adding or removing $r$ and the previous route from the set. 
+Remark that the $r$-neighborood of any pair $(O_u,S_u)$ has at most $6$ members (it can be $4$ when the route $r$ is in first position and cannot be exchanged with the previous one). 
 
-The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborood of $(O_u,S_u)$. Finally, the \emph{neighborood} of an assignment $CA$ is the union for all $r \in \cal{R}$ of the 
- $r$-neighboroods of $CA$.
+The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborood of $(O_u,S_u)$. Finally, the \emph{neighborood} of an assignment $CA$ is the union for all $r \in \cal{R}$ of the $r$-neighboroods of $CA$.
 
 % 
 % 
@@ -590,24 +591,37 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 % $$ \bigcup_{r\in{\cal R}} (\prod_{u\in r} N_u ) $$.
 
  Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
- a routed network $(G,\cal{R})$. Then, a compact representation has at most $\sum_{i=1}^n 4^{k_i}$ neighbors. Since we always work with networks of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.
- We further restrict the notion of neighborood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. All algorithms presented in this section will traverse the graph defined by the neighborood relation. 
+ a routed network $(G,\cal{R})$. Then, a compact representation has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
+  All algorithms presented in this section will do a walk in the transposition graph, trying to find a vertex with optimal
+  transmission time. 
 
- \todo{un nom pour ce graphe ?}
+\todo{Faire un dessin d'un routed network simple}
 
- \begin{proposition}
- The graph defined over realizable compact solutions by the neighborood relation is connected.
- \end{proposition}
+
+\begin{lemma}\label{lemma:path}
+There is a path from a realizable compact representation CR, with $CR(u) = (O_u,S_u)$ to $CR'$, such that 
+$CR'$ is equal to $CR$ except on $u$ where it is equal to $(O_u,S_u \cup E)$.  
+\end{lemma}
+\begin{proof}
+The path is by adding elements in $E$ one by one. 
+ To prove the existence of the path, it is enough to prove that for  $E = \{v\}$. By definition, $(O_u,S_u \cup{v})$ is in the neighborood of $(O_u,S_u)$. However, one should also prove that $CR'$ is realizable.
+  Since the order in which the buffers are fixed by the algorithm of $Real$ is the same for $(O_u,S_u)$ and $(O_u,S_u \cup{v})$, it is easy to prove by induction that the normalized sending times of $(O_u,S_u \cup{v})$ are less than the normalized sending times of $(O_u,S_u)$. Thus, $CR$ realizable implies $CR'$ realizable. Indeed, 
+a compact assignment is realizable if and only if the last normalized sending time is less than $P - \tau$.
+\end{proof}
+
+
+
+ \begin{theorem}
+ The transposition graph of a routed network is connected.
+ \end{theorem}
  \begin{proof}
- Sketch (should prove a fact before on solutions with the same order but included sets)
-
-Consider two realizable compact solutions $(O_u,S_u)$ and $(O'_u,S'_u)$. 
-First set $S_u$ to be equal to $\mathcal{R}_u$. This can be done by adding repeateadly elements in $\bar{S_u}$.
-This always leads to realizable compact assignment, since the constraints becomes weaker. (to check)
-
-Then, when $S_u = \mathcal{R}_u$, all orders yield a realizable compact assignment. Hence there is a path from
-$(O_u,\mathcal{R}_u)$ to $(O'_u,\mathcal{R}_u)$. Finally, we can remove elements from $\mathcal{R}_u$ to obtain 
-$S'_u$, since $(O'_u,S'_u)$ is realizable, the intermediate solutions are also realizable (less constraints)
+ For simplicity, we assume that the routed network has a single contention node $u$. Let $(O_u,S_u)$ and $(O'_u,S'_u)$ be two realizable compact assignments, we show there is a path between them. Let $r$ be the first element of 
+$O_u$ and let $E = \mathcal{R}_u \setminus \{ r \}$. By Lemma~\ref{lemma:path}, there is a path from 
+$(O_u,S_u)$ to $(O_u,E)$. Consider now $O_u''$, the order $O_u'$ whith $r$ placed in first position.
+There is a path from $(O_u,E)$ to $(O_u'',E)$. Indeed, any order is realizable, when all elements but the first
+are in $E$ because there are no constraints on their normalized sending time. 
+Now, let $r'$ be the first element of $O_u'$. By definition, $(O_u',E \triangle \{r,r'\})$ is in the $r'$ neighborood of $(O_u'',E)$. Moreover, $(O_u',E \triangle \{r,r'\})$ is realizable because $E \triangle \{r,r'\}$ is equal to all routes but the first in $O_u'$. 
+Finally, using Lemma~\ref{lemma:path} once again prove there is a path between $(O_u',E \triangle \{r,r'\})$ and $(O'_u,S'_u)$ since $(O'_u,S'_u)$ is realizable and $S'_u \subseteq E \triangle \{r,r'\}$, which proves the theorem.
  \end{proof}
 
 
