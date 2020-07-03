@@ -121,13 +121,12 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
      \todo{faire un dessin pour illustrer tout ca} 
 
-
 \todo{Parler de la propriété de routage cohérent, ça implique qu'on obtient bien des DAG.}
 
      
   \subsection{Periodic Emission of Datagrams}
 
- 	The process we modelize in this article is \emph{periodic}: for each period of $P$ tics, a datagram is ready to be sent from each source node in the network at time zero of the period. The process is assumed to be infinite, since it should work for an arbitrary number of periods. We chose to always use the same buffering in all periods, for simplicity of implementation in real networks but also to make our problem more tractable from a theoritical perspective. In other words, at the same time of two different periods, all messages are at the same position in the network: the assignments we build are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
+ 	The process we model in this article is \emph{periodic}: for each period of $P$ tics, a datagram is ready to be sent from each source node in the network at time zero of the period. The process is assumed to be infinite, since it should work for an arbitrary number of periods. We chose to always use the same buffering in all periods, for simplicity of implementation in real networks but also to make our problem more tractable from a theoritical perspective. In other words, at the same time of two different periods, all messages are at the same position in the network: the assignments we build are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
     Let us call $[r,u]_{P,\tau}$ the set of tics used by a datagram on $r$ at vertex $u$ in a period $P$, that is $[r,u]_{P,\tau} = \{s(r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
 
       Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.\\
@@ -148,10 +147,9 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
     
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
     depending on $n$ the number of routes and $d$ the contention level, but not on $P$ or $G$.
-    Given a contention point $u$, let ${\cal R}_u \subseteq {\cal R}$ be the set of routes which contain $u$. We define the load of $u$ to be $|{\cal R}_u|\tau/P$, it measures the percentage of the bandwidth used by datagrams
+    Given a contention point $u$, let ${\cal R}_u \subseteq {\cal R}$ be the set of routes which contain $u$. The \textbf{load} of $u$ is $\tau|{\cal R}_u|/P$, it measures the percentage of the bandwidth used by datagrams
     going through $u$. The load of $(G,{\cal R})$ is the maximum of the load of $u$, for all contention vertices in $G$.
-    This parameter is important for theoritical study of problems simpler than \spall~\cite{}, but is also critical 
-    for the performance of algorithms presented in this article.
+    This parameter is crucial in the theoritical study of simpler variant of \spall~\cite{guiraud2020scheduling}, but is also critical for the performance of algorithms presented in this article.
 
 
 \subsection{Contention Depth and \spall}
@@ -160,7 +158,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 Each contention vertex of a routed network of contention depth one induces a connected component. 
 Problem \spall can be independently solved on each connected componentes, hence the case with a single contention point
-is equivalent. It has already been defined as a useful subproblem in~\cite{} under the name BRA \todo{mettre le bon style}.
+is equivalent. It has already been defined as a useful subproblem in~\cite{barth2018deterministic} under the name BRA \todo{mettre le bon style}.
 
 \todo{Donner la version non périodique et lui doner un nom et donner les deux résultats algorithmique-> simmons et notre adaptation pour Bra}
 
@@ -177,22 +175,23 @@ Then, it is enough to consider all datagrams and their time of avalabality in th
 The most simple case of contention depth $2$ is a routed network with two contention points. 
 This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
 there is a single contention point (a shared link between the RRHs and the data center). 
-This topology, called star shaped network in previous work, is common in real networks, and a non synchronized version of \spall has been studied in this case~\cite{nosdeuxarticles}.
+This topology, called star shaped network in previous work, is common in real networks, and a non synchronized version of \spall has been studied in this case~\cite{Guir1806:Deterministic,barth2018deterministic,guiraud2020scheduling}.
 The problem $\spall$ on star shaped network is $\NP$-hard, since it is a periodic version of 
-the two flow shop problem studied in \cite{}. \todo{mettre un peu plus de détails et pourquoi la périodicité ne change rien}
+the two flow shop problem studied in \cite{yu2004minimizing}. \todo{mettre sous forme théorème et dans la preuve montrer pourquoi la périodicité ne change rien: trivial, juste mettre une période plus grande que la latence possible}
 
 \paragraph*{Contention Depth Two and More}
 
 However, star shaped networks may not be the most general topology with regard to problem \spall.
-\todo{Que peut-on dire des tpologies de profondeur 2 en général ?}
-Introduire les réseaux plus généraux de contention depth 3.
-Dire comment ce qu'on veut modéliser est un cas particulier et lequel (profondeur 2 dans le réseau, même
-distance de tous les datacenters dans les BBUs). Donner un exemple illustré.
+Que peut-on dire des topologies de profondeur 2 en général ? Expliquer que si elles modélisent un aller-retour,
+ce sont forcément des star shaped networks.
+Introduire les réseaux plus généraux de contention depth 3.Dire comment ce qu'on veut modéliser est un cas particulier de
+contention depth 3: profondeur 2 dans le réseau, même
+distance de tous les datacenters dans les BBUs ce qui vire un point de contention. Donner un exemple illustré.
 
 
 \section{Compact Representation of an Assignment}
 
- We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in \cal{R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments (for $\prec$) to solve \spall.
+ We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in \cal{R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments for $\prec$ to solve \spall.
 
 We explain in this section how to represent most assignment in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without a compact representation when solving \spall. 
 It allows to design an FPT algorithm for \spall by going through all compact representations, but also to design good polynomial time heuristics using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.
@@ -206,13 +205,13 @@ Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a funct
 
 \subsection{From Valid Assignments to Compact Representation}
 
-We first define a method to obtain a compact assignment from some valid assignment $A$, that we call the compact representation of $A$ and that we denote by $CR(A)$. Assume all routes are indexed by an integer in $[n]$ and let $u$ be a contention point of $G$. We also assume that for all vertices $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r_i,u) = 0$.
+Let us define a function which maps valid assignment $A$ to a compact assignment, called the compact representation of $A$, denoted by $CR(A)$. Let assume that for all contention vertices $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r,u) = 0$.
 
-Say w.l.o.g. that $r_0$ is the route of smallest index such that $A(r_0,u) = 0$. The datagram of $r_0$ arrives and goes to the next contention point at time $t(r_0,u)$. Let us define the \emph{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \emph{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
+We assume that routes in $\mathcal{R}$ are indexed by the integers in $[n]$. Say w.l.o.g. that $r_0$ is the route of smallest index such that $A(r_0,u) = 0$. The datagram of $r_0$ arrives and goes to the next contention point at time $t(r_0,u)$. Let us define the \textbf{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \textbf{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
 
 We define $O_u$ as the order on the routes of $R_u$ induced by the values $ns(r,u)$. The set $S_u$ is defined as the set of routes going through $u$ such that $ns(r_0,r,u) < nt(r_0,r,u)$. Imagine the time is cut into periods $[t(r_0,u) + iP,t(r_0,u) + (i+1)P [$, with $i \in \mathbb{N}$. Intuitively, $S_u$ represents the set of routes with a datagram going through $u$ in the period \emph{after} the one they have been available in. 
 
-Figure~\ref{fig:normalizedassignment} illustrates how a compact representation is computed from an assignment on a single node $u$. On top, the datagrams are represented by sending time $s(r_i,u)$ while the bottom of the figure shows the datagrams in a single period, normalized by arrival time $ns(r_0,r_i,u)$.  
+Fig.~\ref{fig:normalizedassignment} illustrates how a compact representation is computed from an assignment on a single node $u$. On top, the datagrams are represented by sending time $s(r_i,u)$ while the bottom of the figure shows the datagrams in a single period, represented by normalized sending times $ns(r_0,r_i,u)$.  
 \begin{figure}[!h]
 	\centering
 	\includegraphics[scale=1]{normalizedassignment}
@@ -221,10 +220,10 @@ Figure~\ref{fig:normalizedassignment} illustrates how a compact representation i
 \end{figure}
 
 
-Note that for $CR(A)$ to be defined, we need that, on each contention point, at least a datagram is not buffered. We call such an assignment a \textbf{canonical} assignment. It turns out that any assignment $A$ can be made canonical without increasing $TR(A)$.
+Note that for $CR(A)$ to be defined, we need that, on each contention point, at least a datagram is not buffered. We call such an assignment a \textbf{canonical assignment}. It turns out that any assignment $A$ can be made canonical without increasing $TR(A)$.
 
 \begin{lemma}\label{lemma:canonical_min}
-Let $A$ be a valid non canonical assignment, then there is a valid canonical assignment $A'$ such that $A' \preceq A$.
+Let $A$ be a valid assignment, then there is a valid canonical assignment $A'$ such that $A' \preceq A$.
 \end{lemma}
 \begin{proof}
 Consider a vertex $u$ of contention level $1$, such that for all $r \in \mathcal{R}_u$, $A(r,u) > 0$. Let us define $m$ as the minimimum of these values, we define $A'(r,u) = A(r,u) - m$. Assignment $A'$ has no collision on $u$, since all departure times have been shifted by the same value and $A$ has no collision. Moreover, if $v$ is the vertex after $u$ in a route $r$, we define  $A'(r,v) = A(r,v) + m$. Hence, all departure times for vertices of contention levels larger than one are the same in $A$ and $A'$, which implies that there are no collisions in these vertices. We have proven that $A'$ is still valid. Since all departure times of $A'$ are less or equal to those induced by $A$, we have $A' \preceq A$. Moreover, if $r_0$ is the route with $A(r_0,u) = m$, then $A'(r_0,u) = 0$. 
@@ -237,14 +236,15 @@ We apply this transformation by increasing contention level. Since, the transfor
 
 
 We now explain how to transform a compact representation into a canonical assignment.
-Moreover, we will show that the obtained assignment is the smallest among all assignments of same representation. We first explain how to do the transformation on a routed network with a single contention point $u$.
+Moreover, we show that the obtained assignment is the smallest among all assignments of same representation. We first explain how to do the transformation on a routed network with a single contention point $u$.
 
 Recall that the datagram of a route $r$ is available at time $t(r,u)$ in the vertex $u$.
 Let us consider a compact assignment $CA$, which maps $u$ to the pair $(O_u,S_u)$.
-We define inductively how to build an assignment $Real(CA)$ from $CA$, that we call the realization of $CA$. Note that we can fail to build a realization from a compact representation, then $Real(CA)$ is undefined and we say that $CA$ is not realizable. In the next paragraphs, we build an assignment $A$ by setting the buffering time of the routes in the order
+The assignment $Real(CA)$ is built inductively from $CA$, it is called the realization of $CA$. 
+If the construction of $Real(CA)$ fails, then $Real(CA)$ is undefined and we say that $CA$ is not realizable. In the next paragraph, we build an assignment $A$ by setting the buffering time of the routes in the order
  $(O_u)$. If the construction suceeds, we set $Real(CA) = A$ 
 
-Let say that the order $O_u$ is $(r_1, \dots, r_l)$. We fix $A(r_1,u)$ to zero, that is the first
+Let say that the order $O_u$ is $(r_0, \dots, r_l)$. We fix $A(r_0,u)$ to zero, that is the first
 datagram in the period has no buffering time. Then, in each period beginning by the first datagram, the datagrams will be in order $O_u$. Now the first datagram of the period is fixed, we use it to consider normalized arrival times and normalized sending times.
 Assume that $A(r_i,u)$ have been set for $i \leq l$, we explain how to 
 set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1,r_{i+1},u)$ is the maximum of $ns(r_1,r_i,u) + \tau$ and $nt(r_1,r_{i+1},u)$. If $ns(r_1,r_{i+1},u) > P - \tau$, then $CA$ is not realizable. If $r_{i+1} \in S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1, r_{i+1},u) = ns(r_1,r_i,u) + \tau$. In both cases, if $ns(r_1, r_{i+1},u) \geq nt(r_1,r_{i+1},u)$, then $CA$ is not realizable (the sending time is in the wrong period with regard to $S_u$). 
@@ -271,7 +271,7 @@ buffer time of a route from the previous one. Hence, the time spent in a vertex 
 A route can go through only one vertex of a given contention level, hence the time spent computing buffers for all vertices
 of a contention level is in $O(n)$ and for the whole graph it is in $O(nd)$.
 
-To prove that there are no collision between pair of routes for a given assignment, it is enough to 
+To prove that there is no collision between pair of routes for a given assignment, it is enough to 
 prove it for any interval of time of size $P$. Hence, it is enough to consider the normalized sending time and to verify
 they do not induce a collision. By construction,  $ns(r_1,r_{i+1},u)$ is always larger than $ns(r_1,r_{i},u) + \tau$ and less 
 than $P - \tau$, which proves the absence of collision. Finally, $Real(CA)$ is canonical, since by definition $Real(CA)(r_1,u) = 0$,
@@ -284,7 +284,7 @@ $CR$ always sends a canonical assignment on a canonical compact assignment. It i
 that the function $CR$ is the inverse of $Real$ over canonical compact assignments. It implies that
 $Real(CA)$ can be chosen as the representative of the equivalence class of the assignments having $CA$ as a representation.
 
-In fact, as implied by the following Lemma, we can be more precise on $Real(CA)$: it is minimal in its equivalence class for $\prec$.
+In fact, as implied by the following Lemma, we can be more precise on $Real(CA)$: it is minimal for $\prec$ in its equivalence class.
 
 \begin{lemma}\label{lemma:prec}
 Let $A$ be a valid assignment, then $Real(CR(A)) \preceq A$.
