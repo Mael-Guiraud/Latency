@@ -16,6 +16,7 @@ typedef struct{
 	int route;
 	int* pos;
 	int * bool_p;
+	int idtmp;
 } Voisin;
 typedef struct{
 	int delay;
@@ -68,23 +69,6 @@ void next(int * tab, int id)
 		tab[id]++;
 	}
 }
-void next3(int * tab, int id)
-{
-	if(tab[id] == 1)
-	{
-		if(id==0)
-		{
-			printf("Error, the number max is reached.\n");
-			exit(94);
-		}
-		tab[id]=0;
-		next(tab,id-1);
-	}
-	else
-	{
-		tab[id]++;
-	}
-}
 int fin_vois(int * tab, int size)
 {
 	for(int i=0;i<size;i++)
@@ -118,9 +102,11 @@ int fin_vois2(int * tab, int* bool_p,int size)
 	return 1;
 
 }
-void next2(int * tab,int * bool_p, int id)
+void next2(int * tab,int * bool_p, int id, int val_fin)
 {
-	if(tab[id] == 1)
+
+
+	if(tab[id] == val_fin)
 	{
 
 		if(fin_vois(bool_p,id+1))
@@ -205,31 +191,31 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 
 
 
-	for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
-		{
+	//for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
+		//{
 
 			if(kind == FORWARD)
 			{
 				
-				if(g->contention[v.route][x]->routes_order_f[i] <0)
-					g->contention[v.route][x]->routes_order_f[i] = -g->contention[v.route][x]->routes_order_f[i];
-				if(g->contention[v.route][x]->routes_order_f[i] == INT_MAX)
-					g->contention[v.route][x]->routes_order_f[i] = 0;
+				if(g->contention[v.route][x]->routes_order_f[idtmp] <0)
+					g->contention[v.route][x]->routes_order_f[idtmp] = -g->contention[v.route][x]->routes_order_f[idtmp];
+				if(g->contention[v.route][x]->routes_order_f[idtmp] == INT_MAX)
+					g->contention[v.route][x]->routes_order_f[idtmp] = 0;
 			}
 			else
 			{
 				
-				if(g->contention[v.route][x]->routes_order_b[i] <0)
-					g->contention[v.route][x]->routes_order_b[i] = -g->contention[v.route][x]->routes_order_b[i];
-				if(g->contention[v.route][x]->routes_order_b[i] == INT_MAX)
-					g->contention[v.route][x]->routes_order_b[i] = 0;
+				if(g->contention[v.route][x]->routes_order_b[idtmp] <0)
+					g->contention[v.route][x]->routes_order_b[idtmp] = -g->contention[v.route][x]->routes_order_b[idtmp];
+				if(g->contention[v.route][x]->routes_order_b[idtmp] == INT_MAX)
+					g->contention[v.route][x]->routes_order_b[idtmp] = 0;
 			}
 			
-		}
+		//}
 	
 		
 		//On cherche l'indice de au quel v.route est placée dans l'arc
-		idtmp = -1;
+		/*idtmp = -1;
 		for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
 		{
 			if(kind == FORWARD)
@@ -253,7 +239,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		if(idtmp ==-1)
 		{
 			printf("Error, indice not found.\n");exit(35);
-		}
+		}*/
 
 
 		if(v.pos[level] == 2)//permutation a gauche(car c'était droite avant)
@@ -325,7 +311,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		}
 		else
 		{
-			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1);
+			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1,1);
 		}
 	}
 
@@ -502,7 +488,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 			}
 		}
 
-		
+		v.idtmp = idtmp;
 	}
 	
 	return v;
@@ -1961,7 +1947,7 @@ int taboo(Graph * g, int P, int message_size,int nb_steps, int mem,float * nb_pa
 		free_trace(hash_table[i],g->arc_pool_size);
 	}
 	free(hash_table);
-	printf("fin taboo better = %d \n",nb_steps_better);
+	//printf("fin taboo better = %d \n",nb_steps_better);
 	*nb_pas = nb_steps_better;
 	//free(tab);
 	//free_trace(t,g->arc_pool_size);
@@ -2251,7 +2237,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	static int instance = 0;
 	//Parametres du recuit
 	int nb_paliers = param;
-	float temperature = 2200.0;
+	float temperature = 1000.0;
 	float coeff= 0.90;
 	int b;
 	int seuil_arret = 2;
