@@ -93,9 +93,10 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	\includegraphics[scale=0.5]{graphmodel}\\
 
 	 \end{minipage}
-	 \label{fig:fronthaul}
+	 
 \caption{A C-RAN fronthaul network and its corresponding routed network}
-\end{figure}
+\label{fig:fronthaul}
+\end{figure} 
 	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level over all vertices. It is the number of contention points on the longest route of the network. In all the article, $(G,{\cal R})$ is the routed network, ${\cal C}$ is the set of its contention vertices, $n$ denotes $|\cal{R}|$ the number of routes and $d$ is the contention depth.  
 
 
@@ -132,8 +133,9 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	\centering
 	\includegraphics[scale=0.8]{allerretour}
 
+
+\caption{The routed network modelizing both ways of messages in the fronthaul network of figure~\ref{fig:fronthaul}.}
 \label{fig:allerretour}
-\caption{The routed network modelizing both ways of messages in the fronthaul network of figure~\ref{fig:fronthaul}}. 
 \end{figure}
 
 In the problem we describe in next subsection, the routing is given. It is considered to be coherent~\cite{schwiebert1996necessary}, that is, acyclic. Thus, the routed network studied in this paper are some directed acyclic graphs.
@@ -172,28 +174,24 @@ In the problem we describe in next subsection, the routing is given. It is consi
 
 Each contention vertex of a routed network of contention depth one induces a connected component. 
 Problem \spall can be independently solved on each connected componentes, hence the case with a single contention point
-is equivalent. It has already been defined as a useful subproblem in~\cite{barth2018deterministic} under the name \bra, which is the periodic version of the problem \ADO defined below.
-
-  \noindent {\bf Assignment for Depth One (\ADO)} 
-
-      \noindent {\bf Input:} A set of jobs with each a release time and a deadline $d_i$ , a size of the jobs.\\
-      \noindent {\bf Decision problem:} Find, on a signle machine, a scheduling, that is a time for each jobs such that no two jobs uses the machine at the same time.\\
-      \noindent {\bf Optimisation problem:} Minimize the time between the begining of the computation of the first job and the end of the last job.
-      \\
-       \cite{simons_fast_1978} gives a polynomial time algorithms that find a scheduling that minimize the makespan in $O(n^2\log(n))$. If we add the periodic aspect to \ADO, this problem becomes \bra :
+is equivalent. 
+By removing the periodicity of the problem, solving \spall on a single contention point is a single processor scheduling problem: Given a set of jobs of same length with each a release time and a deadline, we want to find a scheduling, that is a time for each jobs such that no two jobs uses the machine at the same time. Each jobs must be scheduled after its release time and satisfy its deadline. The makespan of a solution is the time elapsed between the begining of the computation of the first job and the end of the last job.
+      The paper~\cite{simons_fast_1978} gives a polynomial time algorithms that find a scheduling that minimize the makespan in $O(n^2\log(n))$.
       
+
+We now want to solve the same problem in which the process is periodic. It has already been defined as a useful subproblem in~\cite{barth2018deterministic} under the name \bra. Here, the messages are the jobs, the releases times are given by the length of the routes, and the deadline of each jobs is computed from $TR(A)$.\\
+     
 \noindent{\bf \bra} 
 
       \noindent {\bf Input:} A routed network of depth one $(G,{\cal R})$, the size of the messages $\tau$, a period $P$.\\
       \noindent {\bf Question:} Find an assignment of  $(G,{\cal R})$ that minimizes $TR(A)$.\\
-   \bra is a periodic version of \ADO in which the messages are the jobs, the releases times are given by the length of the routes, and the deadline of each jobs is computed from $TR(A)$.\\
+
    
    \begin{theorem}\label{th:braFPT}
 $\bra \in \FPT$ when parametrized by the number of routes.
 \end{theorem}
-   The proof of this theorem is explained in~\cite{barth2018deterministic}. There is still the open question: is \bra solvable in polynomial time.
+   The proof of this theorem is explained in~\cite{barth2018deterministic}. It is possible that \bra is solvable in polynomial time, but we did not investigate this point enought yet.
    
-\todo{Donner la version non périodique et lui doner un nom et donner les deux résultats algorithmique-> simmons et notre adaptation pour Bra}
 
 If the messages are allowed to have different size, then the problem is known to be $\NP$-hard for the non periodic variant.
 It also implies hardness for \bra, by taking a large enough period so that it is equivalent to the non periodic case.
@@ -209,8 +207,16 @@ The most simple case of contention depth $2$ is a routed network with two conten
 This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
 there is a single contention point (a shared link between the RRHs and the data center). 
 This topology, called star shaped network in previous work, is common in real networks, and a non synchronized version of \spall has been studied in this case~\cite{Guir1806:Deterministic,barth2018deterministic,guiraud2020scheduling}.
-The problem $\spall$ on star shaped network is $\NP$-hard, since it is a periodic version of 
-the two flow shop problem studied in \cite{yu2004minimizing}. \todo{mettre sous forme théorème et dans la preuve montrer pourquoi la périodicité ne change rien: trivial, juste mettre une période plus grande que la latence possible}
+
+
+ \begin{theorem}\label{th:braFPT}
+The problem $\spall$ on star shaped network is $\NP$-hard
+\end{theorem}
+\begin{proof}
+The two flow shop problem studied in \cite{yu2004minimizing} is show as $\NP$-hard. In two flow shop problem, a set of jobs with have to be processed in sequence on two machines; a job must be processed on machine $1$ before beeing processed on machine $2$. There is, for each job, a delai between the end of the processing on the first machine and the begining of the processing on the second one. The objective is to minimize the makespan.\\
+We reduce an instance of $\spall$ in an instance of the two flow shop proplem: A message is a job, the delay of the jobs are equivalent to the lenght of the routes between the two contention points. We then set the makespan value to $P$, and the instance of $\spall$ becomes an instance of two flow shop.
+\end{proof}
+
 
 \paragraph*{Contention Depth Two and More}
 
@@ -282,13 +288,13 @@ datagram in the period has no buffering time. Then, in each period beginning by 
 Assume that $A(r_i,u)$ have been set for $i \leq l$, we explain how to 
 set $A(r_{i+1},u)$. If $r_{i+1} \notin S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1,r_{i+1},u)$ is the maximum of $ns(r_1,r_i,u) + \tau$ and $nt(r_1,r_{i+1},u)$. If $ns(r_1,r_{i+1},u) > P - \tau$, then $CA$ is not realizable. If $r_{i+1} \in S_u$, then we fix $A(r_{i+1},u)$ so that $ns(r_1, r_{i+1},u) = ns(r_1,r_i,u) + \tau$. In both cases, if $ns(r_1, r_{i+1},u) \geq nt(r_1,r_{i+1},u)$, then $CA$ is not realizable (the sending time is in the wrong period with regard to $S_u$). 
 
-Figure~\ref{fig:compacttoassignment} shows how an assignment $Real(CA)$ is built from a compact assignment $CA$ on a single contention vertex $u$. We have $O_u = (2,1,0,3)$ and $S_u = \{1\}$. First, the datagram $2$ is fixed, that is, $A(r_2,u)=0$. Then, since $r_1 \in S_u$, we set $A(r_1,u)$ such that$ ns(r_2,r_1,u) = ns(r_2,r_2,u) + \tau$. 
+Figure~\ref{fig:compacttoassignment} shows how an assignment $Real(CA)$ is built from a compact assignment $CA$ on a single contention vertex $u$. We have $O_u = (2,1,0,3)$ and $S_u = \{1\}$. First, the datagram $2$ is fixed, that is, $A(r_2,u)=0$. Then, since $r_1 \in S_u$, we set $A(r_1,u)$ such that $ ns(r_2,r_1,u) = ns(r_2,r_2,u) + \tau$. 
 Finally, since $r_0$ and $r_3 \notin S_u$, we set $A(r_0,u)$ and $A(r_3,u)$ such that $ns(r_2,r_0,u) = nt(r_2,r_0,u)$ and  $ns(r_2,r_3,u) = ns(r_2,r_0,u) + \tau$.
 \begin{figure}[!h]
 	\centering
 	\includegraphics[scale=1]{compacttoassignment}
-\caption{Inductive contruction of $Real(CA)$ from $CA$ on a single contention point $u$. }
-\label{fig:compacttoassignment}
+\caption{Inductive construction of $Real((2,1,0,3),\{1\})$ from $CA$ on a single contention point $u$. }
+\label{fig:compacttoassignment} 
 \end{figure}
 
 The function $Real$ can easily be generalized to any routed network. Indeed, one can first consider all vertices of contention level $1$, the routes going through them form disjoint sets. Hence, we can define $Real$ independently on each vertex of contention level $1$. 
