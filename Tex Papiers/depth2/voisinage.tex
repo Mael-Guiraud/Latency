@@ -169,7 +169,7 @@ In the problem we describe in next subsection, the routing is given. It is consi
 
 
 \subsection{Contention Depth and \spall}
-
+\label{sec:contentiondepth}
 \paragraph*{Contention Depth One}
 
 Each contention vertex of a routed network of contention depth one induces a connected component. 
@@ -226,6 +226,15 @@ ce sont forcément des star shaped networks.
 Introduire les réseaux plus généraux de contention depth 3.Dire comment ce qu'on veut modéliser est un cas particulier de
 contention depth 3: profondeur 2 dans le réseau, même
 distance de tous les datacenters dans les BBUs ce qui vire un point de contention. Donner un exemple illustré.
+   \begin{figure}
+
+	\centering
+	\includegraphics[scale=0.8]{bbuaggreg}
+
+
+\caption{One or several contention points around the BBU according to the lenght of the links}
+\label{fig:allerretour}
+\end{figure}
 
 
 \section{Compact Representation of an Assignment}
@@ -426,44 +435,6 @@ they do not interact. Hence, if the last level contains the vertices $\{u_1,\dot
 
 
 \section{Greedy Algorithms}
-
-
-\subsection{Random generation of routed network}
-
-In this paper, we focus on Cloud-RAN networks. For the results presented here, we consider that the networks\todo{dessin} have a meshed shape. Also, we consider that each datacenter is preceded by a switch in the network, and that the lenght of the routes comming to this datacenter is the same between this switch and each BBU contained in the datacenter.
-Also, we consider that the contention level of the networks studied here is $3$. Indeed, there is two contention points in the way forward for the messages, and one in the way backward, since once the datagrams have been scheduled to go in the datacenter, they go out of it in the exact same order because the size of the arcs is the same for all routes of a same datacenter.
-
-To generate a routed network, several synthetic datas might be fixed: The load of the network, the number of routes, the length of the routes, the distribution of the length of the routes, and the number of contention points.  We first want to determine the impact in terms of computation time and quality of the results of those synthetic datas on the algorithms studied.
-In order to lighten the number of experiences presented here, we consider that the number of datacenter (i.e. the number of contention points of level $2$) is set to $2$, and the number of contention points of level $1$ (and $3$, since the network is symetric) is set to $4$. The results are not significantly impacted if we change those values. 
-Also, in a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the number of routes in the graph at the end of this section.
-
-Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
-\todo{expliquer pourquoi ces valeurs}
-
-Figure~\ref{tab:instances} shows the average additional latency needed by the branch and bound and the greedy algorithm that we call GNS presented in next section (used to intialize the local search algorithms) for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
-
-\begin{center}
-\begin{figure}
-\centering
-\begin{tabular}{ |c|c|c|c|c| }
-\hline
-    Range & $0$ and $\tau/3$ & $0$ and $P$& $P-0.1\times P$ and $P$\\
-    \hline
-    Branch and bound & $4273$ & $222$& $2704$ \\
- 
-    GNS & $12177$ & $10628$& $9648$\\
-   
-    \hline
-  
- \end{tabular}
- \caption{Difference between the optimal solution of the greedy algorithms, for different kind of instances generated.}
- \label{tab:instances}
- \end{figure}
- \end{center}
- The objective is to find the instances in which a solution given can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the additional latency needed by GNS remains in the same order of magnitude.
- 
- Also, we investigated the impact of the load on the quality of the results. When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load.
-
  
 Given a routed network, the local search algorithms explore all compact assignments in order to find a compact assignment $CA$ such that $TR(Real(CA))$ is as small as possible. A first compact assignment is needed to intialize any local search algorithm. We present in this section three greedy algorithms which try to build canonical valid assigments, which can then 
 turned into the corresponding compact representation by the $CR$ function.
@@ -516,7 +487,12 @@ Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ comp
 	\end{algorithm}
 
 \todo{ajouter la routine FIRST VALID qui donne la premiere position a laquelle on peut placer le message a partir de l'offset donné}
-
+   \begin{figure} 
+	\centering
+	\includegraphics[scale=0.8]{examplegreedyfail}
+\caption{An instance for which \greedydeadline fails to build an assignment}
+\label{fig:examplegreedyfail}   
+\end{figure}
 \subsection{Greedy Normalized}
 
 We present here a variant of \greedydeadline: select as first datagram the one with minimal $t(r,u)$, then select the datagrams by lowest normalised arrival times instead of arrival times. We will show that in practice, this algorithm, called \greedynormalized performs better than \greedydeadline.
@@ -532,6 +508,27 @@ the algorithms will fail while there is always a solution when the load is less 
 
 A compact assignment is needed to initialize the local search algorithms presented in the next section. Hence, we propose the \greedypacked algorithm that is guaranteed to find an assignment, even if the transmission time may be worse on average.
 The contention vertices are still managed level by level. For a vertex $u$, we explain how to determine the pair $(O_u,S_u)$. First, the datagram $d_0$ is fixed and sent without buffer. This is the datagrams with the lowest arrival time. This datagram is also the reference to compute the normalized arrival and sending times. Once $i$ datagrams are fixed, if serveral datagrams have a normalized arrival time lower or equal than $ns(d_0,d_i,u)+\tau$, the datagram $i+1$ is selected in the same way as in GN, that is, choose the datagram on the route $r$ with the lowest value of $2\times \lambda(u,r) - t(r,u)$. If no datagram can be selected, then the datagram on the route $r$ which maximize the value $2\times \lambda(u,r) - t(r,u) - (ns(d_0,d_r,u)+\tau+P-nt(d_0,d_r,u)$ is selected to be the $i+1^{th}$ in the order $O_u$ and $S_u = S_u + (i+1)$. In other word, select the datagram which is the less impacted by the additional latency needed to send the datagram without gap in the period.
+
+
+
+\subsection{Random generation of routed network}
+
+In this paper, we focus on Cloud-RAN networks. For the results presented here, we
+focus on networks of contention depth three, as illustrated in figure~\ref{fig:randomnetworks}, in which the dotted arcs represents each the arcs of two routes. As explained is section~\ref{sec:contentiondepth}, there is only one contention point due to the datacenters.
+   \begin{figure} 
+	\centering
+	\includegraphics[scale=0.8]{networksrandom}
+\caption{One or several contention points around the BBU according to the lenght of the links}
+\label{fig:randomnetworks}
+\end{figure}
+
+To generate random routed networks, several parameters might be fixed: The load of the network, the number of routes, the length of the routes, the distribution of the length of the routes, and the number of contention points.  We first want to determine the impact in terms of computation time and quality of the results of those parameters on the algorithms studied.
+In order to lighten the number of experiences presented here, we fix the number of contention point as in figure~\ref{fig:randomnetworks}. The results are not significantly impacted if we change those values. 
+ The impact of the load on the quality of the results was investigated: When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load. This means that $P = \frac{\tau \times n}{0.8} $, whith $n$ the number of routes on the graph.
+ 
+In a C-RAN context, the number of route is low. In the network we study, there is $8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the number of routes in the graph at the end of this section. The lenght of the routes is drawn uniformly between $0$ and $P$. This allows the instances to challenge the robustness to the periodicity of our algorithms.
+
+
 
 
 \subsection{Success Rate and Performance of the Greedy Algorithms}
@@ -788,8 +785,32 @@ Montrer avec des courbes (nombre de représentation générées et pourcentage d
 très peu de représentation compacte en  
 
 \subsection{Results comparison}
-\section{Long routes}
+\section{Autres trucs à raconter}
+Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
+\todo{expliquer pourquoi ces valeurs}
 
+Figure~\ref{tab:instances} shows the average additional latency needed by the branch and bound and the greedy algorithm that we call GNS presented in next section (used to intialize the local search algorithms) for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
+
+\begin{center}
+\begin{figure}
+\centering
+\begin{tabular}{ |c|c|c|c|c| }
+\hline
+    Range & $0$ and $\tau/3$ & $0$ and $P$& $P-0.1\times P$ and $P$\\
+    \hline
+    Branch and bound & $4273$ & $222$& $2704$ \\
+ 
+    GNS & $12177$ & $10628$& $9648$\\
+   
+    \hline
+  
+ \end{tabular}
+ \caption{Difference between the optimal solution of the greedy algorithms, for different kind of instances generated.}
+ \label{tab:instances}
+ \end{figure}
+ \end{center}
+ The objective is to find the instances in which a solution given can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the additional latency needed by GNS remains in the same order of magnitude.
+ 
 \section{Conclusion}
 C'est vraiment génial comme travail, on va tuer le game du DETNET.
 
