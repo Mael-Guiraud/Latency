@@ -102,7 +102,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
  \subsection{Dynamic of Datagrams Transmissions}
 	    
- 		In this article, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. In practice, the size of an atomic data is usually 64 bits, the speed of the links is 10Gbps, and the length of a tic is thus about $6.4$ nanoseconds. The authors are developing a prototype basted on ethernet base-X~\cite{ieee_8023}, which corresponds to this values.
+ 		In this article, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. Several of the authors are developing a prototype based on ethernet base-X~\cite{ieee_8023}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
 
         In the process we study, a message called a {\bf datagram} is sent on each route from the source node. The \textbf{size} of a datagram is an integer, denoted by $\tau$, it is the number of tics needed by a node to emit the full datagram through a link.  In this paper, we assume that $\tau$ is the same for all routes. It is justified by our application to C-RAN, where all source nodes are RRHs sending the same type of message. There is no preemption: Once a datagram has been emitted, it cannot be fragmented during its travel in the network. We assume that the first datagram sent on each route is available at time $0$.
 
@@ -111,7 +111,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
        
 
  The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} A(r,u_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
-  The \textbf{sending time} of a datagram in vertex $u_i$ in $r$, is the first time at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the arrival time of the datagram plus the buffer time fixed by $A$.
+  The \textbf{sending time} of a datagram at vertex $u_i$ of $r$, is the first time at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the arrival time of the datagram plus the buffer time given by $A$.
  
   If $u_l$ is the last vertex of the route $r$, the transmission time of the datagram on 
   $r$ is denoted by $TR(A,r)$ and is equal to $t(r,u_l)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
@@ -120,13 +120,13 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
   \subsection{From C-RAN Networks to Routed Networks}
   \label{subsection:CRANGRAPH}
 
-  This study is motivated by a problem arising from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this article is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU does not appear explicitely in the routed network, the message arrives at the BBU somewhere on an arc of the route. Once a message arrives to a BBU, the answer is computed and sent back in the network. The computation time is usually the same for all messages; it is encoded into the arc by adding it to the physical delay of transmission over the arc.
+  This study is motivated by a problem arising from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this article is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU is not a node of the routed network, since each RRH has its own BBU, there are no contention when going through the BBU. The datagram arrives at the BBU somewhere on an arc of the route. Once a datagram arrives at its BBU, the answer is computed and sent back over the fronthaul network. The computation time is usually the same for all messages; it is encoded into the arc corresponding to the BBU by adding it to the physical delay of transmission over the arc.
   
   In this article, we consider that the links of the fronthaul network are full duplex, that is the messages can go through the links in both ways, without interacting. Usually the route from the RRH to the BBU is the same (with the orientation reversed) as the route from the BBU to the RRH. This property does not need to be enforced in our theoritical modeling, but it matches real fronthaul network and we will use such examples for our experiments. 
 
   %Remark that the routed network induced by such topologies are symmetric. Pas vraiment
   
-    Several BBUs are gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all the routes uses the same node in the way back, it is not considerd as a contention point, as illustrated in figure~\ref{fig:allerretour}. In the case the length of the links into the datacenter are different, the contention point before the datacenter is also a contention point at the exit of the datacenter and the routes are symmetrical.
+    Several BBUs are gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all routes use the same link in the way back, it is not considerd as a contention point, as illustrated in figure~\ref{fig:allerretour}. If the length of the links into some datacenter are different, the contention point before the datacenter is also a contention point at the exit of the datacenter and the routes are symmetrical around this vertex.
 
     \begin{figure}
 
@@ -134,11 +134,18 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	\includegraphics[scale=0.8]{allerretour}
 
 
-\caption{The routed network modelizing both ways of messages in the fronthaul network of figure~\ref{fig:fronthaul}.}
+\caption{The routed network modeling datagrams going back and forth in the fronthaul network of figure~\ref{fig:fronthaul}.}
 \label{fig:allerretour}
 \end{figure}
 
-In the problem we describe in next subsection, the routing is given. It is considered to be coherent~\cite{schwiebert1996necessary}, that is, acyclic. Thus, the routed network studied in this paper are some directed acyclic graphs.
+Finally, the fronthaul networks we study have \textbf{coherent} routings, a classical 
+requirement in telecommunication networks (see e.g. ~\cite{schwiebert1996necessary}). It means that
+if the routes $r$ and $r'$ go through two contention points $u$ and $v$, they have the same subpath
+between $u$ and $v$.
+This is true for the fronthaul networks we modelize. Hence in the routed network which represents 
+going back and forth in the fronthaul network, the coherent property is respected from the source 
+to the arc representing the BBU and then form the arc representing the BBU to the target.
+ As a consequence, routed networks obtained from fronthaul networks are directed acyclic multigraphs, as required in the definition of routed network.
      
   \subsection{Periodic Emission of Datagrams}
 
@@ -148,7 +155,7 @@ In the problem we describe in next subsection, the routing is given. It is consi
       Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.\\
 
         An assignment $A$ of a routed network $(G,{\cal R})$ is said to be \textbf{valid} if \emph{no pair of routes has a collision}. 
-        The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages, but in this article these values are fixed and we do not recall them (contrarily to previous work~\cite{Guir1806:Deterministic}).
+        The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages, but in this article these values are fixed and they are not made explicit in the assignment (contrarily to previous work~\cite{Guir1806:Deterministic}).
         Note that the period $P$, as well as the size of a message $\tau$ is fixed in our $C-RAN$ application, but not the buffering policy. Hence, the aim of our work is to find a valid assignment which minimizes the latency of transmissions over the network, that is $TR(A)$.
        \\ 
        
@@ -158,14 +165,13 @@ In the problem we describe in next subsection, the routing is given. It is consi
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
-      \noindent {\bf Question:} find $A$ which minimizes $TR(A)$.
+      \noindent {\bf Output:} assignment $A$ which minimizes $TR(A)$.
       \\
     
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
-    depending on $n$ the number of routes and $d$ the contention level, but not on $P$ or $G$.
-    Given a contention point $u$, let ${\cal R}_u \subseteq {\cal R}$ be the set of routes which contain $u$. The \textbf{load} of $u$ is $\tau|{\cal R}_u|/P$, it measures the percentage of the bandwidth used by datagrams
-    going through $u$. The load of $(G,{\cal R})$ is the maximum of the load of $u$, for all contention vertices in $G$.
-    This parameter is crucial in the theoritical study of simpler variant of \spall~\cite{guiraud2020scheduling}, but is also critical for the performance of algorithms presented in this article.
+    depending on $n$ the number of routes and $d$ the contention level. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Then, the complexity will surprisingly not depend on $P$, $\tau$ or the weights of the routed network.
+    Given a contention point $u$, let ${\cal R}_u \subseteq {\cal R}$ be the set of routes which contain $u$. The \textbf{load} of $u$ is $\tau|{\cal R}_u|/P$, it measures the percentage of the bandwidth used by datagrams going through $u$. The load of $(G,{\cal R})$ is the maximum of the load of $u$, for all contention vertices in $G$.
+    This parameter is crucial in the theoritical study of a simpler variant of \spall~\cite{guiraud2020scheduling}, and is also important to the practical performance of algorithms presented in this article.
 
 
 \subsection{Contention Depth and \spall}
@@ -173,31 +179,33 @@ In the problem we describe in next subsection, the routing is given. It is consi
 \paragraph*{Contention Depth One}
 
 Each contention vertex of a routed network of contention depth one induces a connected component. 
-Problem \spall can be independently solved on each connected componentes, hence the case with a single contention point
-is equivalent. 
-By removing the periodicity of the problem, solving \spall on a single contention point is a single processor scheduling problem: Given a set of jobs of same length with each a release time and a deadline, we want to find a scheduling, that is a time for each jobs such that no two jobs uses the machine at the same time. Each jobs must be scheduled after its release time and satisfy its deadline. The makespan of a solution is the time elapsed between the begining of the computation of the first job and the end of the last job.
-      The paper~\cite{simons_fast_1978} gives a polynomial time algorithms that find a scheduling that minimize the makespan in $O(n^2\log(n))$.
-      
+Problem \spall can be independently solved on each connected component, hence the case with a single contention point is equivalent to contention depth one. 
+If we remove the periodicity from \spall on a single contention point, it can be seen as a single processor scheduling problem, where datagrams are jobs of the same size, their release times are given by the length of the arc to the contention point, and the deadline of each job is computed from the length of the route.
+The scheduling problem is as follows: each job must be scheduled such that no two jobs uses the machine at the same time. Each job must be scheduled after its release time and must satisfy its deadline. The makespan of a solution is the time elapsed between the beginning of the computation of the first job and the end of the last job. There is a polynomial time algorithms to find a scheduling that minimizes the makespan~\cite{simons_fast_1978}.
 
-We now want to solve the same problem in which the process is periodic. It has already been defined as a useful subproblem in~\cite{barth2018deterministic} under the name \bra. Here, the messages are the jobs, the releases times are given by the length of the routes, and the deadline of each jobs is computed from $TR(A)$.\\
+Solving the same problem, but taking into account periodicity is solving \spall over 
+a routed network with a single contention point. This problem has already been defined and studied in~\cite{barth2018deterministic} under the name \bra. We proved that it can be solved by reducing it to at most 
+$2^n$ instances (much less in practice) of the non periodic variant. 
+While $\bra$ may be in $\P$, when messages have different sizes, the non periodic scheduling problem is known to be $\NP$-hard~\cite{}. It implies $\NP$-hardness for \bra with different message sizes, since the periodic problem is equivalent to the non-periodic one by taking a large enough period, say the maximum of the lengths of the routes plus the number of routes times $\tau$.
+
+
+
      
-\noindent{\bf \bra} 
+%\noindent{\bf \bra} 
 
-      \noindent {\bf Input:} A routed network of depth one $(G,{\cal R})$, the size of the messages $\tau$, a period $P$.\\
-      \noindent {\bf Question:} Find an assignment of  $(G,{\cal R})$ that minimizes $TR(A)$.\\
+%      \noindent {\bf Input:} A routed network of depth one $(G,{\cal R})$, the size of the messages $\tau$, a period $P$.\\
+%      \noindent {\bf Question:} Find an assignment of  $(G,{\cal R})$ that minimizes $TR(A)$.\\
 
    
-   \begin{theorem}\label{th:braFPT}
-$\bra \in \FPT$ when parametrized by the number of routes.
-\end{theorem}
-   The proof of this theorem is explained in~\cite{barth2018deterministic}. It is possible that \bra is solvable in polynomial time, but we did not investigate this point enought yet.
+ %  \begin{theorem}\label{th:braFPT}
+%$\bra \in \FPT$ when parametrized by the number of routes.
+%\end{theorem}
+%   The proof of this theorem is explained in~\cite{barth2018deterministic}. It is possible that \bra is solvable in polynomial time, but we did not investigate this point enought yet.
    
 
-If the messages are allowed to have different size, then the problem is known to be $\NP$-hard for the non periodic variant.
-It also implies hardness for \bra, by taking a large enough period so that it is equivalent to the non periodic case.
 
 We can further restrict the problem, by asking that all weigths of arcs from sources to the contention point
-are the same or equivalently all weigths from the contention point to the destionation are the same. 
+are the same or equivalently all weigths from the contention point to the destination are the same. 
 Then, it is enough to consider all datagrams and their time of avalabality in the contention point ...
 \todo{décrire proprement l'algo greedy GD qui marche ici, puisqu'on s'en sert pas mal après} 
 
@@ -205,15 +213,15 @@ Then, it is enough to consider all datagrams and their time of avalabality in th
 
 The most simple case of contention depth $2$ is a routed network with two contention points. 
 This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
-there is a single contention point (a shared link between the RRHs and the data center). 
-This topology, called star shaped network in previous work, is common in real networks, and a non synchronized version of \spall has been studied in this case~\cite{Guir1806:Deterministic,barth2018deterministic,guiraud2020scheduling}.
+there is a single contention point (a shared link between the RRHs and the data centers). 
+This topology, called \emph{star shaped network} in previous work, is classical in fronthaul networks, and a non synchronized version of \spall has been studied on star shaped networks~\cite{Guir1806:Deterministic,barth2018deterministic,guiraud2020scheduling}.
 
 
  \begin{theorem}\label{th:braFPT}
 The problem $\spall$ on star shaped network is $\NP$-hard
 \end{theorem}
 \begin{proof}
-The two flow shop problem studied in \cite{yu2004minimizing} is show as $\NP$-hard. In two flow shop problem, a set of jobs with have to be processed in sequence on two machines; a job must be processed on machine $1$ before beeing processed on machine $2$. There is, for each job, a delai between the end of the processing on the first machine and the begining of the processing on the second one. The objective is to minimize the makespan.\\
+The two flow shop problem studied in~\cite{yu2004minimizing} is shown to be $\NP$-hard. The problem is as follows, a set of jobs have to be processed in sequence on two machines; a job must be processed on machine $1$ before beeing processed on machine $2$. There is, for each job, a delay between the end of the processing on the first machine and the begining of the processing on the second one. The objective is to minimize the makespan. The time needed to process each job is the same.\\
 We reduce an instance of $\spall$ in an instance of the two flow shop proplem: A message is a job, the delay of the jobs are equivalent to the lenght of the routes between the two contention points. We then set the makespan value to $P$, and the instance of $\spall$ becomes an instance of two flow shop.
 \end{proof}
 
