@@ -9,7 +9,7 @@
 
 #define NB_ROUTES_PER_FLOW 1
 #define PROBA 1
-#define DISTRIBUTED 0
+#define DISTRIBUTED 1
 
 //Mod synch or not
 #define SYNCH 1
@@ -38,7 +38,7 @@
 //For star simulation
 #define NB_ROUTES 8
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel
