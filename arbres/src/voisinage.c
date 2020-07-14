@@ -1614,7 +1614,19 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 		}
 		
 	}
-
+	a = descente(g,P,message_size,0,nb_pas);
+		if(a)
+		{
+			
+				if(a < prev )
+				{
+					//printf("a->time %d\n ",a->time);
+					pas = *nb_pas;
+					prev = a;
+					cpy_orders(best,g,1);
+				}			
+				
+		}
 	*nb_pas = pas;
 	if(prev != INT_MAX)
 	{
