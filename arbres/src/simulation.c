@@ -315,8 +315,8 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =10 ;
-	char * noms[] = {"Greedy Deadline Success","Greedy Packed","Greedy Normalized Success","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	int nb_algos =9 ;
+	char * noms[] = {"Hybrid Greedy Deadline","Greedy Packed","Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 	
 	
 	
@@ -468,6 +468,7 @@ void simuldistrib(int seed)
 		}
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
+
 				#pragma omp critical
 					res[algo][i]=time[algo];
 		}
@@ -751,7 +752,7 @@ void simuldescente(int seed)
 {
 	srand(seed);
 	int nb_algos =4 ;
-	char * noms[] = {"Init GNS","Init 1 random","Init 10 randoms","Init 100 randoms"};
+	char * noms[] = {"Init HGN","Init 1 random","Init 10 randoms","Init 100 randoms"};
 	
 	
 	

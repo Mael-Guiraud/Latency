@@ -583,7 +583,7 @@ and if the algorithm fails, we apply \greedypacked. Let us call \hybridgreedydea
 \begin{minipage}[c]{.45\linewidth}
 	\centering
 	\includegraphics[scale=0.23]{greedysuccess}
-\captionof{figure}{ Performance of the updated greedy algorithms that always gives an assignment}
+\captionof{figure}{ Performance of the updated greedy algorithms that always gives an assignment} 
 \label{fig:greedysuccess}
 \end{minipage}
 
@@ -675,7 +675,7 @@ The most simple local search heuristic is hill climbing. This algorithm starts f
 The quality of hill climbing depends of the the intial compact assignment. A first natural intialisation is to consider the compact representation $CR(A)$ of the assignment $A$ given by \hybridgreedynormalized. Also, a random compact assignment can be taken. Since a compact assignment does not always give a valid assignment, the last idea is to execetue several hill climbing starting from a random compact assignment, and to return the best assignment given.
 
 Figure~\ref{fig:descente07} shows the difference between initalizing the hill climbing with \hybridgreedynormalized, or with one or several random compact representation. Those resultas are drawn on $1000$ random instances, with $80\%$ of load.
-\begin{figure}[h]
+\begin{figure}[h] 
 	\centering
 	\includegraphics[scale=0.3]{descente07}
 \caption{ Additional latency needed to find a solution for hill climbing, intialized with HGN, 1,10 or 100 random compact representation.}
@@ -746,7 +746,7 @@ We now focus on how many steps hill climbing computes before ending. Tabular~\re
 
  The more the hill climbing does steps before ending, the more the initial solution is improoved. When hill climbing starts from a \hybridgreedynormalized, it does not improove often the solution whereas with a huge number of random compact representation, the probability of drawing a solution that can be improoved a lot is increased.
  
- The stochastic aspect of drawing a large number of random compact representation to initialize the hill climbing link with the concept of the simulated annealing.
+ The concept of drawing a large number of random compact representation to initialize the hill climbing link with the concepts of taboo search and simulated annealing. Indeed, the two next meta-heuristics are designed to explore the compact representations, even if a local optimum is reached. Taboo remembers the explored solutions, in order to avoid it, and simulated annealing browse the compact representations with a stochastic aspect.
 \subsection{Tabu Search}
 
 Tabu search is a variation on hill climbing using memory. We also select the compact assignment $CA'$ which minimizes 
@@ -760,12 +760,12 @@ One can change the size $N$ and $M$ in tabu search -> explore how to fix these p
 After reaching a local optimum, tabu search continues it execution untill it has executed a given number of steps.
 Thus, we investigate the average number of steps needed by the tabu search to find the assignment it returns. Remember that, to each step, the search explores the entire neighborhood of a solution. The computation of a large number of steps is then long.
 
-Tabu search has a memory, it remembers the compact assignment for which it explored the neighborhood for the $x$ last steps in order to not visit them again. Varying the value of $x$ can improve or worsen the performance of the tabu search.
+Tabu search has a memory, it remembers the compact assignment for which it explored the neighborhood for the $x$ last solutions in order to not visit them again. Varying the value of $x$ can improve or worsen the performance of the tabu search.
 Figure~\ref{fig:tabudistrib} shows cumulative distribution of the additional latency needed by tabu search with different size of memory. The number of steps computed by the tabu search is $1000$.
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.3]{taboo_distrib}
-\caption{ Difference between the tabu search whith a memory of $10$,$100$ or $1000$ steps}
+\caption{ Difference between the tabu search whith a memory of $10$,$100$ or $1000$ solutions}
 \label{fig:tabudistrib}
 \end{figure}
 It appears that, the more steps tabu search remember, the better the assignment given is.
@@ -794,6 +794,9 @@ A simulated annealing search works as follow. A {\emph temperature} is set. Cons
 
 \item Deduce $t_0$ from the relation: $e^{-\frac{\bar{\Delta}}{t_0}} = \tau_0$ 
  \end{enumerate}
+ 
+ Tabular~\ref{tab:poorgood} shows the additional latency needed by simulated annealing when intialized with two intial temperatures computed from the previous routine. The first solution considered by simulated annealing is the solution given by hill climbing. The experiment is made over $100$ instances. During the computations $1000$ compact representation are drawn before decreasing the temperature.
+\begin{center}
 \begin{tabular}{ |c|c|c|c|c| }
 \hline
  Quality of initial configuration & Good& Poor\\
@@ -805,8 +808,24 @@ A simulated annealing search works as follow. A {\emph temperature} is set. Cons
     Computation time (ms) &  $2.817$&$4.035$ \\
 
     \hline
+    
  \end{tabular}
+ \caption{Comparison of two intial temperatures, considering the quality of the initial configuration}
+     \label{tab:poorgood}
+ \end{center}
+ As observed, the initial solution given by hill climbing can be considered as ``good''. Indeed, increasing the initial temperature does not affect the quality of the solution, but increase the computation time.
  
+ In simulated annealing, the temperature decrease slowly. Each \textbf{level}, several compact representation are drawn. At the end of a level, the temperature is decreased. Drawing too few compact representation per level induce decrasing the temperature too fast and thus, reducing the efficiency of simulated annealing. In an ohter hand, drawing too much compact representation increases the computation time of the algorithm.
+ 
+ We investiage the impact of drawing a large number of compact representation before decreasing the temperature. Figure~\ref{fig:stepsrecuit} shows the additional latency needed by simulated annealing with different number of compact representation draw for each level. Those results comes from $100$ random instances, in which the temperature is set to $2200$.
+ 
+ \begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.4]{stepsrecuit}
+\caption{ Additional latency needed to find a solution for simulated annealing, with a different number of compact representation drawn to each level.}
+\label{fig:stepsrecuit}
+\end{figure}
+It appears that drawing more than $1000$ compact representation per level does not improove the quality of the solution, while it increase the computation time.
 \subsection{Branch and Bound}
 
 D'abor introduire la notion de solution partielle (avec seulement une partie des temps d'attente fixée).

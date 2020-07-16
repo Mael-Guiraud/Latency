@@ -2373,7 +2373,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		}
 		//printf("Cmpt = %d \n",cmpt);
 		if((temperature < 7000) && (temperature>4000))
-			temperature *=  0.95;
+			temperature *=  0.99;
 		else
 			temperature *=  0.99;
 	//	printf("%10f \n",temperature);
