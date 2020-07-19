@@ -16,6 +16,7 @@ typedef struct{
 	int route;
 	int* pos;
 	int * bool_p;
+	int idtmp;
 } Voisin;
 typedef struct{
 	int delay;
@@ -101,9 +102,11 @@ int fin_vois2(int * tab, int* bool_p,int size)
 	return 1;
 
 }
-void next2(int * tab,int * bool_p, int id)
+void next2(int * tab,int * bool_p, int id, int val_fin)
 {
-	if(tab[id] == 1)
+
+
+	if(tab[id] == val_fin)
 	{
 
 		if(fin_vois(bool_p,id+1))
@@ -188,31 +191,31 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 
 
 
-	for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
-		{
+	//for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
+		//{
 
 			if(kind == FORWARD)
 			{
 				
-				if(g->contention[v.route][x]->routes_order_f[i] <0)
-					g->contention[v.route][x]->routes_order_f[i] = -g->contention[v.route][x]->routes_order_f[i];
-				if(g->contention[v.route][x]->routes_order_f[i] == INT_MAX)
-					g->contention[v.route][x]->routes_order_f[i] = 0;
+				if(g->contention[v.route][x]->routes_order_f[idtmp] <0)
+					g->contention[v.route][x]->routes_order_f[idtmp] = -g->contention[v.route][x]->routes_order_f[idtmp];
+				if(g->contention[v.route][x]->routes_order_f[idtmp] == INT_MAX)
+					g->contention[v.route][x]->routes_order_f[idtmp] = 0;
 			}
 			else
 			{
 				
-				if(g->contention[v.route][x]->routes_order_b[i] <0)
-					g->contention[v.route][x]->routes_order_b[i] = -g->contention[v.route][x]->routes_order_b[i];
-				if(g->contention[v.route][x]->routes_order_b[i] == INT_MAX)
-					g->contention[v.route][x]->routes_order_b[i] = 0;
+				if(g->contention[v.route][x]->routes_order_b[idtmp] <0)
+					g->contention[v.route][x]->routes_order_b[idtmp] = -g->contention[v.route][x]->routes_order_b[idtmp];
+				if(g->contention[v.route][x]->routes_order_b[idtmp] == INT_MAX)
+					g->contention[v.route][x]->routes_order_b[idtmp] = 0;
 			}
 			
-		}
+		//}
 	
 		
 		//On cherche l'indice de au quel v.route est placée dans l'arc
-		idtmp = -1;
+		/*idtmp = -1;
 		for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
 		{
 			if(kind == FORWARD)
@@ -236,7 +239,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		if(idtmp ==-1)
 		{
 			printf("Error, indice not found.\n");exit(35);
-		}
+		}*/
 
 
 		if(v.pos[level] == 2)//permutation a gauche(car c'était droite avant)
@@ -308,7 +311,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		}
 		else
 		{
-			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1);
+			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1,1);
 		}
 	}
 
@@ -485,7 +488,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 			}
 		}
 
-		
+		v.idtmp = idtmp;
 	}
 	
 	return v;
@@ -1611,7 +1614,19 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 		}
 		
 	}
-
+	/*a = descente(g,P,message_size,0,nb_pas);
+		if(a)
+		{
+			
+				if(a < prev )
+				{
+					//printf("a->time %d\n ",a->time);
+					pas = *nb_pas;
+					prev = a;
+					cpy_orders(best,g,1);
+				}			
+				
+		}*/
 	*nb_pas = pas;
 	if(prev != INT_MAX)
 	{
@@ -1944,7 +1959,7 @@ int taboo(Graph * g, int P, int message_size,int nb_steps, int mem,float * nb_pa
 		free_trace(hash_table[i],g->arc_pool_size);
 	}
 	free(hash_table);
-	printf("fin taboo better = %d \n",nb_steps_better);
+	//printf("fin taboo better = %d \n",nb_steps_better);
 	*nb_pas = nb_steps_better;
 	//free(tab);
 	//free_trace(t,g->arc_pool_size);
@@ -2231,13 +2246,14 @@ int CritMetropolis(int delta, float t)
 }
 int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 {
+	static int instance = 0;
 	//Parametres du recuit
 	int nb_paliers = param;
-	float temperature = 10000.0;
+	float temperature = 2200.0;
 	float coeff= 0.90;
 	int b;
-	int seuil_arret = 3;
-	float seuil_incr_cmpt = 0.001;
+	int seuil_arret = 2;
+	float seuil_incr_cmpt = 0.01;
 
 	int a=0;
 	b=descente( g,  P, message_size, 0, nb_pas);
@@ -2284,16 +2300,20 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	int cmpt = 0;
 	int nb_step = 0;
 	int nb_amelio = 0;
-	FILE * f = fopen("plotrecuit","w");
-	FILE * f2 = fopen("plotrecuittemp","w");
+	char nom[64];
+	int av = 0;
+	sprintf(nom,"../recuittrace/plotrecuit%d",instance);
+	instance++;
+	FILE * f = fopen(nom,"w");
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
+
 		//printf("Tour\n");
 		for(int i=0;i<nb_paliers;i++)
 		{
 			v = Voisin_alea(g);
-			nb_step++;
+			
 			//aff_orders(orders,g);
 			if(VOISINAGE)
 				a= assignment_with_orders_vois1(g,P,message_size,0);
@@ -2301,19 +2321,23 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 				a = assignment_with_orders(g,P,message_size,0);
 			if(a)
 			{
+				nb_step++;
 				b = travel_time_max_buffers(g);
+				/*av+= b-time_actuel;
+				printf("%d %d %d \n",nb_step,b-time_actuel,av/nb_step);
+				if(nb_step == 100)exit(12);*/
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					fprintf(f,"%d %d \n",nb_amelio,b);
-					nb_amelio++;
+					
 					//if(time_actuel != b)
-						nb_moves++;
+						
 					time_actuel = b;
 					//Le graph a ete changé dans voisin alea, on a donc rien a faire
-
+					nb_moves++;
 					//Sauvegarde du mec le plus opti
 					if(b < min)
 					{
+						
 						cpy_orders(orders,g,1);// de g vers orders
 						min = b;
 						
@@ -2338,6 +2362,8 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			//free_assignment(a);
 
 		}
+		fprintf(f,"%d %d %f %d\n",nb_amelio,time_actuel,temperature,min);
+		nb_amelio++;
 		acceptance_rate = (float)nb_moves/nb_paliers;
 		//printf("rate %f \n",acceptance_rate);
 		if(acceptance_rate < seuil_incr_cmpt)
@@ -2346,8 +2372,10 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			cmpt++;
 		}
 		//printf("Cmpt = %d \n",cmpt);
-			
-		temperature *=  coeff;
+		if((temperature < 7000) && (temperature>4000))
+			temperature *=  0.99;
+		else
+			temperature *=  0.99;
 	//	printf("%10f \n",temperature);
 		if(temperature < 0.0000009)
 			break;
@@ -2383,7 +2411,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	}
 	*nb_pas = (float)nb_step;
 	fclose(f);
-	fclose(f2);
+
 	return b;
 
 }
