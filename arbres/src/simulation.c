@@ -431,7 +431,7 @@ void simuldistrib(int seed)
 				
 				
 				case 8:
-					a = recuit( &g, P, message_size,100,&nb);
+					a = recuit( &g, P, message_size,50,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;

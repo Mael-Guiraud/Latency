@@ -515,7 +515,7 @@ A compact assignment is needed to initialize the local search algorithms present
 The contention vertices are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(u,r) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(u,r) - t(r,u) - nt(r_0,r,u)$ is chosen and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
 
 
-\subsection{Random Generation of Routed Network} \label{sec:expcond}
+\subsection{Random generation of routed network}
 
 We propose several experiments to assess the practical performance (in speed and quality) of the poposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in figure~\ref{fig:randomnetworks}, in which the dotted arcs represents each the arcs of two routes. As explained is section~\ref{sec:contentiondepth}, there is only one contention vertex for each datacenter, they are the two vertices of contention level $2$.
    \begin{figure} 
@@ -539,6 +539,8 @@ Avec la charge à 80 pour cent, ça donne tous les paramètres du problème}
 
 
 \subsection{Success Rate and Performance of the Greedy Algorithms}
+
+\todo{Mettre les settings expérimentaux ici, sans s'attarder sur leur justification pour l'instant. Définir la additionnal latency qui va servir de mesure de performance.}
 
 
 We want to compare the succes rate and the performance of the different algorithms presented here.
@@ -668,22 +670,20 @@ Finally, using Lemma~\ref{lemma:path} once again prove there is a path between $
 
 \subsection{Hill Climbing}
 
-The simplest local search heuristic is hill climbing. This algorithm starts from a compact assignment $CA$, explores the entire neighborhood of $CA$, and selects $CA'$ the realizable compact assignment  of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then algorithm stops and returns $Real(CA)$ which is a local minimum. 
+The most simple local search heuristic is hill climbing. This algorithm starts from a compact assignment $CA$, explore the entire neighborhood of $CA$, and select the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then algorithm stops and returns $Real(CA)$ which is a local minimum. 
 
-The quality of hill climbing depends on the the intial compact assignment. Since we have already designed 
-\hybridgreedynormalized which is always able to produce a decent solution, we use the compact representation of its result to initialize the hill climbing algorithm. Another possibility is to use a random compact assignment, by drawing uniformly the order and the set for each contention vertex. Since a random compact assignment does not always yields a valid assignment, or may give an assignment of low quality, we execute hill climbing starting from several random compact assignments, and return the best assignment given.
+The quality of hill climbing depends of the the intial compact assignment. A first natural intialisation is to consider the compact representation $CR(A)$ of the assignment $A$ given by \hybridgreedynormalized. Also, a random compact assignment can be taken. Since a compact assignment does not always give a valid assignment, the last idea is to execetue several hill climbing starting from a random compact assignment, and to return the best assignment given.
 
-Figure~\ref{fig:descente07} shows the difference between initalizing the hill climbing with \hybridgreedynormalized, one or several random compact representations. Those results results are computed from $1000$ random instances, as explained in Sec.~\ref{sec:expcond}.
+Figure~\ref{fig:descente07} shows the difference between initalizing the hill climbing with \hybridgreedynormalized, or with one or several random compact representation. Those resultas are drawn on $1000$ random instances, with $80\%$ of load.
 \begin{figure}[h] 
 	\centering
 	\includegraphics[scale=0.3]{descente07}
-\caption{ Additional latency of the solutions given by hill climbing, intialized with HGN, $1$, $10$ or $100$ random compact representations.}
+\caption{ Additional latency needed to find a solution for hill climbing, intialized with HGN, 1,10 or 100 random compact representation.}
 \label{fig:descente07}
 \end{figure}
+Initializing the hill climbing with 100 randoms compact representation seems to give better results. Nevertheless remember that the set of compact representation does not always give a valid assignment. Drawing some random compact representation can be a limited option when the set of compact representation grows, because the chance of drawing a non valid, or bad random compact representation grows too.
 
-Initializing hill climbing with $100$ random compact representations gives better results. Nevertheless, it may fail to find a \emph{valid} compact representation in the initialization, making the whole algorithm fail.
-When the load grows, it is harder to find a valid compact representation. Moreover, at fixed load, when the number of routes and thus of compact representations grows, the probability of finding a valid one at random decreases. Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes} illustrates this phenomenon,
-they present the probability of drawing at least one compact representation that gives a valid assignment, when drawing $1$, $10$ or $100$ random compact representations. Each result is computed from $1000$ random instances.
+Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes} represent the probability of drawing at least one compact representation that gives a valid assignment, when drawing $1$,$10$ or $100$ random compact representations. Each result is computed on $1000$ random instances.
 
 \begin{minipage}[c]{.45\linewidth}
 \vspace{-0.4cm}
@@ -697,7 +697,7 @@ they present the probability of drawing at least one compact representation that
    100 rand & $100\%$ & $97\%$& $92\%$\\
     \hline
  \end{tabular}
-   \captionof{figure}{Success rate of hill climbing when increasing the load.}
+   \captionof{figure}{Success rate of hill climbing with different initialization, varying the load.}
  \label{tab:descenteload}
 \vfill
  \end{minipage}
@@ -714,26 +714,24 @@ they present the probability of drawing at least one compact representation that
    100 rand & $100\%$ & $86\%$& $56\%$\\
     \hline
  \end{tabular}
- \captionof{figure}{Success rate of hill climbing when increasing the number of routes.}
+ \captionof{figure}{Success rate of hill climbing with different initialization, varying the number of routes on the graph.}
  \label{tab:descentenbroutes}
 \vfill
 \end{minipage}
 
-Those experiences shows that the choice of initialization by many random instances, 
-while good for our typical network with $8$ routes, do not scale to a larger number of routes or 
-higher loads. We could compensate for this phenomenon, by increasing the number of random compact representation used to initialise hill climbing. However, at high load, we expect the ratio of valid representations to decrease exponentially fast, which makes the algorithm to slow.
+Those experiences shows that, even if initializing the hill climbing with $100$ random instances performs well when the number of routes and the load are low, this initialization is not robust when the load of the number of routes increases. Indeed, higher loads induces that good solutions are harder to find, and increasing the number of routes also increase the size of the neighboorhood, and thus, the number of non valid compact representations. Furthermore, the computation time induced by executing the hill climbing on a lot of random compact representation instead of only one (for HGN) makes it less effective.
 
 
-We propose again an hybrid approach to initialise hill climbing: compute the best solution given by 
-hill climbing intialized by HGN and $k$ random compact representations. This algorithm is called $k$-Hybrid Hill Climbing or k-HHC. Figure~\ref{fig:hybridhill} shows the additional latency incurred by the solution found by k-HCC, for different $k$, to illustrate the tradeoff between quality and time.
+We thus propose an hybrid initialization of hill climbing: Between the assigments given by initializing the hill climbing either with HGN, or with $1$,$10$ or $100$ random compact representation, return the one that minimize $TR(A)$. We call this initialization respectively hybrid $1$, hybrid $10$ or hybrid $100$.
+Figure~\ref{fig:hybridhill} shows the additional latency needed by the best solution given by hill climbing, with different initialisations. The results are computed on $1000$ random instances.
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.3]{hybridhill}
-\caption{ Cumulative distribution of the additional latency of solutions given by k-HHC computed from $1000$ random instances). }
+\caption{ Additional latency needed to find a solution for hill climbing, intialized with HGN, hybrid $1$, hybrid $10$ or hybrid $100$.}
 \label{fig:hybridhill}
 \end{figure}
 
-We now investigate how many steps hill climbing computes before ending. Tab.~\ref{tab:nbstepdescente} shows the average number of steps made by different hill climbing algorithm on its run computing the best solution. The number of steps are taken from the experiment of Fig.~\ref{fig:hybridhill}.
+We now focus on how many steps hill climbing computes before ending. Tabular~\ref{tab:nbstepdescente} shows the average number of steps of the hill climbing with different initializations. Those results come from the experiment of figure~\ref{fig:hybridhill}.
 
 \begin{tabular}{ |c|c|c|c|c| }
 \hline
@@ -743,20 +741,18 @@ We now investigate how many steps hill climbing computes before ending. Tab.~\re
 
     \hline
  \end{tabular}
-  \captionof{figure}{Average number of step needed by hill climbing to reach a local optimum, for the run giving the best solution.}
+  \captionof{figure}{Average number of step needed by hill climbing to reach a local optimum.}
  \label{tab:nbstepdescente}
 
- The more steps the hill climbing does before ending, the more the initial solution is improved. When hill climbing starts from \hybridgreedynormalized, it does not improve the solution much. 
- As expected, drawing more random representation as initialisation, allows to find better solution and 
- this solution is obtained by more work from the initial random representation.
+ The more the hill climbing does steps before ending, the more the initial solution is improoved. When hill climbing starts from a \hybridgreedynormalized, it does not improove often the solution whereas with a huge number of random compact representation, the probability of drawing a solution that can be improoved a lot is increased.
  
- The idea of drawing a large number of random compact representations to initialize is a naive approach to 
- explore better the solution space without being blocked in a local optimum. We then introduce taboo search and simulated annealing, to realize the same objective of exploring the solution space more widely but also
- more efficiently.
-
+ The concept of drawing a large number of random compact representation to initialize the hill climbing link with the concepts of taboo search and simulated annealing. Indeed, the two next meta-heuristics are designed to explore the compact representations, even if a local optimum is reached. Taboo remembers the explored solutions, in order to avoid it, and simulated annealing browse the compact representations with a stochastic aspect.
 \subsection{Tabu Search}
 
-Tabu search is a variation on hill climbing using memory, in order to escape local optimum and hopefully find better solutions. At each step, we select the compact assignment $CA'$ which minimizes $TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid loops in local minimums,  the last $N$ solutions explored are memorized and we forbid to visit them again (they are not considered when computing the minimum of the neighborood). This algorithm can still loop on a cycle larger than $N$, hence we must fix some integer $M$ and stop the algorithm after $M$ steps.
+Tabu search is a variation on hill climbing using memory. We also select the compact assignment $CA'$ which minimizes 
+$TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid loop in local minimum, we use a memory of the last 
+$N$ solutions explored and we forbid to visit them again. This algorithm can still loop on a cycle larger than $N$,
+hence we must fix some integer $M$ and stop the algorithm after $M$ steps.
 
 
 One can change the size $N$ and $M$ in tabu search -> explore how to fix these parameters. 
@@ -820,7 +816,7 @@ A simulated annealing search works as follow. A {\emph temperature} is set. Cons
  As observed, the initial solution given by hill climbing can be considered as ``good''. Indeed, increasing the initial temperature does not affect the quality of the solution, but increase the computation time.
  
  In simulated annealing, the temperature decrease slowly. Each \textbf{level}, several compact representation are drawn. At the end of a level, the temperature is decreased. Drawing too few compact representation per level induce decrasing the temperature too fast and thus, reducing the efficiency of simulated annealing. In an ohter hand, drawing too much compact representation increases the computation time of the algorithm.
- 
+  
  We investiage the impact of drawing a large number of compact representation before decreasing the temperature. Figure~\ref{fig:stepsrecuit} shows the additional latency needed by simulated annealing with different number of compact representation draw for each level. Those results comes from $1000$ random instances, in which the temperature is set to $2200$.
  
  \begin{figure}[h]
@@ -832,7 +828,7 @@ A simulated annealing search works as follow. A {\emph temperature} is set. Cons
 It appears that drawing more than $100$ compact representation per level does not improove the quality of the solution, while it increase the computation time.
 
 \todo{differents profils de temperature}
-
+ 
 
 \subsection{Branch and Bound}
 
