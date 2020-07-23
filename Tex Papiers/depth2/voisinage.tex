@@ -24,7 +24,7 @@
 \begin{document}
 
 \title{ Deterministic Scheduling to Minimize Latency in Meshed Networks}
- 
+  
 
 \newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
 \newcommand{\spall}{\textsc{SPALL}\xspace}
@@ -353,8 +353,7 @@ Now assume that $Real(CR(A))(r_i,u) \leq A(r_i,u)$ for some $i$.
 First, consider the case $r_{i+1} \notin S_u$. By definition of $CR$, $ns(r_1,r_{i+1},u)$ must be larger than 
 $ns(r_1,r_{i},u)+ \tau$ and because $r_{i+1} \notin S_u$ it must also be larger than $rs(r_1,r_{i+1},u)$. 
 Since $Real(CR(A))(r_{i+1},u)$ is the minimum value so that both constraints are true for $Real(CR(A))$, using
-the induction hypothesis, we have $Real(CR(A))(r_{i+1},u) \leq A(r_{i+1},u)$. The case $r_{i+1} \in S_u$ is similar
-and left to the reader.
+the induction hypothesis, we have $Real(CR(A))(r_{i+1},u) \leq A(r_{i+1},u)$. The case $r_{i+1} \in S_u$ is similar and left to the reader.
 \end{proof}
 
 
@@ -775,14 +774,18 @@ Also, it appears that, in most of $60\%$ of the cases, tabu search finds it's be
 
 \subsection{Simulated annealing}
 
-A simulated annealing search works as follow. A {\emph temperature} is set. Considering a compact assignment $CA$, we draw in its neighborhood a compact assignment $CA'$. Then, considering the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, the compact assignment $CA'$ is or accepeted or rejected. If it is accepted, the neighborhood of $CA'$ is then explored. During the simulated annealing, the temperature decrease. The lower is the temperature, the lower are the chance to accept a compact assignment that worsen the solution.
+Simulated annealing works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn unfiformly at random in the neighborood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. The algorithm is an anser to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
 
- Simulated annealing needs two parameters to run. A temperature, and a number of steps.
+ When using simulated annealing, we need to fix several parameters: initial temperature, number of steps before decreasing the temperature, factor by which the temperature is decreased, the number of steps without improvement before ending the process.
+
+ \todo{ During the computations $1000$ compact representation are drawn before decreasing the temperature.
+ Mettre aussi par quel facteur tu diminues la température et ta condition d'arrêt}
+
  The temperature must be fixed in order to accept to worsen the solution at the begining of the execution, must decrease slowly. When the temperature is low, the simulated annealing rejects bad compact representations.
  Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the exection of the simulated annealing. The value $\Delta$ represent the difference $TR(REAL(CA'))-TR(REAL(CA))$ where $CA'$ is a compact assignment in the neighboorhood of $CA$. $CA'$ is accepted or rejected with the probability $e^{-\frac{\Delta}{t}} $, where $t$ is the temperature.
  This means that $\frac{\Delta}{t}$ must be close to $0$ at the begining, and must approaches infinity at the end of the execution. 
  
- In order to fix the initial temperature $t_0$, we compute a routine explained in \cite{osman1997meta}:
+ In order to fix the initial temperature $t_0$, we follow~\cite{osman1997meta}:
  \begin{enumerate}
   \item Initiate 100 disturbances at random; evaluate the average $\bar{\Delta}$ of the corresponding variations $\Delta$
 \item Choose an initial rate of acceptance $\tau_0$ of the “degrading perturbations” according to the assumed “quality” of the initial configuration; for example:
@@ -795,7 +798,7 @@ A simulated annealing search works as follow. A {\emph temperature} is set. Cons
 \item Deduce $t_0$ from the relation: $e^{-\frac{\bar{\Delta}}{t_0}} = \tau_0$ 
  \end{enumerate}
  
- Tabular~\ref{tab:poorgood} shows the additional latency needed by simulated annealing when intialized with two intial temperatures computed from the previous routine. The first solution considered by simulated annealing is the solution given by hill climbing. The experiment is made over $100$ instances. During the computations $1000$ compact representation are drawn before decreasing the temperature.
+ Tab.~\ref{tab:poorgood} shows the additional latency of the solutions produced by simulated annealing when intialized with temperatures computed from the previous routine. The initial solution used by simulated annealing is the solution given by $0$-HHC. The experiment is made on $100$ random instances.
 \begin{center}
 \begin{tabular}{ |c|c|c|c|c| }
 \hline
@@ -830,26 +833,64 @@ It appears that drawing more than $100$ compact representation per level does no
 \todo{differents profils de temperature}
  
 
-\subsection{Branch and Bound}
+\section{Branch and Bound}
 
-D'abor introduire la notion de solution partielle (avec seulement une partie des temps d'attente fixée).
-Puis définir le graphe associé à une solution partielle (en enlevant les sommets déjà traités).
+\subsection{Partial Compact Representation and Relaxation}
 
-Puis donner la relaxation du problème général au problème sur un point de contention. 
-Définir la borne inf comme le max de la relaxation pour tous les points de contention.
+D'abord introduire la notion de solution partielle avec seulement les temps d'attente fixée
+sur seulement une partie des sommets de contention (dans l'ordre des niveaux de contention).
 
-Définir l'arbre de recherche exhaustif avec coupe grace à la borne inf.
-
-Enfin optimisation: proposer un ensemble de coupes efficaces qui permettent d'oublier la plupart des solutions 
-non minimales + traitement spécifique du dernier niveau.
-
-Montrer avec des courbes (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques, et presque aucunes dont la réalisation n'est pas minimale.
-
-\subsection{Results comparison}
+Puis définir le graphe associé à une solution partielle, en enlevant les sommets déjà traités 
+et en mettant à jour les délais. Un exemple serait le bienvenu.
 
 
 
-\section{Autres trucs à raconter}
+Donner la relaxation du problème général au problème sur un point de contention, 
+c'est à dire remplacer tous les chemins vers et depuis le sommet par un arc de la même longueur.
+Expliquer que la solution optimale pour le problème relaxé est meilleure (borne supérieure) de
+ce qu'on cherche. On définit ensuite une borne supérieure meilleure en faisant le max des 
+relaxations pour tous les points de contention. Expliquer que cette borne se calcule facilement
+en pratique (algo Simmons FPT vs algo branch and bound simplifié).
+
+\subsection{The Branch and Bound Algorithms}
+
+Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes
+qu'on peut faire grâce à la borne sup qu'on vient de définir (en gardant la valeur de la meilleur solution
+et en initialisant cette valeur par un algo de bonne qualité, genre hill clibming ou carrément recuit simulé).
+
+
+\subsection{Locally minimal representation}
+
+On voudrait énumérer uniquement les solutions qui sont minimales pour 
+$\prec$ pour un sommet donné et canoniques, ce qu'on appelle des solutions locally minimal.
+
+On propose un ensemble de coupes faciles à calculer qui permettent d'éliminer la plupart des solutions 
+non minimales. Proposer une caractérisation des solutions localement minimales (à vérifier).
+
+Montrer avec des expériences (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques valides, et presque aucunes dont la réalisation n'est pas minimale.
+
+\subsection{Last Contention Level}
+
+Mettre ici le traitement spécifique du dernier niveau -> analyse de la complexité différente 
+à mettre ici, certaines coupes à ne pas faire car seul l'objectif de temps global nous importe 
+(à vérifier c'est un tradeoff, mais certaines sont évidemment à retirer). 
+
+
+\section{Experimental Evaluation}
+
+Comparer les temps de calcul et la qualité des solutions trouvées. 
+Le faire pour plusieurs régimes:
+-8 routes vs bcp de routes (branch and bound impossible)
+-charge 40 80 et 100 pour cent
+-routes dont les arcs sont tous petits (tirés dans [tau] ou moins) ou grands (tirés dans [P]).
+-plus de 2 data centers, 3 ou 4 ?
+
+Enfin comparer aux méthodes de multiplexage statistique avec FIFO et Greedy Deadline.
+Expliquer les rapports/différences de ces méthodes avec les algos greedys.
+
+
+
+\section{Autres trucs à raconter ?}
 Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
 \todo{expliquer pourquoi ces valeurs}
 
