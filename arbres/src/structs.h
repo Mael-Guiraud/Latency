@@ -13,6 +13,7 @@ typedef struct elem{
 	int arc_id;
 	Period_kind kind_p;
 	struct elem *suiv;
+	int kind_message;
 } Elem;
 
 
@@ -91,7 +92,8 @@ typedef struct event{
 	int time_elapsed;
 	Period_kind kind_p;
 	int arc_id;
-
+	
+	int kind_message;
 	struct event * suiv;
 } Event;
 

@@ -1,7 +1,7 @@
 // CONFIG OF THE TOPOLOGY
 
 #include "nb_bbu.h"
-#define MAX_LENGTH 20000
+#define MAX_LENGTH 700
 
 #define MESSAGE_SIZE 2500
 
@@ -12,7 +12,7 @@
 #define DISTRIBUTED 1
 
 //Mod synch or not
-#define SYNCH 1
+#define SYNCH 0
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.3
@@ -30,9 +30,9 @@
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
 #define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
-#define FIXED_PERIOD_MOD 0
+#define FIXED_PERIOD_MOD 1
 
-#define PERIOD 50000	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
+#define PERIOD 25000	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
 //For star simulation
@@ -55,3 +55,4 @@
 
 #define DATA_CENTER_ROUTES 0
 
+#define SIZE_BE_MESSAGE 100

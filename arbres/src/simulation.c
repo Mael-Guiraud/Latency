@@ -30,7 +30,7 @@ void test(unsigned int seed)
 {
 	//unsigned int seed = 1591624286;
 	//unsigned int seed = time(NULL);
-	seed = 1591967296;
+	seed = 1596121638;
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -50,6 +50,9 @@ void test(unsigned int seed)
 				
 	
 
+	
+	//Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
+	//P = PERIOD;
 	Graph  g = init_graph_random_tree(STANDARD_LOAD);
 	if(FIXED_PERIOD_MOD)
 	{
@@ -63,7 +66,7 @@ void test(unsigned int seed)
 	}
 	else
 		tmax = longest_route(&g)*2 + margin;
-
+	/*
 			
 	printf("Parameters : \n");
 	printf("	Fixed period   : ");if(FIXED_PERIOD_MOD){printf("ON ");}else{printf("OFF ");}printf("| P = %d .\n",P);
@@ -86,7 +89,7 @@ void test(unsigned int seed)
 			fprintf(f,YEL "WARNING! TMAX is higher than the longest route. \n" RESET);
 	fprintf(f,"	Message size   : %d .\n",message_size);
 	fprintf(f,"	Routes Synch   : ");if(SYNCH){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"\n");
-
+	*/
 
 	printf(" ---- \n Graph * generated ...\n");
 	fprintf(f,"\n ---- \n Graph * generated ...\n");
@@ -114,15 +117,15 @@ void test(unsigned int seed)
 	reset_periods(&g,P);reinit_delays(&g);
 
 
-	int fpt = branchbound( &g, P,  message_size,NULL,NULL,0);
-	//int fpt = 0;
+	//int fpt = branchbound( &g, P,  message_size,NULL,NULL,0);
+	int fpt = 0;
 	
-	printf("FPT = %d \n",fpt);
+	//printf("FPT = %d \n",fpt);
 	
 	reset_periods(&g,P);reinit_delays(&g);
 		
 	float nb_pas = 0;	
-	int recuits = recuit( &g, P, message_size,1000,&nb_pas);
+	int recuits = recuit( &g, P, message_size,100,&nb_pas);
 	printf("Recuit %d, %f pas \n",recuits,nb_pas);	
 	sprintf(nom,"recuit");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
@@ -139,6 +142,7 @@ void test(unsigned int seed)
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	//free_assignment(a);
+	/*
 	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(&g,P);reinit_delays(&g);
@@ -182,7 +186,7 @@ void test(unsigned int seed)
 	{
 		printf(GRN "FPT trouve au moins aussi bien que la descente ! \n" RESET);
 	}
-	/*
+	
 	int tabo = taboo( &g, P, message_size,100,100);
 	printf("taboo %d \n",tabo);	
 	sprintf(nom,"taboo");
@@ -212,7 +216,7 @@ void test(unsigned int seed)
 	{
 		printf(GRN "FPT trouve au moins aussi bien que le taboo ! \n" RESET);
 	}
-	*/
+	
 	
 	int gd = greedy_deadline_assignment( &g, P, message_size);
 	printf("greedy %d \n",gd);	
@@ -305,6 +309,13 @@ void test(unsigned int seed)
 	printf("\n printing python ...");print_python(&g);printf("Ok.\n");
 	printf("\n printing json arcs ..."); print_json_arcs(&g);
 	printf("Logs in logs.txt\n");
+*/
+
+		printf("recuit %d \n",recuits);
+	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, DEADLINE),multiplexing(&g, P, message_size, 10, DEADLINE),multiplexing(&g, P, message_size, 100, DEADLINE));
+	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, FIFO),multiplexing(&g, P, message_size, 10, FIFO),multiplexing(&g, P, message_size, 100, FIFO));
+	printf("%d \n",multiplexing(&g, P, message_size, 1, FIFO));
+
 	free_graph(&g);
 	fclose(f);
 
