@@ -1,5 +1,5 @@
-%\documentclass[a4paper,10pt]{article}
-\documentclass[10pt, conference, letterpaper]{IEEEtran}
+\documentclass[a4paper,10pt]{article}
+%\documentclass[10pt, conference, letterpaper]{IEEEtran}
 \usepackage[utf8]{inputenc}
 \usepackage{xspace}
 \usepackage{url}
@@ -44,16 +44,13 @@
 \newcommand\pall{\textsc{pall}\xspace}
 \newcommand\bra{\textsc{bra}\xspace}
 \newcommand\pra{\textsc{pra}\xspace}
-\newcommand\minpra{\textsc{min-pra}\xspace}
+\newcommand\minpazl{\textsc{min-pazl}\xspace}
 %opening
-\title{Deterministic Scheduling of Periodic Messages for Cloud RAN}
+\title{Deterministic Scheduling of Periodic Messages with Low Latency for Cloud RAN}
  
 
 \author[1]{Dominique Barth}
 \author[1,2]{Ma\"el Guiraud}
-% \author[1]{Christian Cad\'er\'e}
-% \author[2]{Brice Leclerc}
-% \author[2]{Olivier Marc\'e}
 \author[1]{Yann Strozecki}
 \affil[1]{David Laboratory, UVSQ}
 \affil[2]{Nokia Bell Labs France}
@@ -63,67 +60,74 @@
 \maketitle
 
 \begin{abstract}
-Cloud-RAN (C-RAN) networks is an architecture for cellular networks, where processing units, which were attached to antennas, are centralized in data-centers. The main challenge is to guarantee that the latency of the periodic messages sent from the antennas to their processing units and back, fulfills protocol time constraints. We show that traditional statistical multiplexing does not allow such a low latency, due to collisions and buffering at nodes. Hence, we propose to use a deterministic scheme for sending periodic messages without collisions in the network thus saving the latency incurred by buffering.
+Cloud-RAN (C-RAN) networks is an architecture for cellular networks, where processing units, previously attached to antennas, are centralized in data-centers. The main challenge, to fulfill protocol time constraints, is to minimize the latency of the periodic messages sent from the antennas to their processing units and back. We show that traditional statistical multiplexing suffers from high logical latency, due to collisions and buffering at nodes. Hence, we propose to use a \emph{deterministic} scheme for sending periodic messages \emph{without collisions} in the network thus saving the latency incurred by buffering.
 
-We give several algorithms to compute such schemes for a common topology where one link is shared by all antennas. We show that there is a solution without buffering when the routes are short or the load is small. When the parameters are unconstrained, and buffering is allowed in the processing units, we propose the PMLS algorithm adapted from a classical scheduling method. Experimental results show that even under full load,  PMLS finds a deterministic sending scheme with no logical latency most of the time. Using this algorithm working under high load, we design low latency periodic sending schemes which do not disrupt random best effort traffic on the network. This paper is an extended version of a previous work presented at ICT conference~\cite{Guir1806:Deterministic}.
+We give several algorithms to compute such schemes for star routed networks, a common topology where one link is shared by all antennas. First, we show there is a solution without any buffering when the routes are short or the load is small. When the parameters are unconstrained, and buffering is allowed in processing units, we propose the PMLS algorithm adapted from a classical scheduling method. Experimental results show that even under full load,  PMLS finds a deterministic sending scheme with no logical latency most of the time. Using this algorithm working and artificially increasing message size, we design low latency periodic sending schemes which do not disrupt random best effort traffic on the network. This paper is an extended version of a previous work presented at ICT~\cite{Guir1806:Deterministic}.
 \end{abstract}
 
 
 \section{Introduction}
 
-Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU)\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any C-RAN architecture definition.} in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul} network between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
+Cloud Radio Access Network or C-RAN, hve been proposed as a next generation mobile network architectureto reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership.
+C-RAN is a centralized architecture, each antenna has a Remote Radio Head (RRH) which sends the signal to
+a BaseBand Unit (BBU) in a data-center\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}.
+The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by an RRH and the receptions of the answer, computed by real-time virtualized network functions of a BBU. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul} network between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
 Our aim is to operate a C-RAN on a low-cost shared switched network.
-The question we address is the following: is it possible to schedule messages such that there do not collide in the network to avoid latency caused by queuing delays? 
-Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
+The question we address is the following: is it possible to schedule messages such that they do not collide in the network to avoid latency caused by queuing delays? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
-\textbf{TODO:} changer slot par tic partout ?
+Let us expose briefly our model: the network topology is modeled by a directed weighted multigraph and a set of directed paths (routes) from source nodes (RRHs) to target nodes (BBUs) and back. Time is discretized and a unit of time or \emph{tic} corresponds to the time needed to transmit a minimal unit of data over the network. To obtain the best possible latency, we want to avoid any buffering in internal nodes of the graph, corresponding to switches. We take advantage of the deterministic nature of the C-RAN messages, called datagrams, i.e. the dates of arrival of the datagrams are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that arrivals of all datagrams are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process of period $P$, we mean that the network at times $t$ and $t+P$ is in the exact same state. 
 
-Let us expose briefly our model: the network topology is modeled by a directed weighted graph and a set of directed paths (routes) from source nodes (RRHs) to target nodes (BBUs). Time is discretized and a unit of time or slot corresponds to the time needed to transmit a minimal unit of data over the network. To obtain the best possible latency we want to avoid any buffering in internal nodes of the graph.  We take advantage of the deterministic nature of the messages we must manage i.e. the dates of arrival of messages are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that the arrivals of all the packets are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collisions. By periodic process we mean that the network at times $t$ and $t+P$ where $P$ is the period, is in the exact same state. 
+We assume that the route taken by each datagram emmited by some RRH is fixed, and there are no buffering allowed inside the network. Hence we only have two sets of values that we can chose when building a periodic sending process, called a \emph{periodic assignment}: the time at which each datagram is sent by an RRH in the period, called an \emph{offset}, and the \emph{waiting time} in the BBU before the answer is sent back to the RRH. 
 
-We assume that the routes of the messages are already fixed, and there are no buffering allowed inside the network. Hence we only have two sets of values that we can set when building a periodic sending process, called a \emph{periodic assignment}: the time at which each packet is sent by an RRH in each period and the waiting time in the BBU before the answer is sent back to the RRH. When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the other messages sent by the others BBU/RRH in the same period, but also in the previous and following periods. The latency, that is the time between the emission of a message and the complete return of its answer must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long. Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size.   
 
-\textbf{TODO:} parler ici du fait qu'on regarde des antennes qui peuvent avoir des périodes églaes mais désynchronisées. Pas encore vrai sur les réseaux mobiles actuellement, mais nos travaux montrent que ça a un inérêt. Peut-être fait sur des réseaux ad-hoc, dire qu'on a des applications autres.
+When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a message must not collide with the messages sent by the others BBU/RRH in the same period, but also in the previous and following period. The latency, that is the time between the emission of a message and the complete return of its answer, must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long.
+% Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size. 
+ In this article, we assume that all RRHs send datagrams with the same period, but are not synchronized. It means that the datagram of each RRH is available at a different time in the period, given by its offset.
+ In current cellular networkw, the RRHs are synchronized, and simulating our settings would cost a large additional latency, since datagrams should be buffered in their RRH to honor their offsets. 
+Hence, the model we propose should be seen as a suggestion to design future cellular networks, where emissions of the RRH are not synchronized. It could already used to modelize sensor networks in cars, logistic problems in production lines or multiprocessor systems, where we need to schedule periodic messages (or goods) over a bus and where we have a better handle on when they are generated.
+ 
+In this article, we focus on \emph{star routed networks}, which represent a simple but common topology,
+where all RRHs share a single link. We give efficient algorithms for two version of the problems, called 
+\pall and \pazl, the second one forbidding buffering even in the BBU. The algorithms are either polynomial or mildly exponential in $n$, the number of RRHs and are able to compute periodic sending schemes
+for star shaped networks with tens of RRHs. The solutions we obtain are extremely good, with no 
+additional latency most of the time, eventhough buffering can only be done in the BBU. For more complex networks and synchronized RRHs, studied in a follow-up work~\cite{guiraud2020synchronized}, we need to allow buffering at each node to obtain good sending schemes.
 
-\textbf{TODO:} dire ce que notre approche apporte ici ?
 
  \subsection*{Related works}
 
- Statistical multiplexing even with a large bandwidth does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
+ Statistical multiplexing, even with a large bandwidth, does not comply with the latency requirements of C-RAN. Therefore, the current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
      
 The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network or train schedules~\cite{strotmann2007railway}. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
 The problem \pall on a star routed network is very close to a two flow shop scheduling problem~\cite{yu2004minimizing} with the additional constraint of periodicity. To our knowledge, all periodic scheduling problems are quite different from \pall. 
 Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem correspond to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
-\textbf{TODO}: reprendre l'intro de l'article ISSAC pour mettre à jour ça, sur les trains surtout et les
-réseaux
+The train timetabling problem~\cite{lusby2011railway} and its restriction, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem. Indeed, they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms \dots  In the same spirit, complex scheduling problems for time sensitive networks have also been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}.
+
+
+\subsection*{Outline}
+
+ In Section~\ref{sec:def} we propose a model of the network and the periodic sending of datagrams along its routes.  We then introduce \pall to formalize the problem of sending periodic messages in a network without collision. In Section~\ref{sec:complexity}, we prove that the problem \pall, and its variant \pazl, with all waiting times zero, are $\NP$-hard even for very restricted classes of graphs. 
+
+In Section~\ref{sec:star_routed_network}, we introduce a simple but very common topology, called the star routed network, that is studied in the rest of the article. In Section~\ref{sec:PAZL}, we study the problem \pazl: We provide polynomial time algorithms which works when the load or the routes are small, and an algorithm exponential in the number of routes only. We give experimental evidences that \pazl can be solved positively when the network is not too loaded or when the routes are small. In Section~\ref{sec:PALL}, we propose polynomial time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work well even in loaded networks. 
+Finally, in Section~\ref{sec:comparison}, we show how our solution largely outperforms stochastic multiplexing, even using a buffering policy taking into account the latency, or in the presence of additionnal random traffic in the network.
 
 
 
-\subsection*{Organization of the article}
-
- In Section~\ref{sec:def} we propose a model of the network and the periodic sending of messages along its routes.  We then introduce \pall, which formalizes the problem of finding a periodic assignment for sending messages in a network without collision. In Section~\ref{sec:complexity}, we prove that the problem \pall and variants is $\NP$-hard and cannot be approximated even for very restricted classes of graphs. 
-
-In Section~\ref{sec:star_routed_network}, we introduce a simple but very common topology, called the star routed network, that is studied in the rest of the article.
-In Section~\ref{sec:PAZL}, we study a variant of \pall called \pazl  where the waiting times must all be zero. We provide  polynomial time algorithms which works when the load or the routes are small, and an FPT algorithm with parameter the number of routes.
-We give experimental evidences that they find periodic assignments when the network is not to loaded. In Section~\ref{sec:PALL}, we propose polynomial time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work extremely well even in loaded networks. 
-
-Finally, in Section~\ref{sec:comparison}, we show how our solution largely outperforms the stochastic multiplexing even when it uses a smart buffering policy and in the presence of additionnal random traffic.
-
-
-
-\section{Model and Problems}\label{sec:def}
+\section{Modeling of the Problem}\label{sec:def}
 
 Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 
-\subsection{Modeling the Network and its Contention Points}
+	\subsection{The C-RAN Network and its Contention Points}
 
-  We study a communication network with pairs of source-destination nodes between which messages are sent periodically. The routing between each pair of such nodes is given. The network is represented by a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three disjoint subsets:  ${\cal S}$ the set of sources of the messages, ${\cal D}$ the set of destination of the messages, and ${\cal C}$ the set of contention points in the network. Indeed, some links of the network are shared between several pairs of source-destination nodes. A contention point represents the beginning of a shared link, i.e. the physical node of the network which sends the messages into the link. An arc in $G$ may represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time elapsed between the sending time of the message in $u$ and the reception time of this message in $v$ using this arc. \\
-  A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_1, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \omega(u_j, u_{j+1})$. It is the number of tics needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
+  	We study a communication network with pairs of source-destination nodes between which messages are sent periodically. The routing between each pair of such nodes is given. The network is represented by a directed acyclic multigraph $G=(V,A)$. The set of vertices is composed of three disjoint subsets:  ${\cal S}$ the set of sources of the messages, ${\cal D}$ the set of destination of the messages, and ${\cal C}$ the set of contention points in the network. A contention point represents the beginning of a link shared by several routes, i.e. the physical node of the network which sends the messages into the link. An arc in $G$ may represent several physical links or nodes, which do not induce contention points. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\omega(u,v)$ which represents the time elapsed between the sending time of the message in $u$ and the reception time of this message in $v$ using this arc. 
 
-	We denote by ${\cal R}$ a set of routes of the graph $G$, the pair $(G,{\cal R})$ is called a \textbf{routed network} and represents our telecommunication network.\\
-	Let $r \in {\cal R}$, with $r = (u_0,u_1,\dots,u_l)$, then we say that $u_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(u_i,r) = i$. The contention level of a node $u$ is the maximum of its contention level over all routes going through itself: 
-	$cl(u) = \max\limits_{r\in{\cal R} \text{ and } u \in r} cl(u,r)$.
+  	A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$. A route represent the path of a datagram in the network, hence $u_0 \in \cal{S}$ represent the sending by the RRH, $u_l \in \cal{D}$ represents the reception of the answer in the same RRH. On each route, there is exactly one vertice in ${\cal C}$, which is the next contention point after the datagram leaves the BBU. We denote the set of these contention point by ${\cal B}$.
+
+    The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{1 \leq j <i} \omega(u_j, u_{j+1})$. It is the number of tics needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$. 
+
+
+	We denote by ${\cal R}$ a set of routes of the weighted multigraph $G$, the pair $(G,{\cal R})$ is called a \textbf{routed network} and represents our telecommunication network.
 
 \begin{figure}
 
@@ -147,103 +151,56 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 \label{fig:fronthaul}
 \end{figure} 
 
-	The  \textbf{contention depth} of a routed network $(G,{\cal R})$ is equal to the maximum of the contention level over all vertices. It is the number of contention points on the longest route of the network. In all the article, $(G,{\cal R})$ is the routed network, ${\cal C}$ is the set of its contention vertices, $n$ denotes $|\cal{R}|$ the number of routes.  
 
-  %\subsection{Network modeling}
-  
-%The network is modeled as a directed graph $G=(V,A)$. Each arc  $(u,v)$ in $A$ is labeled by an integer weight $\Omega(u,v)$ which represents the time taken by a message to go from $u$ to $v$ using this arc. A {\bf route} $r$ in $G$ is a directed path, that is, a sequence of adjacent vertices $u_0, \ldots , u_{l}$, with $(u_i,u_{i+1}) \in A$.  The {\bf latency} of a vertex $u_i$ in a path $r=(u_0,\dots,u_l)$ is defined by $\lambda(u_i,r)= \sum\limits_{0 \leq j <i} \Omega(u_j, u_{j+1})$. We also define $\lambda(u_0,r)=0$. The length of the route $r$ is defined by $\lambda (r)= \lambda (u_l,r)$.
-%We denote by $\cal R$ a set of routes, the pair $(G,\cal R)$ is called a {\bf routed network} and represents our telecommunication network.
-%The first vertex of a route models an antenna (RRH) and the last one a data-center (BBU) which processes the messages sent by the antenna.
-
-   %\subsection{Messages dynamic}
-	 
-    %Time is discretized, hence the unit of all time values is a slot, the time needed to transmit a minimal unit of data over the network. The weight of an arc is also expressed in slots, it is the time needed by a message to go through this arc.
-     %   In the process we study, a message is sent on each route at each period, denoted by $P$.
-      %Let $r=(u_0,\dots,u_l)$ be a route, if a message is sent at time $m$ from $u_0$ the first vertex of $r$ then it will arrive at vertex $u_i$ in $r$ at time $m + \lambda(u_i,r)$. Since the process is periodic, if the message from $r$ goes through an arc at time $t\in [0,P-1]$, 
-      %then it goes through the same arc at time $t+kP$ for all positive integers $k$. Therefore, every time value can be computed modulo $P$ and we say that the first time slot at which a message sent at time $m$ on $r$ reaches a vertex $u_i$ in $r$ is $t(u_i,r) = m + \lambda(u_i,r)\mod P$. 
-      
-      %A message usually cannot be transported in a single time slot. We denote by $\tau$ the number 
-      %of \emph{consecutive slots} necessary to transmit a message. In this paper, we assume that $\tau$ is the same for all routes. Indeed, the data flow sent by an RRH to its BBU is the same, regardless of the route. Let us call $[t(u,r)]_{P,\tau}$ the set of time slots used by route $r$ at vertex $u$ in a period $P$, that is $[t(u,r)]_{P,\tau} = \{t(u,r) + i \mod P \mid 0 \leq i < \tau \}$. 
-%       Usually $P$ and $\tau$ will be clear from the context and we will denote $[t(v,r)]_{P,\tau}$ by $[t(v,r)]$.
-      %Let $r_1$ and $r_2$ be two routes, on which messages are sent at time $m_1$ and $m_2$ in their first vertex.
-      %We say that the two routes have a {\bf collision} if they share an arc $(u,v)$ and $[t(u,r_{1})]_{P,\tau} \cap [t(u,r_{2})]_{P,\tau} \neq \emptyset$.
-      
-       %  A {\bf $(P,\tau)$-periodic assignment} of a routed network $(G,\cal R)$ is a function that associates to each route 
-        % $r \in \cal R$ its \textbf{offset} $m_r$ that is the time at which a message is emitted at the first vertex of the route $r$.  In a $(P,\tau)$-periodic assignment, \emph{no pair of routes has a collision}.
 	 
 	 
- \subsection{Dynamic of Datagrams Transmissions}
+ 	\subsection{Dynamic of Datagrams Transmissions}
 	    
  		In this article, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. Several of the authors are developing a prototype based on ethernet base-X~\cite{ieee_8023}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
 
         In the process we study, a message called a {\bf datagram} is sent on each route from the source node. The \textbf{size} of a datagram is an integer, denoted by $\tau$, it is the number of tics needed by a node to emit the full datagram through a link.  In this paper, we assume that $\tau$ is the same for all routes. It is justified by our application to C-RAN, where all source nodes are RRHs sending the same type of message. There is no preemption: Once a datagram has been emitted, it cannot be fragmented during its travel in the network. 
 
+        Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid contention, it is possible to buffer datagrams in contention points of $\cal{B}$. An \textbf{assignment} $A$ of a routed network $(G,{\cal R})$, is a function which associates to each route $r \in \cal{R}$, the pair of integers $A(r) = (o_r,w_r)$.
+        The value $o_r$ is the \textbf{offset}, the time at which the datagram is available in the first vertex of $r$. The value $w_r$ is the \textbf{waiting time}: the datagram is buffered 
+        for $w_r$ tics in $u_j \in \cal{B}$, the vertex representing the BBU.
+ 		The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + o_r $ if 
+ 		$i < j$ and $t(r,u_i) = \lambda(u_i,r) + o_r + w_r$ otherwise.
 
-        \textbf{TODO:} on propose de faire du buffering que dans les BBUs qui correspondent à un troisième ensemble de sommets dans le modèle. On explique les offsets. Un assignement, c'est la donnée
-        de $((o_i,w_i))$. Dire qu'on peut faire des modèles avec attente dans chaque noeud.
-In this article, we strongly restrict where buffering can take place. We only allow a positive buffering to take place in the BBU, hence for each route 
-        $r$, there is a single contention point $u$ such that $A(r,u)$ can be larger than zero and we call
-        this value the waiting time of $r$, denoted by $w_r$. 
-
-        The arrival of datagram in antennas need no to be synchronized, and we can decide when in the period
-        each datagram is available in the first vertex of its route. If  
-
-
-
+ 		 If $u_l$ is the last vertex of the route $r$, the \textbf{transmission time} of the datagram on 
+  		$r$ is denoted by $TR(A,r)$ and is equal to $\lambda(r) + w_r$ or $t(r,u_l) - o_r$. This is the total time taken by the process we study: the sending of the datagram from the RRH to the BBU and 
+  		back to the RRH. We can decompose this time into $\lambda(r)$, the \emph{physical latency} of the process and $w_r$, the \emph{logical latency}. 
+  		We define the \textbf{transmission time} of an assignment $A$ as the worst transmission time of a route: $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. 
 
 
-          Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid contention, it is possible to buffer datagrams in contention points. The function $A$, called an \textbf{assignment}, associates an integer value, greater or equal to $0$, to each couple (route,vertex) of the routed network $(G,{\cal R})$. Those integers represent the buffering time of the datagrams in the nodes of the network: a datagram of route $r$ waits $A(r,u)$ tics in the buffer of vertex $u$. 
-          Let $u$ be the first vertex of the route $r$, we say that $A(r,u)$ is the offset of the 
-          route $r$.         
-       
 
- The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} A(r,u_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
 
- 
-%   In the application we study the full transmission time is bounded . We define $Tmax$ such that $TR(A) \leq Tmax$.
-     
- \subsection{Periodic Emission of Datagrams}
+ 	\subsection{Periodic Emission of Datagrams}
 
- 	The process we model in this article is \emph{periodic}: for each period of $P$ tics, a datagram is ready to be sent from each source node in the network at time zero of the period. The process is assumed to be infinite, since it should work for an arbitrary number of periods. We chose to always use the same waiting time in all periods, for simplicity of implementation in real networks but also to make our problem more tractable from a theoritical perspective. In other words, at the same time of two different periods, all messages are at the same position in the network: the assignments we build are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
+\todo{dire qu'on ne modélise pas l'envoie d'un seul datagramme, mais l'envoi périodique de datagrammes}
+
+
+ 	The process we model in this article is \emph{periodic}: for each period of $P$ tics, a datagram is ready to be sent from each source node in the network at its offset. The process is assumed to be infinite, since it should work for an arbitrary number of periods. For a given route, we use the same waiting time in all periods, for simplicity of implementation in real networks but also to make our problem more tractable from a theoritical perspective. In other words, at the same time of two different periods, all messages are at the same position in the network: the assignments we build are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
+ 	Remark that using a different offset for each route, allows to send their datagram at a different time 
+ 	in the period. It correspond to our hypothesis that the emission of messages of the RRHs are unsynchronized (but there internal time is synchronized).
+
+
     Let us call $[r,u]_{P,\tau}$ the set of tics used by a datagram on $r$ at vertex $u$ in a period $P$, that is $[r,u]_{P,\tau} = \{t(r,u) + i \mod P \mid 0 \leq i < \tau \}$. 
+    Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.
+    An assignment $A$ of a routed network $(G,{\cal R})$ is said to be \textbf{valid} if for all contention points $u$ and routes $r_1$ and $r_2$ containing $u$, \emph{$r_1$ and $r_2$ have no collision}. 
+    The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages,
+    thus we say that $A$ is a valid $(P,\tau)$ assignment. When $P$ and $\tau$ are fixed or clear from the context, we only say that $A$ is a valid assignment. 
 
-      Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.\\
+     In the example of Fig.~\ref{fig:example}, the three routes are given by three different colors. If we let $P = 2$ and $\tau = 1$, then there is a $(2,1)$-periodic assignment without waiting time by taking $0$ as offset for each route.
 
-        An assignment $A$ of a routed network $(G,{\cal R})$ is said to be \textbf{valid} if \emph{no pair of routes has a collision}. 
-        The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages,
-        thus we say that $A$ is a valid $(P,\tau)$ assignment. When $P$ and $\tau$ are fixed or clear from the context, we say that $A$ is a valid assignment.
-        Note that the period $P$, as well as the size of a message $\tau$ is fixed in our $C-RAN$ application, but not the buffering policy. 
-         Hence, the aim of our work is to find a valid assignment which minimizes the latency of transmissions over the network, that is $TR(A)$.
-       \\ 
+\todo{Mettre deux jeux de paramètres pour l'exemple, par exemple $\tau = 2$ et $P = 5$ ? Mettre les BBU.}
 
-  If $u_l$ is the last vertex of the route $r$, the transmission time of the datagram on 
-  $r$ is denoted by $TR(A,r)$ and is equal to $t(r,u_l)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
-       
-       \noindent {\bf Periodic Assignment for Low Latency (\pall)} 
-
-      \noindent {\bf Input:}  Routed network $(G,{\cal R})$, period $P$, datagram size $\tau$.%, a bound on the latency $T$.
-      
-      %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
-
-      \noindent {\bf Output:} assignment $A$ which minimizes $TR(A)$.
-      \\
-
-
-
-
-
-
-      As an example of a $(2,1)$-periodic assignment, let us consider a routed network 
-      where all pairs of routes intersect at a different arc. It is easy to design such a network and an example is given in Figure~\ref{fig:example}. We set $\tau = 1$ and the weights are chosen so that if $r_{i}$ and $r_{j}$ have $u$ as first common vertex then we have $\lambda(u,r_{i}) - \lambda(u,r_{j})=1$. There is a $(2,1)$-periodic assignment by setting all $m_{i}$ to $0$.
+\todo{Trouver une meilleure notation que A pour les assignements qui collisionne avec les arcs. Mettre à jour le tableau de notations. Mettre une jolie police pour les algorithmes. Mettre à jour les figures pour concorder avec les nouvelles définitions. Mettre des figures d'illustration des définitions.}
 
   
-      \begin{figure}[ht]
-      \begin{center}
-          \scalebox{0.47}{
-          
-\begin{tikzpicture}
-
-
+\begin{figure}[ht]
+    \begin{center}
+        \scalebox{0.47}{
+		\begin{tikzpicture}
 \tikzset{
   LabelStyle/.style = { rectangle, rounded corners, draw,
                        font = \bfseries },
@@ -292,83 +249,57 @@ In this article, we strongly restrict where buffering can take place. We only al
 \end{tikzpicture}
 
 }
-     \end{center}
-       \caption{A routed network with $(0,0,0)$ as a $(2,1)$-periodic assignment}
-       \label{fig:example}
-      \end{figure}
-
-      \subsection{Periodic route assignment}\label{nonmonotone}
-
-    We want to find an assignment which allows to send periodic messages from sources to targets
-    without collisions. We introduce the following associated decision problem, useful for hardness proofs.
-    
-
-      \noindent {\bf  Periodic Routes Assignment (\pra)} 
-
-      \noindent {\bf Input:} a routed network $(G,\cal R)$, an integer $\tau$ and an integer $P$.
-
-      \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment of $(G,\cal R)$ ?
+  	\end{center}
+    \caption{A routed network with $((0,0),(0,0),(0,0)$ as a $(2,1)$-periodic assignment}
+    \label{fig:example}
+\end{figure}
 
 
-      We will prove in Section~\ref{sec:complexity} that the problem \pra is $\NP$-complete, even in restricted settings.
-      In fact, approximating the smallest value of $P$ for which there is a $(P,\tau)$-periodic assignment is already hard.
-      
-      An unusual property of assignment is that given a routed network, we may have a $(P,\tau)$-periodic assignment but no
-      $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
-	\begin{lemma} \label{lemma:monotonic}
-	 For any odd $P$, there is a routed network such that there is a $(2,1)$-periodic assignment but no $(P,1)$-periodic assignment.
-	\end{lemma}
-\begin{proof}
+	\subsection{Periodic assignment for low latency}
 
-      We consider a generalization of the routed network $(G,{\cal R})$ given in Figure~\ref{fig:example}. 
-      There are $n$ routes in the routed network and each pair of routes $(r_i,r_j)$ share a single arc, which is not in any other route. The weights are chosen so that for $v$, the first vertex which belongs to $r_i$ and $r_j$, we have $\lambda(v,r_i) - \lambda(v,r_j)= P$, where $P$ is an odd number smaller than $n$. In such a graph, there is no $(P,\tau)$-periodic assignment, since the problem reduces to finding a $P$-coloring in a complete graph with $n > P$ vertices, the colors being the offsets of the routes.\\
-      If we consider a period of $2$, for all $i \neq j$, $\lambda(v,r_i) - \lambda(v,r_j) \mod 2 = 1$ . Therefore $(0,\dots,0)$ is a $(2,1)$-periodic assignment of ${\cal R}$.      
-\end{proof}
-      
-      
-      \subsection{Periodic assignment for low latency}
-      
-   In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
-      we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in \emph{full-duplex} networks, but we need not to enforce this property.
-         
-      We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
-      This assignment represents the following process: First a message is sent at $u$, through the route $r \in F$, at time $m_r$.
-      This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. The answer is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise. Figure~\ref{fig:assignment} illustrates this process in an RRH and its corresponding BBU.
- 
-     \begin{figure}[h]
-      \begin{center}
-      \includegraphics[width=0.47\textwidth]{rrh.pdf}
-      \end{center}
-      \caption{Periodic process}\label{fig:assignment}
-      \end{figure}
-      
-      Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
-      The whole process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(r)+ w_r+\lambda(r)$.      
-      In the process time, we count the time between the time the first slot of the message is emitted and the first time at which the first slot of the message comes back. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time. Both definitions are equivalent in our context where all messages are of size $\tau$, hence we chose the first definition which is slightly simpler. 
-      Each route must respect a time limit that we call \emph{deadline}. To represent these deadlines, 
-      we use a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
-      
-%     The {\bf maximum process time} of the assignment $m$ of $(G,{\cal R})$ is defined by $MPT(m)=\max\limits_{r \in {\cal R}} PT(r)$.
-      We consider the following decision problem.
-
+      	The period $P$, as well as the size of a message $\tau$ are fixed in our $C-RAN$ settings, but not the buffering policy. Hence, the aim of this article is to find a valid assignment which minimizes the worst latency of the transmissions over the network, that is $TR(A)$.
+      	For simpler hardness proofs and easier reductions, we study the decision version of the optimization problem we are interested in, that we call \pall for  \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency. Each route must respects a time limit called a \emph{deadline}. These limits are encoded in a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
+       
+       % We will prove in Section~\ref{sec:complexity} that the problem \pra is $\NP$-complete, even in restricted settings.
+     
       \noindent {\bf Periodic Assignment for Low Latency (\pall)} 
 
-      \noindent {\bf Input:}  A symmetric routed network $(G,{\cal R})$, the integers $P$, $\tau$ and a deadline function $d$.
+      \noindent {\bf Input:}  A routed network $(G,{\cal R})$, the integers $P$, $\tau$ and a deadline function $d$.
       
-      \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment $m$ of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $PT(r) \leq d(r)$?
+      \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $PT(r) \leq d(r)$?
 
-      As a consequence of the $\NP$-hardness of \pra, we show in the next subsection that this problem is $\NP$-hard. 
-      In Section~\ref{sec:PALL} we will study heuristics used to solve the search version of \pall (computing an assignment), also denoted by \pall for simplicity. In \pall, we have chosen to bound the process time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraint on the latency. It would be interesting to study the case of a constraint on the \emph{average} of process times (or equivalently waiting times) of routes, which may be more relevant in other contexts.
+	  In the next subsection, this problem is proved to be $\NP$-hard. In Section~\ref{sec:PALL} we study heuristics solving the search version of \pall (computing an assignment), also denoted by \pall for simplicity. In \pall, we have chosen to bound the process time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. It would be interesting to study the case of a constraint on the \emph{average} of the process times of the routes (or equivalently waiting times), which may be more relevant in other contexts.
 
-     
+     We also consider a restricted version of \pall, requiring that \emph{all waiting times are equal to $0$} in the assignment. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the 
+     transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This restriction is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency or \pazl. Studying \pazl is simpler, there is no need to give the position of the BBU in the routed network
+     and an assignment is given by the offset of each route. Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.    
+  
+      An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
+
+	\begin{proposition} \label{prop:monotonic}
+	 For any odd $P$, and the deadline function $d(r) = \lambda(r)$ (zero waiting time), there is a routed network such that there is a $(2,1)$-periodic assignment but no $(P,1)$-periodic assignment.
+	\end{proposition}
+
+	\begin{proof}
+      We consider a generalization of the routed network $(G,{\cal R})$ given in Fig.~\ref{fig:example}. 
+      For an integer $n$, we build the graph over the vertices $v_{ij}$, with $0 \leq i < j <n$. 
+      There are $n$ routes and the route $r_i$ goes through all vertices $v_{ij}$, in order of increasing $j$.
+	  The weights of the arcs are set so that $\lambda(v_{ij},r_i) - \lambda(v_{ij},r_j)= P$, where $P$ is an odd number smaller than $n$. It is always possible by choosing appropriate values for $\omega(v_{i-1j}v_{ij})$ and $\omega(v_{ij-1}v_{ij})$. In such a graph, there is no $(P,\tau)$-periodic assignment with no waiting time, since the problem reduces to finding a $P$-coloring in a complete graph with $n > P$ vertices, the colors being the offsets of the routes.
+
+      If we consider a period of $2$, for all $i \neq j$, $\lambda(v_{ij},r_i) - \lambda(v_{ij},r_j) \mod 2 = 1$, hence two messages of same offset and size $1$ do not have a collision at $v_{ij}$. Therefore, assigning $(0,0)$ to each route is a $(2,1)$-periodic assignment of ${\cal R}$.      
+\end{proof}
+
+
       The following table summarize the main notations used in the paper.
       \begin{center}
-   \begin{tabularx}{0.5\textwidth}{|c|X|}
+   \begin{tabularx}{\textwidth}{|c|X|}
     \hline
-     $(G,\cal R)$ & Routed network \\
+     $(G,{\cal R})$ & Routed network \\
      \hline
-      $\Omega(u,v)$ & Weight of the arc $(u,v) \in A$ \\
+     $n = |\cal{R}|$ & Number of routes\\
+     \hline
+      $\omega(u,v)$ & Weight of the arc $(u,v) \in A$ \\
       \hline
       $\lambda(u_i,r)$ & Latency of the vertex $u_i$ in $r$\\
          \hline
@@ -378,177 +309,206 @@ In this article, we strongly restrict where buffering can take place. We only al
          \hline
          $\tau$ & Size of a message\\
          \hline
-         $ [t(v,r)]$& Set of time slots used by route $r$ at vertex $v$ in a period $P$\\
+         $ [t(v,r)]$& Times used by route $r$ at vertex $v$\\
          \hline 
-         $m=(m_0, \ldots ,m_{n-1})$& Assignment: an offset for each route\\
+         $A=((o_0,w_0), \ldots ,(o_{n-1},w_{n-1}))$& Assignment: an offset and a waiting time for each route\\
               \hline 
-         $w_r$& Waiting time of the route $r$\\
-            \hline 
-         $PT(r)$& Process time of the route $r$\\
+         $TR(A,r)$& Transmission time of the route $r$, for the assignment $A$\\
            \hline 
-       $d(r)$ & Deadline of the route $r$\\
+       	 $d(r)$ & Deadline of the route $r$\\
     \hline
 
       \end{tabularx}
       \end{center}
+      
+      
+      
+     % \subsection{Periodic assignment for low latency}
+      
+     %In the context of cloud-RAN applications, we need to send a message from an RRH $u$ to a BBU $v$ and then 
+      %we must send the answer from $v$ back to $u$. We say that a routed network $(G, {\cal R})$ is \textbf{symmetric} if the set of routes is partitioned into the sets $F$ of \textbf{forward routes} and $B$ of \textbf{backward routes}. There is a bijection $\rho$ between $F$ and $B$ such that for any forward route $r \in F$ with first vertex $u$ and last vertex $v$, the backward route $\rho(r) \in B$ has first vertex $v$ and last vertex $u$. In all practical cases the routes $r$ and $\rho(r)$ will be the same with the orientation of the arcs reversed, which corresponds to bidirectional links in \emph{full-duplex} networks, but we need not to enforce this property.
+         
+      %We now give a new interpretation of a $(P,\tau)$-periodic assignment of a $(G,{\cal R})$ symmetric routed network, so that it represents the sending of a message and of its answer.
+      %This assignment represents the following process: First a message is sent at $u$, through the route $r \in F$, at time $m_r$.
+      %This message is received by $v$, i.e., the last vertex of $r$ at time $t(v,r)$. The answer is then sent back to $u$ on the route $\rho(r)$ in the same period at time $m_{\rho(r)}$ if $m_{\rho(r)} > t(v,r)$, otherwise at time $m_{\rho(r)}$ in the next period. The time between the arrival of the message and the time it is sent back is called the \textbf{waiting time} and is defined by $w_r = m_{\rho(r)} - t(v,r)$ if $m_{\rho(r)} > t(v,r)$ and $w_r = m_{\rho(r)} + P - t(v,r)$ otherwise. Figure~\ref{fig:assignment} illustrates this process in an RRH and its corresponding BBU.
+ 
+     %\begin{figure}[h]
+      %\begin{center}
+      %\includegraphics[width=0.47\textwidth]{rrh.pdf}
+      %\end{center}
+      %\caption{Periodic process}\label{fig:assignment}
+      %\end{figure}
+      
+      %Note that, in the process we describe, we do not take into account the computation time a BBU needs to deal with one message. It can be encoded in the weight of the last arc leading to the BBU and thus we do not need to consider it explicitly in our model. 
+      %The whole process time for a message sent on the route $r$ is equal to $PT(r)=\lambda(r)+ w_r+\lambda(r)$.      
+      %In the process time, we count the time between the time the first tic of the message is emitted and the first time at which the first slot of the message comes back. Alternatively we could consider the time between the emission of the first slot and the reception of the last slot of the message, which adds $\tau$ to the process time. Both definitions are equivalent in our context where all messages are of size $\tau$, hence we chose the first definition which is slightly simpler. 
+      %Each route must respect a time limit that we call \emph{deadline}. To represent these deadlines, 
+      %we use a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
+      
 
 
-\section{Hardness of \pra}
+\section{Hardness of \pall and \pazl}
   \label{sec:complexity}
 
- In this section we always assume that the size of a message $\tau$ is equal to one. 
- We will prove the hardness of \pra and \pall for $\tau =1$ which implies the hardness of problems with $\tau$ unconstrained. 
-Consider an instance of the problem \pra, i.e., a routed network $(G,\cal{R})$ and a period $P$.
-The {\bf conflict depth} of a route is the number of arcs of the route which also belong to other routes.
-The conflict depth of a routed network $(G,\cal{R})$ is the maximum of the conflict depth of its routes.
-The {\bf conflict width} of a routed network is the maximal number of routes sharing the same arc.
-Remark that a $(P,1)$-periodic assignment must satisfy that $P$ is larger or equal to its conflict width.
+  	Let us introduce a few parameters quantifying the complexity of a routed network.
+	The \textbf{contention depth} of a routed network $(G,{\cal R})$ is the size of the longest route of the network. The \textbf{width} of a vertex is the number of routes which contain it.
+	The \textbf{contention width} of a routed network is the maximal width of its vertices. 
+	Remark that a $(P,\tau)$-periodic assignment must satisfy that $P/\tau$ is larger or equal to its conflict width. Now, let us fix $P$ and $\tau$, for a given vertex of contention width $c$, we define its \textbf{load} as $c\tau/P$. The load of the routed network is the maximum of the loads of its vertices. Remark that a routed network must have a load less or equal to one to admit a valid assignment.
 
 
-We give two alternate proofs that \pra is $\NP$-complete.
-The first proof works already for conflict depth two. Remark that for conflict depth one,
-the graph can be seen as a set of disjoint pair of routes, on which \pra and \pall can be solved in linear time. 
- The second proof reduces the problem to graph coloring and implies inapproximability when one tries to find the smallest possible $P$.  Finally, it is easy to see that \pra is easy on trees and it may be interesting to study its complexity on 
- bounded treewidth networks, since it is a common property of real networks~\cite{de2011treewidth}.
+	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness of \pazl with $\tau =1$. 
+	We give two alternate proofs that \pazl is $\NP$-complete.
+	The first proof works even for contention depth two. However, in Sec.\ref{sec:PAZL} we will see
+  	that for some graphs of contention depth $2$, called star routed network, and small load, \pazl can be solved in polynomial time.
+	 For contention depth one, either the load is less than one and \pall can be solved using zero waiting time in linear time or there is no valid assignment. The second proof works for graphs with contention width $2$, that is even if the conflicts are locally very small, the problem is complex globally.   Finally, solving \pall is trivial on trees and it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, since it is a common property of real networks~\cite{de2011treewidth}.
  
 
  \begin{theorem}
-Problem \pra is $\NP$-complete on the class of routed networks with conflict depth two.
+\pazl is $\NP$-complete on the class of routed networks with contention depth two.
 \end{theorem}
  \begin{proof}
- Problem \pra is in $\NP$ since given an offset for each route in an assignment, it is easy to check in linear time with regard to the number of arcs whether there are collisions.
+ \pazl is in $\NP$ since given an offset for each route in an assignment, it is easy to check whether there are collisions, in linear time in the multigraph.
  
-  Let $H=(V,E)$ be an undirected graph and let $d$ be its maximal degree. We consider the problem to determine whether $H$ is arc-colorable  with $d$ or $d+1$ colors. The arc coloring problem is $\NP$-hard~\cite{holyer1981np} and we reduce it to \pra to prove its $\NP$-hardness. To do that, we define from $H$ a routed network $(G,{\cal R})$ as follows.
-  The vertices of $G$ are $v_1, v_2$ for each $v$ in $V$ and $s_{u,v}, t_{u,v}$ for each $(u,v) \in E$.
-  For each arc $(u,v) \in E$, there is a route $s_{u,v},u_1,u_2,v_1,v_2,t_{u,v}$ in ${\cal R}$. 
-  
-   To define ${\cal R}$ an arbitrary orientation of each edge is chosen. 
-   Then for each arc $(u,v)$ there is a route $s_{u,v},u_1,u_2,v_1,v_2,t_{u,v}$ in ${\cal R}$.
-  All these arcs are of weight $0$. The set of arcs of G is the union between all the arcs of the previously defined routes.
+  Let $H=(V,E)$ be an undirected graph and let $d$ be its maximal degree. We consider the problem to determine whether $H$ is arc-colorable with $d$ or $d+1$ colors. The arc coloring problem is $\NP$-hard~\cite{holyer1981np} and we reduce it to \pazl to prove its $\NP$-hardness. To do that, we define from $H$ a routed network $(G,{\cal R})$ as follows. 
+
+  The vertices of $G$ are $V$ and $s_{u,v}, t_{u,v}$ for each $(u,v) \in E$.
+  Let us choose an arbitrary total order $<$ on $V$.
+  For each edge $(u,v) \in E$, if $u<v$, there is a route $s_{u,v},u,v,t_{u,v}$ in ${\cal R}$. 
+  All these arcs are of weight $0$. The set of arcs of G is the union of all arcs of the routes.
+  Note that, $(G,{\cal R})$ is of contention depth $2$, as required by the theorem statement.
    
-  Observe that the existence of a $d$-coloring of $H$ is equivalent to the existence of a $(d,1)$-periodic assignment
-  of $(G,{\cal R})$. Indeed, a $d$-coloring of $H$ can be seen as a labeling of its arcs by the integers
-  in $[d]$ and we have a bijection between $d$-colorings of $H$ and offsets of the routes of ${\cal R}$.
-  By construction, the constraint of having no collisions between the routes is equivalent to the fact that no two adjacent arcs have the same color. Therefore we have reduced arc coloring to \pra by a polynomial time transformation which concludes the proof. 
+  The existence of a $d$-coloring of $H$ is equivalent to the existence of a $(d,1)$-periodic assignment of $(G,{\cal R})$ with zero waiting time. Indeed, a $d$-coloring of $H$ can be seen as a labeling of its edges by the integers in $[d]$. It induces a bijection between $d$-colorings of $H$ and offsets of the routes of ${\cal R}$, which represent the edges of $H$. Having no collision on some vertex $v$ implies that all offsets of routes going through $v$ are different since all arcs are of weigth $0$. Hence, edges of $H$ incident to $v$, colored by the offsets are all of distinct colors. Therefore we have reduced arc coloring to \pazl by a polynomial time transformation which concludes the proof. 
  \end{proof}
  
- Remark that we have used zero weights in the proof. If we ask the weights to be strictly positive, which makes sense in our model since they represent the delay of physical links, it is easy to adapt the proof. We just have to set them so that in any route the weight at $u_1$ is equal to $d$ and thus equal to $0$ modulo $d$. We now lift this hardness result to the problem \pall.
+ Remark that we have used weigths of zero for all arcs in the proof. It is amso a restriction to the 
+ class of graphs for which \pazl is $\NP$-hard. We could ask the weights to be strictly positive, another restriction which makes sense in our model, since weights represent the delay of physical links. Then, we can prove $\NP$-completness using the same proof, by setting them to be all of size $d$.
 
-\begin{corollary}
-Problem \pall is $\NP$-complete on the class of routed networks of conflict depth two.
-\end{corollary}
-\begin{proof}
- We consider $((G,{\cal R}),P,\tau)$ an instance of \pra. We assume that no vertex is the first of some route and the last of another one. Remark that this condition is satisfied in the previous proof, which makes the problem \pra restricted to this kind of instance $\NP$-complete. 
- Let us define $d(r) = 2 \times \max_{r' \in {\cal R}} \lambda(r') + P$. We define $(G',{\cal R}')$ a symmetric routed network from $(G,{\cal R})$ where for every route we add a symmetric route with new arcs of opposite orientation and the same weights.
- We prove that the instance $((G',{\cal R'}),P,\tau,d)$ is in \pall if and only if $((G,{\cal R}),P,\tau)$ is in \pra.
- If $((G',{\cal R'}),P,\tau,d)$ is in \pall, then a $(P,\tau)$-assignment of $(G',{\cal R'})$ restricted to $\R$ is a $(P,\tau)$-assignment of $((G,{\cal R})$ since they cannot be any collision between routes of ${\cal R}$.
+
+%\begin{corollary}
+%Problem \pall is $\NP$-complete on the class of routed networks of conflict depth two.
+%\end{corollary}
+%\begin{proof}
+% We consider $((G,{\cal R}),P,\tau)$ an instance of \pra. We assume that no vertex is the first of some route and the last of another one. Remark that this condition is satisfied in the previous proof, which makes the problem \pra restricted to this kind of instance $\NP$-complete. 
+ %Let us define $d(r) = 2 \times \max_{r' \in {\cal R}} \lambda(r') + P$. We define $(G',{\cal R}')$ a symmetric routed network from $(G,{\cal R})$ where for every route we add a symmetric route with new arcs of opposite orientation and the same weights.
+ %We prove that the instance $((G',{\cal R'}),P,\tau,d)$ is in \pall if and only if $((G,{\cal R}),P,\tau)$ is in \pra.
+ %If $((G',{\cal R'}),P,\tau,d)$ is in \pall, then a $(P,\tau)$-assignment of $(G',{\cal R'})$ restricted to $\R$ is a $(P,\tau)$-assignment of $((G,{\cal R})$ since they cannot be any collision between routes of ${\cal R}$.
  
- Assume now that $((G,{\cal R}),P,\tau)$ is in \pra. First, remark that the waiting time of each route is by definition less than $P$ and thus we have for all $r\in {\cal R}$, $PT(r) \leq d(r)$. Moreover a $(P,\tau)$-assignment of $(G,{\cal R})$ can be extended into a $(P,\tau)$-assignment of $(G',{\cal R'})$ in the following way. For each route $r \in \cal{R}$ of last vertex $v$, the time at which the message arrives is $t(v,r)$, then we choose as offset for $\rho(r) \in \cal{R}'$ $-t(v,r) \mod P$. The symmetry ensures that each new route $\rho(r)$ in ${\cal R'}$ uses exactly the same time slots as $r$ on each of its node and thus avoid collisions.
-\end{proof}
+ %Assume now that $((G,{\cal R}),P,\tau)$ is in \pra. First, remark that the waiting time of each route is by definition less than $P$ and thus we have for all $r\in {\cal R}$, $PT(r) \leq d(r)$. Moreover a $(P,\tau)$-assignment of $(G,{\cal R})$ can be extended into a $(P,\tau)$-assignment of $(G',{\cal R'})$ in the following way. For each route $r \in \cal{R}$ of last vertex $v$, the time at which the message arrives is $t(v,r)$, then we choose as offset for $\rho(r) \in \cal{R}'$ $-t(v,r) \mod P$. The symmetry ensures that each new route $\rho(r)$ in ${\cal R'}$ uses exactly the same time slots as $r$ on each of its node and thus avoid collisions.
+%\end{proof}
 
-Let \minpra be the problem, given a routed network and an assignment, to find the minimal period $P$ such that there is a $P$-periodic assignment. 
+We now give a hardness proof which works for routed networks with small contention width (but large contention depth). We can in fact use the reduction to prove an inapproximability result. Let \minpazl be the problem, given a routed network and $\tau$, to find the minimal period $P$ such that there is a $P$-periodic assignment with waiting times zero (a positive instance for \pazl). 
+
 
 \begin{theorem}\label{th:inapprox}
-If $\P \neq \NP$, problem \minpra on the classes of routed networks of conflict width two cannot be approximated in polynomial time within a factor $n^{1-o(1)}$ where $n$ is the number of routes.
+If $\P \neq \NP$, the problem \minpazl on the classes of routed networks of conflict width two cannot be approximated in polynomial time within a factor $n^{1-o(1)}$ where $n$ is the number of routes.
 \end{theorem}
 
 \begin{proof}
- We reduce graph coloring to \pra. Let $H$ be a graph instance of the $k$-coloring problem. 
- We define ${\cal R}$ in the following way: for each vertex $v$ in $H$, there is a route $r_v$ in ${\cal R}$.
- Two routes $r_v$ and $r_u$ share an arc if and only if $(u,v)$ is an arc in $H$; this arc is the only one shared by these two routes. All arcs are of weight $0$. Note that it is easy to build a graph with such routes as in Figure~\ref{fig:reduction}.
- 
- Observe that the existence of a $k$-coloring of $H$ is equivalent to the existence of a $(k,1)$-periodic assignment in $G$, 
- by converting an offset of a route into a color of a vertex and reciprocally. Therefore if we can approximate the minimum value of $P$ within some factor, we could approximate the minimal number of colors needed to color a graph within the same factor. The proof follows from the hardness of approximability of finding a minimal coloring~\cite{zuckerman2006linear}.
+ We reduce graph coloring to \pazl. Let $H = (V,E)$ be a graph instance of the $k$-coloring problem. 
+ We define the routed network $(G,{\cal R})$ as in Prop.\ref{prop:monotonic}.
+ Let $G = (V', A)$ with $V' = \{v_e \mid e \in E\} \cup \{u^1, u^2 \mid u \in V\}$. 
+ Let $<$ be an arbitrary total order on $V$. 
+ For each vertex $u$ in $H$, there is a route $r_u$ in ${\cal R}$, whose first and last vertices
+ are $u^1$ and $u^2$. In between, the route contains all vertices $v_{(u,w)}$, following the order of the $w$.
+ $A$ is the set of all arcs of the routes in ${\cal R}$. The weights of all arcs is zero.
+ By construction, a contention vertex corresponds to an edge and belong to exactly the two routes corresponding to the vertices of the edge, hence the routed network is of contention width $2$.
+
+
+  The existence of a $k$-coloring of $H$ is equivalent to the existence of a $(k,1)$-periodic assignment in $G$, by converting an offset of a route into a color of a vertex and reciprocally. Indeed, since all weigths are zero, the absence of collision at contention point $v_e$, with $e = (u,w)$ is equivalent to the fact that the offset of $r_u$ and $r_w$ are different.
+
+   Therefore, if we can approximate the minimum value of $k$ within some factor such that there is a $(k,1)$-periodic assignment, we could approximate the minimal number of colors needed to color a graph within the same factor. The proof follows from the hardness of approximability of finding a minimal coloring~\cite{zuckerman2006linear}.
 \end{proof}
 
+The previous theorem implies that \pazl is $\NP$-complete on the class of routed networks with contention depth two. This also underlines the fact that, for general graphs, the best $P$ such that there is a 
+$(P,\tau)$-periodic assignment, may correspond to a very small load.
 
-In particular, this reduction shows that even with small maximal load, the minimal period can be large.
-
-    \begin{figure}[ht]
-    \centering
-    \scalebox{0.37}{
-    \begin{tikzpicture}
-    \tikzset{
-      LabelStyle/.style = { rectangle, rounded corners, draw,
-			  font = \bfseries },
-      EdgeStyle/.append style = {->} }
-      \SetGraphUnit{5}
+    %\begin{figure}[ht]
+   % \centering
+   % \scalebox{0.37}{
+    %\begin{tikzpicture}
+   % \tikzset{
+    %  LabelStyle/.style = { rectangle, rounded corners, draw,
+	%		  font = \bfseries },
+    %  EdgeStyle/.append style = {->} }
+    %  \SetGraphUnit{5}
       
       
-      \node[draw,circle] (s3) at (4, 2) {$s_2$}; 
-      \node[draw,circle] (s2) at (0, 4) {$s_1$}; 
-      \node[draw,circle] (s1) at (0, 6) {$s_0$}; 
+    %  \node[draw,circle] (s3) at (4, 2) {$s_2$}; 
+     % \node[draw,circle] (s2) at (0, 4) {$s_1$}; 
+      %\node[draw,circle] (s1) at (0, 6) {$s_0$}; 
 
-      \node[draw,circle] (t3) at (12, 3) {$t_2$}; 
-      \node[draw,circle] (t2) at (14, 4) {$t_1$}; 
-      \node[draw,circle] (t1) at (10, 2) {$t_0$}; 
+      %\node[draw,circle] (t3) at (12, 3) {$t_2$}; 
+      %\node[draw,circle] (t2) at (14, 4) {$t_1$}; 
+      %\node[draw,circle] (t1) at (10, 2) {$t_0$}; 
       
 
-      \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
-	\tikzset{
-      VertexStyle/.append style = {blue} }
-	\Vertex[x=-8,y=3]{1}
-	      \tikzset{
-      VertexStyle/.append style = {green} }
-	  \Vertex[x=-7,y=5]{2}
+      %\tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
+	%\tikzset{
+     % VertexStyle/.append style = {blue} }
+	%\Vertex[x=-8,y=3]{1}
+	 %     \tikzset{
+      %VertexStyle/.append style = {green} }
+	  %\Vertex[x=-7,y=5]{2}
 
-	    \tikzset{
-      VertexStyle/.append style = {red} }
-	  \Vertex[x=-6,y=4]{3}
-		\tikzset{
-      VertexStyle/.append style = {black} }
+	   % \tikzset{
+     % VertexStyle/.append style = {red} }
+	  %\Vertex[x=-6,y=4]{3}
+		%\tikzset{
+      %VertexStyle/.append style = {black} }
       
-      
-      \SetVertexNoLabel
-      \Vertex[x=2,y=5]{A}
-      \Vertex[x=4,y=5]{B}
-      \Vertex[x=10,y=5]{C}
-      \Vertex[x=12,y=5]{D}
-      \Vertex[x=6,y=3]{E}
-      \Vertex[x=8,y=3]{F}
-      \tikzset{
-      EdgeStyle/.append style = {green} }
-      \Edge(s2)(A)
-      \Edge ([yshift=-0.5ex]A.east)([yshift=-0.5ex]B.west)
-      \Edge(B)(C)
-      \Edge(C)(D)
-      \Edge(D)(t2)
-
-      
-      \tikzset{
-      EdgeStyle/.append style = {red} }
-       \Edge ([yshift=-0.5ex]E.east)([yshift=-0.5ex]F.west)
-      \Edge(s3)(E)
-      \Edge(F)(t3) 
-	\tikzset{
-      EdgeStyle/.append style = {blue} }
-      \Edge(s1)(A)
-     \Edge ([yshift=0.5ex]A.east)([yshift=0.5ex]B.west)
-      \Edge(B)(E)
-             \Edge ([yshift=0.5ex]E.east)([yshift=0.5ex]F.west)
-      \Edge(F)(t1)
-      
-	\tikzset{
-      EdgeStyle/.append style = {black,-} }
-
-      \Edge(1)(2)
-      \Edge(1)(3)
-    \node (1) at (-3,4){\Huge $\rightarrow$};
-%     
-%     \node (2) at (-7,0){\Huge H};
-%     \node (3) at (10,0){\Huge G};
-    \end{tikzpicture}
-    }
-    \caption{Reduction from k-coloring to \minpra}
-    \label{fig:reduction}
-    \end{figure}
+%       
+%       \SetVertexNoLabel
+%       \Vertex[x=2,y=5]{A}
+%       \Vertex[x=4,y=5]{B}
+%       \Vertex[x=10,y=5]{C}
+%       \Vertex[x=12,y=5]{D}
+%       \Vertex[x=6,y=3]{E}
+%       \Vertex[x=8,y=3]{F}
+%       \tikzset{
+%       EdgeStyle/.append style = {green} }
+%       \Edge(s2)(A)
+%       \Edge ([yshift=-0.5ex]A.east)([yshift=-0.5ex]B.west)
+%       \Edge(B)(C)
+%       \Edge(C)(D)
+%       \Edge(D)(t2)
+% 
+%       
+%       \tikzset{
+%       EdgeStyle/.append style = {red} }
+%        \Edge ([yshift=-0.5ex]E.east)([yshift=-0.5ex]F.west)
+%       \Edge(s3)(E)
+%       \Edge(F)(t3) 
+% 	\tikzset{
+%       EdgeStyle/.append style = {blue} }
+%       \Edge(s1)(A)
+%      \Edge ([yshift=0.5ex]A.east)([yshift=0.5ex]B.west)
+%       \Edge(B)(E)
+%              \Edge ([yshift=0.5ex]E.east)([yshift=0.5ex]F.west)
+%       \Edge(F)(t1)
+%       
+% 	\tikzset{
+%       EdgeStyle/.append style = {black,-} }
+% 
+%       \Edge(1)(2)
+%       \Edge(1)(3)
+%     \node (1) at (-3,4){\Huge $\rightarrow$};
+% %     
+% %     \node (2) at (-7,0){\Huge H};
+% %     \node (3) at (10,0){\Huge G};
+%     \end{tikzpicture}
+%     }
+%     \caption{Reduction from k-coloring to \minpazl}
+%     \label{fig:reduction}
+%     \end{figure}
     
 \section{The Star Routed Network} \label{sec:star_routed_network}
   
    
+   \todo{Simplifier la présentation du réseau physique, expliquer ici qu'il est symmétrique car full duplex.
+   Donner le routed network correspondant. Donner une représentation canonique du routed network -> besoin d'un poids et de deadline. Expliquer qu'on considère le temps de calcul 0}
     
        Let us define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. 
-      The graph $G$ has two sets of vertices, $S=\{s_0,...,s_{n-1}\}$ and $T=\{t_0,...,t_{n-1}\}$ of cardinality $n$ and two special nodes: the central source node {\bf $c_s$} and the central target node {\bf $c_t$}.
+      The graph $G$ has two sets of vertices, $S=\{s_0,\dots,s_{n-1}\}$ and $T=\{t_0,\dots,t_{n-1}\}$ of cardinality $n$ and two special nodes: the central source node {\bf $c_s$} and the central target node {\bf $c_t$}.
       There is an arc between {\bf $c_s$} and {\bf $c_t$} and for all $i$, there is an arc between $s_i$ and $c_s$ and between $t_i$ and $c_t$. All the symmetric arcs are also in the graph with the same weights.
       The forward routes are the directed paths $r_i = (s_i,c_s,c_t,t_i)$ and $\rho(r_i) = (t_i,c_t,c_s,s_i)$ which define a symmetric routed network. 
       The symmetric routed networks $(G, \{r_i,\rho(r_i)\}_{i<n})$ is called a \textbf{star routed network}. This topology may seem simplistic, but every network in which all routes share an arc can be reduced to a star routed network. It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_t,t_i)$ either as all equals (in that case, the problem is trivial, see Section \ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for different BBUs. This topology has conflict depth one (but a maximal conflict width), hence \pra can be solved in polynomial time.
@@ -627,12 +587,11 @@ In particular, this reduction shows that even with small maximal load, the minim
 
 \section{Assignments with no waiting time} \label{sec:PAZL}
   
-  In this subsection, we deal with a simpler version of the problem \pall.
-  We ask for a $(P,\tau)$-periodic assignment {\bf with all waiting times equal to $0$}, that is $d(r) = 2\lambda(r)$ and we call this restriction {\bf Periodic Assignment for Zero Latency} or \pazl. We study \pazl since it is simpler, in particular 
-  choosing the offset $m_r$ also sets the offset of the route $\rho(r)$ to $m_{\rho(r)} = m_{r} + \lambda(r) \mod P$.
-  We get better theoretical results and practical algorithms for \pazl than for \pall. Moreover, as we show in our experimentations of Section~\ref{sec:exp_PAZL}, this problem can very often be solved positively (albeit less often than the general problem). Finally, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to implement any buffering at all.    
-  
-   The problem \pazl is similar to the minimization of makespan in a two flow-shop with delays (see Section~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. With additional constraints we can get rid of the periodicity in the hardness proof, for instance if we consider that the central link is unidirectional, that is collisions can happen between messages going from $c_s$ to $c_t$ and messages  going from $c_t$ to $c_s$. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
+  In this subsection, we deal with the problem \pazl on a star routed network: 
+  we give several simple heuristics and an exact algorithm. We show in the experiments of Section~\ref{sec:exp_PAZL}, that \pazl can very often be solved positively, in particular when the load is moderate. This phenomenon has been studied in details in a following work~\cite{guiraud2020scheduling}, in which we 
+  solve \pazl for higher load using more complex, but polynomial time, algorithms. 
+
+   The problem \pazl is similar to the minimization of makespan in a two flow-shop with delays (see Section~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. With additional constraints we can get rid of the periodicity in the hardness proof, for instance if we consider that the shared link is unidirectional, that is collisions can happen between messages going from $c_s$ to $c_t$ and messages  going from $c_t$ to $c_s$. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
   On the other hand we show positive results:  when the period is large or when the routes are short there is always a solution to \pazl and it can be found in polynomial time. We also give a fixed parameter tractable algorithm which finds a solution to \pazl if there is one in time exponential in the number of routes only. 
   
 \subsection{Shortest-longest policy}
@@ -1253,7 +1212,7 @@ Also, remark that the number of different orders is $7!= 5,040$ since we have $8
 
  \section{Conclusion}
 
-In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in a star shaped fronthaul network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Longest-Shortest policy) or when the load is less than $80\%$ (Exhaustive search of compact assignments).  
+In this paper, we proposed two deterministic methods to establish a low latency periodic communication between BBUs and RRHs in a star routed network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Longest-Shortest policy) or when the load is less than $80\%$ (Exhaustive search of compact assignments).  
 When the load is higher, buffering is allowed in the BBUs and we propose the algorithm PMLS which finds a deterministic communication scheme with almost no additional latency.
  Our deterministic approach is vastly superior to the classical statistical multiplexing. This emphasizes that deterministic sources of traffic are always best dealt with in a deterministic manner.  
  % 
