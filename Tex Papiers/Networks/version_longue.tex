@@ -259,8 +259,8 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 	\subsection{Periodic assignment for low latency}
 
-      	The period $P$, as well as the size of a message $\tau$ are fixed in our $C-RAN$ settings, but not the buffering policy. Hence, the aim of this article is to find a valid assignment which minimizes the worst latency of the transmissions over the network, that is $TR(A)$.
-      	For simpler hardness proofs and easier reductions, we study the decision version of the optimization problem we are interested in, that we call \pall for  \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency. Each route must respects a time limit called a \emph{deadline}. These limits are encoded in a deadline function $d$, which maps to each route $r$ an integer such that $PT(r)$ must be less than $d(r)$.
+      	The period $P$, as well as the size of a message $\tau$ are fixed in our $C-RAN$ settings, but not the buffering policy. Hence, the aim of this article is to find a valid assignment which minimizes the worst latency of the transmissions over the network, that is $TR(A)$. We denote by \mintra, the problem of finding the minimal value of $TR(A)$, for a given period, message size and routed network .
+      	For simpler hardness proofs and easier reductions, we rather study the decision version of \mintra, that we call \pall for  \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency. Each route must respects a time limit called a \emph{deadline}. These limits are encoded in a deadline function $d$, which maps to each route $r$ an integer such that $TR(r)$ must be less than $d(r)$.
        
        % We will prove in Section~\ref{sec:complexity} that the problem \pra is $\NP$-complete, even in restricted settings.
      
@@ -268,7 +268,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
       \noindent {\bf Input:}  A routed network $(G,{\cal R})$, the integers $P$, $\tau$ and a deadline function $d$.
       
-      \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $PT(r) \leq d(r)$?
+      \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment of $(G,{\cal R})$ such that for all $r \in {\cal R}$, $TR(r) \leq d(r)$?
 
 	  In the next subsection, this problem is proved to be $\NP$-hard. In Section~\ref{sec:PALL} we study heuristics solving the search version of \pall (computing an assignment), also denoted by \pall for simplicity. In \pall, we have chosen to bound the process time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. It would be interesting to study the case of a constraint on the \emph{average} of the process times of the routes (or equivalently waiting times), which may be more relevant in other contexts.
 
@@ -361,7 +361,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness of \pazl with $\tau =1$. 
 	We give two alternate proofs that \pazl is $\NP$-complete.
 	The first proof works even for contention depth two. However, in Sec.\ref{sec:PAZL} we will see
-  	that for some graphs of contention depth $2$, called star routed network, and small load, \pazl can be solved in polynomial time.
+  	that for some graphs of contention depth $2$, called star routed networks, and small load, \pazl can be solved in polynomial time.
 	 For contention depth one, either the load is less than one and \pall can be solved using zero waiting time in linear time or there is no valid assignment. The second proof works for graphs with contention width $2$, that is even if the conflicts are locally very small, the problem is complex globally.   Finally, solving \pall is trivial on trees and it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, since it is a common property of real networks~\cite{de2011treewidth}.
  
 
@@ -406,9 +406,9 @@ If $\P \neq \NP$, the problem \minpazl on the classes of routed networks of conf
 \end{theorem}
 
 \begin{proof}
- We reduce graph coloring to \pazl. Let $H = (V,E)$ be a graph instance of the $k$-coloring problem. 
+ We reduce graph coloring to \pazl. Let $H = (U,E)$ be a graph instance of the $k$-coloring problem. 
  We define the routed network $(G,{\cal R})$ as in Prop.\ref{prop:monotonic}.
- Let $G = (V', A)$ with $V' = \{v_e \mid e \in E\} \cup \{u^1, u^2 \mid u \in V\}$. 
+ Let $G = (V, A)$ with $V = \{v_e \mid e \in E\} \cup \{u^1, u^2 \mid u \in U\}$. 
  Let $<$ be an arbitrary total order on $V$. 
  For each vertex $u$ in $H$, there is a route $r_u$ in ${\cal R}$, whose first and last vertices
  are $u^1$ and $u^2$. In between, the route contains all vertices $v_{(u,w)}$, following the order of the $w$.
@@ -422,21 +422,32 @@ If $\P \neq \NP$, the problem \minpazl on the classes of routed networks of conf
 \end{proof}
 
 The previous theorem implies that \pazl is $\NP$-complete on the class of routed networks with contention depth two. This also underlines the fact that, for general graphs, the best $P$ such that there is a 
-$(P,\tau)$-periodic assignment, may correspond to a very small load. We can build on the reduction of the previous theorem to prove that computing the minimum transmission time for a given routed network and period
-is hard to approximate.
-\todo{define the problem \mintra comme la version d'optimization de \pall}
+$(P,\tau)$-periodic assignment may correspond to a very small load. We can build on the reduction of the previous theorem to prove that \mintra, the problem of minimizing $TR(A)$, is hard to approximate.
 
 \begin{theorem}
-If $\P \neq \NP$, the problem \mintra cannot be approximated in polynomial time within a factor $n^{1-o(1)}$ where $n$ is the number of routes.
+If $\P \neq \NP$, the problem \mintra, on graphs of contention width two, cannot be approximated in polynomial time within a factor $n^{1-o(1)}$ where $n$ is the number of routes.
 \end{theorem}
 
 \begin{proof}
-$n$ est la période et le nombre de routes, qui vient du nombre de sommets du graphe à colorié qu'on simule.
-Faire un gadget qui force à la fin le fait que les $n$ routes $r_{v_i}$ arrivent chacune dans un sommet
-$v_i^1$ avec un temps dont les restes modulo $n$ sont égaux à une certaine valeur $t$.
-Il suffit de montrer qu'on force les $v_i$ à avoir comme offset $t + i \mod n$. Facile de forcer la distance relative de deux offsets.
-Ensuite, il suffit d'enchainer
-par exactement le gadget précédent. Faire une figure pour tout ça.
+ Every value in this proof is given modulo $n = |V|$, the period use in the reduction.
+ Again, we reduce graph coloring to \pazl. Let $H = (U,E)$ be a graph instance of the $k$-coloring problem.
+ We define a routed network $G = (V, A)$ in two parts. 
+ Let the elements of $U$ be $u_0,\dots, u_{n-1}$. There are $n$ routes in the network, denoted by $r_i$ for $i \in [n]$. In their first part, they go from $u_i^0$ to $u_i^1$, through many vertices that we later define. Moreover, $u_i^1 \in \cal{B}$, that is the potential waiting time is added at $u_i^1$. Assume that $r_i$ has offset $o_i$ and $r_j$ has offset $o_j$.
+ If $r_i$ and $r_i$ go through some vertex $v_{i,j,k}$, and we assume that $\lambda(r_i,v_{i,j,k}) = \lambda(r_j,v_{i,j,k}) + k$, then to avoid a collision, we have $o_i \neq o_j + k$. If $r_i$ and $r_j$ go through $v_{i,j,k}$ satisfying the previous constraints for all $k \neq l$, it implies $o_i = o_j + l$. 
+ It is very easy to choose the weigths of the two arcs incomning into $v_{i,j,k}$ to realize the previous condition, whatever the choice of weights of the previous arcs.
+
+We ensure, using the previous construction using the vertices $v_{i,j,k}$,
+that $o_{i} = o_{j} - j + i$. It implies that there is some $o$, such that 
+$o_{i} = o - i$ for all $i \in [n]$. Now, for each route $r_i$, we set the weight of the
+arc going to $v_i^1$, from the last vertex of the form $v_{i,j,k}$, to be $n-i$.
+With this construction, we have ensured, that (modulo $n$) the datagram of $r_i$ arrives at 
+$v_i^1$ at time $o$. 
+
+The second part of the routes is built exactly as in the proof of Th.~\th:inapprox}.
+Hence, the waiting time in the vertices $v_i^1$ play the exact same role as the offset
+in the graph of Th.~\th:inapprox}. Finally, set the weigths of the last arc going to $v_i^2$, 
+for all $i\in [n]$, such that, for all $i,j \in [n]^2$, $\lambda(r_i) = \lambda(r_j)$.
+Hence, valid assignments are in bijection with colorings of $H$, the waiting times corresponding here to the colors. To minimize $TR(A)$, $o$ must be $0$ and the waiting times should be minimal (but different). In other words, a valid assignment which minimizes $TR(A)$ is in bijection with a minimal proper coloring of $H$.
 \end{proof}
     %\begin{figure}[ht]
    % \centering
