@@ -298,7 +298,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
      \hline
      $n = |\cal{R}|$ & Number of routes\\
      \hline
-      $\omega(u,v)$ & Weight of the arc $(u,v) \in A$ \\
+      $\omega(a)$ & Weight of the arc $a \in A$ \\
       \hline
       $\lambda(u_i,r)$ & Latency of the vertex $u_i$ in $r$\\
          \hline
@@ -320,6 +320,96 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
       \end{tabularx}
       \end{center}
   
+
+        	\subsection{The Star Routed Network} \label{sec:star_routed_network}
+  
+		In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. 
+		We call \textbf{star routed network} $(G, \cal{R})$ if and only if $G$ has only two contention points $c_1$ and $c_2$, the route $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed network have contention depth two but a maximal contention width.
+
+
+		The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
+		The two contention points, $c_1$ and $c_2$, model the beginning of the shared link used from the RRHs to the BBUs, and the other end of the shared link used in the other direction. 
+		The computation in the BBU of an answer to a datagram on the route $r$ takes some times.
+		In the star routed network, this time is encoded in the weight of the arc between $c_1$ and $c_2$ in $r$. This weight is the time needed to go through the shared link, then to arrive at the BBU, plus the computation time and the time to return to the shared link, see Fig.~\ref{fig:star}.
+
+
+		Star routed network may seem simplistic, but every network in which all routes share an arc and satisfy a coherent routing condition can be modeled by a star routed network.
+		It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Sec.~\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
+
+      \begin{figure}
+       \begin{center}
+	 \scalebox{0.8}{
+\begin{tikzpicture}
+
+\tikzset{EdgeStyle/.style={<->,font=\scriptsize,above,sloped,midway}}
+  \SetGraphUnit{5}
+  
+  \node[draw,circle] (s3) at (0, 0) {$s_2$}; 
+  \node[draw,circle] (s2) at (0, 2) {$s_1$}; 
+  \node[draw,circle] (s1) at (0, 4) {$s_0$}; 
+
+  \node[draw,circle] (t3) at (8, 0) {$t_2$}; 
+  \node[draw,circle] (t2) at (8, 2) {$t_1$}; 
+  \node[draw,circle] (t1) at (8, 4) {$t_0$}; 
+  
+
+  \node[draw,circle] (cs) at (3, 2) {$c_s$}; 
+  \node[draw,circle] (ct) at (5, 2) {$c_t$}; 
+
+  
+  \Edge[label = $\Omega(s_0\,c_s)$](s1)(cs)
+  \Edge[label = $\Omega(...)$](s2)(cs)
+  \Edge[label = $\Omega(...)$](s3)(cs)
+  
+  \Edge[label = $\Omega(...)$](ct)(t1)
+  \Edge[label = $\Omega(...)$](ct)(t2)
+  \Edge[label = $\Omega(...)$](ct)(t3)
+  
+  \Edge(cs)(ct)
+
+  
+\end{tikzpicture}
+}
+
+  \end{center}
+  \caption{A star routed network}
+  \end{figure}
+	
+	
+  When solving \pall or \pazl on a star routed network, we can do several assumptions on the parameters of the star routed network  without loss of generality. We say that a star routed network is \textbf{canonical} (for a given period $P$) if the weights of the arcs between $c_1$ and $c_2$ ar in $[P]$ and the other are zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length ot its arc between $c_1$ and $c_2$. Moreover, $\lambda(r_0) = 0$. See Fig.~\ref{fig:canonical} for an example of a canonical star routed network.  
+  
+  \begin{proposition}\label{prop:canonical}
+   Let $I = ((G,{\cal R}), P, \tau , d)$, with $(G,{\cal R})$ a star routed network, then there is 
+   $I' = ((G',{\cal R}), P, \tau , d')$, with  $(G',{\cal R})$ a canonical star routed network, such that:
+     $$I \in \pall \Leftrightarrow I' \in \pall \text{ and } I \in \pazl \Leftrightarrow I' \in \pazl$$
+  \end{proposition}
+
+  \begin{proof}
+  Let us define $G'$ and $d'$ from $G$ and $d$ in such a way that there is a bijection 
+   between valid assignments of $I$ and $I'$, which proves the proposition.
+  
+  We set all arcs $(s_i,c_1)$ to zero, then we obtain the bijection between valid assigments of $I$ and $I'$
+  by setting $o_i' = o_i + \omega'(s_i,c_1)$ and $d'(i) = d(i) - \omega(s_i,c_1)$.
+  The weigths of the arcs $\omega'(c_2,t_i)$ are also set to $0$, it does not change the possible collisions
+  for an assignment but it changes the transmission time, hence we set $d'(r_i) = d'(r_i) - \omega(c_2,t_i)$. 
+
+  Let $a_i$ denotes the arc between $c_1$ and $c_2$ for the route $r_i$, we let 
+  $\omega'(a_i) = \omega(a_i) \mod P$. Again, it does not change the collisions since computing 
+  a possible collision is done modulo $P$. However, we must change $d'$ to be $d'(r_i) = d'(r_i) - \omega(a_i) / P$.
+
+  Finally, we assume w.l.o.g. that $\omega'(a_0)$ is the smallest among the $\omega'(a_i)$.
+  We let $\omega'(a_i) = \omega'(a_i) - \omega(a_0)$, which implies that $\omega'(a_0) = 0$.
+  All lengths between $c_1$ and $c_2$ change by the same value, hence collisions are not modified.
+  We change $d'(r_i)$ to  $d'(r_i) - \omega'(a_0)$.
+  \end{proof}
+
+   From now on, we assume that all star routed networks have the properties given in Proposition~\ref{prop:canonical}. To define an instance of \pall, it is enough to give the weights of the arcs 
+   $(c_1,c_2)$ for all routes, the period, the message size, and $d$ the deadline function. We need the same
+   input for \pazl but $d$.
+
+
+
+
 \section{Hardness of \pall and \pazl}
   \label{sec:complexity}
 
@@ -332,7 +422,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness of \pazl with $\tau =1$. 
 	We give two alternate proofs that \pazl is $\NP$-complete.
 	The first proof works even for contention depth two. However, in Sec.\ref{sec:PAZL} we will see
-  	that, for some graphs of contention depth $2$ called star routed networks, and small load, \pazl can be solved in polynomial time.
+  	that, for star routed networks, and small load, \pazl can be solved in polynomial time.
 	 For contention depth one, either the load is less than one and \pall can be solved using zero waiting time in linear time or there is no valid assignment. The second proof works for graphs with contention width $2$, that is even if the conflicts are locally very small, the problem is complex globally.   Finally, solving \pall is trivial on trees and it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, since it is a common property of real networks~\cite{de2011treewidth}.
  
 
@@ -355,6 +445,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
  
  Remark that we have used zero weigth for all arcs in the proof. It is a restriction to the 
  class of graphs for which \pazl is $\NP$-hard. We could ask the weights to be strictly positive, another restriction which makes more sense in our model, since weights represent the delay of physical links. Then, we can prove $\NP$-completness using the same proof, by setting them to be all of size $d$.
+
 
 We now give a hardness proof which works for routed networks with contention width two but large contention depth. Note that a vertex of contention depth one does not induce a collision and can be removed from the routed network without loss of generality. The presented reduction can be used to prove an inapproximability result. Let \minpazl be the problem, given a routed network and $\tau$, to find the minimal period $P$ such that there is a $P$-periodic assignment with waiting times zero (a positive instance for \pazl). 
 
@@ -484,146 +575,47 @@ Finally, set the weigths of the last arc going to $v_i^2$, for all $i\in [n]$, s
 %     \caption{Reduction from k-coloring to \minpazl}
 %     \label{fig:reduction}
 %     \end{figure}
-    
-\section{The Star Routed Network} \label{sec:star_routed_network}
+
+	We would like to prove hardness on even more restricted networks, in particular star routed networks.
+   The problem \pazl on star routed networks is similar to the minimization of makespan in a two flow-shop with delays (see Sec.~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. With additional constraints we can get rid of the periodicity in the hardness proof, for instance if we consider that the shared link is unidirectional, that is collisions can happen between datagrams going in both directions. This can be modeled by a single contention vertex and 
+   a loop on this vertex. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem, as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
   
-
-		
-
-		In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. 
-		We call \textbf{star routed network} $(G, \cal{R})$ if and only if $G$ has only two contention points $c_1$ and $c_2$, all routes are of the form $s_i,c_1,c_2,t_i$ and $\cal{B} = \{c_2\}$ (datagrams can wait in $c_2$). Star routed network have contention depth two but a maximal contention width.
-
-
-		The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
-		The two contention points, $c_1$ and $c_2$, model the beginning of the shared link used from the RRHs to the BBUs, and the other end of the shared link used in the other direction. 
-		The computation in the BBU of an answer to a datagram on the route $r$ takes some times.
-		In the star routed network, this time is encoded in the weight of the arc between $c_1$ and $c_2$ in $r$. This weight is the time needed to go through the shared link, then to arrive at the BBU, plus the computation time and the time to return to the shared link, see Fig.\ref{fig:star}.
-
-
-		Star routed network may seem simplistic, but every network in which all routes share an arc and satisfy a coherent routing condition can be modeled by a star routed network.
-		It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Sec.~\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
-
-
-		Donner la représentation canonique des stars routed network -> les arcs au milieu positif
-		et dans [P], les arcs de fin avec la longueur restante, comme dans la proposition suivante.
-		Donner une figure qui montre la canonicisation de l'exemple précédent.
-		Parler de first et second period.
-
-      \begin{figure}
-       \begin{center}
-	 \scalebox{0.8}{
-\begin{tikzpicture}
-
-\tikzset{EdgeStyle/.style={<->,font=\scriptsize,above,sloped,midway}}
-  \SetGraphUnit{5}
-  
-  \node[draw,circle] (s3) at (0, 0) {$s_2$}; 
-  \node[draw,circle] (s2) at (0, 2) {$s_1$}; 
-  \node[draw,circle] (s1) at (0, 4) {$s_0$}; 
-
-  \node[draw,circle] (t3) at (8, 0) {$t_2$}; 
-  \node[draw,circle] (t2) at (8, 2) {$t_1$}; 
-  \node[draw,circle] (t1) at (8, 4) {$t_0$}; 
-  
-
-  \node[draw,circle] (cs) at (3, 2) {$c_s$}; 
-  \node[draw,circle] (ct) at (5, 2) {$c_t$}; 
-
-  
-  \Edge[label = $\Omega(s_0\,c_s)$](s1)(cs)
-  \Edge[label = $\Omega(...)$](s2)(cs)
-  \Edge[label = $\Omega(...)$](s3)(cs)
-  
-  \Edge[label = $\Omega(...)$](ct)(t1)
-  \Edge[label = $\Omega(...)$](ct)(t2)
-  \Edge[label = $\Omega(...)$](ct)(t3)
-  
-  \Edge(cs)(ct)
-
-  
-\end{tikzpicture}
-}
-
-  \end{center}
-  \caption{A star routed network}
-  \end{figure}
-	
-	
-  When solving $\pall$ on a star routed network, we can do several assumptions on the parameters of the network  without loss of generality. 
-  
-  \begin{proposition}\label{prop:canonical}
-   Let $I = ((G,{\cal R}), P, \tau , d)$ be an instance of \pall, then there is another instance 
-   $I' = ((G',{\cal R}), P, \tau , d')$ such that:
-   \begin{itemize}
-    \item $I \in \pall \Leftrightarrow I' \in \pall$
-    \item $\Omega(c_s,c_t) = 0$
-    \item $\forall i<n, \, \Omega(s_i,c_s) =0$
-    \item $\forall i<n, \, \Omega(c_t,t_i) + \Omega(t_i, c_t) < P$
-   \end{itemize}
-  \end{proposition}
-
-  \begin{proof}
-   We explain how we build $G'$ and $d'$ from $G$ and $d$ in such a way that there is a bijection 
-   between the satisfying assignments of $I$ and $I'$, which proves the proposition.
-    
-  The central arc appears in every route, therefore when we change it, it does not change 
-  the satisfying assignments. If we subtract twice its weight to $d(r)$ for each $r$, and set its
-  weight to zero in $G'$, then the constraints $PT(r) \leq d(r)$ will be the same in $I$ and $I'$.
-      
-  In $G'$, the weights of the arcs $(s_i,c_s)$ is set to $0$ and $2\Omega(s_i,c_s)$
-  is subtracted to $d(r_i)$. Hence the deadline constraints are the same in $I$ and $I'$.
-  There is a bijection between the assignments of $I$ and $I'$ by mapping $m_i$ to $m_i + \Omega(s_i,c_s)$.
-  
-  Finally, we can subtract $P/2$ to $\Omega(c_t,t_i)$ and $\Omega(t_i,c_t)$ if we subtract $P$ to $d(r_i)$.
-  The constraints on collisions of message are modulo $P$ and thus do not change. The deadline constraints are left unchanged since the two modifications cancel out. Therefore to obtain $I'$, we remove $P/2$ enough time to each  $\Omega(t_i,c_t)$ and $\Omega(c_t,t_i)$ so that $\Omega(c_t,t_i) + \Omega(c_t,t_i)< P$. 
-  \end{proof}
-
-   %From now on, we assume that all star routed networks have the properties given in Proposition~\ref{prop:canonical}.
-  %Collisions between messages can only appear on the arc $(c_s,c_t)$ between forward routes or on the arc $(c_t,c_s)$
-  %between backward routes. The flow of messages in a star routed network is completely described by their repartition in two time windows of size $P$, the {\bf forward period} which contains all $[t(c_s,r)]_{P,\tau}$ with $r$ a forward route and the {\bf backward period} which contains all $[t(c_t,r)]_{P,\tau}$ with $r$ a backward route.
 
 \section{Assignments with no waiting time} \label{sec:PAZL}
   
   In this subsection, we deal with the problem \pazl on a star routed network: 
-  we give several simple heuristics and an exact algorithm. We show in the experiments of Section~\ref{sec:exp_PAZL}, that \pazl can very often be solved positively, in particular when the load is moderate. This phenomenon has been studied in details in a following work~\cite{guiraud2020scheduling}, in which we 
-  solve \pazl for higher load using more complex, but polynomial time, algorithms. 
-
-   The problem \pazl is similar to the minimization of makespan in a two flow-shop with delays (see Section~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. With additional constraints we can get rid of the periodicity in the hardness proof, for instance if we consider that the shared link is unidirectional, that is collisions can happen between messages going from $c_s$ to $c_t$ and messages  going from $c_t$ to $c_s$. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
-  On the other hand we show positive results:  when the period is large or when the routes are short there is always a solution to \pazl and it can be found in polynomial time. We also give a fixed parameter tractable algorithm which finds a solution to \pazl if there is one in time exponential in the number of routes only. 
+  we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Section~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for shorter routes and when the load is moderate. This sensibility t the load has been studied in details in a following work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher load using more complex, but polynomial time, algorithms. 
   
-\subsection{Shortest-longest policy}
+	\subsection{Shortest-longest policy}
     
 
-    We first present a simple policy, which works when the period is large with regard to the lengths of the routes.
-    The messages are sent in order from the shortest route to the longest route, without any gap between two messages in the forward period.
-    In other words, we assume that the route $r_i$ are sorted by increasing $\lambda(r_i)$ and we set $m_{r_i}$ the offset of $r_i$ to $i\tau$. We call this algorithm {\bf Shortest-Longest}.
-      
-     By definition, there are no collisions in the forward period and if the period is long enough, 
-     it is easy to see that in the backward period the order of the messages are the same as in the forward period and that no collision can occur. 
+    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. The datagrams are sent in order from the shortest route to the longest route, without any gap between two datagrams in the contention point $c_1$. We assume the routes $r_i$ are sorted by increasing $\lambda(r_i)$ and we set $o_{r_i}$ the offset of $r_i$ to $i\tau$. We call this algorithm {\bf Shortest-Longest}. By definition, there are no collision in $c_1$ and if the period is long enough, 
+     it is easy to see that in $c_2$ the order of the datagrams are the same as in the forward period and that no collision can occur. 
       
       
-      \begin{proposition} Let $(G, {\cal R})$ be a star routed network, and let $n\tau + 2(\lambda(r_{n-1}) - \lambda(r_{0})) \leq P$. There is a $(P,\tau)$-periodic assignment of $(G, {\cal R})$ with waiting times $0$ given by Shortest-Longest in time $O(n\log(n))$.\label{prop:SL}
+      \begin{proposition} Let $(G, {\cal R})$ be a canonical star routed network, and let $n\tau + \lambda(r_{n-1}) \leq P$. There is a $(P,\tau)$-periodic assignment of $(G, {\cal R})$ with waiting times $0$ given by Shortest-Longest in time $O(n\log(n))$.\label{prop:SL}
       \end{proposition}
       \begin{proof}
-       Since $m_{r_i} = i\tau$ and $n\tau < P$, $[t(c_s,r_{i})]_{P,\tau} = \{i\tau,\dots, (i+1)\tau -1\}$ and there are no collisions on the forward period.
-       
-       We may assume that $\lambda(r_{0}) = 0$, since removing $\lambda(r_{0})$ from every arc $(c_t,t_i)$ does not change the order on the length of the routes nor the collisions between messages.
-       Since $\lambda(r_{0}) = 0$, by hypothesis we have $n\tau + 2\lambda(r_{n}) \leq P$ which implies that
-       $[t(c_t,r_{i})]_{P,\tau} = \{2 \lambda(r_{i}) + i\tau, \dots,  2 \lambda(r_{i}) + (i+1)\tau -1\}$.
-       Since $ \lambda(r_{i}) \leq  \lambda(r_{i+1})$ by construction, we have  $2 \lambda(r_{i}) + i\tau -1 < 2 \lambda(r_{i+1}) + (i+1)\tau$ which proves that there are no collisions on the backward period. 
- The complexity of the algorithm is dominated by the sorting of the routes in $O(n\log(n))$. 
+       We assume that the star routed network is in canonical form, that is $\lambda(r_i)$ is the length
+       of the arc $(c_1,c_2)$ for $r_i$ and it is in $[P]$. Moreover, $\lambda(r_0) = 0$ and we have 
+       sorted the routes so that, for all $i$, $\lambda(r_i) \leq \lambda(r_{i-1})$.
+       Let $o_{r_i}$ be $i\tau$ for all $\tau$. Then, $[t(c_1,r_{i})]_{P,\tau} = \{i\tau,\dots, (i+1)\tau -1\}$ and since and $n\tau < P$, there is no collision on $c_1$. 
+
+       By definition, we have  $[t(c_2,r_{i})]_{P,\tau} = \{\lambda(r_{i}) + i\tau \mod P, \dots, \lambda(r_{i}) + (i+1)\tau -1 \mod P\}$. By hypothesis, $n\tau + \lambda(r_{n-1}) \leq P$, hence $[t(c_2,r_{i})]_{P,\tau} = [\lambda(r_{i}) + i\tau, \lambda(r_{i}) + (i+1)\tau -1]$. Since  $\lambda(r_i) \leq \lambda(r_{i-1})$, we have proven that $[t(c_2,r_{i})]_{P,\tau} \cap [t(c_2,r_{j})]_{P,\tau}$ for $i \neq j$. Hence, there is no collision on $c_2$ and the built assignment is valid.
+
+ 		The complexity of the algorithm is dominated by the sorting of the routes in $O(n\log(n))$. 
       \end{proof}
 
-      If the period is slightly smaller that the bound of Proposition~\ref{prop:SL}, a collision will occur on the first route in the backward period. Hence, this policy is not useful even as a heuristic for longer routes as confirmed by the experimental results of Subsection~\ref{sec:exp_PAZL}. 
+      If the period is slightly smaller that the bound of Prop.~\ref{prop:SL}, a collision with the $r_0$ on $c_1$. Hence, this policy is not useful even as a heuristic for longer routes as confirmed by the experimental results of Subsection~\ref{sec:exp_PAZL}. 
 
    
     \subsection{Greedy algorithm}
     
-    \textbf{TODO:} faire une preuve clean et montrer qu'on obtient des résultats assez bon,
-    citer notre autre papier qui fait l'étude en détail. Ici, l'algo FPT est suffisant, car 
+    \textbf{TODO:} faire une preuve clean. Ici, l'algo FPT est suffisant, car 
     on est sur des réseaux de 10/20 antennes.
     
-      Let $\frac{n\tau}{P}$ be the \textbf{load} of a star routed network. The load is the proportion of time slots used by messages on the central arc in a period. Therefore if the load is larger than $1$ there cannot be an assignment. We propose a greedy algorithm to build a $(P,\tau)$-periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore in the rest of the article we will be only concerned with load larger than $1/3$.
+      In a star routed network,  $\frac{n\tau}{P}$ is the \textbf{load} of a star routed network. The load is the proportion of time slots used by messages on the shared arc in a period. We propose a greedy algorithm to build a $(P,\tau)$-periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore, in the rest of the article we will be only concerned with load larger than $1/3$. In fact, in~\cite{guiraud2020scheduling}, we improve on $1/3$, proving there is always an assignment for load smaller than $0.4$ and with high probability for load less than $0.5$.
+
     
     \begin{proposition}
     There is a $(P,\tau)$-periodic assignment of a star routed network with waiting times $0$ if the load is less than $1/3$ and it can be found in time $O(n^2)$.
