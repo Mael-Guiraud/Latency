@@ -296,7 +296,7 @@ Graph init_graph_etoile(int nb, int P)
 	
 	int nb_routes = nb ;
 	int nb_bbu = nb;
-	int nb_total_arcs = nb_routes*3;
+	int nb_total_arcs = nb_routes*2+1;
 
 
 	//printf("%d %d %d %d %d\n",nb_bbu,nb_collisions,nb_real_collisions,nb_total_arcs,nb_routes);
@@ -305,10 +305,17 @@ Graph init_graph_etoile(int nb, int P)
 	g.kind = STAR;
 	g.nb_bbu = nb_bbu;
 	g.nb_collisions = 1;
+	g.contention_level = 2;
 	g.arc_pool = malloc(sizeof(Arc)*nb_total_arcs);
 	g.routes = malloc(sizeof(Route*)*nb_routes);
 	g.size_routes = malloc(sizeof(int)*nb_routes);
 	g.arc_pool_size = nb_total_arcs;
+	g.contention = malloc(sizeof(Route*)*nb_routes);
+
+	g.nb_levels = malloc(sizeof(int)*nb_routes);
+				
+	
+
 	for(int i=0;i<nb_total_arcs;i++)
 	{
 		init_arc(&g.arc_pool[i]);	
@@ -320,19 +327,25 @@ Graph init_graph_etoile(int nb, int P)
 
 	for(int j=0;j<nb_routes;j++)
 	{
+		//printf("route %d \n",j);
 		g.routes[index_route]=malloc(sizeof(Route)*3);
 		g.size_routes[index_route] = 3;
 
 		g.routes[index_route][0] =  &g.arc_pool[index_arc];
+		//printf(" %d %d lenght = %d \n",index_route,0,g.routes[index_route][0]->length);
 		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 		g.arc_pool[index_arc].nb_routes++;
 		g.arc_pool[index_arc].bbu_dest = index_route;
+		g.arc_pool[index_arc].contention_level = -1;
+		
+
 		index_arc++;
 		//Arc partagé
 		
 		g.routes[index_route][1] =  &g.arc_pool[nb_routes];
 		g.arc_pool[nb_routes].routes_id[g.arc_pool[nb_routes].nb_routes] = index_route;
 		g.arc_pool[nb_routes].nb_routes++;
+		g.arc_pool[index_arc].contention_level = 0;
 		
 
 		g.routes[index_route][2] =  &g.arc_pool[j];
@@ -348,8 +361,24 @@ Graph init_graph_etoile(int nb, int P)
 
 	g.arc_pool[nb_routes].period_f = calloc(P,sizeof(int));
 	g.arc_pool[nb_routes].period_b = calloc(P,sizeof(int));
+		for(int i=0;i<nb_total_arcs;i++)
+	{
+		int max = g.arc_pool[i].routes_id[0];
+		for(int j=1;j<g.arc_pool[i].nb_routes;j++)
+		{
+			max = (max>g.arc_pool[i].routes_id[j])?max:g.arc_pool[i].routes_id[j];
+		}
+
+		max = max+1;
+		
+		g.arc_pool[i].id_max = max;
+		g.arc_pool[i].routes_delay_f = calloc(max,sizeof(int));
+		g.arc_pool[i].routes_delay_b = calloc(max,sizeof(int));
+		g.arc_pool[i].routes_order_f = calloc(g.arc_pool[i].nb_routes,sizeof(int));
+		g.arc_pool[i].routes_order_b = calloc(g.arc_pool[i].nb_routes,sizeof(int));
 	
-	
+	}
+
 	return g;
 }
 

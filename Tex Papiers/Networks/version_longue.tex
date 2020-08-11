@@ -1,0 +1,1200 @@
+\documentclass[a4paper,10pt]{article}
+%\documentclass[10pt, conference, letterpaper]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage{graphicx,graphics} 
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{complexity}
+\usepackage{tkz-graph}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{setspace}
+\usepackage{icomma}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\usepackage{authblk}
+\usepackage[colorlinks=true,breaklinks=true,linkcolor=blue]{hyperref}
+
+
+\newcommand\rmatching{${\cal R}$-matching\xspace}
+\newcommand\mdelay{$\cal M$-delay\xspace}
+\newcommand\matchedgraph{{\bf matched graph}}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+
+\setlength{\parskip}{1ex} % Espace entre les paragraphes
+
+\newtheorem{fact}{Fact}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}{Corollary}
+
+% \renewcommand{\thefootnote}{\*}
+
+\newcommand{\todo}[1]{{\color{red} TODO: {#1}}}
+\newcommand\pazl{\textsc{pazl}\xspace}
+\newcommand\pall{\textsc{pall}\xspace}
+\newcommand\bra{\textsc{bra}\xspace}
+\newcommand\pra{\textsc{pra}\xspace}
+\newcommand\minpazl{\textsc{minpazl}\xspace}
+\newcommand\mintra{\textsc{minTRA}\xspace}
+%opening
+\title{Deterministic Scheduling of Periodic Messages with Low Latency for Cloud RAN}
+ 
+
+\author[1]{Dominique Barth}
+\author[1,2]{Ma\"el Guiraud}
+\author[1]{Yann Strozecki}
+\affil[1]{David Laboratory, UVSQ}
+\affil[2]{Nokia Bell Labs France}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Cloud-RAN (C-RAN) is an architecture for cellular networks, where processing units, previously attached to antennas, are centralized in data-centers. The main challenge, to fulfill protocol time constraints, is to minimize the latency of the periodic messages sent from the antennas to their processing units and back. We show that traditional statistical multiplexing suffers from high logical latency, due to collisions and buffering at nodes. Hence, we propose to use a \emph{deterministic} scheme for sending periodic messages \emph{without collision} in the network thus saving the latency incurred by buffering.
+
+We give several algorithms to compute such schemes for star routed networks, a common topology where one link is shared by all antennas. First, we show there is a solution without any buffering when the routes are short or the load is small. When the parameters are unconstrained, and buffering is allowed in processing units, we propose the PMLS algorithm adapted from a classical scheduling method. Experimental results show that even under full load,  PMLS finds a deterministic sending scheme with no logical latency most of the time. Using this algorithm on an artificially loaded network, we design low latency periodic sending schemes which do not disrupt random best effort traffic on the network. This article is an extended version of a previous work presented at ICT~\cite{Guir1806:Deterministic}.
+\end{abstract}
+
+
+\section{Introduction}
+
+Cloud Radio Access Network or C-RAN, have been proposed as a next generation mobile network architecture to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership.
+C-RAN is a centralized architecture, each antenna has a Remote Radio Head (RRH) which sends the signal to
+a BaseBand Unit (BBU) in a data-center\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}.
+The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by real-time virtualized network functions of a BBU. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul network} between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
+Our aim is to operate a C-RAN on a low-cost shared switched network.
+The question we address is the following: is it possible to schedule messages such that they do not collide in the network to avoid latency caused by queuing delays? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
+
+Let us expose briefly our model: the network topology is modeled by a directed weighted multigraph and a set of directed paths (routes) from source nodes (RRHs) to target nodes (BBUs) and back. Time is discretized and a unit of time or \emph{tic} corresponds to the time needed to transmit a minimal unit of data over the network. To obtain the best possible latency, we want to avoid any buffering in internal nodes of the graph, corresponding to switches of the network. We take advantage of the deterministic nature of the C-RAN messages, called datagrams, i.e. the dates of arrival of the datagrams are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that arrivals of all datagrams are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collision. By periodic process of period $P$, we mean that the network at times $t$ and $t+P$ is in the exact same state. 
+
+We assume that the route taken by each datagram emmited by some RRH is fixed, and there are no buffering allowed inside the network. Hence, we only have two sets of values that we can chose when building a periodic sending process, called a \emph{periodic assignment}: the time at which each datagram is sent by an RRH in the period, called an \emph{offset}, and the \emph{waiting time} in the BBU before the answer is sent back to the RRH. 
+
+
+When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a datagram must not collide with the datagrams sent by the others BBU/RRH in the same period, but also in the other periods. The latency, that is the time between the emission of a datagram and the complete return of its answer, must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long.
+% Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size. 
+ In this article, we assume that all RRHs send datagrams with the same periodicity, but are not synchronized. It means that the datagram of each RRH is available at a different time in the period, given by its offset.
+ In current cellular network, the RRHs are synchronized, and simulating our settings would cost a large additional latency, since datagrams should be buffered in their RRHs to honor their offsets. 
+Hence, the model we propose should be seen as a suggestion to design future cellular networks, where emissions of the RRHs are not synchronized. It can already model sensor networks in cars, logistic problems in production lines or multiprocessor systems, where periodic messages (or goods) must be scheduled over a bus, since we have a better handle on when these messages are generated.
+ 
+In this article, we focus on \emph{star routed networks}, which represent a simple but common topology,
+where all RRHs share a single link. We give efficient algorithms for two versions of the problems, called 
+\pall and \pazl, the second one requiring zero waiting time in the BBU. The algorithms are either polynomial or mildly exponential in $n$, the number of RRHs, and are able to compute periodic sending schemes
+for star shaped networks with tens of RRHs. The solutions we obtain are extremely good, with no 
+additional latency most of the time, eventhough buffering can only be done in the BBU. For more complex networks and synchronized RRHs, studied in a follow-up work~\cite{guiraud2020synchronized}, we need to allow buffering at each node to obtain good sending schemes.
+
+
+ \subsection*{Related works}
+
+  We show in this article that statistical multiplexing, even with a large bandwidth, does not comply with the latency requirements of C-RAN. Therefore, current solutions~\cite{pizzinat2015things,tayq2017real}  use dedicated circuits for the fronthaul. Each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches. This architecture is very expensive and hardly scales in the case of a mobile network composed of about $10,000$ base stations. The deterministic approach we propose has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. Several patents on concepts and mechanisms for DetNet have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. 
+     
+The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
+The problem \pall on a star routed network is very close to a two flow-shop scheduling problem~\cite{yu2004minimizing} with the additional constraint of periodicity. To our knowledge, all periodic scheduling problems are quite different from \pall. 
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem correspond to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
+
+The train timetabling problem~\cite{lusby2011railway} and its restriction, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem. Indeed, they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms \dots  In the same spirit, complex scheduling problems for time sensitive networks have also been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}.
+
+
+\subsection*{Outline}
+
+ In Sec.~\ref{sec:def}, we propose a model of the network and the periodic sending of datagrams along its routes.  We then introduce \pall to formalize the problem of sending periodic messages in a network without collision and its variant \pazl, with all waiting times zero. We present a simple but very common topology, the star routed network, with a single shared link, that is studied in the rest of the article. 
+ In Sec.~\ref{sec:complexity}, we prove that both \pazl and \pall are $\NP$-hard for very restricted classes of graphs, and that their optimization counterparts are hard to approximate. 
+ In Sec.~\ref{sec:PAZL}, we study the problem \pazl.
+ We provide polynomial time algorithms which work when the load or the routes are small, and an algorithm exponential in the number of routes only. We use them to provide experimental evidences that \pazl can be solved positively when the network is not too loaded or when the routes are small. In Sec.~\ref{sec:PALL}, we propose polynomial time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work well, even in extremely loaded networks. 
+Finally, in Sec.~\ref{sec:comparison}, we show how our solution largely outperforms stochastic multiplexing, even using a buffering policy taking into account the latency, or in the presence of additionnal random traffic in the network.
+
+
+
+\section{Modeling of the Problem}\label{sec:def}
+
+Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
+
+
+	\subsection{Routes and Contention Points}
+
+  	We study a communication network with pairs of source-destination nodes between which messages are sent periodically. The routing between each pair of such nodes is given: a \textbf{route} is a sequence of vertices $(u_0, \ldots , u_{l})$. A vertex appears only once in a route. Each vertex corresponds to a contention point, that is the beginning of a link of the communication network shared by several routes. Hence, a vertex appears in several routes, except the first and last vertex of a route, which are exclusive to the route and represent the source and the destination of the message. In a C-RAN network, the first vertex represents the sending of the message by the RRH and the last vertex represents the reception of the answer in the same RRH. 
+
+  	The set of routes is denoted by ${\cal R}$. A route is interpreted as a directed path in a directed multigraph constituted of all routes, where the sets of arcs of the route are disjoint. The routes contain no loops nor cycle, since all vertices of a route are different. Thus, the directed multigraph is acyclic. An arc in the multigraph may represent several physical links or nodes of the modeled network, which do not induce contention points. Each arc $(u,v)$ of a route $r$ is labeled by an integer weight $\omega(r,u)$. It represents the time elapsed between the sending of the message of the route $r$ in $u$ and its reception in $v$.
+
+  	On each route, we can buffer the message in the BBU. Since the BBU do not correspond to a contention point, we identify the BBU with the next contention point in the route. The set of these contention points with possible buffering is denoted by ${\cal B}$.
+  	A \textbf{routed network}, which models our telecommunication network, is a triple $N = (\cal{R},\,\cal{B},\,\omega)$. 
+
+
+    The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(r,u_i)= \sum\limits_{1 \leq j <i} \omega(r,u_j)$. It is the number of tics needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda(r)= \lambda(r,u_l)$. 
+
+\begin{figure}
+
+\begin{minipage}[c]{.45\linewidth}
+	
+	
+	\includegraphics[scale=0.5]{fronthaul}
+
+
+
+	 \end{minipage} 
+ \hfill
+ \begin{minipage}[c]{.45\linewidth}
+	
+	
+	\includegraphics[scale=0.5]{graphmodel}\\
+
+	 \end{minipage}
+	 
+\caption{A C-RAN fronthaul network and its corresponding routed network}
+\label{fig:fronthaul}
+\end{figure} 
+
+
+	 
+	 
+ 	\subsection{Dynamic of Datagrams Transmissions}
+	    
+ 		In this article, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. One of the authors is developing a prototype based on ethernet base-X~\cite{ieee_8023}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
+
+        In the process we study, a message called a {\bf datagram} is sent on each route from the source node. The \textbf{size} of a datagram is an integer, denoted by $\tau$, it is the number of tics needed by a node to emit the full datagram through a link.  In this paper, we assume that $\tau$ is the same for all routes. It is justified by our application to C-RAN, where all source nodes are RRHs sending the same type of message. There is no preemption: Once a datagram has been emitted, it cannot be fragmented during its travel in the network. 
+
+        Let $r=(u_0,\dots,u_l)$ be a route. In order to avoid contention, it is possible to buffer datagrams in the contention points in $\cal{B}$. An \textbf{assignment} $A$ of a routed network $N = (\cal{R},\,\cal{B},\,\omega)$ is a function which associates to each route $r \in \cal{R}$, the pair of integers $A(r) = (o_r,w_r)$.
+        The value $o_r$ is the \textbf{offset}, the time at which the datagram is available in the first vertex of $r$. The value $w_r$ is the \textbf{waiting time}: the datagram is buffered 
+        for $w_r$ tics in $u_j \in \cal{B}$, the vertex representing the BBU.
+ 		The \textbf{arrival time} of a datagram in the vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(r,u_i) + o_r $ if 
+ 		$i < j$ and $t(r,u_i) = \lambda(r,u_i) + o_r + w_r$ otherwise.
+
+ 		 Let $u_l$ be the last vertex of the route $r$, the \textbf{transmission time} of the datagram on 
+  		$r$ is denoted by $TR(r,A)$ and is equal to $\lambda(r) + w_r$ or equivalently $t(r,u_l) - o_r$. This is the total time taken by the process we study: the sending of the datagram from the RRH to the BBU and the return of the answer back to the RRH. We can decompose this time into $\lambda(r)$, the \emph{physical latency} of the process and $w_r$, the \emph{logical latency}. 
+  		We define the \textbf{transmission time} of an assignment $A$ as the worst transmission time of a route: $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(r,A)$. 
+
+
+
+
+ 	\subsection{Periodic Emission of Datagrams}
+
+	In the previous section, we have explained how \emph{one} datagram follows a route.
+	However, the process we model in this article is \emph{periodic}: for each period of $P$ tics, a datagram is ready to be sent, from each source node in the network, at its offset. The process is assumed to be infinite, since it should work for an arbitrary number of periods. For a given route, we use the same offset and waiting time in all periods, for simplicity of implementation in real networks and to make our problem more tractable from a theoretical perspective. Hence, at the same time of two different periods, all messages are at the same position in the network: the assignments built are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
+ 	Using a different offset for each route corresponds to sending their datagram at a different time in the period. This matches our hypothesis that the emissions of the RRHs are not synchronized (but they share a common global time).
+
+ 	Let $A$ be an assignment of a routed network $N = (\cal{R},\,\cal{B},\,\omega)$ is given.
+    Let us call $[r,u]_{P,\tau}$, the set of tics used by a datagram on $r$ at vertex $u$ in a period $P$, that is $[r,u]_{P,\tau} = \{t(r,u) + i \mod P \mid 0 \leq i < \tau \}$. This set of tics depends on $A$,
+    but $A$ is ommited in the notation, since it is always clear from the context.
+    Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.
+    The assignment $A$ is said to be \textbf{valid} if, for all contention points $u$ and routes $r_1$ and $r_2$ containing $u$, \emph{$r_1$ and $r_2$ have no collision}. 
+    The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages,
+    thus we say that $A$ is a valid $(P,\tau)$ assignment. When $P$ and $\tau$ clear from the context, 
+    we denote $[r,u]_{P,\tau}$ by $[r,u]$ and say that $A$ is a valid assignment. 
+
+     In the example of Fig.~\ref{fig:example}, the three routes are given by three different colors. If we let $P = 2$ and $\tau = 1$, then there is a $(2,1)$-periodic valid assignment without waiting time by taking $0$ as offset for each route.
+
+\todo{Mettre deux jeux de paramètres pour l'exemple, par exemple $\tau = 2$ et $P = 5$ ? Mettre les BBU.}
+
+  
+\begin{figure}[ht]
+    \begin{center}
+        \scalebox{0.47}{
+		\begin{tikzpicture}
+\tikzset{
+  LabelStyle/.style = { rectangle, rounded corners, draw,
+                       font = \bfseries },
+  EdgeStyle/.append style = {->} }
+  \SetGraphUnit{5}
+  \node[draw,circle] (s3) at (4, 2) {$s_2$}; 
+  \node[draw,circle] (s2) at (0, 4) {$s_1$}; 
+  \node[draw,circle] (s1) at (0, 6) {$s_0$}; 
+
+  \node[draw,circle] (t3) at (14, 7) {$t_2$}; 
+  \node[draw,circle] (t2) at (14, 4) {$t_1$}; 
+  \node[draw,circle] (t1) at (10, 2) {$t_0$}; 
+
+  
+  \SetVertexNoLabel
+  \Vertex[x=2,y=5]{A}
+  \Vertex[x=4,y=5]{B}
+  \Vertex[x=10,y=5]{C}
+  \Vertex[x=12,y=5]{D}
+  \Vertex[x=6,y=3]{E}
+  \Vertex[x=8,y=3]{F}
+  \tikzset{
+  EdgeStyle/.append style = {green} }
+  \Edge[label = 2](s2)(A)
+  \Edge[label = 1](A)(B)
+  \Edge[label = 2](B)(C)
+  \Edge[label = 1](C)(D)
+  \Edge[label = 1](D)(t2)
+
+  
+   \tikzset{
+  EdgeStyle/.append style = {red} }
+  \Edge[label = 2](s3)(E)
+  \Edge[label = 1](E)(F)
+  \Edge[label = 1](F)(C)
+  \Edge[label = 1](C)(D)
+  \Edge[label = 1](D)(t3) 
+     \tikzset{
+  EdgeStyle/.append style = {blue} }
+  \Edge[label = 1](s1)(A)
+  \Edge[label = 1](A)(B)
+  \Edge[label = 1](B)(E)
+  \Edge[label = 1](E)(F)
+  \Edge[label = 1](F)(t1)
+
+\end{tikzpicture}
+
+}
+  	\end{center}
+    \caption{A routed network with $((0,0),(0,0),(0,0)$ as a $(2,1)$-periodic assignment}
+    \label{fig:example}
+\end{figure}
+
+
+
+	\subsection{Periodic Assignment for Low Latency}
+
+      	The period $P$, as well as the size of a message $\tau$ are fixed in our $C-RAN$ settings, but not the buffering policy. Hence, the aim of this article is to find a valid assignment which minimizes the worst latency of the transmissions over the network, that is $TR(A)$. We denote by \mintra the problem of finding the minimal value of $TR(A)$, for a given period, message size and routed network.
+      	For simpler hardness proofs and easier reductions, we rather study the decision version of \mintra, that we call \pall for \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency. Each route must respect a time limit called a \emph{deadline}. These limits are encoded in a deadline function $d$, which maps to each route $r$ an integer such that $TR(r,A)$ must be less than $d(r)$.
+       
+       % We will prove in Section~\ref{sec:complexity} that the problem \pra is $\NP$-complete, even in restricted settings.
+     
+      \noindent {\bf Periodic Assignment for Low Latency} 
+
+      \noindent {\bf Input:}  A routed network $N$, the integers $P$, $\tau$ and a deadline function $d$.
+      
+      \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment of $N$ such that for all $r \in {\cal R}$, $TR(r,A) \leq d(r)$?
+
+	  In the next subsection, this problem is proved to be $\NP$-hard. In Sec.~\ref{sec:PALL}, we propose heuristics solving the search version of \pall (computing a valid assignment), also denoted by \pall for simplicity. In the definition of \pall, we have chosen to bound the transmission time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. 
+
+     We also consider a restricted version of \pall, requiring that \emph{all waiting times are equal to $0$} in the assignment. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the 
+     transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: there is no need to give $\cal{B}$ in the routed network, 
+     nor the deadline function and an assignment is just the offset of each route. Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.    
+  
+      An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
+
+	\begin{proposition} \label{prop:monotonic}
+	 For any odd $P$, and the deadline function $d(r) = \lambda(r)$ (zero waiting time), there is a routed network with a $(2,1)$-periodic assignment but no $(P,1)$-periodic assignment.
+	\end{proposition}
+
+	\begin{proof}
+      Let us build $N$, a generalization of the routed network given in Fig.~\ref{fig:example}. 
+      Let $n$ be an integer, the vertices of the routes are the $v_{i,j}$, with $0 \leq i < j <n$. 
+      There are $n$ routes denoted by $r_i$, for $i \in [n]$. The route $r_i$ is equal to $(v_i^1,v_{i,1},\dots,v_{i,n-1},v_i^2)$. The weights of the arcs are set so that $\lambda(r_i, v_{i,j}) - \lambda(r_j,v_{i,j})= P$, where $P$ is an odd number smaller than $n$. It is always possible by choosing appropriate values for $\omega(r_i,v_{i,j-1})$ and $\omega(r_j,v_{i-1,j})$. In such a graph, there is no $(P,\tau)$-periodic assignment with no waiting time, since the problem reduces to finding a $P$-coloring in a complete graph with $n > P$ vertices, the colors being the offsets of the routes.
+
+      If we consider a period of $2$, for all $i \neq j$, $\lambda(r_i, v_{i,j}) - \lambda(r_j, v_{i,j}) \mod 2 = 1$, hence two messages of same offset and size $1$ do not have a collision at $v_{i,j}$. Therefore, the assignment defined by $A(r_i) = (0,0)$ for all $i \in [n]$ is a valid $(2,1)$-periodic assignment of $N$.      
+\end{proof}
+
+
+      The following table summarizes the main notations used in the paper.
+      \begin{figure}
+      \begin{center}
+   \begin{tabularx}{\textwidth}{|c|X|}
+    \hline
+     $N = (\cal{R},\,\cal{B},\,\omega)$ & Routed network \\
+     \hline
+     $n = |\cal{R}|$ & Number of routes\\
+     \hline
+     $P$ & Period\\
+     \hline
+     $\tau$ & Size of a message\\
+     \hline
+     $\omega(r,u)$ & Weight of the arc $(u,v)$ of $r$ \\
+     \hline
+     $\lambda(r,u_i)$ & Length of the route $r$ up to $u_i$\\
+     \hline
+     $\lambda(r)$ & Length of the route $r$\\
+     \hline
+     $ [t(r,u)]$& Times used in the period by the route $r$ at vertex $v$\\
+     \hline 
+     $A$ & Assignment\\
+     \hline 
+     $A(r) = (o_r,w_r)$ & Offest and waiting time of the route $r$ given by $A$ \\
+     \hline 
+     $TR(A,r)$& Transmission time of the route $r$ for the assignment $A$\\
+     \hline 
+     $TR(A)$& Transmission time of the assignment $A$\\
+     \hline
+     $d(r)$ & Deadline of the route $r$\\
+     \hline
+
+      \end{tabularx}
+      \end{center}
+      \caption{Summary of the notations of the article.}
+      \end{figure}
+  	
+  	Let us introduce a few parameters quantifying the complexity of a routed network.
+	The \textbf{contention depth} of a routed network is the size of the longest route of the network minus one. It is the number contention points on the route, since the first and the last vertex are private to the route. The \textbf{width} of a vertex is the number of routes which contains it. By definition, 
+	the first and las vertex of a route are of width $1$, while all other vertices are of width at least $2$.
+	The \textbf{contention width} of a routed network is the maximal width of its vertices. 
+	Remark that a $(P,\tau)$-periodic assignment must satisfy that $P/\tau$ is larger or equal to its contention width. Now, let us fix $P$ and $\tau$, for a given vertex of contention width $c$, we define its \textbf{load} as $c\tau/P$. The load of the routed network is the maximum of the loads of its vertices. A routed network must have a load less or equal to one to admit a valid assignment.
+
+
+
+    \subsection{The Star Routed Network} \label{sec:star_routed_network}
+  
+	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$, we say it is a \textbf{star routed network} if and only the route $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed network have contention depth two but a maximal contention width of $n$.
+
+	The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
+	The two contention points $c_1$ and $c_2$, model the beginning of the shared link (used to go from the RRHs to the BBUs), and the other end of the shared link (used in the other direction). 
+	The computation in the BBU of an answer to a datagram on the route $r$ takes some time.
+	In the star routed network, this time is encoded in the weight of the arc between $c_1$ and $c_2$ in $r$. The weight $\omega(r,c_1)$ is the time needed to go through the shared link, then to arrive at the BBU, plus the computation time and the time to return to the shared link, see Fig.~\ref{fig:star}.
+
+
+		Star routed network may seem simplistic, but every network in which all routes share an arc and satisfy a coherent routing condition can be modeled by a star routed network.
+		It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Sec.~\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
+
+      \begin{figure}
+       \begin{center}
+	 \scalebox{0.8}{
+\begin{tikzpicture}
+
+\tikzset{EdgeStyle/.style={<->,font=\scriptsize,above,sloped,midway}}
+  \SetGraphUnit{5}
+  
+  \node[draw,circle] (s3) at (0, 0) {$s_2$}; 
+  \node[draw,circle] (s2) at (0, 2) {$s_1$}; 
+  \node[draw,circle] (s1) at (0, 4) {$s_0$}; 
+
+  \node[draw,circle] (t3) at (8, 0) {$t_2$}; 
+  \node[draw,circle] (t2) at (8, 2) {$t_1$}; 
+  \node[draw,circle] (t1) at (8, 4) {$t_0$}; 
+  
+
+  \node[draw,circle] (cs) at (3, 2) {$c_s$}; 
+  \node[draw,circle] (ct) at (5, 2) {$c_t$}; 
+
+  
+  \Edge[label = $\Omega(s_0\,c_s)$](s1)(cs)
+  \Edge[label = $\Omega(...)$](s2)(cs)
+  \Edge[label = $\Omega(...)$](s3)(cs)
+  
+  \Edge[label = $\Omega(...)$](ct)(t1)
+  \Edge[label = $\Omega(...)$](ct)(t2)
+  \Edge[label = $\Omega(...)$](ct)(t3)
+  
+  \Edge(cs)(ct)
+
+  
+\end{tikzpicture}
+}
+
+  \end{center}
+  \caption{A star routed network}
+  \end{figure}
+	
+	
+  When solving \pall or \pazl on a star routed network, a period, a message size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Fig.~\ref{fig:canonical} for an example of a canonical star routed network.  
+  
+  \begin{proposition}\label{prop:canonical}
+   Let $I = (N, P, \tau , d)$, with $N = (\cal{R},\,\cal{B},\,\omega)$ a star routed network, then there is 
+   $I' = (N', P, \tau , d')$, with  $N' = (\cal{R},\,\cal{B},\,\omega')$ a canonical star routed network, such that:
+     $$I \in \pall \Leftrightarrow I' \in \pall \text{ and } I \in \pazl \Leftrightarrow I' \in \pazl$$
+  \end{proposition}
+
+  \begin{proof}
+  Let us define $\omega'$ and $d'$ from $\omega$ and $d$ in such a way that there is a bijection 
+   between valid assignments of $I$ and $I'$, which proves the proposition. In this bijection,
+   the offsets $o_i$ for $I$ will be mapped to $o'_i$, while the waiting times remain the same.
+  
+  The routed network $N'$ is equal to $N$ except for the weight functio $\omega'$.
+  We set the weights of the arcs $(s_i,c_1)$ to zero in $N'$. We obtain the bijection between valid assigments of $I$ and $I'$ by setting $o_i' + \omega(r_i,s_i) = o_i $ and $d'(r_i) = d(i) - \omega(r_i,s_i)$. The weights $\omega'(r_i,c_2)$ are also set to $0$, it does not change the possible collisions
+  for an assignment but it changes the transmission time, hence we set $d'(r_i) = d'(r_i) - \omega(r_i,c_2)$
+  to preserve the bijection between assignments of $I$ and $I'$. 
+
+  We let $\omega'(r_i,c_1) = \omega(r_i,c_1) \mod P$. Again, it does not change the collisions since computing a possible collision is done modulo $P$. However, we must change $d'$ to be $d'(r_i) = d'(r_i) - \omega(r_i,c_1) + \omega'(r_i,c_1)$.
+
+  Finally, we assume w.l.o.g. that $\omega'(r_0,c_1)$ is the smallest weight among the weights ot the arcs
+  $(c_1,c_2)$. We let $\omega'(r_i,c_1) = \omega'(r_i,c_1) - \omega'(r_0,c_1)$, which implies that $\omega'(r_0,c_1) = 0$.  All lengths between $c_1$ and $c_2$ change by the same value, hence collisions are not modified. We change $d'(r_i)$ to  $d'(r_i) - \omega'(r_0,c_1)$ for all $i$.
+  \end{proof}
+
+   From now on, we may assume that a star routed network is canonical, using Prop.~\ref{prop:canonical}. To define an instance with a canonical star routed network of \pall, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the message size, and $d$ the deadline function. For an input of \pazl we can also ommit $d$.
+
+
+\section{Hardness of \pall and \pazl}
+  \label{sec:complexity}
+
+
+	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness of \pazl with $\tau =1$. 
+	We give two proofs that \pazl is $\NP$-complete.
+	The first proof works even for contention depth two. However, in Sec.\ref{sec:PAZL} we prove
+  	that, for star routed networks and small load, \pazl can be solved in polynomial time.
+	 For contention depth one, either the load is less than one and there is a valid assignment with zero waiting time or there is no valid assignment. The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. Finally, solving \pall is trivial on trees and it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, since it is a common property of real networks~\cite{de2011treewidth}.
+ 
+
+ \begin{theorem}
+\pazl is $\NP$-complete on the class of routed networks with contention depth two.
+\end{theorem}
+ \begin{proof}
+ \pazl is in $\NP$ since given an offset for each route in an assignment, it is easy to check whether there are collisions, in linear time in the multigraph.
+ 
+  Let $H=(V,E)$ be an undirected graph and let $P$ be its maximal degree. We consider the problem to determine whether $H$ is arc-colorable with $P$ or $P+1$ colors. The arc coloring problem is $\NP$-hard~\cite{holyer1981np} and we reduce it to \pazl to prove its $\NP$-hardness. To do that, we define from $H$ a routed network $N = ({\cal R},\, {\cal B},\, \omega)$ as follows. 
+
+  Let us choose an arbitrary total order $<$ on $V$.
+  For each edge $(u,v) \in E$, if $u<v$, there is a route $s_{u,v},u,v,t_{u,v}$ in ${\cal R}$. 
+  All these arcs are of weight $0$. Note that, $N$ is of contention depth $2$, as required by the theorem statement. Finally, $ {\cal B}$ needs not to be defined since we are solving \pazl.
+   
+  The existence of a $P$-coloring of $H$ is equivalent to the existence of a $(P,1)$-periodic assignment of $N$ with zero waiting time. Indeed, a $P$-coloring of $H$ can be seen as a labeling of its edges by the integers in $[P]$. It induces a bijection between $P$-colorings of $H$ and offsets of the routes of ${\cal R}$, which represent the edges of $H$. Having no collision on some vertex $v$ implies that all offsets of routes going through $v$ are different since all arcs are of weigth $0$. Hence, edges of $H$ incident to $v$, colored by the offsets are all of distinct colors. Therefore we have reduced arc coloring to \pazl by a polynomial time transformation which concludes the proof. 
+ \end{proof}
+ 
+ Remark that we have used zero weigth for all arcs in the proof. It is a restriction to the 
+ class of graphs for which \pazl is $\NP$-hard. We could ask the weights to be strictly positive, another possible restriction which makes more sense in our model, since weights represent the delay of physical links. Then, we can prove $\NP$-completness using the same proof, by setting all weights to $P$.
+
+
+We now give a hardness proof which works for routed networks with contention width two but large contention depth. Note that a vertex of contention depth one does not induce a collision and can be removed from the routed network without loss of generality. The presented reduction can be used to prove an inapproximability result. Let \minpazl be the problem, given a routed network and $\tau$, to find the minimal period $P$ such that there is a $(P,\tau)$-periodic assignment with waiting times zero (a positive instance for \pazl). 
+
+
+\begin{theorem}\label{th:inapprox}
+If $\P \neq \NP$, the problem \minpazl on the classes of routed networks of contention width two cannot be approximated in polynomial time within a factor $n^{1-o(1)}$ where $n$ is the number of routes.
+\end{theorem}
+
+\begin{proof}
+ We reduce the problem of finding the minimal vertex coloring of a graph to \minpazl. Let $H = (U,E)$ be a graph instance of finding the minimal vertex coloring.  We define the routed network $N$ from $H$ as in Prop.\ref{prop:monotonic}.
+ 
+ Let $<$ be an arbitrary total order on $V$. 
+ The vertices of $N$ are in the set $\{v_{u,v} \mid (u,v) \in E\} \cup \{u^1, u^2 \mid u \in U\}$. 
+ For each vertex $u$ in $H$, there is a route $r_u$ in ${\cal R}$, whose first and last vertices
+ are $u^1$ and $u^2$. In between, the route contains all vertices $v_{u,w}$, following the order of the $w$.
+ The weights of all arcs is zero. By construction, a contention vertex corresponds to an edge and belongs to exactly two routes representing the vertices of the edge, thus $N$ is of contention width $2$.
+
+  The existence of a $P$-coloring of $H$ is equivalent to the existence of a $(P,1)$-periodic assignment of $N$ without waiting time: identify the offset of a route with a color of a vertex. Indeed, since all weigths are zero, the absence of collision at contention point $v_{u,w}$ is equivalent to the fact that the offsets of $r_u$ and $r_w$ are different and reciprocally.
+
+   Therefore, if we can approximate the minimum value of $P$ within some factor such that there is a $(P,1)$-periodic assignment, we could approximate the minimal number of colors needed to color a graph within the same factor. The proof follows from the hardness of approximability of finding a minimal vertex coloring~\cite{zuckerman2006linear}.
+\end{proof}
+
+The previous theorem implies that \pazl is $\NP$-complete on the class of routed networks with contention width two. This also underlines the fact that, for general graphs, the best $P$ such that there is a 
+$(P,\tau)$-periodic assignment may correspond to a very small load. We can build on the reduction of the previous theorem to prove that \mintra, the problem of minimizing $TR(A)$, is hard to approximate too.
+
+\begin{theorem}
+If $\P \neq \NP$, the problem \mintra, on graphs of contention width two, cannot be approximated in polynomial time within a factor $n^{1-o(1)}$ where $n$ is the number of routes.
+\end{theorem}
+
+\begin{proof}
+We reduce the problem of finding the minimal vertex coloring of a graph to \mintra.
+ Let $H = (U,E)$ be a graph instance of finding the minimal vertex coloring. 
+ We define the routed network $N$ in two steps. 
+
+ Let the elements of $U$ be $u_0,\dots, u_{n-1}$. There are $n$ routes in $N$, denoted by $r_i$ for $i \in [n]$. In their first part, they go from $u_i^0$ to $u_i^1$, through vertices in $\{v_{i,j,k}\}_{i,j,k \in [n]}$that we later define. Moreover, $u_i^1 \in \cal{B}$, that is the waiting time is added at $u_i^1$. Assume that $r_i$ has offset $o_i$ and $r_j$ has offset $o_j$.
+ If $r_i$ and $r_i$ go through some vertex $v_{i,j,k}$, and  $\lambda(r_i,v_{i,j,k}) = \lambda(r_j,v_{i,j,k}) + k$, then to avoid a collision, the equation $o_i \neq o_j + k$ must be satisfied. If $r_i$ and $r_j$ go through $v_{i,j,k}$ satisfying the previous constraints for all $k \neq l$, it implies $o_i = o_j + l$. 
+ It is easy to choose the weigths of the two arcs going to $v_{i,j,k}$ to realize the previous condition, whatever the choice of weights of the previous arcs of the routes $r_i$ and $r_j$.
+
+We ensure, using the vertices $v_{i,j,k}$ for $k \neq i-j$,
+that $o_{i} = o_{j} + i - j$. It implies that there is some $o$, such that 
+$o_{i} = o - i$ for all $i \in [n]$. Now, for each route $r_i$, we set the weight of the
+arc going to $v_i^1$, from the last vertex of the form $v_{i,j,k}$ in $r_i$, to be $n-i$.
+With this construction, we have ensured, that the datagram of $r_i$ arrives at 
+$v_i^1$ at time $o$ modulo $n$, for all $i \in [n]$. 
+
+The second part of the routes, from $v_i^1$ to $v_i^2$ is built exactly as in the proof of Th.~\ref{th:inapprox}. Hence, the waiting time in the vertices $v_i^1$ plays the exact same role as the offset
+in the graph of Th.~\ref{th:inapprox}: the valid $(n,1)$-assignments are in bijection with colorings of $H$, the waiting times corresponding to the colors.
+
+Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, such that, for all $i,j \in [n]^2$, $\lambda(r_i) = \lambda(r_j)$.  When $TR(A)$ is minimal $o$ must be $0$, thus $TR(A)$ is equal to the maximal waiting time of $A$. Hence, the maximum waiting time is equal to the number of different waiting times. Thus, a valid $(n,1)$-assignment which minimizes $TR(A)$ is in bijection with a minimal proper coloring of $H$, which proves the theorem.
+\end{proof}
+    %\begin{figure}[ht]
+   % \centering
+   % \scalebox{0.37}{
+    %\begin{tikzpicture}
+   % \tikzset{
+    %  LabelStyle/.style = { rectangle, rounded corners, draw,
+	%		  font = \bfseries },
+    %  EdgeStyle/.append style = {->} }
+    %  \SetGraphUnit{5}
+      
+      
+    %  \node[draw,circle] (s3) at (4, 2) {$s_2$}; 
+     % \node[draw,circle] (s2) at (0, 4) {$s_1$}; 
+      %\node[draw,circle] (s1) at (0, 6) {$s_0$}; 
+
+      %\node[draw,circle] (t3) at (12, 3) {$t_2$}; 
+      %\node[draw,circle] (t2) at (14, 4) {$t_1$}; 
+      %\node[draw,circle] (t1) at (10, 2) {$t_0$}; 
+      
+
+      %\tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
+	%\tikzset{
+     % VertexStyle/.append style = {blue} }
+	%\Vertex[x=-8,y=3]{1}
+	 %     \tikzset{
+      %VertexStyle/.append style = {green} }
+	  %\Vertex[x=-7,y=5]{2}
+
+	   % \tikzset{
+     % VertexStyle/.append style = {red} }
+	  %\Vertex[x=-6,y=4]{3}
+		%\tikzset{
+      %VertexStyle/.append style = {black} }
+      
+%       
+%       \SetVertexNoLabel
+%       \Vertex[x=2,y=5]{A}
+%       \Vertex[x=4,y=5]{B}
+%       \Vertex[x=10,y=5]{C}
+%       \Vertex[x=12,y=5]{D}
+%       \Vertex[x=6,y=3]{E}
+%       \Vertex[x=8,y=3]{F}
+%       \tikzset{
+%       EdgeStyle/.append style = {green} }
+%       \Edge(s2)(A)
+%       \Edge ([yshift=-0.5ex]A.east)([yshift=-0.5ex]B.west)
+%       \Edge(B)(C)
+%       \Edge(C)(D)
+%       \Edge(D)(t2)
+% 
+%       
+%       \tikzset{
+%       EdgeStyle/.append style = {red} }
+%        \Edge ([yshift=-0.5ex]E.east)([yshift=-0.5ex]F.west)
+%       \Edge(s3)(E)
+%       \Edge(F)(t3) 
+% 	\tikzset{
+%       EdgeStyle/.append style = {blue} }
+%       \Edge(s1)(A)
+%      \Edge ([yshift=0.5ex]A.east)([yshift=0.5ex]B.west)
+%       \Edge(B)(E)
+%              \Edge ([yshift=0.5ex]E.east)([yshift=0.5ex]F.west)
+%       \Edge(F)(t1)
+%       
+% 	\tikzset{
+%       EdgeStyle/.append style = {black,-} }
+% 
+%       \Edge(1)(2)
+%       \Edge(1)(3)
+%     \node (1) at (-3,4){\Huge $\rightarrow$};
+% %     
+% %     \node (2) at (-7,0){\Huge H};
+% %     \node (3) at (10,0){\Huge G};
+%     \end{tikzpicture}
+%     }
+%     \caption{Reduction from k-coloring to \minpazl}
+%     \label{fig:reduction}
+%     \end{figure}
+
+	We would like to prove hardness for even more restricted networks, in particular star routed networks.
+   The problem \pazl on star routed networks is similar to the minimization of makespan in a two flow-shop with delays (see Sec.~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. If we relax the definition of routed network by allowing loops,
+   we can model a network with a single half-duplex shared link, that is collisions can happen between datagrams going in both directions. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem, as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
+  
+
+\section{Assignments with no waiting time} \label{sec:PAZL}
+  
+  In this subsection, we deal with the problem \pazl on a star routed network: 
+  we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Sec.~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for shorter routes and when the load is moderate. The sensivity to the load has been studied in details in a follow-up work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher load using more complex, but polynomial time, algorithms. 
+  
+	\subsection{Shortest-longest policy}
+    
+
+    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the routes have close remainders modulo the period. 
+    The algorithm is called {\bf Shortest-Longest}, it sends datagrams on the shared link from the route with the shortest arc $(c_1,c_2)$ to the longest. There is no idle time in the contention point $c_1$,
+    i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
+      
+      \begin{proposition} Let $N$ be a canonical star routed network, with $r$ the longest route. If $n\tau + \lambda(r) \leq P$ then there is a $(P,\tau)$-periodic assignment of $N$ with waiting times $0$ given by Shortest-Longest in time $O(n\log(n))$.\label{prop:SL}
+      \end{proposition}
+      \begin{proof}
+       By hypothesis, $N$ is in canonical form, hence $\lambda(r,s_i) = 0$ for all $i \in [n]$. Moreover, $\lambda(r_0) = 0$ and we assume the routes are sorted so that, for all $i$, $\lambda(r_i) \leq \lambda(r_{i-1})$ (equivalently $\lambda(r_i,c_1) \leq \lambda(r_{i+1},c_1)$. We fix $P$ and $\tau$. The algorithm Shortest-Longest set $o_{r_i} = i\tau$ for all $i \in [n]$. Then, $[t(r_{i}),c_1] = \{i\tau,\dots, (i+1)\tau -1\}$ and since $n\tau < P$, there is no collision on $c_1$. 
+
+       By definition, we have  $[t(r_{i},c_2)] = \{\lambda(r_{i}) + i\tau \mod P, \dots, \lambda(r_{i}) + (i+1)\tau -1 \mod P\}$. By hypothesis, $n\tau + \lambda(r_{n-1}) \leq P$, hence $[t(c_2,r_{i})] = \{\lambda(r_{i}) + i\tau, \dots, \lambda(r_{i}) + (i+1)\tau -1\}$. Since  $\lambda(r_i) \leq \lambda(r_{i-1})$, we have proven that $[t(c_2,r_{i})] \cap [t(c_2,r_{j})]$ for $i \neq j$. Hence, there is no collision on $c_2$ and the $(P,\tau)$-assignment built by Shortest-Longest is valid.
+
+ 		The complexity of the algorithm is dominated by the sorting of the routes in $O(n\log(n))$. 
+      \end{proof}
+
+      If the period is slightly smaller that the bound of Prop.~\ref{prop:SL}, there is a collision with $r_0$ on $c_1$. Hence, this policy is not useful as a heuristic for longer routes, as confirmed by the experimental results of Sec.~\ref{sec:exp_PAZL}. 
+
+   
+    \subsection{Greedy algorithm}
+    
+    \textbf{TODO:} faire une preuve clean. Ici, l'algo FPT est suffisant, car 
+    on est sur des réseaux de 10/20 antennes.
+    
+      In a star routed network, the load is equal to $\frac{n\tau}{P}$. The load is the number of tics used by datagrams on the shared arc in a period. We propose a greedy algorithm to build a periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore, in the rest of the article we will be only concerned with load larger than $1/3$. In fact, in~\cite{guiraud2020scheduling}, we prove that there is always an assignment for load smaller than $0.4$ and with high probability for load less than $0.5$.
+
+    
+    \begin{proposition}
+    There is an assignment of a star routed network with waiting times $0$ if the load is less than $1/3$ and it can be found in time $O(n^2)$.
+    \end{proposition}
+    \begin{proof}
+     We consider the forward period and cut it into consecutive intervals of size $\tau$ that we call macro-slots. The algorithm works by choosing an offset for each route in the following way: try all offsets which put the message in a yet not used macro-slot in the forward
+     period. Since the choice of an offset also sets the position of the message in the backward period, chose the first one which does not create a collision. We now prove that this algorithm always finds a $(P,\tau)$-periodic assignment without waiting time when $P \geq 3n\tau$ that is the load is less than $1/3$.
+     
+     Assume we are choosing the offset of the route $r_{k+1}$, we have at least $P - k \geq 3n - k$ free macro-slots in the forward period, since $P \geq 3n\tau$. Each of these $3n - k$ possible offset values translates into $3n - k$ positions of messages in the backward period. All these positions are separated by at least $\tau$ slots. There are already $k$ messages of size $\tau$ in the backward period. One such message can intersect at most $2$ potential positions since they are disjoint intervals. Therefore  amongst the possible $3n - k$ positions, there are  at least $3n - k -2k$ which are without collision. Since $k < n$, $3n - k -2k \geq 1$, which proves that the algorithm terminates and find a  $(P,\tau)$-periodic assignment. 
+   
+     This algorithm works with a complexity $O(n^2)$, since for the $k^{\text{th}}$ route we have to try at most $2k$ offsets before finding a correct one. We can test the $2k$ offsets of the backward period in time $O(k)$ by maintaining an ordered list of the intervals used by already set routes.
+     \end{proof}
+     \begin{figure}
+      \begin{center}
+      \includegraphics[width=0.48\textwidth]{ex3nt.pdf}
+      \end{center}
+      \caption{Forward and backward period, represented at step $k$ of the algorithm}
+      \end{figure}
+% 	\begin{algorithm}[H]
+% 	\caption{Greedy assignment}
+% 	\begin{algorithmic}
+% 	\REQUIRE ${\cal R}_{\cal C}$, period $P$
+% 	\ENSURE A P-periodic assignment in p $\leq P$, or FAILURE
+% 	\STATE $T$ a table of the macro slots of size $\tau$ in the forward period.
+% 	\STATE $L$ a list of free intervals in the backward period%$P2[P]$ slots backward period.
+% 	\FORALL{source $s$ in S}
+% 
+% 	\FORALL{free intervals $[a,b]$ in $L$}
+% 	\FORALL{ $a/\tau - \lambda(s) <j< b/\tau - \lambda(s)$ }
+% 	\IF{ $T[j] == FREE$}
+% 	\STATE $m_{s} \leftarrow j.\tau$
+% 	\STATE $T[j] = USED$
+% 	\STATE update $[a,b]$ in $L$
+% 	\STATE BREAK
+% 	\ENDIF
+% 	\ENDFOR
+% 	\ENDFOR
+% % 	
+% % 	\IF{No intervals are found for $s_i$}
+% % 	\STATE return FAILURE
+% % 	\ENDIF
+% % 	\ENDFOR
+% 
+% 	\ENDFOR
+% 
+% 	\end{algorithmic}
+% 	\end{algorithm}
+	
+This algorithm, contrarily to the previous one, may work well, even for loads higher than $1/3$.
+In fact, experimental data in Sec.~\ref{sec:exp_PAZL} suggest that the algorithm finds a solution when the load is less than $1/2$.
+
+
+\subsection{Compact assignment}
+
+In this section we show how every assignment without waiting time can be put into a canonical form.
+We use that to provide an algorithm which finds an assignment when it exists, in fixed parameter tractable time ($\FPT$) with parameter $n$ the number of routes (for more on parametrized complexity see~\cite{downey2012parameterized}). This is justified since $n$ is small in practice, from $10$ to $20$ in our settings, and the other parameters such as $P$, $\tau$ or the weights are large.
+
+Let $(G, {\cal R})$ be a star routed network and $m$ a $(P,\tau)$-periodic assignment.
+A set of routes $S$ is \textbf{coherent} if for all $r \in {\cal R}$, $r \in S$ if and only if $\rho(r) \in S$. We say that a coherent set $S \subseteq {\cal R}$ is \textbf{compact} for the assignment $m$ if there is a route $r_0 \in S$ such that the following holds:  
+for all coherent subsets $S'\subset S$ with $r_0 \notin S'$, if we remove $1$ from all offsets of routes in $S'$ then there is a collision with a route of $S \setminus S'$. We say that $m$ is compact if ${\cal R}$ is compact for $m$. 
+% 
+% 
+% $r_1,r_2 \in {\cal R}$ two forward routes (resp. two backward routes) and 
+%  We say that there is no gap between $r_1$ and $r_2$ in $\mathcal{M}$ if $\lambda(r_1,c_s) + \tau = \lambda(r_2,c_s)$ (resp. $\lambda(r_1,c_t) + \tau = \lambda(r_2,c_t)$). It means that the message of $r_2$ goes through the central arc just after the message of $r_1$ withtout wasting time. We say that a set of routes ${\cal R}$ is \textbf{compact} for the assignment $\mathcal{M}$ if for all forward routes $r \in {\cal R}$ but one, there is another forward route $r'$ such that there is no gap between $r'$ and $r$ or between $\rho(r')$ and  $\rho(r)$. If the set of all routes is compact for an assignment, we say that the assignment is compact.
+
+\begin{proposition}
+Let $(G, {\cal R})$ be a star routed network. If there is a $(P,\tau)$-periodic assignment of $(G, {\cal R})$, then there is a compact $(P,\tau)$-periodic assignment of $(G, {\cal R})$.
+\end{proposition}
+\begin{proof}
+Consider $m$ a $(P,\tau)$-periodic assignment of $(G, {\cal R})$.
+Let $r_0$ be an arbitrary route of ${\cal R}$,  and let $COMP = \{r_0\}$. Now we apply the following algorithm to $m$ and $COMP$ while $COMP$ is not equal to ${\cal R}$.
+While there are no collisions, remove $1$ (modulo $P$) from all offsets of routes in ${\cal R} \setminus COMP$. Then choose a route $r$ in ${\cal R} \setminus COMP$ which would have a collision with a route $r'$ of $COMP$ if one is subtracted from its offset. If $r'$ is a forward route, let $COMP = COMP \cup \{r, \rho(r)\}$ otherwise  $COMP = COMP \cup \{r, \rho^{-1}(r)\}$. 
+
+We prove by induction that $COMP$ is compact for $m$ at every step of the algorithm.
+At the beginning $|COMP| = 1$ and the property is trivially satisfied. Then we assume that 
+$COMP$ is compact and that we add to it $\{r, \rho(r)\}$ at some step of the algorithm. W.l.o.g we assume that it is the offset of $r$ which cannot be decremented without collision. Consider $S \subseteq   COMP$, if $S$ contains an element different from $r$ and $\rho(r)$ by induction hypothesis we cannot decrement the offsets of $S$ without collision. If $S =\{r, \rho(r)\}$
+by construction, we cannot decrement the offset of $r$. 
+
+Finally, there are no collisions between routes at the beginning and since we modify $m$ only if it creates no collisions, the assignment we obtain at the end has no collisions between routes.
+\end{proof}
+
+We now present an algorithm to find a $(P,\tau)$-periodic assignment by trying all compact assignments.
+
+\begin{theorem}\label{th:FPT}
+$\pazl \in \FPT$ when parametrized by the number of routes.
+\end{theorem}
+\begin{proof}
+Let $(G, {\cal R})$ be a star routed network and let $m$ be a $(P,\tau)$-periodic assignment of $(G, {\cal R})$. First, remark that for a given assignment and a route $r_0$ with offset $m$, by removing $m$ to all offsets, we can always assume that its offset is zero. Therefore we need only to consider all \emph{compact assignments} with an \emph{offset $0$} for the route $r_0$. 
+We now evaluate the number of compact assignments and prove that it only depends
+on $n$ the number of routes which proves the theorem. To count the compact assignment, we describe a way to build a compact assignment $m$ by determining its offsets one after the other, which gives a bound on their number and an algorithm to generate them all. We fix an arbitrary total order on ${\cal R}$.
+First a route $r_0$ is chosen arbitrarily and its offset set to $0$. 
+Then at each step, if the offsets of $S \subseteq  {\cal R}$ have been chosen,
+we select the smallest route $r$ in $S$ for the order. 
+Then we select a route in $r' \in {\cal R} \setminus S$ and set its offset such that 
+if we remove $1$ then $r'$ collides with $r$. Note that if $r$ is a forward route (resp. a backward route) then $r'$ is also a forward route (resp. a backward route). We can also decide to definitly skip $r$. At a given step of the algorithm, if $|S| = 2i$, we have $n-i$ choices 
+of routes to select. The value of the offset of the selected route is entirely determined by the values of the offsets of routes in $S$. Therefore there are at most $n!$ different compact assignments with offset $r_0$ fixed to $0$. 
+
+The algorithm to solve \pazl builds every possible compact assignment as described here, and
+tests at each step whether there is a collision, which can be done in time linear in the size of 
+$(G, {\cal R})$. Therefore $\pazl \in \FPT$.
+\end{proof}
+
+We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Search of Compact Assignments}. To make it more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set of $k$ forward routes whose offsets has been fixed at some point in the search tree. We consider the times at which the messages of these routes cross the central arc. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ such that the central arc is free only during the intervals $(a_i,b_i)$. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor} $ forward routes can still use the central arc. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the one on $S$ and we backtrack in the search tree. The same cut is used for the backward routes.
+
+   \subsection{Experimental evaluation}\label{sec:exp_PAZL}
+   
+   In this section we compare the experimental results of the three presented algorithms.
+      Notice that both Greedy algorithm and Shortest-Longest are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, exhaustive search finds a solution if it exists, but works in exponential time in $n$. We compare the performance of the algorithms in two different regimes: routes are either short with regard to $\tau$, or unrestricted.
+      The defaults parameters, derived from the C-RAN context, are the following: the number of routes is $n = 8$, $\tau$ is equal to $2,500$ and $P=19531$ slots. It corresponds to slots of $64$ Bytes, messages of approximately $1$~Mbit and links of bandwidth $10$~Gbit/s when $P$ is one millisecond. 
+       The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i7 and the sources are compiled with gcc version 7.3.0. All experiments end in a few dozen of seconds.
+
+       In the following experiments we illustrate how well the algorithms work with regards to the load. To change the load, we fix the parameters $\tau$ and $n$ and modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
+      
+
+      \paragraph{Short routes}
+      
+      First we consider routes which are shorter than $\tau$: a message cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing randomly the weigths between $0$ and $700$ which corresponds to links of less than $5$km between a BBU and an RRH.
+
+       in which the weights of the arcs $(c_t,t_i)$ are drawn uniformly between $0$ and $700$ which corresponds to links of less than $5$km between a BBU and an RRH. 
+      
+      We evaluate the highest load under which a $(P,\tau)$-periodic assignment can be found by each algorithm when we change the number of routes. In our experiment, we generate $1,000$ random instances of \pazl for $1$ to $14$ routes. We represent in Figure~\ref{fig:short} the average of the maximal load for which each algorithm finds a solution. A bound on the maximum load is given by the exhaustive search which always finds a solution if there is one. 
+%       The lower and upper bound $n\tau$ and $3n\tau$ are also represented.
+      
+      \textbf{TODO:} dire ici qu'on se permet de changer la période pour qu'elle soit la plus petite possible. C'est pas très convaincant ... faut-il changer l'expérience ?  
+        
+      \begin{figure}[h]
+      \begin{center}
+	 \includegraphics[width=0.47\textwidth]{periode_petite.pdf}
+      \end{center}
+      \caption{Maximal load averaged over $1,000$ random instances}\label{fig:short}
+      \end{figure}
+      First, we remark that the exhaustive search finds a solution even when the load is high, especially when there are more routes.
+      It justifies the idea to look for an assignment without waiting time, in this short routes regime.
+      Second, remark that the Shortest-Longest algorithm is as good as the exhaustive search. While it was expected to be good with short routes, it turns out to be optimal for all the the random star routed networks we have tried. Therefore, we should use it in practical applications with short routes, instead of the exhaustive search which is much more computationally expensive. 
+      Finally, note that, on average, the greedy algorithm works when the load is less than $2/3$ which is twice better than the theoretical lower bound. This algorithm seems to depends on the load only and not on the number of routes.
+      
+        \paragraph{Long routes}
+      
+      We now want to understand the performance of these algorithms when the size of the routes is unbounded. In this experiment we fix the number of routes to $8$ and the weights of the arcs $(c_t,t_i)$ are drawn following a uniform distribution in $[P]$. We represent in Figure~\ref{fig:long} the percentage of success of each algorithm, for load from $100\%$ down to $40\%$.
+      
+\begin{figure}[h]
+
+       \begin{center}
+      \includegraphics[width=0.47\textwidth]{echec_longues.pdf}
+      \end{center}
+       
+      \caption{Success rate for $8$ routes over $1,000$ random instances}\label{fig:long}
+     \end{figure}
+      
+      In this regime, the performances of Shortest-Longest are abysmal since it depends on the difference between the longest and the smallest route which is large here. On the other hand, the greedy algorithm has a performance not so far from the case of short routes, which is expected since it does not directly depend on the size of the route. In fact, if we do the previous experiment  (for short routes) but with long routes, we find that, on average, the greedy algorithm finds a solution when the load is less than $59\%$.
+      
+      When the load is larger than $50\%$, the exhaustive search finds more solutions than the greedy algorithms which justifies its use. However, for load larger than $80\%$ there are many instances for which there are no solutions to \pazl.
+      It means that with long routes and high load, looking for an assignment without waiting time is far too restrictive. That is why we present algorithms for the general \pall problem in our next section. We will test them on $8$ long routes and a load between $100\%$ and $80\%$, parameters for which, as shown here, there are often no assignment without waiting times.
+      
+      The computation time of the exhaustive search is bounded by $O(n!)$ as shown in Theorem~\ref{th:FPT}, 
+      but it can be much better in practice, either because it finds a solutions quickly or because a large part of the tree of 
+      compact assignments is pruned during the algorithm. We study the evolution of the running time  of the algorithm when $n$ grows in the following experiment. The weights of the arcs $(c_t,t_i)$ are drawn following a uniform distribution between $0$ and $20,000$ slots. We chose  $95\%$ of load.  The table of Figure~\ref{fig:table} shows the time before the exhaustive search ends, for $8$ to $16$ routes, averaged on $100$ random star routed networks. This shows that for less than $16$ routes, which corresponds to all current topologies, the algorithm is efficient enough, but we should improve it further to work on more routes.
+      
+      \begin{figure}[h]
+         \begin{center}
+         \begin{tabularx}{0.5\textwidth}{|l|X|X|X|X|X|}
+    \hline
+   $n$ & $8$ & $10$& $12$&$14$& $16$\\
+    \hline
+   Time (s) & $6.10^{-5}$&$8.10^{-4}$&$2.10^{-2}$& $0.4$& $11$\\
+    \hline
+      \end{tabularx}
+      \end{center}
+      \caption{Running time of the exhaustive search.}
+      \label{fig:table}
+      \end{figure}
+      
+         \section{Solving \pall on Star Routed Networks}\label{sec:PALL}
+    
+    In this section, we consider the more general \pall problem on star routed networks. The messages are allowed to wait in the target vertices (BBUs) to yield more possible assignments. Hence, we allow the process time of a route to be greater than twice the weights of the route, but it is bounded by its deadline.
+
+	\subsection{Simpler networks}
+		
+		
+	Often in real networks, the length of the routes are not arbitrary and we may exploit that to solve \pall easily. For instance if all the weights on the arcs $(c_t,t_i)$ are the same, we can replace them all by $0$ and subtract this weight to the deadlines. It corresponds to a situation where all the BBUs are in the same data-center and have the same processing power. The assignment in that case is trivial, just send all messages so that they follow each other without gaps in the central arc. Since the arcs $(c_t,t_i)$ are of weight $0$, all messages will go through $(c_t,c_s)$ on their way back in the same order and thus do not collide. 
+	
+	Another possible assumption would be that all deadlines are sufficiently large, larger than the longest route.
+	It happens when all the arcs $(s_i,c_s)$ of the original star routed network are the same or almost the same.
+		
+	 \begin{theorem}\label{th:asym}
+	 Let $(G,{\cal R})$ be a star routed network with $n$ routes and let $P \geq n\tau$. Assume that the deadline function 
+	 satisfies for all $r\in {\cal R}$, $d(r) \geq \displaystyle{\max_{r' \in  {\cal R}} 2\lambda(r')}$. Then, there is a $(P,\tau)$-periodic assignment and it can be built in time $O(n)$.
+% 	 $d = \max_{i,j} |\Omega(s_i,c_s) - \Omega(s_j,c_s)$. There is a $(P,\tau)$-periodic assignment with process time $2\, \displaystyle{\max_{r\in {\cal R}} \lambda(r) + d}$ and it can be built in time $O(n)$.
+	 \end{theorem}
+      \begin{proof}
+      W.l.o.g. say that $r_0$ is the longest route. The idea is to set the waiting times of all routes so their messages behave exactly as the message of $r_0$.        
+        The offset of the forward route $r_i$ is set to $i\tau$, which ensures that there are no collisions on the arc $(c_s,c_t)$ as soon as $P \geq n\tau$ which is the minimal possible period. The waiting time of the route $r_i$ is $w_i = 2(\lambda(r_{0}) - \lambda(r_{i}))$.
+        
+        The time at which the message of the route $r_i$ arrives at the vertex $c_t$ on its way back is $t(c_t,\rho(r_i)) = w_i + i\tau + 2\lambda(r_{i})$. By replacing $w_i$ by its value we obtain $t(c_t,\rho(r_i)) =  i\tau + 2\lambda(r_{0})$
+        As a conclusion there are no collisions on the arc $(c_t,c_s)$ as soon as the period is larger than $n\tau$ (there are no gaps between the messages). The process time of the route $r_i$ is $PT(r_i) = w_i + 2\lambda(r_{i}) $. We obtain $PT(r_i) = 2\lambda(r_{0})$ which is by hypothesis less than $d(r_i)$.
+	Finally the complexity is $O(n)$ since we have to find the maximum of the length of the $n$ routes and the computation of each $w_i$ is done by a constant number of arithmetic operations.
+     \end{proof}
+     
+    
+     \subsection{A two stage approach}
+     
+     We can decompose any algorithm solving \pall in two parts: first set the offsets of the forward routes and then knowing this information set the offset of the backward routes or equivalently the waiting times.   
+     
+     First, in order to minimize the period needed to send the messages of the forward route, we set the offsets of the forward routes so that all messages have no collisions on the central arc and such that there are no free slots between the end of a message on the central arc and the beginning of the next one.
+    % In the following policies, the offsets of the forward routes will be chosen so that all messages have no collisions on the central arc and such that there are no free slots between the end of a message on the central arc and the beginning of the next one. It is done to minimize the period needed to send the messages of the forward route.
+     The offsets of the forward routes are then defined by the order of the messages through the central arc. We propose to study the following orders. 
+	\begin{itemize}
+	 
+	 \item Longest-Shortest on Routes (LSR): Decreasing order on the length of the routes.
+	 \item Shortest-Longest on Routes (SLR): Increasing order on the length of the routes. 
+	 \item Longest-Shortest on last Arc (LSA): Decreasing order on the length of the arcs $(c_t,t_i)$.
+	 \item Shortest-Longest on last Arc (SLA): Increasing order on the length of the arcs $(c_t,t_i)$. This sending order yields a $(P,\tau)$ periodic assignment in which all the $w_i = 0$, if the period is large enough (see proposition \ref{prop:SL}).
+	 \item Random: A random order of the routes (RO).
+	\end{itemize}
+
+%    \todo{On peut commenter la partie suivante si on a pas fini}
+    We also study another way to fix the offsets of the forward routes. Instead of packing all messages so that they follow each other
+    in the central arc, we allow time between them. The order of the message is random and we consider two variations. 
+    Either the time between two messages on the central arc is random and we call this policy Random Order and Random Spacing (RORS) or the space between two consecutive messages is always the same and we call this policy Random Order and Balanced Spacing (ROBS).
+ 	
+    We denote by \bra (backward routes assignment) the problem \pall where the offsets of the forward routes are also given as input.
+    In the rest of the section we will study different methods to solve \bra either by polynomial time heuristics or by an FPT algorithm. The methods to solve \bra are then combined with the proposed policies for fixing the offsets of the forward routes
+    to solve \pall.  
+   
+   \subsection{Greedy scheduling of backward routes}
+    
+    Consider a forward route $r_i$, whose offset is $m_{r_i}$ and its backward route is $\rho(r_i)$.
+%     We define the {\bf deadline} of $\rho(r_i)$ as $m_{r_i} + T_{max} - \Omega(s_i,c_s)$, that is the latest time at which the message can go out of $c_t$ such that $PT(r_i) \leq T_{max}$.
+    We say that a backward route $\rho(r_i)$ is {\bf eligible} at time $t$ if $m_{i} +  \lambda(r_i) + \Omega(c_t,t_i) \leq t$, that is the message of the route $\rho(r_i)$ arrives at $c_t$ before time $t$ when $w_i = 0$.
+    
+    The first algorithm we propose to solve \bra is a greedy algorithm which sets the offset $m_{\rho(r_i)}$ of the 
+    backward routes. It prioritizes the routes with the earliest deadline to best satisfy the
+    constraint on the process time. Set $t=0$ and repeat the following: find $s \geq t$ the first time for which there is an eligible route with its offset not fixed. Then amongst all eligible routes at time $s$ choose the one with the smallest deadline, fix its offset to $s - \Omega(c_t,t_i) $ and set $t = s + \tau$.
+    
+    This algorithm does not take into account the periodicity. Say that $t_0 = t(c_t,r)$ such that $r$ is the first backward route selected by the algorithm. Then if all backward routes $r$ are such that $t(c_t,r)$ is smaller than $t_0 + P - \tau$,
+    by construction, there are no collisions on the central arc.
+    However, if a route $r$ has a larger $t(c_t,r)$, since we should consider everything modulo $P$, 
+    it may collide with another backward route. Therefore we must adapt the greedy algorithm of the previous paragraph by finding $s \geq t$ the first time for which there is an eligible route with its offset not fixed and \emph{such that there are no collisions if a message go through the central arc at time $s$}. 
+    
+    Algorithm~\ref{alg:GD} is the formal description of the previous algorithm. 
+     The function  min\_non\_assigned(eligible\_time) returns the non assigned route with the smallest time eligible time. The function update(t,free\_intervals) removes an interval of size $\tau$ beginning at t, which correspond to the message,  from free\_intervals.
+     
+      \begin{algorithm}\label{alg:GD}
+     \caption{ Greedy deadline ({\bf GD}) }
+     \begin{algorithmic}
+     \REQUIRE A routed network $(G,{\cal R})$, a period $P$, packet size $\tau$, the deadlines $d_i$, the offsets $m_i$
+     \ENSURE $(P,\tau)$-periodic assignment of $(G,{\cal R})$, or failure
+    \STATE  ${\cal H} \leftarrow$ empty set //{\em set of eligible routes with their deadline}
+        \STATE  free\_ intervals $\leftarrow$ [0,$P$] //{\em list of intervals of free slots}
+   
+     \FORALL{route $r_{i}$}
+%      \STATE  deadline[$r_i$]  $\leftarrow$  $m_{i} + T_{max} - \Omega(s_i,c_s)$
+     \STATE  eligible\_time[$r_i$] $\leftarrow$ $m_{i} +  \lambda(r_i) + \Omega(c_t,t_i)$
+       \ENDFOR
+       
+       \WHILE{There is some non-assigned routes}
+       \IF{${\cal H}$ is empty}
+       \STATE $r_i$ $\leftarrow $ min\_non\_assigned(eligible\_time)
+       \STATE insert(${\cal H}$,$r_i$,$d_i$).
+       \ENDIF
+      
+       \STATE $r \leftarrow $ extract\_min(${\cal H}$)
+       \STATE t $\leftarrow$ next\_free\_interval(free\_intervals, t) //{\em if there is no more free interval of size $\tau$, the algorithm fails}
+       \STATE $w_i \leftarrow$ t - eligible\_time[$r_i$]
+       \STATE update(t,free\_ intervals)
+       \STATE t $\leftarrow$ t + $\tau$
+       \FORALL{routes $r_i$ with  eligible\_time[$r_i$] $\leq$ t}
+ \STATE insert(${\cal H}$,$r_i$).
+       \ENDFOR
+       \ENDWHILE
+     \end{algorithmic}
+     \end{algorithm}
+
+
+    The complexity of Algorithm~\ref{alg:GD} is in $O(n\log(n))$, using the proper data structures.
+    The set of eligible routes must be maintained in a binary heap
+    to be able to find the one with smallest deadline in time $O(\log(n))$. 
+    To deal with the possible collisions, one maintains a list of the intervals
+    of time during which a message can be sent on the arc $(c_t,c_s)$. Each time the offset of a 
+    route is fixed an interval is split into at most two intervals in constant time. 
+    Since the algorithm goes over the elements of this list at most twice when doing an insertion
+    or looking for the next free interval, the time needed to maintain it is $O(n)$. 
+  
+     \subsection{Earliest deadline scheduling}\label{sec:braheuristic}
+     
+     
+     The problem \bra is the same as the following scheduling problem if we forget the periodicity. Given a set of jobs with \emph{release times} and  \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be finished before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution which minimizes the time at which the last job is scheduled. On the other hand if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
+     The  polynomial time algorithm  which solves this scheduling problem is similar to the greedy algorithm presented in the previous section. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there are no solutions, which proves that the algorithm is in polynomial time.
+     
+     The problem \bra is reduced to this scheduling problem. The backward routes are the jobs, the size of a message is the running time of a job, the deadline of a route is the deadline of the corresponding job and the smallest time at which it is eligible is the release time. Let us call {\bf Minimal Latency Scheduling (MLS)} the algorithm which transforms \bra into the described scheduling problem to solve it in polynomial time.
+     
+     Let us denote by $y_i$ the time at which the message of the route $r_{\rho(i)}$ cross the node $c_t$,
+     that is $y_i = m_{\rho(i)} + \lambda(i)$. Let us denote by $y_{min}$ and $y_{max}$ the smallest and largest value of the $y_i$'s. When MLS finds an assignment $m$, it always satisfies $PT(r) < d(r)$ for all $r$. If $y_{max}- y_{min} \leq P -\tau $, then all messages cross $c_t$ in the same period and 
+     the scheduling algorithm guarantes that there are no collision. However, if $y_{max}- y_{min} > P -\tau $, then we must take into account the periodicity by computing the $y_i$ modulo $P$ and the solution we obtain by MLS may have a collision. Since the scheduling algorithm minimizes $y_{max}$, it may work sometimes (as shown in Sec.~\ref{sec:resultsPALL}), but not for all instances. 
+     
+     
+     We now present a variant of the previous algorithm that we call {\bf Periodic Minimal Latency Scheduling (PMLS)}. The aim is to deal with the periodicity, by modifiying the instance (without changing the assignments) so that the chance of finding a solution with $y_{max}- y_{min} \leq P -\tau $ are larger.  Remark that if an instance has a satisfying assignment, we can always guarantee that one route has a waiting time zero in a satisfying assignment. Hence, there is a route, which can be considered as the first one (release time $0$) and we may assume it has zero waiting time.
+     
+     Algorithm PMLS runs, for each route $r$, the algorithm MLS on an instance defined as follows. 
+     Let $RT(r)$ be the release time of $r$, we subtract it to all release times and deadlines.
+     Therefore $RT(r)$ is zero in this instance and the time at which the message of $r$ crosses $c_t$ is also set to zero, hence its waiting time is zero.  We then modify the instance so that all release times are in $[P-\tau]$: Each release time $RT(r_i)$ is replaced by $RT(r_i) \mod P$ and $RT(r_i) - (RT(r_i) \mod P)$ is subtracted to the deadline $d(r_i)$. Furthermore, if a release time of a route $r_i$ is between $ P-\tau$ and $P$, we set it to $0$ and $d(i) = d(i) - P$. 
+     
+     The deadline of each backward route is set to the minimum of their deadline and $P - \tau$. Because of this modification of deadlines, if MLS finds a solution for an instance, we have $y_{max}- y_{min} \leq P -\tau $, hence it is a $(P,\tau)$ periodic assignment.  The algorithm PMLS finds periodic assignments more often than MLS, because if MLS finds a solution with $r_i$ the route such that $y_i = y_{min}$, then this solution is found by PMLS when it selects $r_i$ as the first route. Since MLS is used at most $n$ times, the complexity of PMLS is in $O(n^3\log(n))$. Note that PMLS is a heuristic and may fail if all assignments have some $y_i$ larger than $P - \tau$.
+     
+%     \begin{algorithm}[H]
+%     \caption{ Minimized Scheduling Periodic (MSP)}
+%     \begin{algorithmic}
+%     \REQUIRE A routed network $(G,{\cal R})$,a period $P$, packet size $\tau$, $ T_{max}$, the offsets $m_i$
+%     \ENSURE $(P-\tau)-$periodic assignment of $(G,{\cal R})$, if it exists
+%   
+%     \FORALL{route $r_{t_i}$}
+%     \STATE  $w_i \leftarrow 0$
+%     \STATE period-end $\leftarrow m_{s_i} + \lambda(r_{s_i}) + t(c_t,r_{t_i}) + P$
+%     \FORALL{route $r_{t_j}$}
+%     \STATE deadline-route$ \leftarrow m_{s_j} + T_{max}-t(c_s,r_{s_j})$
+%     \STATE $deadline \leftarrow$ min(deadline-route,period-end)
+%     \ENDFOR
+%     
+%     \STATE Call (MS)
+% 
+%     
+%     \ENDFOR
+% 
+%     \STATE return the best $(P,\tau)$-periodic assignment, or FAILURE
+% 
+%     \end{algorithmic}
+%     \end{algorithm}
+
+\subsection{FPT algorithms for \bra and \pall}
+
+As a warm-up, we give a simple FPT algorithm for \bra which is practical,
+and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes in the second algorithm is yet too large to be useful in practice. 
+
+\begin{theorem}\label{th:braFPT}
+$\bra \in \FPT$ when parametrized by the number of routes.
+\end{theorem}
+\begin{proof}
+ Consider an instance of \bra, which can be characterized by a release time and a deadline for each route.
+ We will show that we can create a set of instances such that one of these instances has an assignment if and only if the original instance has an assignment. As for PMLS, for each route $r_j$, we consider the instance where $r_j$ has release time and waiting time zero ($RT(r_j) = y_j = 0$). The release times and deadlines of all routes are changed so that all release times are less than $P$ as in the transformation described for PMLS. If there is an assignment such that for all $i$, $y_i < P-\tau$, then the periodicity does not come into play for this assignment and the algorithm MLS will find it as explained in Sec.~\ref{sec:braheuristic}.
+
+ Now, remark that if there is a periodic assignment for an instance, then there is a periodic assignment satisfying for all $i$, $y_i \leq 2P - \tau$.  Indeed, if there is a $i$ such that $y_i > 2P$ in
+a periodic assignment, then setting $y_i = y_i - P$ cannot create a collision and improve the 
+process time of $r_i$ by $P$. Since $y_i - P > P$, it is a valid assignment, that is the route $r_i$ sends its message after its release time. Moreover, for all $i \neq j$, it is not possible that $2P-\tau < y_i \leq 2P$, since by construction $y_j = 0$ and it would induce a collision.
+ 
+
+From a periodic assignment satisfying that for all $i$, $y_i \leq 2P - \tau$, we define 
+a new instance whose periodic assignments are a subset of the periodic assignments of the original instance. Moreover, one of the periodic assignments of the new instance satisfies for all $i$, $y_i \leq P - \tau$ and will thus be found by MLS. Let $S$ be the set of routes $r_i$ such that  $P - \tau < y_i \leq 2P - \tau$. The new instance is defined by setting the release time of the routes in $S$ to $0$ and by subtracting $P$ to their deadlines. Then the considered periodic assignment is a solution of the new instance with all $y_i \leq P -\tau$. Moreover any solution of the new instance is a solution of the original one, since we have made the constraints harder.   
+
+The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
+\end{proof}
+
+The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases. Let us call this algorithm {\bf FPT-PMLS} for the rest of the article.
+
+
+\begin{theorem}\label{th:pallFPT}
+$\pall \in \FPT$ when parameterized by the number of routes.
+\end{theorem}
+\begin{proof}
+ Consider an instance of \pall which has a solution. We now characterize such a solution by a set of necessary and sufficient linear equations and inequations it must satisfy. 
+ For simplicity, we consider $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ and $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
+ Choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
+ 
+ The values $x_i$ and $y_i$ satisfies the following inequation: $y_i \geq x_i + 2\lambda(r_i)$.
+We may assume that the first route has release time and waiting time zero, 
+that is $x_0 = y_0 = 0$. We can also guarantee that all $x_i$ are less than $P-\tau$ if we modify
+the release times and deadlines without changing the possible assignments. As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
+and  when $y_i \geq P - \tau$ we replace $y_i \geq x_i + 2\lambda(r_i) $ by $y_i \geq x_i + 2\lambda(r_i) - P$ and we replace the deadline $d(r_i)$ by $d(r_i) -P$. In that way we guarantee that all $y_i$ are less than $P-\tau$.  
+ 
+ Since all $x_i$ and $y_i$ are in $[P-\tau]$, taking the values of $x_i$ and $y_i$ modulo $P$
+ does not change anything, which makes easy to express the absence of collisions between routes.
+ To express that there are no collision between forward routes, the following equations must be  satisfied: for all $i$, $x_i + \tau \leq x_{i+1}$. We assume that the routes are here indexed such that the $x_i$ are in ascending order.
+ Let $\sigma : [n] \rightarrow [n]$ be the permutation such that the $y_{\sigma(i)}$ are in ascending order.
+ To express that there are no collision between backward routes, the following equations must be  satisfied: for all $i$, $y_{\sigma(i)} + \tau \leq y_{\sigma(i+1)}$. Finally, the deadline of each route must be respected, that is for each $i$, $y_i \leq d(r_i)$. 
+
+ Let $S$ be the system of all the previous equations, by construction of $S$, any of its solutions seen as a choice of offsets is an assignment since there are no collisions in the forward and backward period between $0$ and $P$ and we have guaranteed that all routes meet their deadlines. However, the solutions of $S$ may have rational values, while offsets must be integers. 
+Remark that $x +e_1 \leq y + e_2$ implies $\lceil x \rceil +e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers. Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solution of $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any rounded solution of $S$ yields a solution of the considered instance of \pall.
+
+Now remark that the construction of $S$ depends on the choice of the order of the forward routes, the order of the backward routes, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems with $2n$ variables and a bitsize of the same order than the instance of \pall. Since solving each system can be done in polynomial time it proves the theorem.
+\end{proof}
+
+
+    \subsection{Experimental evaluation}
+    \label{sec:resultsPALL}
+    \subsubsection{Performances on random topologies }
+    
+    We set the number of routes to $8$ to make comparisons with the results of Sec.~\ref{sec:exp_PAZL} easier. 
+    We draw uniformly the weights of the arcs between $0$ and $20,000$. To simplify the experiments, 
+    we use \emph{the same deadline} for all routes. We define the {\bf margin} as the difference between the deadline and twice the longest route. The margin represents the \emph{logical latency} imposed by the communication process without taking into account the physical length of the network which cannot be changed. For a given star routed network, setting the margin or the deadline is the same, but when comparing different star routed networks with different size of routes, the margin is more relevant than the deadline.
+    In our experiments the margin ranges from  $0$ to $3,000$.
+   We look at two different regimes, a medium load of $80\%$ and a high load of $95\%$.
+   Considering smaller load is not relevant since we can solve the problem without waiting times as shown in Sec.~\ref{sec:exp_PAZL}. 
+   
+   We first try to understand what is the best choice of order for the first stage of the algorithm which is followed by the GD algorithm in this experiment. In Figure~\ref{fig:success80} and \ref{fig:success95}, we represent the success rate of the seven kind of orders with regards to the margin. The value is an average computed over $10,000$ random star routed networks. For RO, RORS and ROBS, we draw $1000$ random orders and count it as a success as soon as there is a solution for one order. Each random order drawn is used for RO, RORS and ROBS to make the comparison fairer.
+   
+
+\begin{figure}[h] 
+  \centering
+          \includegraphics[width=0.5\textwidth]{departs_gp_25000.pdf}
+      \caption{Success rate of different sending orders, $80\%$ load.}
+           \label{fig:success80}
+     \end{figure}
+     
+\begin{figure}[h] 
+  \centering
+    \includegraphics[width=0.5\textwidth]{departs_gp_21000.pdf}
+      \caption{Success rate of different sending orders, $95\%$ load.}
+      \label{fig:success95}
+          \end{figure}
+
+     First remark that our algorithms often finds assignments for $95\%$ of load and long routes which was not possible 
+     when disallowing waiting times (see Sec.~\ref{sec:exp_PAZL}). It justifies the interest of studying \pall rather than \pazl.
+          
+     According to our experiments, sending the messages from the shortest to the longest route or arc does not work well. It corresponds to the policy of Proposition~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending from the longest to the shortest route or arc works better and it seems that sorting the routes according to the length of the last arc rather than the route is better, at least in a loaded network. 
+     
+     Using many random orders is much better than our arbitrary choices of order. With a load of $95\%$, a solution is found with margin $0$ most of the time. The three random order policies have similar performances, but RO gives slightly more solutions than the two others ones, under high load and small margin. Hence, in the following experiments, we will always draw $1,000$ random orders using the policy RO to set the offsets of the forward routes.
+     
+      We now compare the performances of the four different algorithms used in the second stage. Since GD already finds assignments with margin $0$ on mild loads, it is more interesting to focus on the behavior of the algorithms with high load. In Figure~\ref{fig:success21000}, we represent the success rate of the four algorithms with regards to the margin,  computed over $10,000$ random star routed networks generated with the same parameters as previously. 
+     
+    \begin{figure} [h] 
+       \begin{center}
+      \includegraphics[width=0.5\textwidth]{retour_21000.pdf}
+      \end{center}
+      \caption{Success rate of GD, MLS, PMLS and FPT-PMLS, $95\%$ load}
+     \label{fig:success21000}
+     \end{figure}
+     
+      The MLS algorithm performs poorly, worst than GD, PMLS and FPT-PMLS, which shows that \emph{taking into account the periodicity} is fundamental.
+     The GD algorithm is close to $100\%$ success rate for margins larger than $1,500$ while the PMLS and FPT-PMLS algorithms find a solution for more than $99\%$ of the random instances, even \emph{with a margin $0$}. In other words, for very high load and no margin, there are very few instances for which we do not find an assignment. With a margin of $300$, which corresponds to about $15\mu$s of additional delay with the chosen parameters, we always find a solution. 
+     
+     It turns out that the performances of PMLS and FPT-PMLS 
+     are almost identical. Even with a load of $100\%$ and a margin of $0$, we have to draw $100,000$ random instances before finding one which can be solved by FPT-PMLS and not by PMLS. Since FPT-PMLS is of exponential complexity in $n$, it may not be relevant to use it. We now present the computing time of PMLS and FPT-PMLS to understand the size of instances which can be solved. To stress the algorithms, we set the margin to $0$ and the load to $95\%$. The table on Figure~\ref{fig:tps_fpt} shows the computation times of PMLS and  FPT-PMLS, averaged on $1,000$ instances. 
+
+
+     \todo{Est-ce que PMLS n'est pas meilleur si on ne demande pas une marge de 0 -> on compare la 
+     qualité des solutions obtenues}
+     
+          \begin{figure}[h] 
+       \begin{center}
+   \begin{tabularx}{0.5\textwidth}{|c|X|X|X|X|X|X|}
+    \hline
+    \# routes& $8$ & $12$ & $16$& $20$ & $24$\\
+    \hline
+    FPT-PMLS (ms) & $1.88$ &$5.98$&$47.75$&$209.2$&$1815$\\
+    \hline
+     PMLS (ms) & $0.07$ &$0.08$&$0.09$&$0.10$&$0.12$\\
+    \hline
+ Ratio & $27$ &$78$&$523$&$2122$&$14882$\\
+    \hline
+      \end{tabularx}
+      \end{center}
+   \caption{Computing time of PMLS and FPT-PMLS with regard to the number of routes}
+        \label{fig:tps_fpt}
+     \end{figure}
+    
+  The complexity of both these algorithm depends on the number of routes. As shown in Fig.~\ref{fig:tps_fpt}, the time complexity of PMLS seems linear on \emph{average}, while its theoretical worst case complexity is cubic. FPT-PMLS scales exponentially with the number fo routes as expected. Both algorithms are usable for instances of $20$ routes, but for $40$ routes or more FPT-PMLS becomes too slow. Since FPT-PMLS almost never finds a solution when PMLS does not and is much slower, one should always prefer to use PMLS. 
+
+    When evaluating the computing time of our method, we should take into account how many random orders are drawn. In our experiment, we draw $1,000$ random orders which may be $1,000$ time slower than using a single fixed order. There is a trade-off between the number of random orders and the success rate. 
+    We investigate the success rate of our algorithms with regards to the number of random orders drawn, a load of $95\%$ and a margin $0$. The table of Fig.~\ref{fig:randomdrawing} presents the success rate for different number of sending orders, averaged over $10,000$ instances, for GD, PMLS and FPT-PMLS.
+
+         \begin{figure}[h] 
+       \begin{center}
+   \begin{tabularx}{0.5\textwidth}{|c|X|X|X|X|X|X|}
+    \hline
+    \# orders& $1$ & $10$ & $100$& $1,000$& $10^{4}$&$10^{5}$\\
+    \hline
+    GD & $0.55$ &$6.05$&$35.44$&$77.43$&$90.1$&$92.4$\\
+    \hline
+  PMLS & $82.04$ &$98.84$&$99.71$&$99.80$&$99.83$&$99.83$\\
+    \hline
+    FPT-PMLS & $91.33$&$99.17$&$99.72$&$99.80$ &$99.83$&$99.83$\\
+    \hline
+      \end{tabularx}
+      \end{center}
+   \caption{Impact of the number of random sending orders}
+        \label{fig:randomdrawing}
+     \end{figure}
+
+	First, observe that the better the algorithm to solve $\bra$, the less random order it needs in stage one to achieve its best performances. In particular, FPT-PMLS has better results than PMLS for less than $1,000$ random orders, but not beyond. This justifies our choice to draw $1,000$ random orders, to obtain the best success rate within the smallest time.
+
+	The number of different orders is $7!= 5,040$ since we have $8$ routes and the solutions are invariant up to a circular permutation of the order. Hence, for $8$ routes it is possible to test every possible order. However the computation time of this method scales badly with $n$. The fact that PMLS and FPT-PMLS have already high success rates for $10$ random orders hints that even for larger $n$, drawing $1000$ random orders is sufficient to obtain optimal assignments.
+
+
+     \subsubsection{Harder Random Topologies}
+     
+     The previous experiments use instances where the weights of the arcs in the network are uniformly drawn in a large interval. However, it is quite natural to consider that most routes are of roughly the same length or can be arranged in two groups of similar lengths if the fronthaul network involves two data-centers.
+     
+     By Theorem~\ref{th:asym}, there is an assignment with margin equal to the difference
+     between the sizes of the routes. Hence if the routes have all almost the same size, the needed margin is small. Moreover, if the routes are drawn in a large interval, then the expected difference between the longest route and the second longest is large. This difference can be seen as a free waiting time for all routes, hence we expect to need little margin in this regime too. As a consequence, the harder instances should be for routes with length drawn in an interval of a moderate size compared to the period.
+     
+     The figures~\ref{fig:1grp} and~\ref{fig:2grp} show the cumulative distribution of the margin needed by PMLS to find an assignment computed on $10,000$ instances.
+     Figure~\ref{fig:1grp} represents the success rate of PMLS for instances where length of arcs are drawn in $[P-I,P+I]$, where $I$ goes from $0$ to $3200$. As expected the success rate decreases when the range increases until $I = 800$ and then increases again.  In the the most difficult settings, only $78\%$ of the instances can be solved with margin $0$, and we need a margin of $1,900$ to ensure that PMLS finds a solution.
+    
+     In Figure~\ref{fig:2grp}, we do the same experiment, except that the weight of arcs of half of the routes is drawn in $[P-I,P+I]$ and the length of the other half is drawn in $[P/2-I,P/2 + I]$. The situation is the same as for the previous experiment but with better success rates. 
+
+          
+              \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.5\textwidth]{departs_distrib1Grp.pdf}
+      \end{center}
+      \caption{Cumulative distribution of the margin needed to find an assignment}
+      \label{fig:1grp}   
+     \end{figure}    
+     
+                \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.5\textwidth]{departs_distrib2Grp.pdf}
+      \end{center}
+    \caption{Cumulative distribution of the margin needed to find an assignment with two groups of routes}
+      \label{fig:2grp}   
+     \end{figure}    
+     
+     
+
+\section{Periodic Assignments vs Statistical Multiplexing}\label{sec:comparison}
+
+     \subsection{PMLS Compared to Statistical Multiplexing}
+
+     \textbf{TODO:} donner deux politiques de buffering: FIFO, deadline et les comparer à PMLS.
+
+
+     Now that we have found the best amongst the algorithms solving \pall, we need to compare its performances against the actual way to manage the messages in a network:  statistical multiplexing, with a FIFO buffer in each node of the network to resolve collisions. The time at which the messages are sent in the network is not computed as in our approach, thus we fix the offsets of each route to some random value.
+     Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. Remark that the process is not periodic, therefore we must measure the process time of each route over several periods if we want to compute its maximum. We choose to simulate it for $1,000$ periods and we have observed that the process time usually stabilizes after $10$ periods. The margin is defined as the maximum process time, computed as explained, minus twice the size of the longest route. 
+	    
+     In Fig~\ref{fig:sto} and Fig.~\ref{fig:stobad}, we represent the probability of success for 
+     statistical multiplexing and PMLS for different margins. The success rates are computed from $10,000$ star routed networks for each margin. On Figure~\ref{fig:sto}, the arcs of the network are uniformly drawn between $0$ and $20,000$, while on Figure~\ref{fig:stobad}, the arcs of the network are uniformly drawn between $P-800$ and $P+800$. The others parameters of the experiences are the same as previously. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
+     
+
+    \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.45\textwidth]{stochastic.pdf}
+       %\input{figures/stochastic}
+      \end{center}
+      \caption{Probability of success of statistical multiplexing and PMLS for several margins on random topologies}
+      \label{fig:sto}   
+     \end{figure}    
+     
+         \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.45\textwidth]{stochasticbad.pdf}
+       %\input{figures/stochastic}
+      \end{center}
+      \caption{Probability of success of statistical multiplexing and PMLS for several margins on random topologies where the routes have almost the same size}
+      \label{fig:stobad}   
+     \end{figure}    
+     
+    The experiment clearly shows that statistical multiplexing does not ensure a minimal latency. 
+    For random topologies, the latency is extremely high when the load is high, with a margin of about $10,000$ for the worst $10\%$ which corresponds to half the period, that is $0.5$ms. Even when the network is lightly loaded, $20\%$ of the instances have a margin of more than $2,000$ while PMLS finds an assignment with margin $0$ in a highly loaded network $99\%$ of the time! 
+    
+    For hard topologies, statistical multiplexing is slightly affected: it is worst for small margins and better for high margins. The settings are stressful for PMLS, we find an assignment in only $78\%$ of the instances with margin $0$, and it needs a margin of $2,000$ to be sure to find an assignment. However, PMLS still vastly outperforms the statistical multiplexing both for the average margin and for the worst margin. 
+    
+    For each $1,000$ slots of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.    
+     
+    \subsection{Periodic Assignment and Random Traffic}
+
+    designé pour gérer des flux déterminisites. Si on mélange à des flux randoms qui passent sur le meme
+    fronthaul network  on s'attend à de mauvaises performances (tradeoff entre la latence des paquets CRAN 
+    et les autres). Mais si on arrive à garantir que les paquets C-RAN sont bien espacés dans le temps (voir notre travail sur l'anneau) on peut espérer avoir de meilleurs résultats.
+    Idées -> faire grossir tau autant que possible, pour espacer régulièrement les paquets et 
+    laisser de la BP régulièrement aux best effort. 
+
+    Donner le modèle de génération de best effort.
+    Donner les paramètres de l'expérience et comparer PMLS, PMLS avec grand tau et multiplexing
+    sans et avec priorité au C-RAN.
+
+
+
+ \section{Conclusion}
+
+	In this paper, we proposed two kinds of deterministic sending schemes to establish low latency periodic communication between BBUs and RRHs in a star routed network. The first method uses no buffering and has no latency overhead. It works when the routes are short (Shortest-Longest) or when the load is less than $80\%$ (Exhaustive Search of Compact Assignments).  
+	When the load is higher, buffering is allowed in the BBUs and we propose the algorithm PMLS which finds a deterministic communication scheme with almost no additional logical latency.
+ 	Our deterministic approach is vastly superior to the classical statistical multiplexing, even when random sources of traffic are also present on the network. This emphasizes that \emph{deterministic sources} of traffic are always best \emph{dealt with in a deterministic manner}.  
+   
+  	On star routed networks, we should design a better FPT algorithm for \pall, as efficient as the one for \pazl. We also plan to prove that \pazl and \pall are $\NP$-hard on star routed networks.
+   	Then, we must generalize our study of the \pall problem to other common fronthaul topologies,
+   	such as caterpillars, trees, cycles or bounded treewidth graphs. Some elements on cycle topologies
+   	are given in~\cite{DBLP:conf/ondm/BarthGS19} and on routed networks of constant depth, for synchronized
+   	RRHs~\cite{guiraud2020synchronized}.
+
+   	Several variations of our model are relevant. Instead of minimizing the worst transmission time, we may want to minimize the average transmission time. This objective is linear, and it makes the size of the route irrelevant to the objective. hence, it should be \emph{easier} to solve, for intance using linear programming. We could allow preemption, that is the messages may be cut into pieces, which would certainly change the complexity of the problem and help with the latency.  Instead of using periodic sending schemes, we could try to organize communications with pseudo-periodic schemes (periodic over several periods) or even use a temporal law.  Finally, the routes may not be fixed but chosen in the graph to minimize $TR(A)$, which makes the problem even more difficult (surely $\Pi_2$-complete instead of $\NP$-complete). 
+
+
+
+ 	\paragraph*{Acknowledgments} 
+ 	We thank Olivier Marcé and Brice Leclerc who have introduced us to the problem, from a practical perspective. We also thank Christian Cad\'er\'e and David Auger for friendly discussions on the subject and insightful remarks. This work has been partially supported by the french ANR project N-GREEN.
+
+\bibliographystyle{ieeetr}
+\bibliography{Sources}
+
+\end{document}

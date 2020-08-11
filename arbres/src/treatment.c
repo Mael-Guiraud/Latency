@@ -110,6 +110,7 @@ int route_length(Graph * g,int route)
 	//For each arcs
 	for(int i=0;i<g->size_routes[route];i++)
 	{
+		//printf("%d %d \n",route,i);
 		length += g->routes[route][i]->length;
 	}
 	return length;

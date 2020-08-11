@@ -2253,7 +2253,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	float coeff= 0.90;
 	int b;
 	int seuil_arret = 2;
-	float seuil_incr_cmpt = 0.01;
+	float seuil_incr_cmpt = 0.1;
 
 	int a=0;
 	b=descente( g,  P, message_size, 0, nb_pas);
