@@ -1,10 +1,11 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage[utf8]{inputenc}
+\usepackage{graphicx,graphics} 
 \newcommand{\red}[1]{{\color{red} {#1}}}
 %opening
 \title{Plan de thèse}
 \author{Maël}
-
+\graphicspath{{fig/}}
 \begin{document}
 
 \maketitle
@@ -18,14 +19,76 @@ Résumé  de tout ce qu'on va dire dans la section 2, puis plan de la these, et 
 \section{Contexte}
 
 \subsection{Reseau}
-Expliquer les enjeux techniques
-\begin{itemize}
- \item 5G
- \item URLLC
- \item C-RAN
- \item Detnet
- \item TSN
-\end{itemize}
+Telecoms networks are constantly evolving. Nowadays, a new technology is starting to be deployed in the territory: 5G.The term 5G gather a set of functional specifications. The organism that sets these specifications is the ITU (International Telecommunication Union). For several years, the ITU, more precisely the ITU-R (radiocommunication component of the ITU) has been working to determine the functional aspect that 5G must satisfy: A higher bitrate, a lower latency (we are focusing on this aspect in this thesis), more frequency bands therefore, more simultaneous users, etc... 
+
+  \begin{figure}[h]
+      \begin{center}
+      \includegraphics[width=1\textwidth]{performance5g.png}
+      \end{center}
+      \caption{5G performances required by ITU-R}\label{fig:5gperf}
+      \end{figure}
+
+All these aspects lead us to various application cases: Industry 4.0, autonomous vehicle, smart cities, ... 
+
+  \begin{figure}[h] 
+      \begin{center}
+      \includegraphics[width=1\textwidth]{usecases.png}
+      \end{center}
+      \caption{Some examples of use cases for 5G}\label{fig:usecases}
+      \end{figure}
+          
+Also, the goal of 5G is to obtain dynamic programmable networks, for greater flexibility of use. All the requirements fixed by ITU-R are formally referenced in IMT-2020. \cite{dahlman20185g} is a good paper in which one can find all requirements of IMT-2020.
+
+Figures~\ref{fig:5gperf}~and~\ref{fig:usecases} are taken from \cite{5GACIA}. While figure~\ref{fig:5gperf} shows the 5G global requirement, figure~\ref{fig:usecases} offers an overview of the different use cases, according to the different technical constraints.
+ 
+
+To meet these 5G functional specifications, equipment must follow technical standards. 3GPP (3rd Generation Partnership Project) is an union between several standard organization which sets the technical specifications of 5G. 3GPP frequently publish some release, that regroup some new specifications. The first release focused on 5G was the release 15 \cite{RELEASENOKIA}.  
+
+  \begin{figure}[h]
+      \begin{center}
+      \includegraphics[width=1\textwidth]{release.png}
+      \end{center}
+      \caption{3GPP releases 15, 16 and 17 calendar}\label{fig:release}
+      \end{figure}
+  
+Release 15 focused on increasing throughput and interworking between 4G and 5G, and introduced the notion of URLLC (Ultra-Reliable Low-Latency Communication). Release 16 an 17 deepened the notion of URLLC. The notion of URLLC consists in ensuring a low packet loss and latency communication. Indeed, several use cases (smart factories, control operations, ...) needs some highly reliable communications in which the latency must be bounded. Most of the current network does not ensure a bounded latency for all packets. This is why we talk about statistical multiplexing; the latency of a given network is, most of the time good, but the technology does not ensure a maximal latency for $100\%$ of the packets.  In this thesis, we focus on the low latency aspect of our communication. More precisely, URLLC aims to ensure a good end to end latency. To achieve such a goal, each component of the communication must meet the constraints, the radio communications, and the core network. This thesis focus on the core networks. 
+
+Although 3GPP standards for 5G are not yet completely frozen, the core networks should use ethernet technology. Time Sensitive Networking (TSN) is a task group of IEEE that develop some standards in ethernet. The two standards we focus here are 802.1Qbu and 802.1Qbv \cite{ieee802}  
+  
+802.1Qbu allows frame preemption, that is, a node of the network is able to stop the transmission of a frame to send another frame. This brings us to a management of networks in which some flow can be considered as more critical than others. 
+
+Schema + explications 
+
+802.1Qbv allows the nodes to manage different flows by a gate mechanism. Knowing the flows travelling over a node of the network, it is possible to schedule on an output port the time at which each flow must be sent by the node in order to prioritize the most critical flows. The scheduler sends a  GCL (gate control list) to the node. To one gate is associated one or several flows, and the nodes open or close the gates following the GCL. This thesis focus on computing the GCL, for each nodes of a network. 
+
+Schéma + explications 
+
+ 
+
+Schéma des élements 5G + explications 
+
+Cloud-RAN 
+
+Schémas 
+
+Current mobile network (aka cellular network) architecture consists in a distributed radio access networks: the mobile terminals connect to base stations (BTS for Base Transceiver Station as a generic name, eNB for evolved Node B in 3GPP LTE “4G” standard) that encompasses all the sub-systems needed to realize mobile communication (Bouguen et al. 2012). It mainly comprises the radio part, that furnishes the connection between the mobile terminal and the BTS, and the network part that provides control and management functions like mobility support (the main functionality being the support of handover from one BTS to another, i.e. the ability to pursue a communication when moving from range of an antenna to another). The evolutions proposed in next generations aim at evolving toward centralized radio network architectures (C-RAN, for Cloud Radio Access Network) to reduce consumption costs and power at the base stations (Mobile 2011). These C-RAN architectures include simplified base stations on the field. Depending on the architecture choice, it can be restricted to the radio part and the digital to analog conversion only. This can be identified by different names depending on the reference documents, including RU for Remote Unit or Remote Radio Heads (RRH). The later will be used the rest of the document. The other component of the C-RAN is composed of the processing units (baseband unit: BBU – used in this document – or FU for Frontend Unit) located in the cloud. By cloud we define in this document the capability of instantiating executable programs in data centers that are transparently connected to the systems requiring the results of the program execution (Mobile 2011). The execution may be indifferently performed on virtualized machines, or bare metal one, or any other combinations. The network between RRH and BBU is called “Fronthaul Network”, or “Fronthaul” for short (IEEE 802.1 2016). 
+This type of architecture faces the challenge of mastering the latency in the transfer process between the RRHs on the field and BBUs in the cloud. Low latency is already critical for the deployment of C-RAN approach in LTE “4G” networks. The standard requires hard time constraints for functions like HARQ (Hybrid Automatic Repeat reQuest) that needs to be processed in less than 3ms (Bouguen et al. 2012). Considering processing time into the BBU, the time budget over the network can be as low as 400 micro seconds for a round trip. One specificity in this C-RAN context is not only the latency constraint, but also the periodicity of the data transfer between RRH and BBU (this HARQ constraint must be enforced for each frame emitted every millisecond). Looking beyond current mobile network generation, one must have in mind that ongoing 5G standards will require to reach end-to-end expected latency as low as 1ms (depending on targeted services) (Boccardi et al. 2014). New scheduling and new technologies have to be considered to guarantee delay constrained periodic data transfers. 
+
+ 
+The expressed constraints expressed for C-RAN architecture and 5G standard are hardly met in current networks. In IP or even Ethernet networks, the traffic usually suffers of delay due to buffering. The amazing success of the packet based networks for the last 40 years relies on the statistical multiplexing: the packets are sent when they are ready and are buffered in intermediate nodes (routers for IP networks, switches for Ethernet networks) when contention arises (Venkatramani and Chiueh 1994). A contention means that one resource (node out interface) is needed at the same time for transmission of several packets. In this case, the supplementary packets are stored in a buffer until the resources become available. This allows an easy deployment and management of a network, leading to a delivery of the packet with few loss (under conditions that buffers are big enough) but at the price of uncertainty on the delivery time. This uncontrolled and non predictable delay prevents to offer low latency and no jitter in the current network. Statistically managed QoS do not allow contention avoidance, then they can not provide null jitter (Khaunte 2003). If they can be used to prioritize some packets over the others (e.g. Express Forwarding against Best Effort), they fail to ensure delivery of a given packet in a given time delay when several packets compete for the same resource. 
+The best current solution is to rely on an almost full optical approach, where each end-points (RRH on one side, BBU on the other side) are connected through direct fiber or full optical switches (Group 2016). This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about 10,000 base stations. This number will increase by a factor of 2 to 20 with the emergence of “small cells” that allow increasing base station density and to reach higher throughput (Group 2016). It is then needed to find a solution to offer low latency over commoditized packet based networks. 
+
+ 
+
+Détails des différents splits + sur lequel on se focalise 
+
+ 
+
+Quand on parle de 4g, dire qu’on a déjà le probleme en 4g, que ca sera utile pour la 5g et tout ce qui est low latency 
+
+Transition harq -> processus low latency 5G. 
+
+Regarder QCC 
 \subsection{Algo}
 Expliquer ce qu'on a lu, pourquoi les models les plus proches sont différents, ou quelles sont les approches différentes que les gens ont eu. Ne pas trop rentrer dans les détails, on y reviendra notamment sur simons apres le problème
 
@@ -88,4 +151,6 @@ Présentation de ONOS, TSN et de FPGA. Description de ce qu'olivier à programm�
 -Liens de vitesse différentes, tailles de paquets différents...
 \subsection{questions ouvertes / suite de la these}
 
+\bibliographystyle{ieeetr}
+\bibliography{src}
 \end{document}

@@ -30,7 +30,7 @@ void test(unsigned int seed)
 {
 	//unsigned int seed = 1591624286;
 	//unsigned int seed = time(NULL);
-	seed = 1596121638;
+	//seed = 1596121638;
 	FILE * f = fopen("logs.txt","w");
 	if(!f){printf("ERROR oppening file logs.txt\n");exit(36);}
 	printf("\n\n ----------- TEST ON ONE TOPOLOGY ---------- \n");
@@ -51,9 +51,9 @@ void test(unsigned int seed)
 	
 
 	
-	//Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
-	//P = PERIOD;
-	Graph  g = init_graph_random_tree(STANDARD_LOAD);
+	Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
+	P = PERIOD;
+	/*Graph  g = init_graph_random_tree(STANDARD_LOAD);
 	if(FIXED_PERIOD_MOD)
 	{
 		P = PERIOD;
@@ -65,7 +65,7 @@ void test(unsigned int seed)
 		tmax = TMAX;
 	}
 	else
-		tmax = longest_route(&g)*2 + margin;
+		tmax = longest_route(&g)*2 + margin;*/
 	/*
 			
 	printf("Parameters : \n");
@@ -113,7 +113,7 @@ void test(unsigned int seed)
 	printf("Borneinf %d \n",borneInf(&g,P,message_size));
 	
 	sprintf(nom,"borneinf");
-	
+	/*
 	reset_periods(&g,P);reinit_delays(&g);
 
 
@@ -142,7 +142,7 @@ void test(unsigned int seed)
 	sprintf(buf,"rm -rf %s",buf_dot);
 	if(system(buf) == -1){printf("Error during the command %s .\n",buf);exit(76);}
 	//free_assignment(a);
-	/*
+	
 	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(&g,P);reinit_delays(&g);
@@ -311,10 +311,11 @@ void test(unsigned int seed)
 	printf("Logs in logs.txt\n");
 */
 
-		printf("recuit %d \n",recuits);
+	
 	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, DEADLINE),multiplexing(&g, P, message_size, 10, DEADLINE),multiplexing(&g, P, message_size, 100, DEADLINE));
 	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, FIFO),multiplexing(&g, P, message_size, 10, FIFO),multiplexing(&g, P, message_size, 100, FIFO));
-	printf("%d \n",multiplexing(&g, P, message_size, 1, FIFO));
+	printf("%d \n",multiplexing(&g, P, message_size, 10, DEADLINE,0));
+	printf("%d \n",multiplexing(&g, P, message_size, 10, FIFO,0));
 
 	free_graph(&g);
 	fclose(f);

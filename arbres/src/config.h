@@ -55,4 +55,4 @@
 
 #define DATA_CENTER_ROUTES 0
 
-#define SIZE_BE_MESSAGE 100
+#define SIZE_BE_MESSAGE 50

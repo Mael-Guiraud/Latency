@@ -373,7 +373,7 @@ Graph parseinput()
 
 	int seed = time(NULL);
 
-	printf("\n --------- \n Statistical Multiplexing. Testing the chain reaction of multiplexing ...  \n");
+/*	printf("\n --------- \n Statistical Multiplexing. Testing the chain reaction of multiplexing ...  \n");
 	printf("Fifo : \n");
 	fprintf(f,"Fifo \n");
 	int last_time_ellapsed =0;
@@ -402,7 +402,7 @@ Graph parseinput()
 	{
 		printf(RED "Not OK --\n" RESET);
 	}
-
+*/
 	printf("\n\n Ecriture des GCL...");
 	gcl(&g,period,D,L);
 	printf("Ok.\n");
