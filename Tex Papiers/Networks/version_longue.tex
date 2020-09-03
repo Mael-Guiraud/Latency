@@ -335,7 +335,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
     \subsection{The Star Routed Network} \label{sec:star_routed_network}
   
-	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$.
+	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$.
 
 	The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
 	The two contention points $c_1$ and $c_2$ model the beginning of the shared link (used to go from the RRHs to the BBUs) and the other end of the shared link (used in the other direction). 
@@ -389,9 +389,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
   When solving \pall or \pazl on a star routed network, a period, a message size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Fig.~\ref{fig:canonical} for an example of a canonical star routed network.  
   
 
-\todo{Il faut mettre plein de modulo P qui manquenet, ou éventuellement dire
-que pour les offsets, et les waiting time tout est modulo P ce qui sera éventuellement ommis }
-
+\todo{Un exemple de cette transformation serait utile}
 
   \begin{proposition}\label{prop:canonical}
    Let $I = (N, P, \tau , d)$, with $N = (\cal{R},\,\cal{B},\,\omega)$ a star routed network, then there is 
@@ -404,7 +402,7 @@ que pour les offsets, et les waiting time tout est modulo P ce qui sera éventue
    between valid assignments of $I$ and $I'$, which proves the proposition. In this bijection,
    the offsets $o_i$ for an assignment of $I$ will be mapped to $o'_i$, while the waiting times remain the same.
   
-  The routed network $N'$ is equal to $N$ except for the weight functio $\omega'$.
+  The routed network $N'$ is equal to $N$ except for the weight function $\omega'$.
   We set the weights of the arcs $(s_i,c_1)$ to zero in $N'$. We obtain the bijection between valid assigments of $I$ and $I'$ by setting $o_i' + \omega(r_i,s_i) = o_i $ and $d'(r_i) = d(i) - \omega(r_i,s_i)$. The weights $\omega'(r_i,c_2)$ are also set to $0$, it does not change the possible collisions
   for an assignment but it changes the transmission time, hence we set $d'(r_i) = d'(r_i) - \omega(r_i,c_2)$
   to preserve the bijection between assignments of $I$ and $I'$. 
@@ -412,7 +410,7 @@ que pour les offsets, et les waiting time tout est modulo P ce qui sera éventue
   We let $\omega'(r_i,c_1) = \omega(r_i,c_1) \mod P$. Again, it does not change the collisions since computing a possible collision is done modulo $P$. However, we must change $d'$ to be $d'(r_i) = d'(r_i) - \omega(r_i,c_1) + \omega'(r_i,c_1)$.
 
   Finally, we assume w.l.o.g. that $\omega'(r_0,c_1)$ is the smallest weight among the weights of the arcs
-  $(c_1,c_2)$. We let $\omega'(r_i,c_1) = \omega'(r_i,c_1) - \omega'(r_0,c_1)$, which implies that $\omega'(r_0,c_1) = 0$.  All lengths between $c_1$ and $c_2$ change by the same value, hence collisions are not modified. We change $d'(r_i)$ to  $d'(r_i) - \omega'(r_0,c_1)$ for all $i$.
+  $(c_1,c_2)$. We let $\omega'(r_i,c_1) = \omega'(r_i,c_1) - \omega'(r_0,c_1)$, which implies that $\omega'(r_0,c_1) = 0$.  All lengths between $c_1$ and $c_2$ change by the same value, hence collisions are not modified. We change $d'(r_i)$ to  $d'(r_i) - \omega'(r_0,c_1)$ for all $i$ so that the constraint on the deadline stay the same.
   \end{proof}
 
    From now on, we may assume that a star routed network is canonical, using Prop.~\ref{prop:canonical}. To define an instance with a canonical star routed network of \pall, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the message size, and $d$ the deadline function. For an input of \pazl we can also ommit $d$.
@@ -424,9 +422,10 @@ que pour les offsets, et les waiting time tout est modulo P ce qui sera éventue
 
 	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness of \pazl with $\tau =1$. 
 	We give two proofs that \pazl is $\NP$-complete.
-	The first proof works even for contention depth two. However, in Sec.\ref{sec:PAZL} we prove
-  	that, for star routed networks and small load, \pazl can be solved in polynomial time.
-	 For contention depth one, either the load is less than one and there is a valid assignment with zero waiting time or there is no valid assignment. The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. Since solving \pall is trivial on trees, it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, a common property of real networks~\cite{de2011treewidth}.
+	The first proof works even for contention depth two, but if we further restrict to star routed networks,
+	 \pazl can be solved in polynomial time for small loads.
+	 For contention depth one, either the load is less than one and there is a valid assignment with zero waiting time or there is no valid assignment. 
+	 The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. Since solving \pall is trivial on trees, it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, a common property of real networks~\cite{de2011treewidth}.
  
 
  \begin{theorem}
@@ -447,7 +446,7 @@ que pour les offsets, et les waiting time tout est modulo P ce qui sera éventue
  Remark that we have used weigths of zero for all arcs in the proof. It is a further restriction to the 
  class of graphs for which \pazl is $\NP$-hard. We could ask the weights to be strictly positive, another possible restriction which makes more sense in our model, since weights represent the delay of physical links. Then, we can prove $\NP$-completness using the same proof, by setting all weights to the period $P$.
 
-We now give a hardness proof for routed networks with contention width two but large contention depth. Note that a vertex of contention depth one does not induce a collision and can be removed from the routed network without loss of generality. The presented reduction can be used to prove an inapproximability result. Let \minpazl be the following problem, given a routed network and $\tau$, find the minimal period $P$ such that there is a $(P,\tau)$-periodic assignment with waiting times zero (a positive instance for \pazl). 
+We now give a hardness proof for routed networks with contention width two but large contention depth. Note that a vertex of contention depth one does not induce a collision and can be removed from the routed network without loss of generality. The presented reduction can be used to prove an inapproximability result. Let \minpazl be the following problem: given a routed network and $\tau$, find the minimal period $P$ such that there is a $(P,\tau)$-periodic assignment with waiting times zero (a positive instance for \pazl). 
 
 
 \begin{theorem}\label{th:inapprox}
@@ -455,15 +454,14 @@ If $\P \neq \NP$, the problem \minpazl on the classe of routed networks of conte
 \end{theorem}
 
 \begin{proof}
- We reduce the problem of finding the minimal vertex coloring of a graph to \minpazl. Let $H = (U,E)$ be a graph, instance of the problem of finding a minimal vertex coloring.  We define the routed network $N$ from $H$ as in Prop.\ref{prop:monotonic}.
+ We reduce the problem of finding the minimal vertex coloring of a graph to \minpazl. Let $H = (U,E)$ be a graph, an instance of the problem of finding a minimal vertex coloring.  We define the routed network $N$ from $H$ as in Prop.\ref{prop:monotonic}.
  
- Let $<$ be an arbitrary total order on $V$. 
+ Let $<$ be an arbitrary total order on $U$. 
  The vertices of $N$ are in the set $\{v_{u,v} \mid (u,v) \in E\} \cup \{u^1, u^2 \mid u \in U\}$. 
  For each vertex $u$ in $H$, there is a route $r_u$ in ${\cal R}$, whose first and last vertices
- are $u^1$ and $u^2$. In between, the route contains all vertices $v_{u,w}$, following the order of the $w$.
- The weights of all arcs is zero. By construction, a contention vertex corresponds to an edge and belongs to exactly two routes representing the vertices of the edge, thus $N$ is of contention width $2$.
+ are $u^1$ and $u^2$. In between, the route contains all vertices $v_{u,w}$, following the order $<$ on the $w$. The weights of all arcs is zero. By construction, a contention vertex corresponds to an edge and belongs to exactly two routes representing the vertices of the edge, thus $N$ is of contention width $2$.
 
-  The existence of a $P$-coloring of $H$ is equivalent to the existence of a $(P,1)$-periodic assignment of $N$ without waiting time: identify the offset of a route with a color of a vertex. Indeed, since all weigths are zero, the absence of collision at contention point $v_{u,w}$ is equivalent to the fact that the offsets of $r_u$ and $r_w$ are different and reciprocally.
+  The existence of a $P$-coloring of $H$ is equivalent to the existence of a $(P,1)$-periodic assignment of $N$ without waiting time: identify the offset of a route with the color of the corresponding vertex. Indeed, since all weigths are zero, the absence of collision at contention point $v_{u,w}$ is equivalent to the fact that the offsets of $r_u$ and $r_w$ are different and reciprocally.
 
    Therefore, if we can approximate the minimum value of $P$ within some factor such that there is a $(P,1)$-periodic assignment, we could approximate the minimal number of colors needed to color a graph within the same factor. The proof follows from the hardness of approximability of finding a minimal vertex coloring~\cite{zuckerman2006linear}.
 \end{proof}
@@ -494,7 +492,7 @@ $v_i^1$ at time $o$ modulo $n$, for all $i \in [n]$.
 The second part of the routes, from $v_i^1$ to $v_i^2$ is built exactly as in the proof of Th.~\ref{th:inapprox}. Hence, the waiting time in the vertices $v_i^1$ plays the exact same role as the offset
 in the graph of Th.~\ref{th:inapprox}: the valid $(n,1)$-assignments are in bijection with colorings of $H$, the waiting times corresponding to the colors.
 
-Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, such that, for all $i,j \in [n]^2$, $\lambda(r_i) = \lambda(r_j)$.  When $TR(A)$ is minimal $o$ must be $0$, thus $TR(A)$ is equal to the maximal waiting time of $A$. Hence, the maximum waiting time is equal to the number of different waiting times. Thus, a valid $(n,1)$-assignment which minimizes $TR(A)$ is in bijection with a minimal proper coloring of $H$, which proves the theorem.
+Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, such that, for all $i,j \in [n]^2$, $\lambda(r_i) = \lambda(r_j)$.  When $TR(A)$ is minimal, $o$ must be $0$, thus $TR(A)$ is equal to the maximal waiting time of $A$. Hence, the maximum waiting time is equal to the number of different waiting times. Thus, a valid $(n,1)$-assignment which minimizes $TR(A)$ is in bijection with a minimal proper coloring of $H$, which proves the theorem.
 \end{proof}
     %\begin{figure}[ht]
    % \centering
@@ -576,21 +574,18 @@ Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, 
 %     \end{figure}
 
 	We would like to prove hardness for even more restricted networks, in particular star routed networks.
-   The problem \pazl on star routed networks is similar to the minimization of makespan in a two flow-shop with delays (see Sec.~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete, however we have not been able to prove it yet,  because the periodicity is hard to deal with. If we relax the definition of routed network by allowing loops,
-   we can model a network with a single half-duplex shared link, that is collisions can happen between datagrams going in both directions. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem, as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
+   The problem \pazl on star routed networks is similar to the minimization of makespan in a two flow-shop with delays (see Sec.~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete on star routed network, however we have not been able to prove it yet,  because the periodicity is hard to deal with. If we relax the definition of routed network by allowing loops,  we can model a network with a single half-duplex shared link, that is collisions can happen between datagrams going in both directions. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem, as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
   
 
 \section{Assignments with no waiting time} \label{sec:PAZL}
   
   In this subsection, we deal with the problem \pazl on a star routed network: 
-  we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Sec.~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for shorter routes and when the load is moderate. The sensivity to the load has been studied in details in a follow-up work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher load using more complex, but still polynomial time, algorithms. 
+  we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Sec.~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for shorter routes and when the load is moderate. The sensivity to the load has been studied in details in a follow-up work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher load using more involved polynomial time algorithms. 
   
 	\subsection{Shortest-longest policy}
     
 
-    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the routes have close remainders modulo the period. 
-    The algorithm is called {\bf Shortest-Longest}, it sends datagrams on the shared link from the route with the shortest arc $(c_1,c_2)$ to the longest. There is no idle time in the contention point $c_1$,
-    i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
+    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the length of the routes have close remainders modulo the period. The algorithm is called {\bf Shortest-Longest}, it sends datagrams on the shared link from the route with the shortest arc $(c_1,c_2)$ to the longest. There is no idle time in the contention point $c_1$, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
       
       \begin{proposition} Let $N$ be a canonical star routed network, with $r$ the longest route. If $n\tau + \lambda(r) \leq P$ then there is a $(P,\tau)$-periodic assignment of $N$ with waiting times $0$ given by Shortest-Longest in time $O(n\log(n))$.\label{prop:SL}
       \end{proposition}
