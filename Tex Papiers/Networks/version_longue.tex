@@ -26,6 +26,7 @@
 
 \newcommand\rmatching{${\cal R}$-matching\xspace}
 \newcommand\mdelay{$\cal M$-delay\xspace}
+\newcommand\metaoffset{\texttt{Meta Offset}\xspace}
 \newcommand\matchedgraph{{\bf matched graph}}
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
@@ -271,8 +272,9 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
      We also consider a restricted version of \pall, requiring that \emph{all waiting times are equal to $0$} in the assignment. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the 
      transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: there is no need to give $\cal{B}$ in the routed network, 
-     nor the deadline function and an assignment is just the offset of each route. Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.    
-  
+     nor the deadline function and an assignment is just the offset of each route. Hence, a routed network
+     is represented by $ (\cal{R}, \, \omega)$, the routes and the weigth function and an assignment $A$ associates to each route $r$ of $\cal{R}$ only the offset $A(r)$.  Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.
+
       An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
 	\begin{proposition} \label{prop:monotonic}
@@ -335,7 +337,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
     \subsection{The Star Routed Network} \label{sec:star_routed_network}
   
-	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$.
+	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$. The load on each of the two contention points is thus $n\tau / P$.
 
 	The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
 	The two contention points $c_1$ and $c_2$ model the beginning of the shared link (used to go from the RRHs to the BBUs) and the other end of the shared link (used in the other direction). 
@@ -434,7 +436,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
  \begin{proof}
  \pazl is in $\NP$ since given an offset for each route in an assignment, it is easy to check whether there are collisions, in linear time in the routed network's size.
  
-  Let $H=(V,E)$ be an undirected graph and let $P$ be its maximal degree. We consider the problem to determine whether $H$ is arc-colorable with $P$ or $P+1$ colors. The arc coloring problem is $\NP$-hard~\cite{holyer1981np} and we reduce it to \pazl to prove its $\NP$-hardness. To do that, we define from $H$ a routed network $N = ({\cal R},\, {\cal B},\, \omega)$ as follows. 
+  Let $H=(V,E)$ be an undirected graph and let $P$ be its maximal degree. We consider the problem to determine whether $H$ is arc-colorable with $P$ or $P+1$ colors. The arc coloring problem is $\NP$-hard~\cite{holyer1981np} and we reduce it to \pazl to prove its $\NP$-hardness. To do that, we define from $H$ a routed network $N = ({\cal R},\, \omega)$ as follows. 
 
   Let us choose an arbitrary total order $<$ on $V$.
   For each edge $(u,v) \in E$, if $u<v$, there is a route $s_{u,v},u,v,t_{u,v}$ in ${\cal R}$. 
@@ -577,15 +579,15 @@ Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, 
    The problem \pazl on star routed networks is similar to the minimization of makespan in a two flow-shop with delays (see Sec.~\ref{sec:braheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete on star routed network, however we have not been able to prove it yet,  because the periodicity is hard to deal with. If we relax the definition of routed network by allowing loops,  we can model a network with a single half-duplex shared link, that is collisions can happen between datagrams going in both directions. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem, as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
   
 
-\section{Assignments with no waiting time} \label{sec:PAZL}
+\section{Finding Assignments with no Waiting Time} \label{sec:PAZL}
   
   In this subsection, we deal with the problem \pazl on a star routed network: 
-  we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Sec.~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for shorter routes and when the load is moderate. The sensivity to the load has been studied in details in a follow-up work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher load using more involved polynomial time algorithms. 
+  we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Sec.~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for short routes and when the load is moderate. The sensivity to the load has been studied in details in a follow-up work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher load using more involved polynomial time algorithms. 
   
 	\subsection{Shortest-longest policy}
     
 
-    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the length of the routes have close remainders modulo the period. The algorithm is called {\bf Shortest-Longest}, it sends datagrams on the shared link from the route with the shortest arc $(c_1,c_2)$ to the longest. There is no idle time in the contention point $c_1$, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
+    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the length of the routes modulo the period are close. The algorithm is called {\bf Shortest-Longest}: it sends datagrams on the shared link from the route with the shortest arc $(c_1,c_2)$ to the longest. There is no idle time in the contention point $c_1$, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
       
       \begin{proposition} Let $N$ be a canonical star routed network, with $r$ the longest route. If $n\tau + \lambda(r) \leq P$ then there is a $(P,\tau)$-periodic assignment of $N$ with waiting times $0$ given by Shortest-Longest in time $O(n\log(n))$.\label{prop:SL}
       \end{proposition}
@@ -602,29 +604,44 @@ Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, 
    
     \subsection{Greedy algorithm}
     
-    \textbf{TODO:} faire une preuve clean. Ici, l'algo FPT est suffisant, car 
+    \textbf{TODO:}
+     Ici, l'algo FPT est suffisant, car 
     on est sur des réseaux de 10/20 antennes.
-    
-      In a star routed network, the load is equal to $\frac{n\tau}{P}$. The load is the number of tics used by datagrams on the shared arc in a period. We propose a greedy algorithm to build a periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore, in the rest of the article we will be only concerned with load larger than $1/3$. In fact, in~\cite{guiraud2020scheduling}, we prove that there is always an assignment for load smaller than $0.4$ and with high probability for load less than $0.5$.
 
-    
-    \begin{proposition}
-    There is an assignment of a star routed network with waiting times $0$ if the load is less than $1/3$ and it can be found in time $O(n^2)$.
-    \end{proposition}
+
+     We propose a greedy algorithm to build a periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore, in the rest of the article we will be only concerned with load larger than $1/3$. In fact, in~\cite{guiraud2020scheduling}, we prove that there is always an assignment for load smaller than $0.4$ and with high probability for load less than $0.5$.
+
+     The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new messages. However, it allows reducing the number of forbidden offsets for unscheduled messages. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each unscheduled message (in the order they are given), it tests all meta-offsets from $0$ to $P/\tau$ until one does not create a collision with the current assignment and use it to extend the assignment. To simplify, we assume that $P$ is a multiple of $\tau$, there is a reduction to this case presented in~\cite{guiraud2020scheduling}.
+
+
+\begin{theorem}
+\metaoffset solves \pazl positively on star routed network and load less than $1/3$. 
+The assignment is found in time $O(n^2)$.
+\end{theorem}
     \begin{proof}
-     We consider the forward period and cut it into consecutive intervals of size $\tau$ that we call macro-slots. The algorithm works by choosing an offset for each route in the following way: try all offsets which put the message in a yet not used macro-slot in the forward
-     period. Since the choice of an offset also sets the position of the message in the backward period, chose the first one which does not create a collision. We now prove that this algorithm always finds a $(P,\tau)$-periodic assignment without waiting time when $P \geq 3n\tau$ that is the load is less than $1/3$.
-     
-     Assume we are choosing the offset of the route $r_{k+1}$, we have at least $P - k \geq 3n - k$ free macro-slots in the forward period, since $P \geq 3n\tau$. Each of these $3n - k$ possible offset values translates into $3n - k$ positions of messages in the backward period. All these positions are separated by at least $\tau$ slots. There are already $k$ messages of size $\tau$ in the backward period. One such message can intersect at most $2$ potential positions since they are disjoint intervals. Therefore  amongst the possible $3n - k$ positions, there are  at least $3n - k -2k$ which are without collision. Since $k < n$, $3n - k -2k \geq 1$, which proves that the algorithm terminates and find a  $(P,\tau)$-periodic assignment. 
-   
-     This algorithm works with a complexity $O(n^2)$, since for the $k^{\text{th}}$ route we have to try at most $2k$ offsets before finding a correct one. We can test the $2k$ offsets of the backward period in time $O(k)$ by maintaining an ordered list of the intervals used by already set routes.
+    Let us prove that \metaoffset always schedules the $n$ routes when the load is less than $1/3$.
+    Let us assume it has built an assignment for the routes $r_0$,$r_1$, $r_{k-1}$, using only 
+    meta offsets. The number of meta-offsets is $P/\tau$ and already $k$ of them are used, hence
+    to avoid collision in $c_1$, we have $P/\tau - k$ choices. We choose an offset among those
+    for the route $r_k$ so that there is no collision in $c_2$. Remark that at most two choices
+    of (consecutive) meta-offsets can create a collision between $r_k$ and some route $r_i$ already scheduled
+    in $c_2$, since the messages are all of size $\tau$, see Fig.~\ref{fig:metaoffset}. Hence, there are at most $2k$ meta-offsets forbidden by collision in $c_2$. In conclusion, there are at least $P/\tau - k - 2k$ possible meta-offsets so that its choice for $r_k$ does not create collision.  \metaoffset terminates
+    and provide a valid assignment (without waiting times) as soon as $P/\tau - 3(n-1) > 0$, which can 
+    be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
+
+     This algorithm works in time $O(n^2)$, since for the $k^{\text{th}}$ route we have to try at most $2k$ offsets before finding a correct one. We can test whether these $2k$ offsets cause a collision in $c_2$
+     in time $O(k)$ by maintaining an ordered list of the intervals of tics used by already scheduled routes.
      \end{proof}
+     
      \begin{figure}
       \begin{center}
       \includegraphics[width=0.48\textwidth]{ex3nt.pdf}
       \end{center}
-      \caption{Forward and backward period, represented at step $k$ of the algorithm}
+      \caption{Times used in the period in $c_1$ and $c_2$, when scheduling the $k$th route in \metaoffset}
+      \label{fig:metaoffset}
       \end{figure}
+
+
 % 	\begin{algorithm}[H]
 % 	\caption{Greedy assignment}
 % 	\begin{algorithmic}
@@ -661,22 +678,21 @@ In fact, experimental data in Sec.~\ref{sec:exp_PAZL} suggest that the algorithm
 
 \subsection{Compact assignment}
 
-In this section we show how every assignment without waiting time can be put into a canonical form.
-We use that to provide an algorithm which finds an assignment when it exists, in fixed parameter tractable time ($\FPT$) with parameter $n$ the number of routes (for more on parametrized complexity see~\cite{downey2012parameterized}). This is justified since $n$ is small in practice, from $10$ to $20$ in our settings, and the other parameters such as $P$, $\tau$ or the weights are large.
+In this section, we show how every assignment without waiting time can be put into a canonical form.
+We use that form to design an algorithm to solve \pazl, in fixed parameter tractable time ($\FPT$) with parameter $n$ the number of routes (for more on parametrized complexity see~\cite{downey2012parameterized}). This is justified since $n$ is small in practice, from $10$ to $20$ in our settings, and the other parameters such as $P$, $\tau$ or the weights are large.
 
-Let $(G, {\cal R})$ be a star routed network and $m$ a $(P,\tau)$-periodic assignment.
-A set of routes $S$ is \textbf{coherent} if for all $r \in {\cal R}$, $r \in S$ if and only if $\rho(r) \in S$. We say that a coherent set $S \subseteq {\cal R}$ is \textbf{compact} for the assignment $m$ if there is a route $r_0 \in S$ such that the following holds:  
-for all coherent subsets $S'\subset S$ with $r_0 \notin S'$, if we remove $1$ from all offsets of routes in $S'$ then there is a collision with a route of $S \setminus S'$. We say that $m$ is compact if ${\cal R}$ is compact for $m$. 
-% 
-% 
-% $r_1,r_2 \in {\cal R}$ two forward routes (resp. two backward routes) and 
-%  We say that there is no gap between $r_1$ and $r_2$ in $\mathcal{M}$ if $\lambda(r_1,c_s) + \tau = \lambda(r_2,c_s)$ (resp. $\lambda(r_1,c_t) + \tau = \lambda(r_2,c_t)$). It means that the message of $r_2$ goes through the central arc just after the message of $r_1$ withtout wasting time. We say thant a set of routes ${\cal R}$ is \textbf{compact} for the assignment $\mathcal{M}$ if for all forward routes $r \in {\cal R}$ but one, there is another forward route $r'$ such that there is no gap between $r'$ and $r$ or between $\rho(r')$ and  $\rho(r)$. If the set of all routes is compact for an assignment, we say that the assignment is compact.
+Let $({\cal R},\omega)$ be a star routed network and let $A$ be a bufferless $(P,\tau)$-periodic assignment.
+We say that a set $S \subseteq {\cal R}$ is \textbf{compact} for the assignment $A$ if there is a route $r_0 \in S$ such that the following holds: 
+for all subsets $S'\subset S$ with $r_0 \notin S'$, the bufferless assignment $A'$, 
+defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S'$ and $A(r)$ otherwise, is not valid. We say that $A$ is compact if ${\cal R}$ is compact for $A$. 
+
+\textbf{TODO: enlever cohérent et mettre à jour partout. Définir les assignements sans waiting time (bufferless assignment) et mettre à jour partout}
 
 \begin{proposition}
-Let $(G, {\cal R})$ be a star routed network. If there is a $(P,\tau)$-periodic assignment of $(G, {\cal R})$, then there is a compact $(P,\tau)$-periodic assignment of $(G, {\cal R})$.
+Let $N = ({\cal R}, \omega)$ be a star routed network. If there is a $(P,\tau)$-periodic bufferless assignment of $N$, then there is a compact bufferless $(P,\tau)$-periodic assignment of $N$.
 \end{proposition}
 \begin{proof}
-Consider $m$ a $(P,\tau)$-periodic assignment of $(G, {\cal R})$.
+Consider $A$ a $(P,\tau)$-periodic assignment of $N$.
 Let $r_0$ be an arbitrary route of ${\cal R}$,  and let $COMP = \{r_0\}$. Now we apply the following algorithm to $m$ and $COMP$ while $COMP$ is not equal to ${\cal R}$.
 While there are no collisions, remove $1$ (modulo $P$) from all offsets of routes in ${\cal R} \setminus COMP$. Then choose a route $r$ in ${\cal R} \setminus COMP$ which would have a collision with a route $r'$ of $COMP$ if one is subtracted from its offset. If $r'$ is a forward route, let $COMP = COMP \cup \{r, \rho(r)\}$ otherwise  $COMP = COMP \cup \{r, \rho^{-1}(r)\}$. 
 
@@ -714,19 +730,20 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
    \subsection{Experimental evaluation}\label{sec:exp_PAZL}
    
    In this section we compare the experimental results of the three presented algorithms.
-      Notice that both Greedy algorithm and Shortest-Longest are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, exhaustive search finds a solution if it exists, but works in exponential time in $n$. We compare the performance of the algorithms in two different regimes: routes are either short with regard to $\tau$, or unrestricted.
+   Notice that both Greedy algorithm and Shortest-Longest are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, exhaustive search finds a solution if it exists, but works in exponential time in $n$. We compare the performance of the algorithms in two different regimes: routes are either short with regard to $\tau$, or unrestricted.
       The defaults parameters, derived from the C-RAN context, are the following: the number of routes is $n = 8$, $\tau$ is equal to $2,500$ and $P=19531$ slots. It corresponds to slots of $64$ Bytes, messages of approximately $1$~Mbit and links of bandwidth $10$~Gbit/s when $P$ is one millisecond. 
-       The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i7 and the sources are compiled with gcc version 7.3.0. All experiments end in a few dozen of seconds.
+       The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i7 and the sources are compiled with gcc version 7.3.0. All experiments end in at most a few dozen seconds.
 
-       In the following experiments we illustrate how well the algorithms work with regards to the load. To change the load, we fix the parameters $\tau$ and $n$ and modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
+       In the following experiments, we illustrate how well the algorithms work with regards to the load. To change the load, we fix the parameters $\tau$ and $n$ and modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
       
 
       \paragraph{Short routes}
       
-      First we consider routes which are shorter than $\tau$: a message cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing randomly the weigths between $0$ and $700$ which corresponds to links of less than $5$km between a BBU and an RRH.
+      TODO: mettre l'expérience habituelle avec le taux de succès à la place de ce truc + un truc qui regarde ce qui se passe quand on augmente le nombre de routes (on refait la même figure pour 12 et 16 routes).
 
-       in which the weights of the arcs $(c_t,t_i)$ are drawn uniformly between $0$ and $700$ which corresponds to links of less than $5$km between a BBU and an RRH. 
-      
+
+      We consider first routes which are shorter than $\tau$: a message cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing uniformly at random the weigths of the arcs between $0$ and $700$, which corresponds to links of less than $5$km between a BBU and an RRH.
+
       We evaluate the highest load under which a $(P,\tau)$-periodic assignment can be found by each algorithm when we change the number of routes. In our experiment, we generate $1,000$ random instances of \pazl for $1$ to $14$ routes. We represent in Figure~\ref{fig:short} the average of the maximal load for which each algorithm finds a solution. A bound on the maximum load is given by the exhaustive search which always finds a solution if there is one. 
 %       The lower and upper bound $n\tau$ and $3n\tau$ are also represented.
       
@@ -767,7 +784,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Searc
       
       \begin{figure}[h]
          \begin{center}
-         \begin{tabularx}{0.5\textwidth}{|l|X|X|X|X|X|}
+         \begin{tabularx}{0.9\textwidth}{|l|X|X|X|X|X|}
     \hline
    $n$ & $8$ & $10$& $12$&$14$& $16$\\
     \hline
