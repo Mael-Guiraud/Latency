@@ -1,5 +1,5 @@
 
-CC=gcc
+CC=gcc-7
 CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs  -std=c99
 #-ftest-coverage
 LFLAGS = -fopenmp
