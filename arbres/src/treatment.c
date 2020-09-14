@@ -106,11 +106,11 @@ void fill_period(Graph * g,int route,int offset,int message_size,Period_kind kin
 int route_length(Graph * g,int route)
 {
 	int length = 0;
-	//printf("%d \n",g->size_routes[route]);
+	printf("%d \n",g->size_routes[route]);
 	//For each arcs
 	for(int i=0;i<g->size_routes[route];i++)
 	{
-		//printf("%d %d \n",route,i);
+		printf("%d %d %p\n",route,i,g->routes[route][i]);
 		length += g->routes[route][i]->length;
 	}
 	return length;

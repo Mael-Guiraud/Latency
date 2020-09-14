@@ -170,14 +170,14 @@ Event * init_computed(Graph * g, Event * liste_evt,int period, int nb_periods)
 			date = route_length_untill_arc(g,i,g->routes[i][k],FORWARD)+g->routes[i][k]->routes_delay_f[i];
 			for(int j=0;j<nb_periods;j++)
 			{
-				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,k,date,0,FORWARD,1);
+				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,k,0,0,FORWARD,2);
 			}
-			//printf("route %d arc %d message forward %d ",i,k,date);
+		//	printf("route %d arc %d message forward %d %d",i,k,date,g->routes[i][k]->routes_delay_f[i]);
 			date = route_length_with_buffers_forward( g,i)+route_length_untill_arc(g,i,g->routes[i][k],BACKWARD)+g->routes[i][k]->routes_delay_b[i];
 
 			for(int j=0;j<nb_periods;j++)
 			{
-				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,k,date,0,BACKWARD,1);
+				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,k,0,0,BACKWARD,2);
 			}
 			//printf("message backward %d \n",date);
 		}
@@ -339,7 +339,11 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 			{
 				fprintf(logs,"end of the message, update \n");
 				if(liste_evt->kind_message)//Si c'est du CRAN
-					update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length,p_time);
+				{
+					if(!computed_assignment)
+						update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length,p_time);
+						
+				}
 				else
 				{
 					//printf("be time update in message 2\n");
@@ -442,7 +446,10 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			{
 				fprintf(logs,"time updated\n");
 				if(first_elem->kind_message)//Si c'est du CRAN
-					update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length,p_time);
+				{
+					if(!computed_assignment)
+						update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length,p_time);
+				}
 				else
 				{
 					//printf("be time update in arc free 2\n");
@@ -472,7 +479,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 {
 	logs = fopen("logs_multiplexing.txt","w");
 	computed_assignment = computed;
-	logs = stdout;
+	//logs = stdout;
 
 	if(!logs){perror("Error opening multiplexing->txt");}
 	Event * current;
@@ -498,6 +505,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 			if(((liste_evt->kind_p == FORWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->state_f) || ((liste_evt->kind_p == BACKWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->state_b)) // arc used
 			{
 				fprintf(logs,"The arc is used (pol = %d).\n",pol);
+			
 				fprintf(logs,"Adding elem (%d %d %d %d %d) - ",liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->kind_p);
 				if(pol == FIFO)
 				{

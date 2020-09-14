@@ -93,7 +93,7 @@ void test(unsigned int seed)
 
 	printf(" ---- \n Graph * generated ...\n");
 	fprintf(f,"\n ---- \n Graph * generated ...\n");
-	affiche_graph(&g,P,f);
+	//affiche_graph(&g,P,f);
 	printf("Number of routes on the graph : %d .\n",g.nb_routes);
 	printf("Number of routes on the loadest arc : %d .\n",load_max(&g));
 	printf("Length of the longest route (%d)(%d) (length)(*2).\n",longest_route(&g),longest_route(&g)*2);
@@ -313,10 +313,13 @@ void test(unsigned int seed)
 
 	
 	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, DEADLINE),multiplexing(&g, P, message_size, 10, DEADLINE),multiplexing(&g, P, message_size, 100, DEADLINE));
-	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, FIFO),multiplexing(&g, P, message_size, 10, FIFO),multiplexing(&g, P, message_size, 100, FIFO));
-	printf("%d \n",multiplexing(&g, P, message_size, 10, DEADLINE,0));
-	printf("%d \n",multiplexing(&g, P, message_size, 10, FIFO,0));
-
+//	printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, FIFO),multiplexing(&g, P, message_size, 10, FIFO),multiplexing(&g, P, message_size, 100, FIFO));
+	//printf("%d \n",multiplexing(&g, P, message_size, 10, DEADLINE,0));
+	//printf("%d \n",multiplexing(&g, P, message_size, 10, FIFO,0));
+	//int nb_pas = 0;
+	//recuit( &g, P, message_size,100,&nb_pas);
+	printf("%d \n",multiplexing(&g, P, message_size, 1, DEADLINE,1));
+	printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
 	free_graph(&g);
 	fclose(f);
 
