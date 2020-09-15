@@ -490,7 +490,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	else
 		liste_evt = init_computed(g,liste_evt,period,nb_periods);
 
-	liste_evt = init_BE(g,liste_evt,period,nb_periods);
+	//liste_evt = init_BE(g,liste_evt,period,nb_periods);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
 	int time_be = 0;
@@ -505,7 +505,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 			if(((liste_evt->kind_p == FORWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->state_f) || ((liste_evt->kind_p == BACKWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->state_b)) // arc used
 			{
 				fprintf(logs,"The arc is used (pol = %d).\n",pol);
-			
+
 				fprintf(logs,"Adding elem (%d %d %d %d %d) - ",liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->kind_p);
 				if(pol == FIFO)
 				{

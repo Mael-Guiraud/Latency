@@ -13,7 +13,7 @@ void init_arc(Arc * a)
 	if(DISTRIBUTED)
 		a->length = rand()%MAX_LENGTH;
 	else
-		a->length = MAX_LENGTH - rand()%(int)(MAX_LENGTH*0.1);
+		a->length = MAX_LENGTH +800 - rand()%1600;
 	a->nb_routes = 0;
 	a->period_f = NULL;
 	a->period_b = NULL;

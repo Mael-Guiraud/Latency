@@ -64,6 +64,9 @@ descente: dirs compil
 taboo: dirs compil 
 	./compil simultaboo
 
+simultiplexing: dirs compil 
+	./compil simultiplexing
+
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*
 	./compil simulNoWaiting

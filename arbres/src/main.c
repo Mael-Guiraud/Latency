@@ -68,6 +68,10 @@ int main (int argc, char *argv[])
 	{
 		simultaboo(seed);
 	}
+	if(!strcmp(argv[1],"simultiplexing") )
+	{
+		simultiplexing(seed);
+	}
 
 
 

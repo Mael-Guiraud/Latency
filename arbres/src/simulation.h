@@ -7,6 +7,7 @@ void print_distrib_margin_algo_waiting_int(int seed,int (*ptrfonction)(Graph,int
 void simuldistrib(int seed);
 void testcoupefpt(int seed);
 void testfpt(int seed);
+void simultiplexing(int seed);
 
 void simuldescente(int seed);
 

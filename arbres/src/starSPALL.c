@@ -3,6 +3,7 @@
 #include "structs.h"
 #include "simons.h"
 #include "test.h"
+#include <limits.h>
 #include "treatment.h"
 #include "starSPALL.h"
 
@@ -212,4 +213,106 @@ Assignment fpt_spall(Graph * g, int P, int message_size, int tmax)
 	}
 	free(tab);
 	return a;
+}
+//Permute les elements d'un tableau
+void fisher_yates(int * tab, int taille)
+{
+	int r;
+	int tmp;
+	for(int i=taille-1;i>0;i--)
+	{
+		r=rand()%(i+1);
+		tmp = tab[i];
+		tab[i]= tab[r];
+		tab[r]=tmp;
+	}
+}
+
+
+int* retourne_offset(Graph*  g, int taille_paquet, int* permutation)
+{
+	int nbr_route = g->nb_routes;
+	int * offsets;
+	offsets=(int*)malloc(sizeof(int)*nbr_route);
+	int offset = 0;
+
+	for(int i=0;i<nbr_route;i++)
+	{
+			offsets[permutation[i]]=offset;
+			offset+=taille_paquet;
+
+	}
+
+	
+	return offsets;
+}
+int *retourne_departs(Graph*  g, int * offsets)
+{
+	int nbr_route = g->nb_routes;
+	int* m_i = (int*)malloc(sizeof(int)*nbr_route);
+	int min = INT_MAX;
+	for(int i=0;i<nbr_route;i++)
+	{
+		m_i[i] = offsets[i] - route_length_untill_arc(g,i,&g->arc_pool[g->nb_routes],FORWARD);
+		if(m_i[i]<min)
+			min = m_i[i];
+	}
+	for(int i=0;i<nbr_route;i++)
+	{
+		m_i[i] += (-min);
+	}
+	return m_i;
+}
+int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
+{
+	int *m_i;
+	int release[g->nb_routes];
+	int deadline[g->nb_routes];
+	int ids[g->nb_routes];
+	int permutation[g->nb_routes];
+	int * offsets;
+	int min = INT_MAX;
+	int temps_restant;
+	for(int compteur_rand = 0;compteur_rand<1000;compteur_rand++)
+	{
+
+		for(int k=0;k<g->nb_routes;k++)
+		{
+			permutation[k]=k;
+		}
+		fisher_yates(permutation, g->nb_routes);
+		offsets= retourne_offset(g, message_size, permutation);
+		m_i = retourne_departs( g, offsets);
+
+
+
+		for(int i=0;i<g->nb_routes;i++)
+		{
+			ids[i]=i;
+
+
+			release[i] = m_i[i]+route_length_with_buffers_forward(g,i)
+			+route_length_untill_arc(g,i,&g->arc_pool[g->nb_routes],BACKWARD);
+			temps_restant = route_length(g,i) - route_length_untill_arc_without_delay(g,i,&g->arc_pool[g->nb_routes],BACKWARD);
+			deadline[i] = tmax  +message_size - temps_restant;
+		}
+		//printf("\n");
+		int *res = FPT_PALL(g,ids,release,deadline,g->nb_routes,message_size,P);
+		if(res)
+		{	
+			for(int i=0;i<g->nb_routes;i++)
+			{
+				
+				g->arc_pool[g->nb_routes].routes_delay_b[i] = res[i];
+			}
+		}
+		int val = travel_time_max_buffers(g);
+		if(val)
+		{
+			if(val<min)
+				min = val;
+		}
+	}
+
+	return min;
 }

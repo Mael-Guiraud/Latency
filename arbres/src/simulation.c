@@ -1098,3 +1098,53 @@ void simultaboo(int seed)
 	
 		
 }
+
+void simultiplexing(int seed)
+{
+
+	srand(seed);
+
+	int message_size = MESSAGE_SIZE;
+	
+	int P;
+				
+	FILE* f = fopen("resmult","w");
+
+
+	/*Graph  g = init_graph_random_tree(STANDARD_LOAD);
+	if(FIXED_PERIOD_MOD)
+	{
+		P = PERIOD;
+	}
+	else
+		P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
+	if(TMAX_MOD)
+	{
+		tmax = TMAX;
+	}
+	else
+		tmax = longest_route(&g)*2 + margin;*/
+
+	long long mult;
+	long long fpt;
+
+	
+	for(int j=0;j<3000;j+=500)
+	{
+		fpt = 0;
+		mult = 0;
+		for(int i=0;i<100;i++)
+		{
+			Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
+			P = PERIOD;
+			mult += multiplexing(&g, P, message_size, 10, FIFO,0)-2*longest_route(&g);
+			fpt += FPT_PALL_star(&g,  P,  message_size,  longest_route(&g)*2 + j) - 2* longest_route(&g);
+			
+			//free_graph(&g);
+		}
+		fprintf(f,"%d %d %d\n",j,mult/100,fpt/100);
+		
+		
+	}
+	fclose(f);
+}
