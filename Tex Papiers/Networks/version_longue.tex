@@ -29,7 +29,7 @@
 \newcommand\greedydeadline{\texttt{GreedyDeadline}\xspace}
 \newcommand\MLS{\texttt{MLS}\xspace}
 \newcommand\PMLS{\texttt{PMLS}\xspace}
-\newcommand\EPMLS{\texttt{EPMLS}\xspace}
+\newcommand\ASPMLS{\texttt{ASPMLS}\xspace}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
@@ -691,7 +691,7 @@ $A_i$ is compact restricted to $COMP_{i+1}$, which proves the induction and the 
 We now present an algorithm to find a $(P,\tau)$-periodic assignment by trying all compact assignments.
 
 \begin{theorem}\label{th:FPT}
-$\pazl \in \FPT$ when parametrized by the number of routes.
+$\pazl \in \FPT$ over star routed networks when parametrized by the number of routes.
 \end{theorem}
 \begin{proof}
 Let $N = ({\cal R},\omega)$ be a star routed network and let $P$ be the period and $\tau$ the size of a datagram. First, remark that for a given assignment and a route $r_0$ with offset $o$, by removing $o$ to all offsets, we can always assume that its offset is zero. By this remark and Prop.~\ref{prop:compactification} we need only to consider all \emph{compact assignments} with an \emph{offset $0$} for the route $r_0$. We now evaluate the number of compact assignments and prove that it only depends on $n$ the number of routes to prove the theorem.
@@ -852,8 +852,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
     This algorithm does not take into account the periodicity, which may create collisions. Let $r_0$ be the first route selected by the algorithm, then $t_0 = t(r_0,c_2)$ is the first time at which a datagram go through $c_2$.
 	Then, if all routes $r$ are such that $t(r, c_2) \leq t_0 + P - \tau$, 
 	then by construction, there are no collisions on the central arc.
-    However, if a route $r$ has a larger $t(r, c_2)$, since we consider everything modulo $P$ to determine collision, it may collide with another route. Therefore we correct \greedydeadline by this simple modification: $s \geq t$ is the smallest time for which there is $r \in U$ with a release time larger or equal to $s$ \emph{such that there is no collision if a datagram goes through $c_2$ at time $s$}. This rule guarantes that if \greedydeadline succeeds to set all waiting times, it finds a solution to \wta. However, it can fails to find an $s$
-    at some point because of the constraint on collisions and then it stops.
+    However, if a route $r$ has a larger $t(r, c_2)$, since we consider everything modulo $P$ to determine collision, it may collide with another route. Therefore we correct \greedydeadline by this simple modification: $s \geq t$ is the smallest time for which there is $r \in U$ with a release time larger or equal to $s$ \emph{such that there is no collision if a datagram goes through $c_2$ at time $s$}. This rule guarantes that if \greedydeadline succeeds to set all waiting times, it finds a solution to \wta. However, it can fails to find the value $s$ at some point because of the constraint on collisions cannot be satisfied. In that case \greedydeadline stops without finding a solution.
     
     %Algorithm~\ref{alg:GD} is the formal description of the previous algorithm. 
     % The function  min\_non\_assigned(eligible\_time) returns the non assigned route with the smallest time eligible time. The function update(t,free\_intervals) removes an interval of size $\tau$ beginning at t, which correspond to the message,  from free\_intervals.
@@ -889,15 +888,12 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
      %\end{algorithmic}
      %\end{algorithm}
 
-     \textbf{TODO:} Donner un exemple de cet algo.
+     \textbf{TODO:} Donner un exemple de run de cet algo.
 
 
 
-    The complexity of \greedydeadline is in $O(n\log(n))$, using the proper data structures. The set of routes $U$ must be maintained in a binary heap
-    to be able to find the one with smallest deadline in time $O(\log(n))$. 
-    To deal with the possible collisions, one maintains a list of the intervals
-    of time during which a datagram can go through $c_2$. Each time the waiting time of a route is fixed, an interval is split into at most two intervals in constant time. During the whole algorithm, each element of this list is used at most twice
-    either when doing an insertion or looking for the next free interval. Hence, the time needed to maintain the list is in $O(n)$. 
+    The complexity of \greedydeadline is in $O(n\log(n))$, using the proper data structures. The set of routes $U$ must be maintained in a binary heap to be able to find the one with smallest deadline in time $O(\log(n))$. To deal with the possible collisions, one maintains a list of the intervals
+    of time during which a datagram can go through $c_2$. Each time the waiting time of a route is fixed, an interval is split into at most two intervals in constant time. During the whole algorithm, each element of this list is used at most twice either when doing an insertion or when looking for the next free interval. Hence, the time needed to maintain the list is in $O(n)$. 
   
      \subsection{Earliest Deadline Scheduling}\label{sec:wtaheuristic}
      
@@ -905,35 +901,26 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
      The problem \wta is the same as a classical earliest deadline scheduling problem, if we forget the periodicity. Given a set of jobs with \emph{release times} and \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be dealt with before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution which minimizes the time at which the last job is scheduled. On the other hand, if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
      The polynomial time algorithm which solves this scheduling problem is similar to \greedydeadline. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there is no solution, which proves that the algorithm is in polynomial time.
      
-     The problem \wta is the same as this scheduling problem (but the periodicity).
-     The jobs are the routes, the size of a datagram is the running time of a job, 
-     and both the deadline and the release time are defined in the same way.
+     The problem \wta is the same as this scheduling problem but adding constraints arising from
+     the periodicity. The jobs are the routes, the size of a datagram is the running time of a job, 
+     and the deadline and the release time are the same in both models.
 	 Let us call \textbf{M}inimal \textbf{L}atency \textbf{S}cheduling, denoted by \MLS, the algorithm which transforms an instance of \wta into one of the described scheduling problem to solve it in time $O(n^2\log(n))$ using the algorithm of~\cite{simons1978fast}.
      
 
-     Recall that $t(r,c_2)$ is the time at which the message of $r$ goes through $c_2$. Let us denote by $t_{min}$ and $t_{max}$ the smallest and largest value of the $t(r_i,c_2)$ for all $i \in[n]$. When \MLS finds an assignment $A$, it always satisfies $PT(r) < d(r)$ for all $r$. Let us assume that $t_{max}- t_{min} \leq P -\tau $, then all datagrams go through $c_2$ in a interval of time less than $P$. Hence, when we compute potential collisions modulo $P$, all their 
-     relative position stay the same and the correction of the used scheduled 
-     algorithm guarantes that there is no collision. However, if $t_{max}- t_{min} > P -\tau $, then computing the $t(r_i,c_2)$ modulo $P$ could reveal somme collision. Since the scheduling algorithm minimizes $t_{max}$, it tends to find 
-     small values for $t_{min} - t_{max}$ and \PMLS may succeed in finding a valid assignment (as shown in Sec.~\ref{sec:resultsPALL}), but not for all instances. 
+     Recall that $t(r,c_2)$ is the time at which the message of $r$ goes through $c_2$. Let us denote by $t_{min}$ and $t_{max}$ the smallest and largest value of $t(r_i,c_2)$ for all $i \in[n]$. When \MLS finds an assignment $A$, it always satisfies $PT(r) < d(r)$ for all $r$. Moreover, by construction \MLS schedules the datagrams without collision if we forget about the periodicity (each route send only one datagram). Let us assume that $t_{max}- t_{min} \leq P -\tau $, then all datagrams go through $c_2$ during a interval of time less than $P$. Hence, when we compute potential collisions modulo $P$, all the relative positions of the datagrams stay the same which implies there is no collision. However, if $t_{max}- t_{min} > P -\tau $, then computing $t(r_i,c_2)$ modulo $P$ for all $i$ could reveal some collisions. Since the scheduling algorithm minimizes $t_{max}$, it tends to find 
+     small values for $t_{max} - t_{min}$ and \PMLS may succeed in finding a valid assignment (as shown in Sec.~\ref{sec:resultsPALL}), but not for all instances. 
      
      
      We now present a variant of the previous algorithm, that we call
-     \textbf{P} \textbf{M}inimal \textbf{L}atency \textbf{S}cheduling, denoted by     \PMLS. The aim is to deal with the periodicity, by modifiying the instance without changing the assignments, so that the chance of finding a solution with $t_{max}- t_{min} \leq P -\tau $ are larger.  Remark that if an instance has a valid assignment, we can guarantee that one route has a waiting time zero in some valid assignment. 
+     \textbf{P} \textbf{M}inimal \textbf{L}atency \textbf{S}cheduling, denoted by \PMLS. The aim is to deal with the periodicity, by modifiying the instance without changing the assignments, so that the chance of finding a solution with $t_{max}- t_{min} \leq P -\tau $ are larger.  Remark that if an instance has a valid assignment, we can guarantee that one route has a waiting time zero in some valid assignment. 
      
-     Algorithm \PMLS runs, for each route $r \in \cal{R}$, the algorithm \MLS on an instance defined as follows. 
-     Let $RT(r)$ be the release time of $r$, subtract it to all the release times and deadlines of the other routes. Therefore $RT(r)$ is zero in this instance
-     and the waiting time $w_r$ is set to zero, so that the datagram of $r$ goes through $c_2$ at time $0$. Then, as in Prop.~\ref{prop:canonical}, the instance is modified so that all release times are in $[P-\tau]$. Each release time $RT(r_i)$ is replaced by $RT(r_i) \mod P$ and $d(r_i) = d(r_i) - (RT(r_i) - RT(r_i) \mod P)$. Furthermore, if the release time of a route $r$ is between $P-\tau$ and $P$, we set it to $0$ and $d(r) = d(r) - P$.  The deadline of each route is set to the minimum of its deadline and $P - \tau$. Hence, by design, if \MLS finds a solution for such a modified instance, we have $t_{max}- t_{min} \leq P -\tau $. Therefore, the assignment is valid.
-
+     Algorithm \PMLS runs, for each route $r \in \cal{R}$, the algorithm \MLS on an instance defined as follows. Let $RT(r)$ be the release time of $r$, subtract it to all the release times and deadlines of the other routes. Therefore, $RT(r)$ is zero in the instance we build and the waiting time $w_r$ is set to zero. Hence the datagram of $r$ goes through $c_2$ at time $0$ and $t_min = 0$.
+     Then, as in Prop.~\ref{prop:canonical}, the instance is modified so that all release times are in $[P-\tau]$. Each release time $RT(r_i)$ is replaced by $RT(r_i) \mod P$ and $d(r_i) = d(r_i) - (RT(r_i) - RT(r_i) \mod P)$. Furthermore, if the release time of a route $r$ is between $P-\tau$ and $P$, we set it to $0$ and $d(r) = d(r) - P$.  The deadline of each route is set to the minimum of its deadline and $P - \tau$. Hence, if \MLS finds a solution for such a modified instance, we have by construction of the instance $t_{max} \leq P -\tau $. Since $t_{min} = 0$, the assignment is valid. Hence, \PMLS
+     returns the first assignment it finds when running \MLS for some $r \in \cal{R}$.
 
      The instance of \wta we have defined in this transformation is equivalent 
      to the original instance, except we have fixed the waiting time of 
-     $r$ to be one. Since at least one route has waiting time zero if there is some valid assignment, if \MLS finds an assignment \PMLS also finds one. Algorithm \MLS is used at most $n$ times, thus the complexity of \PMLS is in $O(n^3\log(n))$. Note that \PMLS is a heuristic and may fail if for the $n$ modified instances
-     there is no solution using only an interval of time of size $P$ in $c_2$. 
-
-
-     \todo{reprendre -> bien dire que la construction garantit tmin = 0.
-     Donc, on va grace a MLS toujours trouver ce qu'il faut ? En tout cas simplifier tmax - tmin en tmax}
-
+     $r$ to be zero. If there is some valid assignment, then at least one route may have waiting time zero, then if \MLS finds an assignment then \PMLS also finds one. Algorithm \MLS is used at most $n$ times, thus the complexity of \PMLS is in $O(n^3\log(n))$. Note that \PMLS is a heuristic and may fail to find a solution even if it exists. It is the case when, for the $n$ modified instances, there is no solution with the $t(r_i,c_2)$ using an interval of time less than $P$ in $c_2$. 
 
 
 
@@ -967,52 +954,69 @@ As a warm-up, we give a simple FPT algorithm for \wta which is practical,
 and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes in the second algorithm is yet too large to be useful in practice. 
 
 \begin{theorem}\label{th:braFPT}
-$\wta \in \FPT$ when parametrized by the number of routes.
+$\wta \in \FPT$ over star routed networks when parametrized by the number of routes.
 \end{theorem}
 \begin{proof}
  Consider an instance of \wta, which can be characterized by a release time and a deadline for each route.
  We show that we can build a set of instances such that one of these instances has a valid assignment if and only if the original instance has a valid assignment.
 
-  As for \PMLS, for each route $r$, we consider the instance where $r$ has release time and waiting time zero ($RT(r) = w_r = 0$). The release times and deadlines of all routes are modified so that all release times are less than $P$ as in the transformation described for \PMLS. If there is an assignment such that for all $r \in \cal{R}$, $ < P-\tau$, then the periodicity does not come into play for this assignment and the algorithm \MLS will find it as explained in Sec.~\ref{sec:wtaheuristic}.
+  As for \PMLS, for each route $r$, we consider the instance where $r$ has release time and waiting time zero ($RT(r) = w_r = 0$). The release times and deadlines of all routes are modified so that all release times are less than $P$ as in the transformation described for \PMLS. If there is an assignment such that $t_{max} < P-\tau$, then the periodicity does not come into play for this assignment and the algorithm \MLS will find the assignment as explained in Sec.~\ref{sec:wtaheuristic}.
 
- Now, remark that if there is a periodic assignment for an instance, then there is a periodic assignment satisfying for all $i$, $y_i \leq 2P - \tau$.  Indeed, if there is a $i$ such that $y_i > 2P$ in
-a periodic assignment, then setting $y_i = y_i - P$ cannot create a collision and improve the 
-process time of $r_i$ by $P$. Since $y_i - P > P$, it is a valid assignment, that is the route $r_i$ sends its message after its release time. Moreover, for all $i \neq j$, it is not possible that $2P-\tau < y_i \leq 2P$, since by construction $y_j = 0$ and it would induce a collision.
+ Now, remark that if there is a valid assignment for an instance with the properties just stated,
+ then there is a valid assignment satisfying for all $i$, $t(r_i,c_2) \leq 2P - \tau$.  
+ Indeed, if there is a $i$ such that $t(r_i,c_2) \geq 2P$ in a periodic assignment, then we have 
+ $w_i = t(r_i,c_2) - \lambda(r_i,c_2) \geq P$. Hence, we can set $w_i = w_i -P \geq 0$ and we still have 
+ a valid assignment. Moreover, for all $r_i \neq r$, it is not possible that $2P-\tau < \lambda(r_i,c_2) \leq 2P$, since it would imply a collision between $r$ and $r_i$.
  
 
-From a periodic assignment satisfying that for all $i$, $y_i \leq 2P - \tau$, we define 
-a new instance whose periodic assignments are a subset of the periodic assignments of the original instance. Moreover, one of the periodic assignments of the new instance satisfies for all $i$, $y_i \leq P - \tau$ and will thus be found by MLS. Let $S$ be the set of routes $r_i$ such that  $P - \tau < y_i \leq 2P - \tau$. The new instance is defined by setting the release time of the routes in $S$ to $0$ and by subtracting $P$ to their deadlines. Then the considered periodic assignment is a solution of the new instance with all $y_i \leq P -\tau$. Moreover any solution of the new instance is a solution of the original one, since we have made the constraints harder.   
+From an instance $I$, with the properties of the first paragraph, we define a new instance $I'$ whose valid assignments are a subset of the ones of $I$. Moreover, one of the valid assignments of $I'$ satisfies that for all $i$, $t(r_i,c_2) \leq P - \tau$ and is thus found by \MLS. 
+Let us now consider $A$ a valid assignment of $I$, we can assume that $t(r_i,c_2) \leq 2P - \tau$. Let $S$ be the set of routes $r_i$ such that  $P - \tau < t(r_i,c_2) \leq 2P - \tau$. The instance $I'$ is defined by changing, for all route $r \in S$, $RT(r)$ and $d(r)$ to $RT(r) - P$ and $d(r) - P$. Then, by construction $A$ is also a valid assignment of $I'$. Assigment $A$ as a solution of $I'$, satisfies $t(r_i,c_2) \leq P - \tau$ for all $i\in [n]$. 
 
-The FTP algorithm is the following: for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run MLS on the new instance. If there is an assignment, then we have proved that there is an $S$ such that the modified instance has a solution with all messages going through the central arc between $0$ and $P - \tau$, a solution that MLS will find.
+The FTP algorithm is the following: for each route $r$ build a modified instance as in $\PMLS$.
+Then, for each subset $S$ of routes, remove $P$ to the release time and to the deadline of each route in $S$ and run \MLS on the instance so modified. If there is a valid assignment, then we have proved that there is some $S$, such that the instance built from $S$ has a valid assignment with $t(r_i,c_2) \leq P - \tau$ for all $i\in [n]$. Hence, \MLS finds a valid assignment for this instance.
 \end{proof}
 
-The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. Moreover, for each backward route to be scheduled between $P$ and $2P-\tau$, it must have a deadline larger than $P + \tau$ since between $P$ and $P + \tau$ the first message goes through the central arc. Often, only a small fraction of the routes have a deadline larger than $P + \tau$, say $k$ of them and we explore only $2^k << 2^n$ cases. Let us call this algorithm {\bf FPT-PMLS} for the rest of the article.
+The algorithm of Theorem~\ref{th:braFPT} has a complexity of $O(2^nn^3\log(n))$. If we consider some valid assignment, the routes $r$ with $t(r_i,c_2) > P$, must satisfy $t(r_i,c_2) > P + \tau$ to avoid collision with the first route. Hence, the deadline of these routes must be larger than $P + \tau$. These routes
+are exactly those we want to choose in $S$, hence we can enumerate only the subsets of routes
+with a deadline larger than $P + \tau$. In practice, only $k$ routes have a deadline larger than $P + \tau$with $k << n$, and we need only to consider $2^k$ subsets. Let us call this algorithm All Subsets \PMLS, 
+and let us denote it by \ASPMLS.
 
 
 \begin{theorem}\label{th:pallFPT}
-$\pall \in \FPT$ when parameterized by the number of routes.
+$\pall \in \FPT$ over star routed networks when parameterized by the number of routes.
 \end{theorem}
 \begin{proof}
- Consider an instance of \pall which has a solution. We now characterize such a solution by a set of necessary and sufficient linear equations and inequations it must satisfy. 
- For simplicity, we consider $x_i$ the time at which a message goes through $c_t$ on the forward route $r_i$ and $y_i$ the time at which it goes through $c_t$ on the backward route $r_{\rho(i)}$.
- Choosing values for $x_i$ and $y_i$ is equivalent to choosing the offsets $m_i$ and $m_{\rho(i)}$.
- 
- The values $x_i$ and $y_i$ satisfies the following inequation: $y_i \geq x_i + 2\lambda(r_i)$.
-We may assume that the first route has release time and waiting time zero, 
-that is $x_0 = y_0 = 0$. We can also guarantee that all $x_i$ are less than $P-\tau$ if we modify
-the release times and deadlines without changing the possible assignments. As in Theorem~\ref{th:braFPT}, we have all $y_i < 2P - \tau$,
-and  when $y_i \geq P - \tau$ we replace $y_i \geq x_i + 2\lambda(r_i) $ by $y_i \geq x_i + 2\lambda(r_i) - P$ and we replace the deadline $d(r_i)$ by $d(r_i) -P$. In that way we guarantee that all $y_i$ are less than $P-\tau$.  
- 
- Since all $x_i$ and $y_i$ are in $[P-\tau]$, taking the values of $x_i$ and $y_i$ modulo $P$
- does not change anything, which makes easy to express the absence of collisions between routes.
- To express that there are no collision between forward routes, the following equations must be  satisfied: for all $i$, $x_i + \tau \leq x_{i+1}$. We assume that the routes are here indexed such that the $x_i$ are in ascending order.
- Let $\sigma : [n] \rightarrow [n]$ be the permutation such that the $y_{\sigma(i)}$ are in ascending order.
- To express that there are no collision between backward routes, the following equations must be  satisfied: for all $i$, $y_{\sigma(i)} + \tau \leq y_{\sigma(i+1)}$. Finally, the deadline of each route must be respected, that is for each $i$, $y_i \leq d(r_i)$. 
+ Consider a star routed network, instance of \pall whith a valid assignment. We now characterize such a valid assignment by a set of necessary and sufficient linear equations and inequations it must satisfy. 
+ These conditions are expressed on the values $t(r,c_1)$ and $t(r,c_2)$ and setting those value is
+ equivalent to setting the offsets and the waiting times, that is choosing an assignment.
 
- Let $S$ be the system of all the previous equations, by construction of $S$, any of its solutions seen as a choice of offsets is an assignment since there are no collisions in the forward and backward period between $0$ and $P$ and we have guaranteed that all routes meet their deadlines. However, the solutions of $S$ may have rational values, while offsets must be integers. 
-Remark that $x +e_1 \leq y + e_2$ implies $\lceil x \rceil +e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers. Therefore, since all the inequations and equations of $S$ have this form, if we take the upper floor of the values of a solution of $S$, it is still a solution of $S$ with \emph{integer} values. As a consequence, any rounded solution of $S$ yields a solution of the considered instance of \pall.
+First, we assume the star routed network is canonical. Hence there is an assignment $A$, such that for all routes $r \in \cal{R}$, $0 \leq t(r,c_1) < P -\tau$ and $0 \leq t(r,c_2) < 2P-\tau$. 
+By definition $t(r,c_2) = t(r,c_1) + \omega(r,c_2) + w_r$ and a waiting time is non-negative, hence 
+$t(r,c_2) \leq t(r,c_1) + \omega(r,c_2)$. 
+Now, let $S$ be the set defined as in Theorem~\ref{th:braFPT}, of the routes $r$ such that  $P - \tau < t(r,c_2) \leq 2P - \tau$. We want to guarantee that for $r \in \cal{R}$, $t(r,c_2) \in [P-\tau]$.
+To do that, we replace $t(r,c_2) \leq t(r,c_1) + \omega(r,c_2)$ by $t(r,c_2) \leq t(r,c_1) + \omega(r,c_2) - P$ and $d(r)$ by $d(r) - P$ for all $r \in S$. Remark now, that the linear constraints depend on $S$, which itself depends on $A$.
 
-Now remark that the construction of $S$ depends on the choice of the order of the forward routes, the order of the backward routes, and on the choice of the backward routes where $P$ has been subtracted from the offset. Hence to solve \pall, we must solve $2^n(n!)^2$ systems with $2n$ variables and a bitsize of the same order than the instance of \pall. Since solving each system can be done in polynomial time it proves the theorem.
+ Let $\sigma$ and $\sigma'$ two permutations of $\Sigma_n$ such that $\sigma$ is the order 
+ of the routes $r_0,\dots, r_{n-1}$ according to $t(r,c_1)$ and $\sigma'$ according to $t(r,c_2)$.
+ Since all $t(r,c_1)$ and $t(r,c_2)$ are in $[P-\tau]$, taking their value modulo $P$
+ yields themselves. Hence, we can express the constraints on the routes by adding the following equations
+ to the ones of the previous paragraph:
+ 
+ \begin{itemize}
+ 	\item for all $i < n-1$, $t(r_{\sigma_{i}},c_1) \leq r_{\sigma_{i+1}},c_1 + \tau)$ (no collision on $c_1$)
+ 	\item for all $i < n-1$, $t(r_{\sigma'_{i}},c_2) \leq r_{\sigma'_{i+1}},c_2 + \tau)$ (no collision on $c_2$)
+ 	\item for all $i < n$,  $t(r_{\sigma'_{i}},c_2) < d(r_i)$ (deadline respected)
+ \end{itemize}
+
+Consider now the system of equations $E_{S,\sigma,\sigma'}$ we have built from $A$.
+The values $t(r,c_1)$ and $t(r,c_2)$ given by $A$ satisfy the system by construction. 
+Moreover, any solution to these equations, yield a valid assignment since we have guaranteed 
+that there is no collision, the offsets and the waiting times are non-negative and all routes meet their deadlines. However, a solution of $E_{S,\sigma,\sigma'}$ may be rational, while offsets and waiting times must be integers. We use the following simple fact: $x + e_1 \leq y + e_2$ implies $\lceil x \rceil + e_1 < \lceil y \rceil + e_2$ when $e_1$ and $e_2$ are integers. Since all equations of $E_{S,\sigma,\sigma'}$ have this form, if we take the upper floor of its components, it is still a solution of $E_{S,\sigma,\sigma'}$ with \emph{integer} values. As a consequence, any solution of $E_{S,\sigma,\sigma'}$ yields a solution of the original instance of \pall.
+
+The algorithm to solve $\pall$ is the following. Build $E_{S,\sigma,\sigma'}$ for all triples $(S,\sigma,\sigma')$. Then, solve each linear system, if it admits a solution convert it back into a
+valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ and $n!$ orders $\sigma$,
+hence $2^n(n!)^2$ systems with $2n$ variables and a bitsize of the same order as the original instance
+must be solved. Since solving each system can be done in polynomial time in the size of the instance, it proves that the algorithm is \FPT in $n$. Moreover, it always finds a valid assignment if there is one, since we have shown that from a valid assignment, we can find $(S,\sigma,\sigma')$ for which the values associated to $A$ satisfy$E_{S,\sigma,\sigma'}$.
 \end{proof}
 
 
