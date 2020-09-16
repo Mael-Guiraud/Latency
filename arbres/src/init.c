@@ -310,7 +310,7 @@ Graph init_graph_etoile(int nb, int P)
 	g.routes = malloc(sizeof(Route*)*nb_routes);
 	g.size_routes = malloc(sizeof(int)*nb_routes);
 	g.arc_pool_size = nb_total_arcs;
-	g.contention = malloc(sizeof(Route*)*nb_routes);
+	g.contention = calloc(nb_routes,sizeof(Route*));
 
 	g.nb_levels = malloc(sizeof(int)*nb_routes);
 				
@@ -327,38 +327,38 @@ Graph init_graph_etoile(int nb, int P)
 
 	for(int j=0;j<nb_routes;j++)
 	{
-		if(j >1)
-		printf("route %d %p\n",j,g.routes[1][0]);
+	
+		//printf("route %d %p\n",j,g.routes[1][0]);
 		g.routes[index_route]=malloc(sizeof(Route)*3);
-		if(j >1)
-		printf("apres maloc %p \n",g.routes[1][0]);
+	
+		//printf("apres maloc %p \n",g.routes[1][0]);
 		g.size_routes[index_route] = 3;
 
 		g.routes[index_route][0] =  &g.arc_pool[index_arc];
-		printf("Creation route %d 0 = %p index arc  %d %p\n",index_route,&g.arc_pool[index_arc],index_arc,g.routes[index_route][0]);
+		//printf("Creation route %d 0 = %p index arc  %d %p\n",index_route,&g.arc_pool[index_arc],index_arc,g.routes[index_route][0]);
 		//printf(" %d %d lenght = %d \n",index_route,0,g.routes[index_route][0]->length);
 		g.arc_pool[index_arc].routes_id[g.arc_pool[index_arc].nb_routes] = index_route;
 		g.arc_pool[index_arc].nb_routes++;
 		g.arc_pool[index_arc].bbu_dest = index_route;
 		g.arc_pool[index_arc].contention_level = -1;
-			if(j >1)
-		printf("1 %p \n",g.routes[1][0]);
+		
+		//printf("1 %p \n",g.routes[1][0]);
 
 		index_arc++;
 		//Arc partagé
 		
 		g.routes[index_route][1] =  &g.arc_pool[nb_routes];
-		printf("Creation route %d 1 = %p index arc  %d \n",index_route,&g.arc_pool[nb_routes],nb_routes);
-			if(j >1)
-		printf("2 %p \n",g.routes[1][0]);
+		//printf("Creation route %d 1 = %p index arc  %d \n",index_route,&g.arc_pool[nb_routes],nb_routes);
+	
+		//printf("2 %p \n",g.routes[1][0]);
 		g.arc_pool[nb_routes].routes_id[g.arc_pool[nb_routes].nb_routes] = index_route;
 		g.arc_pool[nb_routes].nb_routes++;
 		g.arc_pool[nb_routes].contention_level = 0;
-		if(j >1)
-		printf("3 %p \n",g.routes[1][0]);
+	
+		//printf("3 %p \n",g.routes[1][0]);
 	
 		g.routes[index_route][2] =  &g.arc_pool[j];
-			printf("Creation route %d 2 = %p index arc  %d \n",index_route,&g.arc_pool[j],j);
+			//printf("Creation route %d 2 = %p index arc  %d \n",index_route,&g.arc_pool[j],j);
 		g.arc_pool[j].routes_id[g.arc_pool[j].nb_routes] = index_route;
 		g.arc_pool[j].nb_routes++;
 		g.arc_pool[j].bbu_dest = index_route;
@@ -368,10 +368,6 @@ Graph init_graph_etoile(int nb, int P)
 
 	
 
-	for(int j=0;j<nb_routes;j++)
-	{
-		printf("%p %p %p pointeurs \n",g.routes[j][0],g.routes[j][1],g.routes[j][2]);
-	}
 
 
 	g.arc_pool[nb_routes].period_f = calloc(P,sizeof(int));

@@ -294,25 +294,26 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 			release[i] = m_i[i]+route_length_with_buffers_forward(g,i)
 			+route_length_untill_arc(g,i,&g->arc_pool[g->nb_routes],BACKWARD);
 			temps_restant = route_length(g,i) - route_length_untill_arc_without_delay(g,i,&g->arc_pool[g->nb_routes],BACKWARD);
-			deadline[i] = tmax  +message_size - temps_restant;
+			deadline[i] = release[i]+tmax  +message_size - temps_restant;
+			//printf("%d %d %d\n",release[i],deadline[i],m_i[i]);
 		}
-		//printf("\n");
+		
 		int *res = FPT_PALL(g,ids,release,deadline,g->nb_routes,message_size,P);
 		if(res)
 		{	
 			for(int i=0;i<g->nb_routes;i++)
 			{
-				
+				//printf("res[i] = %d \n",res[i]);	
 				g->arc_pool[g->nb_routes].routes_delay_b[i] = res[i];
 			}
-		}
-		int val = travel_time_max_buffers(g);
-		if(val)
-		{
-			if(val<min)
-				min = val;
-		}
-	}
+			int val = travel_time_max_buffers(g);
 
-	return min;
+			if(val<min)
+				return val;
+			
+		}
+		
+	}
+	
+	return 0;
 }

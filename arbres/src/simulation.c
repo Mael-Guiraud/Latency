@@ -1125,26 +1125,31 @@ void simultiplexing(int seed)
 	else
 		tmax = longest_route(&g)*2 + margin;*/
 
-	long long mult;
-	long long fpt;
+	int mult;
+	int fpt;
 
-	
-	for(int j=0;j<3000;j+=500)
+	for(int j=0;j<12000;j+=1000)
 	{
+		printf("\nmargin %d :",j);
 		fpt = 0;
 		mult = 0;
 		for(int i=0;i<100;i++)
 		{
 			Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
 			P = PERIOD;
-			mult += multiplexing(&g, P, message_size, 10, FIFO,0)-2*longest_route(&g);
-			fpt += FPT_PALL_star(&g,  P,  message_size,  longest_route(&g)*2 + j) - 2* longest_route(&g);
+			if(multiplexing(&g, P, message_size, 10, FIFO,0) <= j+2*longest_route(&g))
+				mult++;
+			if(FPT_PALL_star(&g,  P,  message_size,  longest_route(&g)*2 + j))
+				fpt ++;
+		
 			
-			//free_graph(&g);
+			free_graph(&g);
+			fprintf(stdout,"\r%d/100",i+1);fflush(stdout);
 		}
-		fprintf(f,"%d %d %d\n",j,mult/100,fpt/100);
+		fprintf(f,"%d %d %d\n",j,mult,fpt);
 		
 		
 	}
+	printf("\n");
 	fclose(f);
 }

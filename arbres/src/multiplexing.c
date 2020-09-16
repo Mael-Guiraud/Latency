@@ -558,7 +558,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	}
 
 	fclose(logs);
-	printf("%d %d \n",longest_time_elapsed,time_be);
+	//printf("%d %d \n",longest_time_elapsed,time_be);
 	return longest_time_elapsed;
 }
 
