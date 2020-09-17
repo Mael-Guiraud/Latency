@@ -318,7 +318,8 @@ void test(unsigned int seed)
 	//printf("%d \n",multiplexing(&g, P, message_size, 10, FIFO,0));
 	//int nb_pas = 0;
 	//recuit( &g, P, message_size,100,&nb_pas);
-	printf("%d \n",multiplexing(&g, P, message_size, 1, DEADLINE,1));
+	int timebe=0;
+	printf("%d \n",multiplexing(&g, P, message_size, 1, DEADLINE,1,&timebe));
 	printf("\n printing graphvitz ...");print_graphvitz(&g,"../view/view.dot");printf("Ok.\n");
 	free_graph(&g);
 	fclose(f);
@@ -1108,7 +1109,7 @@ void simultiplexing(int seed)
 	
 	int P;
 				
-	FILE* f = fopen("resmult","w");
+	FILE* f = fopen("resmult85","w");
 
 
 	/*Graph  g = init_graph_random_tree(STANDARD_LOAD);
@@ -1126,19 +1127,26 @@ void simultiplexing(int seed)
 		tmax = longest_route(&g)*2 + margin;*/
 
 	int mult;
+	int multbe;
 	int fpt;
-
+	int timebe;
 	for(int j=0;j<12000;j+=1000)
 	{
 		printf("\nmargin %d :",j);
 		fpt = 0;
 		mult = 0;
+		multbe = 0;
 		for(int i=0;i<100;i++)
 		{
 			Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
 			P = PERIOD;
-			if(multiplexing(&g, P, message_size, 10, FIFO,0) <= j+2*longest_route(&g))
+			timebe=0;
+			if(multiplexing(&g, P, message_size, 10, FIFO,0,&timebe) <= j+2*longest_route(&g))
 				mult++;
+			if(multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebe) <= j+2*longest_route(&g))
+				multbe++;
+			//if(timebe  <= j+longest_route(&g))
+			//	multbe++;
 			if(FPT_PALL_star(&g,  P,  message_size,  longest_route(&g)*2 + j))
 				fpt ++;
 		
@@ -1146,7 +1154,7 @@ void simultiplexing(int seed)
 			free_graph(&g);
 			fprintf(stdout,"\r%d/100",i+1);fflush(stdout);
 		}
-		fprintf(f,"%d %d %d\n",j,mult,fpt);
+		fprintf(f,"%d %d %d %d\n",j,mult,multbe,fpt);
 		
 		
 	}
