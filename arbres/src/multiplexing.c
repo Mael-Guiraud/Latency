@@ -124,22 +124,25 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 		new->suiv = NULL;
 		return new;
 	}
-	/*if(kind_message == 0)
+	Elem * debut = l;
+	//messageBE
+	if(kind_message == 0)
 	{
 		while(l->suiv)
 		{
 			l = l->suiv;
-			//printf("%p \n",l->kind_message);
+		//printf("%d  %p\n",l->kind_message,l);
 		}
 		l->suiv = new;
 		new->suiv = NULL;
-	}*/
+		return debut;
+	}
 	if(l->deadline > deadline)//insertion au debut
 	{
 		new->suiv = l;
 		return new;
 	}
-	Elem * debut = l;
+	
 	//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
 	while(l->suiv)
 	{
@@ -218,15 +221,18 @@ void read_param_file(float * tab, int size)
 	FILE* file = fopen("beparameters","r");
 	if(!file){perror("Opening \"beparameters\" failure\n");exit(2);}
 	float sumn = 0.0;
+	
 	int trash;
 	for(int i = 0;i<size;i++)
 	{
 
 		fscanf(file,"%d %f ",&trash, &tab[i]);
 		sumn += tab[i];
+
 	//	printf("%f \n",tab[i]);
 	}
-	//printf("%f somme\n",sumn);
+	//printf("%f somme moy  = %f \n",sumn,moy/size);
+	fclose(file);
 }
 
 int inverse_transform(float * tab, int size)
@@ -259,18 +265,19 @@ Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 	{
 		//printf("i = %d \n",i);
 		//nb_paquets = 2;
-		nb_paquets = inverse_transform(tab,20);
+		nb_paquets = inverse_transform(tab,20)*20;
+		int interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
 			
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,j%g->nb_routes,0,0,INT_MAX,FORWARD,0);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i+interval*j,j%g->nb_routes,0,0,INT_MAX,FORWARD,0);
 		}
-		nb_paquets = inverse_transform(tab,20);
-		
+		nb_paquets = inverse_transform(tab,20)*20;
+		interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
 			//printf("ajouter elem back\n");
-			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,j%g->nb_routes,0,0,INT_MAX,BACKWARD,0);
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i+interval*j,j%g->nb_routes,0,0,INT_MAX,BACKWARD,0);
 		}
 		
 		
@@ -475,7 +482,7 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 	
 	return liste_evt;
 }
-int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed)
+int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be)
 {
 	logs = fopen("logs_multiplexing.txt","w");
 	computed_assignment = computed;
@@ -493,7 +500,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	//liste_evt = init_BE(g,liste_evt,period,nb_periods);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
-	int time_be = 0;
+	
 	while(liste_evt)
 	{
 		current = liste_evt;
@@ -527,7 +534,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 			else // arc free
 			{
 				fprintf(logs,"The arc is free.");
-				liste_evt = message_on_arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, &time_be);
+				liste_evt = message_on_arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, time_be);
 			}
 		}
 		else // arc
@@ -537,7 +544,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 			if( ( (liste_evt->kind_p == FORWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->elems_f) || ( (liste_evt->kind_p == BACKWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->elems_b) ) // if there is some messages to manage
 			{
 				fprintf(logs,"there is some messages in queue : \n");
-				liste_evt = arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, &time_be);
+				liste_evt = arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, time_be);
 			}
 			else
 			{
@@ -558,7 +565,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	}
 
 	fclose(logs);
-	printf("%d %d \n",longest_time_elapsed,time_be);
+	//printf("%d %d \n",longest_time_elapsed,time_be);
 	return longest_time_elapsed;
 }
 
