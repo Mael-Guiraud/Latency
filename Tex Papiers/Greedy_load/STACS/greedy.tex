@@ -1,5 +1,5 @@
+\documentclass[a4paper,UKenglish,cleveref, autoref, thm-restate]{lipics-v2019}
 
-\documentclass[a4paper,cleveref, autoref, thm-restate,UKenglish]{lipics-v2019}
 
 \usepackage[utf8]{inputenc}
 \usepackage{xspace}
@@ -41,13 +41,13 @@
 \title{Scheduling Periodic Messages on a Shared Link} %TODO Please add
 %\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
 
-\author{Ma\"el Guiraud}{David Laboratory, UVSQ, France \and Nokia Bell Labs, France}{mael.guiraud@uvsq.fr}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional
+%\author{Ma\"el Guiraud}{David Laboratory, UVSQ, France \and Nokia Bell Labs, France}{mael.guiraud@uvsq.fr}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional
 
-\author{Yann Strozecki}{David Laboratory, UVSQ, France \and \url{https://yann-strozecki.github.io/}}{yann.strozecki@uvsq.fr}{}{}
+\author{Anonymous}{Unknown}{}{}{}
 
-\authorrunning{M. Guiraud and Y. Strozecki} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+\authorrunning{Anonymous} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
 
-\Copyright{Maël Guiraud and Yann Strozecki} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+\Copyright{Anonymous} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
 \ccsdesc[500]{Theory of computation~Design and analysis of algorithms}
 
@@ -57,7 +57,7 @@
 \keywords{Scheduling, Greedy Algorithm, Randomized Algorithm, Experimental Algorithms, Periodic Transmission, Load} %TODO mandatory; please add comma-separated list of keywords
 
 %\relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
-\relatedversion{A full version of the paper is available at \url{https://arxiv.org/abs/2002.07606}.}
+%\relatedversion{A full version of the paper is available at \url{https://arxiv.org/abs/2002.07606}.}
 
 %\acknowledgements{I want to thank \dots}%optional
 
@@ -91,9 +91,13 @@
 \begin{abstract}
 Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a sending scheme of these periodic messages \emph{without contention nor buffering}.
 
-We study the problem \pma modeling this situation on a simple but common topology, where all contentions are on a single link shared by all antennas. The problem is reminiscent of classical scheduling and packing problems, but the periodicity introduces a new twist. We study how the problem behave with regard to the load of the shared link.
-The two main contributions are polynomial time algorithms which \emph{always} find a solution for arbitrary size of messages and load less than $0.4$ or for size one and load less than $\phi - 1$ ($\phi$ being the golden ratio $(\sqrt{5}+1)/2)$. We also prove that, a randomized greedy algorithm almost always finds a solution on random instances, explaining why most greedy algorithms work so well in our experiments.
+We study the problem \pma modeling this situation on a simple but common topology, where all contentions are on a single link shared by all antennas. The problem is reminiscent of classical scheduling and packing problems, but the periodicity introduces a new twist. We study how the problem behaves with regard to the load of the shared link.
+The main contributions are polynomial time algorithms which \emph{always} find a solution for arbitrary size of messages and load less than $4/10$ or for size one and load less than $\phi - 1$ ($\phi$ being the golden ratio $(\sqrt{5}+1)/2)$. We also prove that, a randomized greedy algorithm almost always finds a solution on random instances, explaining why most greedy algorithms work so well in our experiments.
 \end{abstract}
+
+
+\newpage 
+
 
 \section{Introduction}
 Centralized radio network architecture, called C-RAN for Cloud Radio Access Network, has been proposed as a next generation architecture to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the reception of the answer, computed by a BaseBand Unit (BBU) in the cloud. For example, LTE standards require processing functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network.
@@ -107,7 +111,7 @@ Given a period, a message size and a delay between the two contention points for
 
 
  To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
-In some works~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem, since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms \dots
+In some works~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem, since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms etc.
 
 In previous articles of the authors, generalizations of \pma allowing buffering are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using classical scheduling algorithms as subroutines) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we consider only sending scheme with \emph{no additional latency}. More complex scheduling problems for time sensitive networks have been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines. We think our approach can be brought to these settings.
 
@@ -166,7 +170,7 @@ at the first contention point (i.e. in the first period). Let us consider a mess
 of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period).
 
 We want to send all messages, so that there is no collision in the shared link.
-In other word, we look for a way to send the messages without using buffering and 
+In other words, we look for a way to send the messages without using buffering and 
 hence limiting the latency of messages to the physical length of the links. An \textbf{assignment} is a
 choice of an offset for each message such that \emph{no pair of messages collide}, as shown in Fig.~\ref{fig:assignment}.
 Formally, an assignment is a function from the messages in $[n]$ to their offsets in $[P]$.  
@@ -206,11 +210,11 @@ time is periodic and these are relative positions on a circle. Moreover, when it
 \subsection{First Fit}
 
 
-Consider some partial assignment $A$, the message $i$ uses all times from $A(i)$ to $A(i) + \tau -1$ in the first period. If a message $j$ is scheduled by $A$, with $A(j) < A(i)$, then the last time it uses in the first period is $A(j)+\tau-1$ and it should be less than $A(i)$, which implies that $A(j) \leq A(i) - \tau$. Symmetrically, if $A(j) > A(i)$, to avoid collision between messages $j$ and $i$, we have $A(j) \geq A(i) + \tau$. Hence, message $i$ forbids the interval $]A(i) - \tau, A(i) + \tau[$ as offsets for messages still not scheduled because of its use of time in the first period. The same reasoning shows that $2\tau -1$ offsets are also forbidden because of the times used in the second period. Hence, if $|S|$ messages are already scheduled, then $|S|(4\tau -2)$ offsets are forbidden for any unscheduled message. It is an upper bound on the number of forbidden offsets, since the same offset can be forbidden twice because of a message on the first and on the second period.
+Consider some partial assignment $A$, the message $i$ uses all times from $A(i)$ to $A(i) + \tau -1$ in the first period. If a message $j$ is scheduled by $A$, with $A(j) < A(i)$, then the last time it uses in the first period is $A(j)+\tau-1$ and it should be less than $A(i)$, which implies that $A(j) \leq A(i) - \tau$. Symmetrically, if $A(j) > A(i)$, to avoid collision between messages $j$ and $i$, we have $A(j) \geq A(i) + \tau$. Hence, message $i$ forbids the interval $]A(i) - \tau, A(i) + \tau[$ as offsets for messages still not scheduled, because of its use of time in the first period. The same reasoning shows that $2\tau -1$ offsets are also forbidden because of the times used in the second period. Hence, if $|S|$ messages are already scheduled, then $|S|(4\tau -2)$ offsets are forbidden for any unscheduled message. It is an upper bound on the number of forbidden offsets, since the same offset can be forbidden twice because of a message on the first and on the second period.
 
 Let $Fo(A)$ be the maximum number of forbidden offsets when extending $A$. Formally, assume $A$ is defined over $S$ and $i\notin S$, $Fo(A)$ is the maximum over all possible values of $d_i$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has no collision}\right\}|$. The previous paragraph shows that $Fo(A)$ is always bounded by $(4 \tau -2)|S|$. 
 
-Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), it tests all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment and use it to extend the assignment. If $Fo(A) < P$, then whatever the delay of the route we want to extend $A$ with, there is an offset to do so. Since $Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, \firstfit (or any greedy algorithm) will always succeed when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
+Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), it tests all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment, and use it to extend the assignment. If $Fo(A) < P$, then whatever the delay of the route we want to extend $A$ with, there is an offset to do so. Since $Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, \firstfit (or any greedy algorithm) will always succeed when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
 It turns out that \firstfit always creates compact assignments (as defined in~\cite{dominique2018deterministic}), that is a message is always next to another one in one of the two periods. Hence, we can prove a better bound on $Fo(A)$, when $A$ is built by \firstfit, as stated in the following theorem.
 
 \begin{theorem}
@@ -235,9 +239,7 @@ Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
 \metaoffset solves \pma positively on instances of load less than $1/3$.
 \end{theorem}
 
-A naive implementation of \metaoffset is in $O(n P/\tau)$, while \firstfit is in $O(nP)$.
-However, it is not useful to consider every possible (meta-)offset at each step. By maintaining
-a list of positions of scheduled messages in first and second period, both algorithms can be implemented in $O(n^2)$.
+The complexity of a naive implementation of \metaoffset is in $O(n P/\tau)$, while \firstfit is in $O(nP)$. However, it is not useful to consider every possible (meta-)offset at each step. By maintaining a list of increasing position of scheduled messages in first and second period, both algorithms can be implemented in time $O(n^2)$.
 
 \subsection{Compact Tuples}
 
@@ -247,7 +249,7 @@ We present in this section a family of greedy algorithms which solve \pma positi
 From now on, we use Lemma~\ref{lemma:multiple} to assume $P = m\tau$. This hypothesis makes the analysis of algorithms based on meta-offsets simpler and tighter. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. The transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
 
 \begin{lemma}\label{lemma:multiple}
-Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = P / \tau$. There is an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
+Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = \lfloor P / \tau \rfloor$. There is an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
 \end{lemma}
 \begin{proof}
 %Fig.~\ref{fig:multipleperiod} illustrates the reductions we define in this proof on a small instance.
@@ -360,7 +362,7 @@ produce enough compact $8$-tuples in the first phase. It is not a strong restric
 
 \section{Messages of Size One} \label{sec:small}
 
-When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We give, in this section, a method which always finds an assignment for a load larger than $1/2$.
+When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We give, in this section, a method which always finds an assignment for sometimes load larger than $1/2$.
 
 \subsection{Deterministic Algorithm}
 
@@ -435,7 +437,7 @@ Let $A$ be some partial assignment of size $k$ and let $i$ be an unscheduled mes
 The positions in the first period can be partitioned into $P_{u}$ the positions used by some scheduled message and $P_{f}$ the positions unused.
 Let $V_f$ be the sum of the potentials of the positions in $P_f$ and let $V_u$ be the sum of the potentials of the positions in $P_u$. By Lemma~\ref{lemma:inv}, since $P_f$ and $P_u$ partition the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
-By hypothesis, $i$ cannot be scheduled, then, for all $p \in P_{f}$, $p+d_i$ is used in the second period. Let us define the function $F$ which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d$ in the second period, that is $A(j) + d_j = p + d \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark now that, if we compare $Swap(i,p,A)$ to $A$, on the second period the same positions are used. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ adds to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
+By hypothesis, $i$ cannot be scheduled, then, for all $p \in P_{f}$, $p+d_i$ is used in the second period. Let $F$ be the function which associates to $p \in P_{f}$ the position $A(j)$ such that there is a scheduled route $j$ which uses $p+d_i$ in the second period, that is $A(j) + d_j = p + d_i \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark that, in both $Swap(i,p,A)$ and $A$, exactly the same positions are used in the second period. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ adds to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
 
 Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$. Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
