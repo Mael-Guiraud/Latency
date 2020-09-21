@@ -23,6 +23,7 @@
 #include <limits.h>
 #include "borneInf.h"
 #include "fpt.h"
+#include "starSPALL.h"
 #include "enum.h"
 
 
@@ -1109,55 +1110,45 @@ void simultiplexing(int seed)
 	
 	int P;
 				
-	FILE* f = fopen("resmult85","w");
+	FILE* f = fopen("resmult60solo","w");
 
 
-	/*Graph  g = init_graph_random_tree(STANDARD_LOAD);
-	if(FIXED_PERIOD_MOD)
+
+	int multfifo ;
+	int multdeadline;
+	int multcomputed;
+
+	int fpt ;
+	int timebefifo;
+	int timebedeadline;
+	int timebecomputed;
+	
+	int longest;
+	for(int i=0;i<100;i++)
 	{
+		Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
 		P = PERIOD;
-	}
-	else
-		P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
-	if(TMAX_MOD)
-	{
-		tmax = TMAX;
-	}
-	else
-		tmax = longest_route(&g)*2 + margin;*/
+		timebefifo=0;
+		timebedeadline=0;
+		timebecomputed=0;
+		longest= 2*longest_route(&g);
 
-	int mult;
-	int multbe;
-	int fpt;
-	int timebe;
-	for(int j=0;j<12000;j+=1000)
-	{
-		printf("\nmargin %d :",j);
-		fpt = 0;
-		mult = 0;
-		multbe = 0;
-		for(int i=0;i<100;i++)
-		{
-			Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
-			P = PERIOD;
-			timebe=0;
-			if(multiplexing(&g, P, message_size, 10, FIFO,0,&timebe) <= j+2*longest_route(&g))
-				mult++;
-			if(multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebe) <= j+2*longest_route(&g))
-				multbe++;
-			//if(timebe  <= j+longest_route(&g))
-			//	multbe++;
-			if(FPT_PALL_star(&g,  P,  message_size,  longest_route(&g)*2 + j))
-				fpt ++;
-		
-			
-			free_graph(&g);
-			fprintf(stdout,"\r%d/100",i+1);fflush(stdout);
-		}
-		fprintf(f,"%d %d %d %d\n",j,mult,multbe,fpt);
+
+		multfifo =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo) - longest;
+		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline) - longest;
+	
+		//fpt  = dichostarspall(&g,  P,  message_size)- longest;
+		//multcomputed =multiplexing(&g, P, message_size, 10, FIFO,1,&timebecomputed) ;
 		
 		
+		free_graph(&g);
+		fprintf(f,"%d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,fpt);
+		fprintf(stdout,"\r%d/10000",i+1);fflush(stdout);
 	}
+	
+		
+		
+	
 	printf("\n");
 	fclose(f);
 }

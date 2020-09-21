@@ -137,7 +137,7 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 		new->suiv = NULL;
 		return debut;
 	}
-	if(l->deadline > deadline)//insertion au debut
+	if((l->deadline > deadline)||(l->kind_message == 0))//insertion au debut
 	{
 		new->suiv = l;
 		return new;
@@ -146,7 +146,7 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 	//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
 	while(l->suiv)
 	{
-		if(l->suiv->deadline > deadline)//insertion au milieu
+		if((l->suiv->deadline > deadline)||(l->kind_message == 0))//insertion au milieu
 		{
 			new->suiv = l->suiv;
 			l->suiv = new;
@@ -326,7 +326,7 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 			else
 			{
 				//printf("be time update in message 1\n");
-				update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length,be_time);
+				update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
 			}
 		}
 	}
@@ -354,7 +354,7 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 				else
 				{
 					//printf("be time update in message 2\n");
-					update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length,be_time);
+					update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
 				}
 			}
 			else
@@ -421,7 +421,7 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			else
 			{
 				//printf("be time update in arc free 1\n");
-				update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length,be_time);
+				update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route),be_time);
 			}
 		}
 
@@ -460,7 +460,7 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 				else
 				{
 					//printf("be time update in arc free 2\n");
-					update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length,be_time);
+					update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route),be_time);
 				}
 			}
 			else

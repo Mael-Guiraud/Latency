@@ -305,6 +305,7 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 			for(int i=0;i<g->nb_routes;i++)
 			{
 				//printf("res[i] = %d \n",res[i]);	
+				g->routes[i][0]->routes_delay_f[i] = m_i[i];
 				g->arc_pool[g->nb_routes].routes_delay_b[i] = res[i];
 			}
 			int val = travel_time_max_buffers(g);
@@ -317,4 +318,46 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 	}
 	
 	return 0;
+}
+
+int dichostarspall(Graph * g, int P, int message_size)
+{
+	int min = 2*longest_route(g);
+	int max = min +P;
+	int milieu;
+	int res=0;
+	int tmp;
+	while(min != max)
+	{
+		milieu =min+ (max - min ) / 2;
+		tmp = FPT_PALL_star(g,P,message_size,milieu);
+		//printf("-------------------------------------------abc %d %d \n",tmp,milieu);
+		if(tmp)
+		{
+			//printf("arc %d On a trouvé, tmp = %d, res = %d\n",arcid,tmp, res);
+			max = milieu;
+			res = tmp;
+		}
+		else
+		{
+			
+			if(min == max -1)
+			{
+				if(!res)
+				{
+					printf("Etrange, on aurait du trouver un resultat avec la dichotomie\n");
+					exit(44);
+				}
+				return res;
+			}
+			min = milieu;
+		}
+		
+	}	
+	if(!res)
+	{
+		printf(" TRES Etrange, on aurait du trouver un resultat avec la dichotomie\n");
+		exit(45);
+	}
+	return res;
 }

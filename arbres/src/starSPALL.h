@@ -14,3 +14,4 @@ long long fact(int a);
 Assignment fpt_spall(Graph * g, int P, int message_size, int tmax);
 void compute_tabs(element_sjt * tab,int * m_i,int * release, int * deadline, Graph * g, int P, int message_size,int tmax);
 int FPT_PALL_star(Graph * g, int P, int message_size, int tmax);
+int dichostarspall(Graph * g, int P, int message_size);
