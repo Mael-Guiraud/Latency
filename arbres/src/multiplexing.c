@@ -265,14 +265,14 @@ Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 	{
 		//printf("i = %d \n",i);
 		//nb_paquets = 2;
-		nb_paquets = inverse_transform(tab,20)*20;
+		nb_paquets = inverse_transform(tab,20);
 		int interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
 			
 			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i+interval*j,j%g->nb_routes,0,0,INT_MAX,FORWARD,0);
 		}
-		nb_paquets = inverse_transform(tab,20)*20;
+		nb_paquets = inverse_transform(tab,20);
 		interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
@@ -392,6 +392,8 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			printf("ERROR, THIS SHOULD NOT HAPPEND, function arc_free_fct is called only if first elem is not null, multiplexing->c\n");exit(46);
 		}
 		time_waited = liste_evt->date - first_elem->arrival_in_queue;
+		if(computed_assignment && first_elem->kind_message)
+				printf("%d \n",time_waited);
 		//printf(" on a attendu %d \n",time_waited);
 		fprintf(logs,"The elem at the top of the list (route %d arc %d) has waited %d slots (arrival %d, date %d).",first_elem->numero_route,first_elem->arc_id,time_waited,first_elem->arrival_in_queue,liste_evt->date);
 		
@@ -406,6 +408,7 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 		fprintf(logs,"Way forward, new event message (arc %d length %d) at date %d \n",first_elem->arc_id,g->routes[first_elem->numero_route][first_elem->arc_id]->length,liste_evt->date);
 		if(liste_evt->arc_id != current_route_size-1) // not the last arc
 		{
+
 			if(!computed_assignment || !first_elem->kind_message )	
 			{
 					//printf("Time waited = %d kind elem = %d \n",time_waited,first_elem->kind_message);
@@ -441,7 +444,8 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			}
 			//printf("First elem kind = %d \n", first_elem->kind_message);
 			time_waited = liste_evt->date - first_elem->arrival_in_queue;
-			
+			if(computed_assignment && first_elem->kind_message)
+				printf("%d \n",time_waited);
 			fprintf(logs,"The elem at the top of the list (route %d arc %d) has waited %d slots (arrival %d, date %d).",first_elem->numero_route,first_elem->arc_id,time_waited,first_elem->arrival_in_queue,liste_evt->date);
 		
 			fprintf(logs,"New arc event at date %d\n",liste_evt->date+message_size);
@@ -504,7 +508,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	else
 		liste_evt = init_computed(g,liste_evt,period,nb_periods);
 
-	liste_evt = init_BE(g,liste_evt,period,nb_periods);
+	//liste_evt = init_BE(g,liste_evt,period,nb_periods);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
 	
