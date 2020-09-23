@@ -1137,8 +1137,9 @@ void simultiplexing(int seed)
 		multfifo =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo) - longest;
 		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline) - longest;
 	
-		//fpt  = dichostarspall(&g,  P,  message_size)- longest;
-		//multcomputed =multiplexing(&g, P, message_size, 10, FIFO,1,&timebecomputed) ;
+		fpt  = dichostarspall(&g,  P,  message_size)- longest;
+		fpt = FPT_PALL_star(&g,P,message_size,fpt);
+		multcomputed =multiplexing(&g, P, message_size, 10, FIFO,1,&timebecomputed) ;
 		
 		
 		free_graph(&g);
