@@ -272,7 +272,10 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 	int permutation[g->nb_routes];
 	int * offsets;
 	int min = INT_MAX;
-	int temps_restant;
+	int temps_restant;   
+
+
+	reinit_delays(g);
 	for(int compteur_rand = 0;compteur_rand<1000;compteur_rand++)
 	{
 		//printf("\ntirage aleatoire n %d \n\n",compteur_rand);
@@ -296,7 +299,7 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 			+route_length_untill_arc(g,i,&g->arc_pool[g->nb_routes],BACKWARD);
 			temps_restant = route_length(g,i) - route_length_untill_arc_without_delay(g,i,&g->arc_pool[g->nb_routes],BACKWARD);
 			deadline[i] = m_i[i]+tmax  +message_size - temps_restant;
-			//printf("%d %d %d %d\n",release[i],deadline[i],m_i[i],tmax);
+			//printf("rel %d  deadl %d mi %d tmax %d routelenth %d routeback %d\n",release[i],deadline[i],m_i[i],tmax, route_length(g,i),route_length_untill_arc_without_delay(g,i,&g->arc_pool[g->nb_routes],BACKWARD));
 		}
 		
 		int *res = FPT_PALL(g,ids,release,deadline,g->nb_routes,message_size,P);
@@ -304,12 +307,12 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 		{	
 			for(int i=0;i<g->nb_routes;i++)
 			{
-				//printf("res[i] = %d \n",res[i]);	
+				//printf("res[%d] = %d \n",i,res[i]);	
 				g->routes[i][0]->routes_delay_f[i] = m_i[i];
 				g->arc_pool[g->nb_routes].routes_delay_b[i] = res[i];
 			}
 			int val = travel_time_max_buffers(g);
-
+			//printf("Val = %d \n",val);
 			if(val<min)
 				return val;
 			
