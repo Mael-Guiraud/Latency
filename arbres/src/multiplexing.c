@@ -267,14 +267,14 @@ Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 	{
 		//printf("i = %d \n",i);
 		//nb_paquets = 2;
-		nb_paquets = inverse_transform(tab,20)*3;
+		nb_paquets = inverse_transform(tab,20)*10;
 		int interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
 			
 			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i+interval*j,j%g->nb_routes,0,0,INT_MAX,FORWARD,0);
 		}
-		nb_paquets = inverse_transform(tab,20)*3;
+		nb_paquets = inverse_transform(tab,20)*10;
 		interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
