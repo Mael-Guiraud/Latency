@@ -1122,6 +1122,7 @@ void simultiplexing(int seed)
 	int timebefifo;
 	int timebedeadline;
 	int timebecomputed;
+	int timebedistrib;
 	
 	int longest;
 	for(int i=0;i<100;i++)
@@ -1141,6 +1142,7 @@ void simultiplexing(int seed)
 			 fichier = fopen("distrideadline","w");
 		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline,fichier) - longest;
 	fclose(fichier);
+
 		/*fpt  = dichostarspall(&g,  P,  message_size);
 		printf("\n\n\nFPT = %d \n \n\n",fpt);
 		fpt = FPT_PALL_star(&g,P,message_size,fpt);
@@ -1160,8 +1162,22 @@ void simultiplexing(int seed)
 			 fichier = fopen("districomputed","w");
 		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebecomputed,fichier) ;
 		fclose(fichier);
+		fpt = 0;
+		 l = 0;
+		while(!fpt)
+		{
+			fpt =  FPT_PALL_star(&g,P,P/g.nb_routes,longest +l);
+			if(fpt)
+				break;
+			l+=10000;
+			printf("%d\n",l );
+		}
+	//	printf("computed\n");
+			 fichier = fopen("distridistrib","w");
+		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebedistrib,fichier) ;
+		fclose(fichier);
 		free_graph(&g);
-		fprintf(f,"%d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,l);
+		fprintf(f,"%d %d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,timebedistrib,l);
 		fprintf(stdout,"\r%d/10000",i+1);fflush(stdout);
 	}
 	
