@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#include <math.h>
 FILE * logs;
 int computed_assignment;
 #pragma omp threadprivate(computed_assignment)
-
+FILE * f;
+int PER;
 void init_arcs_state(Graph * g)
 {
 	for(int i=0;i<g->arc_pool_size;i++)
@@ -52,7 +54,7 @@ Event * ajoute_event_trie(Event * l,Event_kind kind, int date,int route,int arc_
 	//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
 	while(l->suiv)
 	{
-		if(l->suiv->date > date)//insertion au milieu
+		if(l->suiv->date >= date)//insertion au milieu
 		{
 			new->suiv = l->suiv;
 			l->suiv = new;
@@ -173,14 +175,18 @@ Event * init_computed(Graph * g, Event * liste_evt,int period, int nb_periods)
 			date = route_length_untill_arc(g,i,g->routes[i][k],FORWARD)+g->routes[i][k]->routes_delay_f[i];
 			for(int j=0;j<nb_periods;j++)
 			{
+				
 				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j-SIZE_BE_MESSAGE,i,k,0,0,FORWARD,2);
 				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,k,0,0,FORWARD,1);
 			}
+			//if(k==1)printf("FPaquet %d date %d \n",i,date);
 			//printf("route %d arc %d message forward %d %d",i,k,date,g->routes[i][k]->routes_delay_f[i]);
 			date = route_length_with_buffers_forward( g,i)+route_length_untill_arc(g,i,g->routes[i][k],BACKWARD)+g->routes[i][k]->routes_delay_b[i];
 			//printf("Calcul = mi %d routforward %d routeback %d",g->routes[i][0]->routes_delay_f[i],route_length_with_buffers_forward( g,i),route_length_untill_arc(g,i,g->routes[i][k],BACKWARD)+g->routes[i][k]->routes_delay_b[i]);
+			//if(k==1)printf("BPaquet %d date %d \n",i,date);
 			for(int j=0;j<nb_periods;j++)
 			{
+				
 				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j-SIZE_BE_MESSAGE,i,k,0,0,BACKWARD,2);
 				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,k,0,0,BACKWARD,1);
 			}
@@ -251,13 +257,21 @@ int inverse_transform(float * tab, int size)
 }
 
 
-	
+double Exponentielle(float lbda) // Mèthode de la tranformation inverse
+{
+double r = (double)random()/RAND_MAX; // un réel dans  [0...1]
+    while (r==0 || r==1) {              // tant que r=0 ou 1  on refait un random
+            r = (double)random()/RAND_MAX;
+            }
+
+       return -log(r)/(lbda*1.0); // -ln(U)/lambda   , avec U = unif[0,1]
+}
 	
 	
 Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 {
 
-	float tab[20];
+	/*float tab[20];
 	read_param_file(tab, 20);
 
 
@@ -267,14 +281,16 @@ Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 	{
 		//printf("i = %d \n",i);
 		//nb_paquets = 2;
-		nb_paquets = inverse_transform(tab,20)*10;
+		nb_paquets = inverse_transform(tab,20)*20;
+		//nb_paquets = 1;
 		int interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
 			
 			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i+interval*j,j%g->nb_routes,0,0,INT_MAX,FORWARD,0);
 		}
-		nb_paquets = inverse_transform(tab,20)*10;
+		nb_paquets = inverse_transform(tab,20)*20;
+		//nb_paquets = 1;
 		interval = (!nb_paquets)?0:period/nb_paquets;
 		for(int j=0;j<nb_paquets;j++)
 		{
@@ -283,6 +299,23 @@ Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 		}
 		
 		
+	}*/
+	int i=0;
+	int routerand;
+	while(i<period*nb_periods)
+	{
+		routerand = random()%g->nb_routes;
+		i+= (int)Exponentielle(0.004);
+		liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,0,0,INT_MAX,FORWARD,0);
+		//printf("Message forward date %d route %d \n",i,routerand);
+	}		
+	i=0;
+	while(i<period*nb_periods)
+	{
+		routerand = random()%g->nb_routes;
+		i+= (int)Exponentielle(0.004);
+		liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,g->size_routes[routerand]-1,0,INT_MAX,BACKWARD,0);
+		//printf("Message backward date %d route %d \n",i,routerand);
 	}
 	return liste_evt;
 }
@@ -300,7 +333,7 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 	int current_route_size;
 	
 	fprintf(logs,"new event arc at date %d kindmess = %d ",liste_evt->date+message_size,liste_evt->kind_message);
-
+	//printf("message on arc free fct kindmesse %d\n",liste_evt->kind_message);
 	current_route_size = g->size_routes[liste_evt->route];
 	if(liste_evt->kind_p == FORWARD)
 	{
@@ -313,16 +346,16 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 		else	
 			g->routes[liste_evt->route][liste_evt->arc_id]->state_f = 1;
 		if(liste_evt->kind_message)//Si c'est du CRAN
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,1);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,0);
 		else
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,0);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,1);
 		
 		fprintf(logs,"Way forward (arc %d, length %d), new event message at date %d\n",liste_evt->arc_id,g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->date+g->routes[liste_evt->route][liste_evt->arc_id]->length);
 		if(liste_evt->arc_id != current_route_size-1) // not the last arc
 		{
 			if(!computed_assignment || !liste_evt->kind_message )
 			{
-				//printf("création message kind %d date %d arc %d route %d \n",liste_evt->kind_message,liste_evt->date+g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id+1);
+				//printf("création message kind %d date %d route %d arc %d \n",liste_evt->kind_message,liste_evt->date+g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id+1);
 				liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id+1,liste_evt->time_elapsed + g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->deadline - g->routes[liste_evt->route][liste_evt->arc_id]->length,FORWARD,liste_evt->kind_message);
 
 			}	
@@ -338,7 +371,9 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 			else
 			{
 				//printf("be time update in message 1\n");
-				update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
+				fprintf(f,"%d \n",liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route));
+				if(liste_evt->date > PER * 5)
+					update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
 			}
 		}
 	}
@@ -353,9 +388,9 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 		else
 			g->routes[liste_evt->route][liste_evt->arc_id]->state_b = 1;
 		if(liste_evt->kind_message)//Si c'est du CRAN
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,1);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,2);
 		else
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,0);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,3);
 		
 		if(liste_evt->kind_p == BACKWARD)
 		{
@@ -366,21 +401,33 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 				if(liste_evt->kind_message)//Si c'est du CRAN
 				{
 					if(!computed_assignment)
-						update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length,p_time);
+					{
+						if(liste_evt->date > PER * 5)
+						{
+							update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length,p_time);
+						
+						}
+					}
 						
 				}
 				else
 				{
 					//printf("be time update in message 2\n");
-					update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
+					fprintf(f,"%d \n",liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route));
+					if(liste_evt->date > PER * 5)
+						update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
 				}
 			}
 			else
 			{
 
 				fprintf(logs,"new event message at date %d\n",liste_evt->date+g->routes[liste_evt->route][liste_evt->arc_id]->length);
-				if(!computed_assignment || !liste_evt->kind_message )	
+				if(!computed_assignment || !liste_evt->kind_message )
+				{
+					//printf("Event backwar\n");
 					liste_evt = ajoute_event_trie(liste_evt,MESSAGE,liste_evt->date+g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->route,liste_evt->arc_id -1,liste_evt->time_elapsed+ g->routes[liste_evt->route][liste_evt->arc_id]->length,liste_evt->deadline - g->routes[liste_evt->route][liste_evt->arc_id]->length, BACKWARD,liste_evt->kind_message);
+		
+				}	
 			}
 		}
 		else
@@ -412,6 +459,7 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			printf("ERROR, THIS SHOULD NOT HAPPEND, function arc_free_fct is called only if first elem is not null, multiplexing->c\n");exit(46);
 		}
 		time_waited = liste_evt->date - first_elem->arrival_in_queue;
+		//if(liste_evt->arc_id == 1)printf("Time f = %d first elem kind %d arrival %d date%d \n",time_waited,first_elem->kind_message,first_elem->arrival_in_queue,liste_evt->date);
 		if(computed_assignment && first_elem->kind_message && time_waited)
 					printf(" FORWARDWAIT %d date %d arrival %d  \n",time_waited, liste_evt->date , first_elem->arrival_in_queue);
 		//printf(" on a attendu %d \n",time_waited);
@@ -421,9 +469,9 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 	
 		g->routes[liste_evt->route][liste_evt->arc_id]->state_f = 1;
 		if(first_elem->kind_message)//Si c'est du CRAN
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,1);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,4);
 		else
-			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,1);
+			liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,FORWARD,5);
 
 		fprintf(logs,"Way forward, new event message (arc %d length %d) at date %d \n",first_elem->arc_id,g->routes[first_elem->numero_route][first_elem->arc_id]->length,liste_evt->date);
 		if(liste_evt->arc_id != current_route_size-1) // not the last arc
@@ -446,7 +494,9 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			else
 			{
 				//printf("be time update in arc free 1\n");
-				update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route),be_time);
+				fprintf(f,"%d \n",first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited);
+				if(liste_evt->date > PER * 5)	
+					update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited,be_time);
 			}
 		}
 
@@ -474,9 +524,9 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			g->routes[liste_evt->route][liste_evt->arc_id]->state_b = 1;
 
 			if(first_elem->kind_message)//Si c'est du CRAN
-				liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,1);
+				liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+message_size,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,6);
 			else
-				liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,1);
+				liste_evt = ajoute_event_trie(liste_evt,ARC,liste_evt->date+SIZE_BE_MESSAGE,liste_evt->route,liste_evt->arc_id,0,0,BACKWARD,7);
 
 			fprintf(logs,"way backward (arc %d length %d) ",first_elem->arc_id,g->routes[first_elem->numero_route][first_elem->arc_id]->length);
 			if(liste_evt->arc_id == 0)
@@ -485,12 +535,17 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 				if(first_elem->kind_message)//Si c'est du CRAN
 				{
 					if(!computed_assignment)
-						update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length,p_time);
+					{
+						if(liste_evt->date > PER * 5)
+							update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length+time_waited,p_time);
+					}
 				}
 				else
 				{
 					//printf("be time update in arc free 2\n");
-					update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route),be_time);
+					fprintf(f,"%d \n",first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited);
+					if(liste_evt->date > PER * 5)
+						update_time_elapsed(first_elem->time_elapsed+time_waited+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route),be_time);
 				}
 			}
 			else
@@ -515,8 +570,10 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 	
 	return liste_evt;
 }
-int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be)
+int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be,FILE * fichier)
 {
+	PER = period;
+	f = fichier;
 	logs = fopen("logs_multiplexing.txt","w");
 	computed_assignment = computed;
 	//logs = stdout;
@@ -537,13 +594,13 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	while(liste_evt)
 	{
 		current = liste_evt;
-		//printf(" Date %d ",liste_evt->date);
+		//printf(" Date %d\n ",liste_evt->date);
 		if(liste_evt->kind == MESSAGE)
 		{
-			//printf("Arrive message kind %d route %d arc %d \n",liste_evt->kind_message,liste_evt->route,liste_evt->arc_id);
+			// printf("Arrive message kind %d route %d arc %d \n",liste_evt->kind_message,liste_evt->route,liste_evt->arc_id);
 			if(liste_evt->kind_message == 2){
 				liste_evt = message_on_arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, time_be);//on passe l'arc en mode reservé
-			//	printf("Reservation \n");			
+				//printf("Reservation \n");			
 			}
 			else
 			{
@@ -560,10 +617,10 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 				else
 				{
 				
-				//	printf("On fait qqchose selon si l'arc est :\n");
+					//printf("On fait qqchose selon si l'arc est :\n");
 					if(((liste_evt->kind_p == FORWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->state_f) || ((liste_evt->kind_p == BACKWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->state_b)) // arc used
 					{
-						//printf("utilisé.\n");
+						//printf("utilisé, filde d'attente.\n");
 						fprintf(logs,"The arc is used (pol = %d).\n",pol);
 
 						fprintf(logs,"Adding elem (%d %d %d %d %d) - ",liste_evt->route,liste_evt->arc_id,liste_evt->date,liste_evt->time_elapsed,liste_evt->kind_p);
@@ -588,7 +645,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 					}
 					else // arc free
 					{
-						//printf("vide\n");
+						//printf("vide, ca y va\n");
 						fprintf(logs,"The arc is free.");
 						liste_evt = message_on_arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, time_be);
 					}
@@ -599,11 +656,14 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 		}
 		else // arc
 		{
+			//printf("L'arc est libre\n");
 			fprintf(logs,"An arc is available .\n");
 			current = liste_evt;
 			if( ( (liste_evt->kind_p == FORWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->elems_f) || ( (liste_evt->kind_p == BACKWARD) && g->routes[liste_evt->route][liste_evt->arc_id]->elems_b) ) // if there is some messages to manage
 			{
+				//printf("On a des trucs a faire \n");
 				fprintf(logs,"there is some messages in queue : \n");
+				//printf("L'arc free est a cause de %d \n",liste_evt->kind_message);
 				liste_evt = arc_free_fct(g,liste_evt,message_size,&longest_time_elapsed, time_be);
 			}
 			else
