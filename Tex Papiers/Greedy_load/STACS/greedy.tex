@@ -54,7 +54,7 @@
 
 %\ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
 
-\keywords{Scheduling, Greedy Algorithm, Randomized Algorithm, Experimental Algorithms, Periodic Transmission, Load} %TODO mandatory; please add comma-separated list of keywords
+\keywords{Periodic Scheduling, Greedy Algorithm, Randomized Algorithm, Experimental Algorithms, C-RAN} %TODO mandatory; please add comma-separated list of keywords
 
 %\relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
 %\relatedversion{A full version of the paper is available at \url{https://arxiv.org/abs/2002.07606}.}
@@ -169,7 +169,7 @@ The algorithms presented in this article are not directly applicable to this cas
 
  We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The model and problem can easily be generalized to any topology, that is any directed acyclic multigraph with any number of contention points, see~\cite{dominique2018deterministic}. We choose here to focus on the simplest, but realistic, non-trivial network, for which we can still obtain some theoretical results. 
 
-The time is discretized and the process we consider is periodic of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. Since the process is infinite but periodic, it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of the interval of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. 
+The time is discretized and the process we consider is periodic of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. A message is emmited an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of the interval of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. 
 
 An \textbf{offset} of a message is a choice of time at which it arrives
 at the first contention point (i.e. in the first period). Let us consider a message $i$
@@ -239,7 +239,7 @@ Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$.
 Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
 
 
-\begin{theorem}[Proposition 3 of~\cite{dominique2018deterministic}]
+\begin{theorem}[Proposition 3 of~\cite{dominique2018deterministic}]\label{th:metaoffset}
 \metaoffset solves \pma positively on instances of load less than $1/3$.
 \end{theorem}
 
@@ -483,7 +483,7 @@ The potential of any message is thus larger or equal to $2\epsilon P$. When a me
 Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. As a consequence, the method of Lemma~\ref{lemma:swap} will guarantee a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. Any algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. However, we may hope to improve on the analysis in Lemma~\ref{lemma:swap}, since it is not optimal: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. 
 
 We conjecture that \swapandmove solves \pma positively for load up to $2/3$. 
-On random instances, we expect the potential to be higher than the stated bound and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
+On random instances, we expect the potential to be higher than the guarantee of Lemma~\ref{lemma:swap} and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
 
 \subsection{Randomized Algorithm for Random Instances}
 
@@ -603,9 +603,9 @@ half of the same message in $A'$ or the position $\tau$ before, which is either 
 \label{fig:transf_2tau}
 \end{figure}
 
-Remark that combining Greedy Random and Th.~\ref{th:double_load} allows to solve $\pma$ on random instances, with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. 
+Remark that combining \greedyuniform and Th.~\ref{th:double_load} allows to solve $\pma$ on random instances, with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. 
 This explains why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on bounding $Fo(A)$, cannot guarantee anything for load larger than $1/2$.
-However, in Sec.~\ref{sec:perf_large}, we present Compact Fit, a simple greedy algorithm which exhibits good performance on random instances.
+However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm which exhibits good performance on random instances.
 
 \subsection{Trade-off between Latency and Message Size}
 
@@ -617,7 +617,7 @@ so good, since algorithms optimizing the latency do better on random instances, 
 
 
 We can do the same kind of transformation by buffering all messages, so that $d_i$ is a multiple of $\tau / k$. The cost in terms of latency is then at most $\tau / k - 1$ but the reduction yields messages of size $k$.
-For small size of messages, it is easy to get better algorithm for \pma, in particular for $\tau = 1$ as we have shown in Sec.~\ref{sec:small}. Here we show how to adapt \compactpair to the case of $\tau = 2$, to get an algorithm working with higher load.
+For small size of messages, it is easy to get better algorithm for \pma, in particular for $\tau = 1$ as we have shown in Sec.~\ref{sec:small}. Here, we show how to adapt \compactpair to the case of $\tau = 2$, to get an algorithm working with higher load.
 
 
 \begin{theorem}
@@ -661,7 +661,7 @@ We consider the following algorithms:
  \begin{center}
 \includegraphics[scale=1]{compactfit}
 \end{center}
-\caption{An execution of \compactfit}
+\caption{An run of \compactfit with $\tau = 2$ and $P=10$, which creates two compact pairs}
 \label{fig:compactfit}
 \end{figure}
 
@@ -758,7 +758,7 @@ As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much be
 \label{fig:tau1-10mess}
 \end{minipage}
  
-
+ \medskip
  Finally, we evaluate the computation times of the algorithms to understand whether they scale to large instances. We present the computation times in Fig.~\ref{fig:timelog} and we choose to consider instances of load $1$, since they require the most computation time for a given size. The empirical complexity of an algorithm is evaluated by a
  linear regression on the function which associates to $\log(n)$, the log of the computation time of the algorithm on $n$ messages.  \firstfit, \greedyuniform and \swapandmove scale almost in the same way, with an empirical complexity slightly below $O(n^2)$, while \greedypotential has an empirical complexity of $O(n^3)$. The empirical complexity corresponds to the worst case complexity we have proved, except for \swapandmove which is in $O(n^3)$ worst case. There are two explanations: most of the messages are scheduled by the fast \firstfit subroutine and most Swap operations improve the potential by more than $1$, contrarily to what is assumed in the worst case analysis.
 
