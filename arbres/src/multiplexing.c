@@ -9,6 +9,15 @@ int computed_assignment;
 #pragma omp threadprivate(computed_assignment)
 FILE * f;
 int PER;
+int tabbef[10000];
+int tabberoutef[10000];
+int tabbeb[10000];
+int tabberouteb[10000];
+int cmptbef;
+int cmptbeb;
+int genbe;
+long long int moyenne;
+int nb_elem_moy ;
 void init_arcs_state(Graph * g)
 {
 	for(int i=0;i<g->arc_pool_size;i++)
@@ -132,11 +141,15 @@ Elem * ajoute_elem_deadline(Elem * l,int numero_route,int arc_id,int arrival_in_
 	{
 		while(l->suiv)
 		{
-			l = l->suiv;
+			if(l->suiv->kind_message)
+				l = l->suiv;
+			else
+				break;
+				
 		//printf("%d  %p\n",l->kind_message,l);
 		}
-		l->suiv = new;
-		new->suiv = NULL;
+		l->suiv = ajoute_elem_fifo(l->suiv,numero_route,arc_id,arrival_in_queue,time_elapsed,deadline,kind_p,kind_message);
+		free(new);
 		return debut;
 	}
 	if((l->deadline > deadline)||(l->kind_message == 0))//insertion au debut
@@ -214,7 +227,7 @@ Event * init_events(Graph * g, Event * liste_evt,int period, int nb_periods)
 		}
 		for(int j=0;j<nb_periods;j++)
 		{
-		//	printf(" init event date %d , %d\n",date+period*j, MESSAGE);
+			//printf(" init event date %d , %d\n",date+period*j, MESSAGE);
 			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,date+period*j,i,0,0,INT_MAX,FORWARD,1);
 		}
 	
@@ -302,21 +315,96 @@ Event * init_BE(Graph * g, Event * liste_evt,int period, int nb_periods)
 	}*/
 	int i=0;
 	int routerand;
-	while(i<period*nb_periods)
+
+	if(!genbe)
 	{
-		routerand = random()%g->nb_routes;
-		i+= (int)Exponentielle(0.004);
-		liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,0,0,INT_MAX,FORWARD,0);
-		//printf("Message forward date %d route %d \n",i,routerand);
-	}		
-	i=0;
-	while(i<period*nb_periods)
-	{
-		routerand = random()%g->nb_routes;
-		i+= (int)Exponentielle(0.004);
-		liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,g->size_routes[routerand]-1,0,INT_MAX,BACKWARD,0);
-		//printf("Message backward date %d route %d \n",i,routerand);
+		while(i<period*nb_periods)
+		{
+			routerand = random()%g->nb_routes;
+			tabberoutef[cmptbef] = routerand;
+			i+= (int)Exponentielle(0.003);
+			tabbef[cmptbef]= i;
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,0,0,INT_MAX,FORWARD,0);
+			cmptbef++;
+			if(cmptbef == 10000)
+			{
+				printf("Le nombre de message BE généré est trop grand\n");
+				exit(21);
+			}
+			//printf("Message forward date %d route %d \n",i,routerand);
+		}		
+		i=0;
+		while(i<period*nb_periods)
+		{
+			routerand = random()%g->nb_routes;
+			tabberoutef[cmptbef] = routerand;
+			i+= (int)Exponentielle(0.0001);
+			tabbef[cmptbef]= i;
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,0,0,INT_MAX,FORWARD,0);
+			cmptbef++;
+			if(cmptbef == 10000)
+			{
+				printf("Le nombre de message BE généré est trop grand\n");
+				exit(21);
+			}
+			//printf("Message forward date %d route %d \n",i,routerand);
+		}		
+		i=0;
+		while(i<period*nb_periods)
+		{
+			routerand = random()%g->nb_routes;
+			tabberouteb[cmptbeb] = routerand;
+			i+= (int)Exponentielle(0.003);
+			tabbeb[cmptbeb]= i;
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,g->size_routes[routerand]-1,0,INT_MAX,BACKWARD,0);
+			cmptbeb++;
+			if(cmptbeb == 10000)
+			{
+				printf("Le nombre de message BE généré est trop grand\n");
+				exit(21);
+			}
+			//printf("Message backward date %d route %d \n",i,routerand);
+		}
+		i=0;
+		while(i<period*nb_periods)
+		{
+			routerand = random()%g->nb_routes;
+			tabberouteb[cmptbeb] = routerand;
+			i+= (int)Exponentielle(0.0001);
+			tabbeb[cmptbeb]= i;
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,g->size_routes[routerand]-1,0,INT_MAX,BACKWARD,0);
+			cmptbeb++;
+			if(cmptbeb == 10000)
+			{
+				printf("Le nombre de message BE généré est trop grand\n");
+				exit(21);
+			}
+			//printf("Message backward date %d route %d \n",i,routerand);
+		}
+		//printf("first cmptbef %d cmptbeb %d \n ",cmptbef,cmptbeb);
+		genbe = 1;
 	}
+	else
+	{
+		//printf("Les autres fois %d %d \n",cmptbef,cmptbeb);
+		for(int j=0;j<cmptbef;j++)
+		{
+			routerand = tabberoutef[j];
+			i= tabbef[j];
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,0,0,INT_MAX,FORWARD,0);
+		//	printf("Message forward date %d route %d \n",i,routerand);
+		}		
+		i=0;
+		for(int j=0;j<cmptbeb;j++)
+		{
+			routerand = tabberouteb[j];
+			i= tabbeb[j];
+			liste_evt = ajoute_event_trie(liste_evt,MESSAGE,i,routerand,g->size_routes[routerand]-1,0,INT_MAX,BACKWARD,0);
+			//printf("Message backward date %d route %d \n",i,routerand);
+		}
+		
+	}
+
 	return liste_evt;
 }
 
@@ -371,9 +459,14 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 			else
 			{
 				//printf("be time update in message 1\n");
-				fprintf(f,"%d \n",liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route));
+			
 				if(liste_evt->date > PER * 5)
+				{
+					fprintf(f,"%d \n",liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route));
+					moyenne += liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route);
+					nb_elem_moy++;
 					update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
+				}
 			}
 		}
 	}
@@ -413,9 +506,14 @@ Event * message_on_arc_free_fct(Graph * g, Event * liste_evt,int message_size,in
 				else
 				{
 					//printf("be time update in message 2\n");
-					fprintf(f,"%d \n",liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route));
+					
 					if(liste_evt->date > PER * 5)
+					{
+						fprintf(f,"%d \n",liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route));
+						moyenne += liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route);
+						nb_elem_moy++;
 						update_time_elapsed(liste_evt->time_elapsed+g->routes[liste_evt->route][liste_evt->arc_id]->length- route_length(  g,liste_evt->route),be_time);
+					}
 				}
 			}
 			else
@@ -494,9 +592,13 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 			else
 			{
 				//printf("be time update in arc free 1\n");
-				fprintf(f,"%d \n",first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited);
 				if(liste_evt->date > PER * 5)	
+				{
+					fprintf(f,"%d \n",first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited);
+					moyenne += first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited;
+					nb_elem_moy++;
 					update_time_elapsed(first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited,be_time);
+				}
 			}
 		}
 
@@ -543,9 +645,12 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 				else
 				{
 					//printf("be time update in arc free 2\n");
-					fprintf(f,"%d \n",first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited);
-					if(liste_evt->date > PER * 5)
+					if(liste_evt->date > PER * 5){
+						fprintf(f,"%d \n",first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited);
+						moyenne += first_elem->time_elapsed+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route)+time_waited;
+						nb_elem_moy++;
 						update_time_elapsed(first_elem->time_elapsed+time_waited+g->routes[first_elem->numero_route][first_elem->arc_id]->length- route_length(  g,first_elem->numero_route),be_time);
+					}
 				}
 			}
 			else
@@ -570,8 +675,16 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 	
 	return liste_evt;
 }
-int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be,FILE * fichier)
+int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be,FILE * fichier,int reinit_be,int * moy)
 {
+	moyenne = 0;
+	nb_elem_moy=0;
+	if(reinit_be)
+	{
+		cmptbeb =0;
+		cmptbef = 0;
+		genbe = 0;
+	}
 	PER = period;
 	f = fichier;
 	logs = fopen("logs_multiplexing.txt","w");
@@ -693,6 +806,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 
 	fclose(logs);
 	//printf("%d %d \n",longest_time_elapsed,time_be);
+	*moy = moyenne/nb_elem_moy;
 	return longest_time_elapsed;
 }
 

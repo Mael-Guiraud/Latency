@@ -1123,8 +1123,14 @@ void simultiplexing(int seed)
 	int timebedeadline;
 	int timebecomputed;
 	int timebedistrib;
+
+	int moyfifo;
+	int moydeadline;
+	int moycomputed;
+	int moydistrib;
 	
 	int longest;
+	system("rm -f distrififo distrideadline districomputed distridistrib");
 	for(int i=0;i<100;i++)
 	{
 		Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
@@ -1132,15 +1138,16 @@ void simultiplexing(int seed)
 		timebefifo=0;
 		timebedeadline=0;
 		timebecomputed=0;
+		timebedistrib=0;
 		longest= 2*longest_route(&g);
 
-		FILE* fichier = fopen("distrififo","w");
+		FILE* fichier = fopen("distrififo","a");
 		//printf("FIFO \n");
-		multfifo =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo,fichier) - longest;
+		multfifo =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo,fichier,1,&moyfifo) - longest;
 		fclose(fichier);
 		//printf("DEADLINE \n");
-			 fichier = fopen("distrideadline","w");
-		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline,fichier) - longest;
+			 fichier = fopen("distrideadline","a");
+		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline,fichier,0,&moydeadline) - longest;
 	fclose(fichier);
 
 		/*fpt  = dichostarspall(&g,  P,  message_size);
@@ -1157,28 +1164,34 @@ void simultiplexing(int seed)
 			if(fpt)
 				break;
 			l++;
+			//fprintf(stdout,"\r fpt1     %d",l );fflush(stdout);
 		}
-	//	printf("computed\n");
-			 fichier = fopen("districomputed","w");
-		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebecomputed,fichier) ;
+		if(l!=0)
+			printf("etrange.\n");
+			 fichier = fopen("districomputed","a");
+		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebecomputed,fichier,0,&moycomputed) ;
 		fclose(fichier);
-		fpt = 0;
+		fpt = 1;
 		 l = 0;
-		while(!fpt)
+		while(fpt)
 		{
-			fpt =  FPT_PALL_star(&g,P,P/g.nb_routes,longest +l);
-			if(fpt)
+			fpt =  FPT_PALL_star(&g,P,message_size+l,longest);
+			if(!fpt)
+			{
+				//printf("%d %d \n",fpt,l);
+				fpt =  FPT_PALL_star(&g,P,message_size+l-1,longest);
 				break;
-			l+=10000;
-			printf("%d\n",l );
+			}
+			l+=1;
+			//fprintf(stdout,"\r    %d",l );fflush(stdout);
 		}
-	//	printf("computed\n");
-			 fichier = fopen("distridistrib","w");
-		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebedistrib,fichier) ;
+
+			 fichier = fopen("distridistrib","a");
+		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebedistrib,fichier,0,&moydistrib) ;
 		fclose(fichier);
 		free_graph(&g);
-		fprintf(f,"%d %d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,timebedistrib,l);
-		fprintf(stdout,"\r%d/10000",i+1);fflush(stdout);
+		fprintf(f,"%d %d %d %d %d %d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,timebedistrib,l,moyfifo,moydeadline,moycomputed,moydistrib);
+		fprintf(stdout,"\r                                                                         %d/100",i+1);fflush(stdout);
 	}
 	
 		

@@ -1,14 +1,38 @@
-plot 'resmult60solo' using 2:(1.) smooth cumulative with lines t "FIFO"
-replot 'resmult60solo' using 3:(1.) smooth cumulative with lines t "DEADLINE"
-replot 'resmult60solo' using 4:(1.) smooth cumulative with lines t "computed"
-replot 'resmult60solo' using 8:(1.) smooth cumulative with lines t "fpt"
 
-set term postscript color solid
+ file = "resmult60solo"
+
+
+plot   file  using 5:(1.) smooth cumulative title  "FIFO" 
+replot   file  using 6:(1.) smooth cumulative title  "Deadline" 
+replot   file  using 7:(1.) smooth cumulative title  "computed" 
+replot   file  using 8:(1.) smooth cumulative title  "Distrib" 
+
+
+
+######### Pour une sortie dans un fichier .ps ##################"
+
+ set pointsize 1
+
+set tics font ", 10"
+set xlabel font ", 25"
+set ylabel font ", 25"
+
+
+
+
+
+
 set notitle
-set xlabel "margin" 
-set key bottom left 
+set ylabel "Success(%)"
+set xlabel "Additional Latency"
+set xrange [0:24000]
 
-set ylabel "cumulative distribution "
-set ytics
-set output '| ps2pdf - res.pdf'
+set key center left
+set key font ",10"
+
+set border 3
+set term postscript color solid
+set output '| ps2pdf - max.pdf'
+
+
 replot
