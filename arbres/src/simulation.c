@@ -1130,6 +1130,10 @@ void simultiplexing(int seed)
 	int moydistrib;
 	
 	int longest;
+	long long moymoyfifo = 0;
+	long long moymoydeadline = 0;
+	long long moymoycpomputed = 0;
+	long long moymoydistrib = 0;
 	system("rm -f distrififo distrideadline districomputed distridistrib");
 	for(int i=0;i<100;i++)
 	{
@@ -1185,15 +1189,19 @@ void simultiplexing(int seed)
 			l+=1;
 			//fprintf(stdout,"\r    %d",l );fflush(stdout);
 		}
-
+		
 			 fichier = fopen("distridistrib","a");
 		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebedistrib,fichier,0,&moydistrib) ;
 		fclose(fichier);
 		free_graph(&g);
+		moymoyfifo += moyfifo;
+		moymoydeadline += moydeadline;
+		moymoycpomputed += moycomputed;
+		moymoydistrib += moydistrib;
 		fprintf(f,"%d %d %d %d %d %d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,timebedistrib,l,moyfifo,moydeadline,moycomputed,moydistrib);
 		fprintf(stdout,"\r                                                                         %d/100",i+1);fflush(stdout);
 	}
-	
+	printf("\nFIFO %d %d\nDeadline %d %d\n Computed %d %d\n,Distrib%d %d\n",moymoyfifo/100,timebefifo,moymoydeadline/100,timebedeadline,moymoycpomputed/100,timebecomputed,moymoydistrib/100,timebedistrib);
 		
 		
 	

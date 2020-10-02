@@ -208,34 +208,32 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
   
   \SetVertexNoLabel
   \Vertex[x=2,y=5]{A}
-  \Vertex[x=4,y=5]{B}
+  
   \Vertex[x=10,y=5]{C}
-  \Vertex[x=12,y=5]{D}
+
   \Vertex[x=6,y=3]{E}
-  \Vertex[x=8,y=3]{F}
+  
   \tikzset{
   EdgeStyle/.append style = {green} }
   \Edge[label = 2](s2)(A)
-  \Edge[label = 1](A)(B)
-  \Edge[label = 2](B)(C)
-  \Edge[label = 1](C)(D)
-  \Edge[label = 1](D)(t2)
+
+  \Edge[label = 3](A)(C)
+ 
+  \Edge[label = 2](C)(t2)
 
   
    \tikzset{
   EdgeStyle/.append style = {red} }
   \Edge[label = 2](s3)(E)
-  \Edge[label = 1](E)(F)
-  \Edge[label = 1](F)(C)
-  \Edge[label = 1](C)(D)
-  \Edge[label = 1](D)(t3) 
+  \Edge[label = 2](E)(C)
+  \Edge[label = 2](C)(t3) 
+
      \tikzset{
   EdgeStyle/.append style = {blue} }
   \Edge[label = 1](s1)(A)
-  \Edge[label = 1](A)(B)
-  \Edge[label = 1](B)(E)
-  \Edge[label = 1](E)(F)
-  \Edge[label = 1](F)(t1)
+  \Edge[label = 2](A)(E)
+  \Edge[label = 2](E)(t1)
+ 
 
 \end{tikzpicture}
 
@@ -1186,40 +1184,66 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     The algorithms proposed in this paper are designed to manage deterministic flows on dedicated networks. In this section, the objective is to sutdy the impact of deterministic flows on non-deterministic flows (internet traffic, best effort) when managed by classical approaches like statistical multiplexing or deterministicaly scheduled.
     
     Since the algorithms are not designed to take care about best effort traffics, and more precicely tend to gather all deterministic messages, one can expect that deterministic scheduling worthen the latency of best efforts packets, compared to a classic approach.
-    Nevertheless, we propose an adaptation of \PMLS that smooth the latency of C-RAN traffic in order to frequently leave some ressource for best effort traffic.
+    Nevertheless, we propose an adaptation of \ASPMLS that smooth the latency of C-RAN traffic in order to frequently leave some ressource for best effort traffic.
     
     \subsubsection{Description of statistical multiplexing}
     This section shortly describe how the statistical mulitplexing simulator is implemented.
     The networks are generated in the same way as previously, but since the contention points can receive several messages to send at the same tic, it is possible to buffer somme messages in every contention points of the node. Two policies to manage which message must be sent in first when contention arise.
     
-    The first one is The First In First Out policy, the trivial one, which consists in sending the messages in the same order in which they reached the contention point.
+    The first one is the \texttt{FIFO} (First In First Out) policy, the trivial one, which consists in sending the messages in the same order in which they reached the contention point.
 
-    The second proposed policy is called Longest Time Elapsed and consists in sending first the message which has almost spent the largest time in the network between all buffered messages
+    The second proposed policy is called \texttt{LTE} (Longest Time Elapsed) and consists in sending first the message which has almost spent the largest time in the network between all buffered messages
     
-    \subsubsection{Adapted \PMLS for BE traffic}
-    Since \PMLS always finds an optimal solution for deterministic traffic, we focus on the impact it has on statistical traffic. As mentioned previously, \PMLS tends to create some long sequences of deterministic messages and then, avoid the best effort traffic to go through the nodes during those intervals.
+    \subsubsection{Adapted \ASPMLS for BE traffic}
+    Since \ASPMLS always finds an optimal solution for deterministic traffic, we focus on the impact it has on statistical traffic. As mentioned previously, \ASPMLS tends to create some long sequences of deterministic messages and then, avoid the best effort traffic to go through the nodes during those intervals.
     To fix this issue, the idea is to compute an optimal solution with PMLS with the largest messages size $\tau$ possible. Once this solution is computed, the times at which the deterministical traffic will reach every contention points of the network without latency are well computed, but since the messages are shorter than in the computed solution, it induce some free tics to avoid best effort traffic flow.
-    
+    Such a similar work focusing on decreasing the BE latency while scheduling CRAN messages on an optical ring can be found in~\cite{DBLP:conf/ondm/BarthGS19}.
     
     \subsubsection{Performance evaluation}
     
     Here, the different ways to manage both statistical and deterministic traffic in the same network is evaluated.
-    The star networks are generated with $8$ routes.
+    The star networks are generated with $8$ routes in which the length of the arcs are drawn between $0$ and $P$.
+    The network is loaded of $60\%$ of C-RAN traffic, and the size of a Cloud Ran message $\tau$ is $2500$ that means the period is set to $33,333$.
     \paragraph{Best effort generation}
-    designé pour gérer des flux déterminisites. Si on mélange à des flux randoms qui passent sur le meme
-    fronthaul network  on s'attend à de mauvaises performances (tradeoff entre la latence des paquets CRAN 
-    et les autres). Mais si on arrive à garantir que les paquets C-RAN sont bien espacés dans le temps (voir notre travail sur l'anneau) on peut espérer avoir de meilleurs résultats.
-    Idées -> faire grossir tau autant que possible, pour espacer régulièrement les paquets et 
-    laisser de la BP régulièrement aux best effort. 
+    The best effort traffic is generated following an exponential distribution. The size of a BE packet is set to $50$ tics. The generation is split in two different exponential distribution. A first one, which loads the network in average of $15\%$, and generate one BE packets every $333$ tics in average. The second models a burst of BE messages, that is, a generation of $10$ packets every $10,000$ tics, in average.
+    
+    Figure~\ref{fig:belatency} shows the cumulative distribution of the logical latency of BE packets, that is, the time each BE packets has wait in the buffers of the network. The experiment is made under several ways to schedule the C-RAN traffic. In \texttt{FIFO}, all CRAN and BE traffic are managed following the \texttt{FIFO} policy, regardless of the packet kind.
+    In the three other experiment, the BE traffic is managed in \texttt{FIFO}, but the C-RAN is always prioritized following either \texttt{LTE}, \ASPMLS or adapted \ASPMLS.
+    The experiment are made over $100$ random instances.
+     \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.8\textwidth]{res.pdf}
+       %\input{figures/stochastic}
+      \end{center}
+      \caption{Cumulative distribution of the latency of BE packets in different networks management}
+      \label{fig:belatency}   
+     \end{figure}    
+     
+     As expected, the latency of BE packets is better when both CRAN and BE packets are managed in \texttt{FIFO} than when the CRAN packets are prioritized without consideration of BE packets(\texttt{LTE} or \ASPMLS). Also, \ASPMLS performs worst than \texttt{LTE} because of the long sequence of BE traffic it creates.
+     
+     In adapted \ASPMLS, the CRAN traffic is smoothed on the period, in order to leave some free tics for BE traffic. One can remark that this phenomenon improve the BE traffic latency, even more than with a statistical approach. 
+   
 
-    Donner le modèle de génération de best effort.
-    Donner les paramètres de l'expérience et comparer PMLS, PMLS avec grand tau et multiplexing
-    sans et avec priorité au C-RAN.
-
-
+   Average
+    \begin{tabularx}{\textwidth}{|c|c|c|c|}
+    \hline
+    \texttt{FIFO} & \texttt{LTE} & \ASPMLS & Adapted \ASPMLS \\
+     \hline
+     $1977$&$3256$&$4909$&$949$\\
+     \hline
+      \end{tabularx}\\
+      
+      Max
+    \begin{tabularx}{\textwidth}{|c|c|c|c|}
+    \hline
+     \texttt{FIFO} & \texttt{LTE} & \ASPMLS & Adapted \ASPMLS \\
+     \hline
+      $20723$&$15099$&$23945$&$4677$\\
+     \hline
+      \end{tabularx}
 
  \section{Conclusion}
-
+ 
 	In this paper, we proposed two kinds of deterministic sending schemes to establish low latency periodic communication between BBUs and RRHs in a star routed network. The first method uses no buffering and has no latency overhead. It works when the routes are short (using algorithm \shortestlongest) or when the load is less than $80\%$ (using algorithm \ESCA).  
 	When the load is higher, buffering is allowed in the BBUs and we propose the algorithm \PMLS which finds a deterministic communication scheme with almost no additional logical latency.
  	Our deterministic approach is vastly superior to the classical statistical multiplexing, even when random sources of traffic are also present on the network. This emphasizes that \emph{deterministic sources} of traffic are always best \emph{dealt with in a deterministic manner}.  
