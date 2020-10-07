@@ -92,7 +92,7 @@
 Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a sending scheme of these periodic messages \emph{without contention nor buffering}.
 
 We study the problem \pma modeling this situation on a simple but common topology, where contention arises from a single link shared by all antennas. The problem is reminiscent of classical scheduling and packing problems, but the periodicity introduces a new twist. We study how the problem behaves with regard to the load of the shared link. 
-The main contributions are polynomial time algorithms which \emph{always} find a solution for arbitrary size of messages and load less than $4/10$ or for size one and load less than $\phi - 1$ ($\phi$ being the golden ratio $(\sqrt{5}+1)/2)$. We also prove that, a randomized greedy algorithm almost always finds a solution on random instances, explaining why most greedy algorithms work so well in our experiments.
+The main contributions are polynomial time algorithms which \emph{always} find a solution for arbitrary size of messages and load less than $4/10$ or for size one and load less than $\phi - 1$, the golden ratio conjugate. We also prove that, a randomized greedy algorithm almost always finds a solution on random instances, explaining why most greedy algorithms work so well in our experiments.
 \end{abstract}
 
 
@@ -113,7 +113,9 @@ Given a period, a message size and a delay between the two contention points for
  
  Complex scheduling problems for time sensitive networks have been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines. We think our approach can be brought to these settings.
 
-The model we study was recently introduced in~\cite{dominique2018deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these works, the main results are heuristics, using classical scheduling algorithms as subroutines, and FPT algorithms which find a sending scheme with \emph{minimal latency}. They also briefly introduce and study the problem of finding sending schemes with \emph{no additional latency}, a problem which is the subject of this article under the name \pma. A simple greedy algorithm for \pma, which is guaranteed to work when the load of the link is less than $1/3$, is given in~\cite{dominique2018deterministic} and is recalled in Theorem~\ref{th:metaoffset}. In this article, we propose many new algorithms which solve \pma on instances of higer loads. In particular, we provide a very efficient algorithm for the special case of messages of size one and a proof that greedy algorithms work well on average instances.
+The model we study was recently introduced in~\cite{dominique2018deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these works, the main results are heuristics, using classical scheduling algorithms as subroutines, and FPT algorithms which find a sending scheme with \emph{minimal latency}. 
+The problem of finding sending schemes with \emph{no additional latency},
+which is the subject of this article under the name \pma, is also briefly introduced and studied in~\cite{dominique2018deterministic}: A simple greedy algorithm for \pma, which is guaranteed to work when the load of the link is less than $1/3$, is given and we recall it in Theorem~\ref{th:metaoffset}. In this article, we propose many new algorithms which solve \pma on instances of higer loads. In particular, we provide a very efficient algorithm for the special case of messages of size one and a proof that greedy algorithms work well on average instances.
 
 
 
@@ -164,12 +166,11 @@ These algorithms rely on schemes to build compact enough solutions, to bound mea
 In this article, we model a simple network in which periodic messages flow through a single bidirectional link. Each RRH sends messages through the link to its
 BBU and two messages cannot go at once in the link: this is the first contention point, represented in Fig.~\ref{fig:model}. Upon receiving a message, a BBU sends an answer back to its RRH, which goes through the link in the other direction: this is the second contention point represented in Fig.~\ref{fig:model}. Since the answer must be sent back as soon as a message arrives, we see this process as a single message going from an RRH to its BBU and back to the RRH, while traversing two contention points. 
 
-Messages using the link in two different directions do not interact, since the link we model is full-duplex. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. This \textbf{size} represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. Allowing messages of different sizes would help model other applications than C-RAN.
-The algorithms presented in this article are not directly applicable to this case, but we hope that several ideas presented here could be adapted.
+Messages using the link in two different directions do not interact, since the link we model is full-duplex. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. This \textbf{size} represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. Allowing messages of different sizes would help model other applications than C-RAN. The algorithms presented in this article are not directly applicable to this more general case, but we think that several ideas presented here could be adapted.
 
  We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The model and problem can easily be generalized to any topology, that is any directed acyclic multigraph with any number of contention points, see~\cite{dominique2018deterministic}. We choose here to focus on the simplest, but realistic, non-trivial network, for which we can still obtain some theoretical results. 
 
-The time is discretized and the process we consider is periodic of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. A message is emmited an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of the interval of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. 
+The time is discretized and \emph{the process we consider is periodic} of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. A message is emmited an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of an interval of $P$ units of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. 
 
 An \textbf{offset} of a message is a choice of time at which it arrives
 at the first contention point (i.e. in the first period). Let us consider a message $i$
@@ -208,7 +209,7 @@ it is relevant to have $\tau > 1$ when the transmission time of a single message
 A \textbf{partial assignment} $A$ is a function defined from a subset $S$ of $[n]$ to $[P]$.
 The cardinal of $S$ is the \textbf{size} of partial assignment $A$. A message in $S$ is \textbf{scheduled} (by $A$), and a message not in $S$ is \textbf{unscheduled}. We only consider partial assignments such that no pair of messages of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the message $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
-All presented algorithms build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. In the rest of the paper, we sometimes compare the relative position of messages, but one should remember that the time is periodic and these are relative positions on a circle. Moreover, when it is unimportant and can hinder comprehension, we may omit to write \emph{mod P} in some definitions and computations.
+All presented algorithms build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. In the rest of the paper, we sometimes compare the relative position of messages, but one should remember that the time is periodic and these are relative positions on a circle. Moreover, when it is unimportant and can hinder comprehension, we may omit to write \emph{mod P} in some remarks and computations.
 
 
 \subsection{First Fit}
@@ -280,12 +281,12 @@ The \textbf{gap} between $i$ and $j$ is defined as  $g = d_{i}' + 1 - d'_{j} \mo
 
 \includegraphics[scale=0.7]{compact_pair}
 \end{center}
-\caption{A compact pair scheduled using meta-offsets, with $d'_0 = 2$ and $d'_0 = 0$}
+\caption{A compact pair scheduled using meta-offsets, with $d'_0 = 2$ and $d'_1 = 0$}
 \label{fig:compactpair}
 \end{figure}
 
 \begin{lemma}\label{lemma:pair_find}
-Given three messages $\{1,2,3\}$, then either $\{1,2\}$, $\{1,3\}$ or $\{2,3\}$ form a compact pair. 
+Given three messages $(1,2,3)$ in order of increasing delay modulo $\tau$, then either $(1,2)$, $(1,3)$ or $(2,3)$ form a compact pair. 
 \end{lemma}
 \begin{proof}
 If the first two messages or the first and the third message form a compact pair, we are done. If not, then by definition $d_{1}' = 1 + d_{2}' = 1 + d_{3}'$. Hence, messages $2$ and $3$ have the same delay and form a compact pair of gap $1$.
