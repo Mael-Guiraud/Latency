@@ -11,6 +11,7 @@
 \usepackage{amsthm}
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{caption}
 \usepackage{longtable}
 \usepackage{complexity}
 \usepackage{tkz-graph}
@@ -132,7 +133,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
     The {\bf weight of a vertex} $u_i$ in a route $r=(u_0,\dots,u_l)$ is defined by $\lambda(r,u_i)= \sum\limits_{0 \leq j <i} \omega(r,u_j)$. It is the time needed by a message to go from the first vertex of the route to $u_i$. The \textbf{length} of the route $r$ is defined by $\lambda(r)= \lambda(r,u_l)$. 
 
   	On each route, we can buffer the message in the BBU. Since the BBU does not correspond to a contention point, we identify the BBU with the next contention point in the route. The set of these contention points with possible buffering is denoted by ${\cal B}$. In our context, with buffering in the BBU only, there is exacly one vertex of each route in $\cal{B}$.
-  	A \textbf{routed network}, which models the telecommunication network, is a triple $N = (\cal{R},\,\cal{B},\,\omega)$. 
+  	A \textbf{routed network}, which models the telecommunication network, is a triple $N = (\cal{R},\,\cal{B},\,\omega)$ and is represented in figure~\ref{fig:graphmodel}. 
 
 
 
@@ -142,8 +143,8 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	
 	\includegraphics[scale=0.7]{graphmodel}\\
 
-\caption{A C-RAN fronthaul network and its corresponding routed network}
-\label{fig:fronthaul}
+\caption{A routed network}
+\label{fig:graphmodel}
 \end{figure} 
  
 
@@ -192,9 +193,9 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
     we denote $[r,u]_{P,\tau}$ by $[r,u]$ and say that $A$ is a valid assignment. 
 
      In the example of Fig.~\ref{fig:example}, the three routes are given by three different colors. If we let $P = 2$ and $\tau = 1$, then there is a $(2,1)$-periodic valid assignment without waiting time by taking $0$ as offset for each route.
+     
+     In the same example, by taking $P=5$ and $\tau = 2$, there is a no solution to the problem defined above better than the optimal one without waiting time. Indeed, the optimal solution is the assignment $(0,0),(1,2),(0,0))$.
 
-\todo{Mettre deux jeux de paramètres pour l'exemple, par exemple $\tau = 2$ et $P = 5$ ? Mettre les BBU.
-PB: Sur ce genre de figure, on peut pas avoir d'ensemble B car sinon il y a une route qui n'a pas de sommet dans B}
 
   
 \begin{figure}[ht]
@@ -212,21 +213,21 @@ PB: Sur ce genre de figure, on peut pas avoir d'ensemble B car sinon il y a une 
 
   \node[draw,circle] (t3) at (14, 7) {$t_2$}; 
   \node[draw,circle] (t2) at (14, 4) {$t_1$}; 
-  \node[draw,circle] (t1) at (10, 2) {$t_0$}; 
+  \node[draw,circle] (t1) at (14, 2) {$t_0$}; 
 
-  
+   \node[circle] (buf) at (10, 6) {$\cal{B}$};
   \SetVertexNoLabel
   \Vertex[x=2,y=5]{A}
-  
+    \Vertex[x=10,y=2]{B}
   \Vertex[x=10,y=5]{C}
 
   \Vertex[x=6,y=3]{E}
-  
+     \draw[dashed] (10,3.5) ellipse  (1cm and 2cm);
   \tikzset{
   EdgeStyle/.append style = {green} }
   \Edge[label = 2](s2)(A)
 
-  \Edge[label = 3](A)(C)
+  \Edge[label = 1](A)(C)
  
   \Edge[label = 2](C)(t2)
 
@@ -235,20 +236,20 @@ PB: Sur ce genre de figure, on peut pas avoir d'ensemble B car sinon il y a une 
   EdgeStyle/.append style = {red} }
   \Edge[label = 2](s3)(E)
   \Edge[label = 2](E)(C)
-  \Edge[label = 2](C)(t3) 
+  \Edge[label = 3](C)(t3) 
 
      \tikzset{
   EdgeStyle/.append style = {blue} }
   \Edge[label = 1](s1)(A)
   \Edge[label = 2](A)(E)
-  \Edge[label = 2](E)(t1)
- 
+  \Edge[label = 2](E)(B)
+ \Edge[label = 1](B)(t1)
 
 \end{tikzpicture}
 
 }
   	\end{center}
-    \caption{A routed network with $((0,0),(0,0),(0,0)$ as a $(2,1)$-periodic assignment}
+    \caption{A routed network with $((0,0),(0,0),(0,0))$ as a $(2,1)$-periodic assignment and $(0,0),(1,2),(0,0))$ as a $(5,2)$-periodic assignment}
     \label{fig:example}
 \end{figure}
 
@@ -338,7 +339,7 @@ PB: Sur ce genre de figure, on peut pas avoir d'ensemble B car sinon il y a une 
 
     \subsection{The Star Routed Network} \label{sec:star_routed_network}
   
-	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$. The load on each of the two contention points is thus $n\tau / P$.
+	In this section, we define a family of simple routed networks modeling a Point-to-Multipoint fronthaul (PtMP, see figure~\ref{fig:ptmp}), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$. The load on each of the two contention points is thus $n\tau / P$.
 
 	The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
 	The two contention points $c_1$ and $c_2$ model the beginning of the shared link (used to go from the RRHs to the BBUs) and the other end of the shared link (used in the other direction). 
@@ -349,50 +350,250 @@ PB: Sur ce genre de figure, on peut pas avoir d'ensemble B car sinon il y a une 
 		Star routed network may seem simplistic, but every network in which all routes share an arc and satisfy a coherent routing condition can be modeled by a star routed network.
 		It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Sec.~\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
 
-      \begin{figure}
-       \begin{center}
-	 \scalebox{0.8}{
+      
+     
+   \begin{minipage}{0.40\linewidth}
+    	\includegraphics[scale=0.5]{starfronthaul}\\
+    	
+        \captionof{figure}{A point to multipoint fronthaul network}
+        \label{fig:ptmp}
+   \end{minipage}\hfill
+\begin{minipage}{0.55\linewidth}   
+
+
+\scalebox{0.4}{
+
 \begin{tikzpicture}
-
-\tikzset{EdgeStyle/.style={<->,font=\scriptsize,above,sloped,midway}}
   \SetGraphUnit{5}
-  
-  \node[draw,circle] (s3) at (0, 0) {$s_2$}; 
-  \node[draw,circle] (s2) at (0, 2) {$s_1$}; 
-  \node[draw,circle] (s1) at (0, 4) {$s_0$}; 
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
 
-  \node[draw,circle] (t3) at (8, 0) {$t_2$}; 
-  \node[draw,circle] (t2) at (8, 2) {$t_1$}; 
-  \node[draw,circle] (t1) at (8, 4) {$t_0$}; 
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
   
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
 
-  \node[draw,circle] (cs) at (3, 2) {$c_s$}; 
-  \node[draw,circle] (ct) at (5, 2) {$c_t$}; 
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$5$} (c1);
 
-  
-  \Edge[label = $\Omega(s_0\,c_s)$](s1)(cs)
-  \Edge[label = $\Omega(...)$](s2)(cs)
-  \Edge[label = $\Omega(...)$](s3)(cs)
-  
-  \Edge[label = $\Omega(...)$](ct)(t1)
-  \Edge[label = $\Omega(...)$](ct)(t2)
-  \Edge[label = $\Omega(...)$](ct)(t3)
-  
-  \Edge(cs)(ct)
+\path (s2) edge [->] node[anchor=south]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
 
-  
+\path (c2) edge [->] node[anchor=south]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south]{$7+2+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$7+1+1$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
 \end{tikzpicture}
 }
 
-  \end{center}
-  \caption{A star routed network}
-  \end{figure}
-	
-	
-  When solving \pall or \pazl on a star routed network, a period, a message size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Fig.~\ref{fig:canonical} for an example of a canonical star routed network.  
-  
+  \captionof{figure}{A star routed network }
+\label{fig:star}
+\end{minipage}
 
-\todo{Un exemple de cette transformation serait utile}
+	
+  When solving \pall or \pazl on a star routed network, a period, a message size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Fig.~\ref{fig:canonical} for an example of the canonical star routed network of Fig~\ref{fig:star}.  
+  
+\begin{figure}
+\begin{center}
+Graph of figure~\ref{fig:star}
+
+$P= 5$, $\tau = 1$, $d_1 = 30$, $d_2 = 34$, $d_3 = 32$
+
+$\downarrow$
+
+
+ \scalebox{0.5}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$0$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$0$} (c1);
+\path (s3) edge [->] node[anchor=south]{$0$} (c1);
+\path (c2) edge [->] node[anchor=south]{$10$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$14$} (s3p);
+
+\path (c2) edge [->] node[anchor=south]{$12$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$15$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south]{$11$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$9$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+$P= 5$, $\tau = 1$, $d_1 = 25$, $d_2 = 31$, $d_3 = 25$
+
+$\downarrow$
+
+
+ \scalebox{0.5}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$0$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$0$} (c1);
+\path (s3) edge [->] node[anchor=south]{$0$} (c1);
+\path (c2) edge [->] node[anchor=south]{$0$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$0$} (s3p);
+
+\path (c2) edge [->] node[anchor=south]{$0$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$15$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south]{$11$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$9$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+$P= 5$, $\tau = 1$, $d_1 = 14$, $d_2 = 21$, $d_3 = 11$
+
+$\downarrow$
+
+
+ \scalebox{0.5}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$0$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$0$} (c1);
+\path (s3) edge [->] node[anchor=south]{$0$} (c1);
+\path (c2) edge [->] node[anchor=south]{$0$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$0$} (s3p);
+
+\path (c2) edge [->] node[anchor=south]{$0$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$0$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south]{$4$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$4$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+$P= 5$, $\tau = 1$, $d_1 = 4$, $d_2 = 6$, $d_3 = 6$
+ 
+\end{center}
+
+\caption{The cannonical network of figure~\ref{fig:star}}
+\label{fig:canonical}
+\end{figure}
 
   \begin{proposition}\label{prop:canonical}
    Let $I = (N, P, \tau , d)$, with $N = (\cal{R},\,\cal{B},\,\omega)$ a star routed network, then there is 
@@ -617,7 +818,7 @@ The assignment is found in time $O(n^2)$.
 
      This algorithm works in time $O(n^2)$, since for the $k^{\text{th}}$ route we have to try at most $3k$ meta-offsets before finding a correct one. We can test whether these $3k$ offsets cause a collision in $c_2$ in time $O(k)$ by maintaining an ordered list of the intervals of tics in the period used by already scheduled routes in $c_2$.
      \end{proof}
-     
+         
      \begin{figure}
       \begin{center}
       \includegraphics[width=0.48\textwidth]{ex3nt.pdf}
@@ -668,7 +869,13 @@ We use that form to design an algorithm solving \pazl in fixed parameter tractab
 
 Let $({\cal R},\omega)$ be a star routed network and let $A$ be a bufferless $(P,\tau)$-periodic assignment.
 We say that that $A$ is \textbf{compact} if there is a route $r_0 \in \cal{R}$ such that the following holds: for all subsets $S\subset \cal{R}$ with $r_0 \notin S$, the bufferless assignment $A'$, defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S$ and $A(r)$ otherwise, is not valid. In other words, an assignment is compact if for all routes $r$ but one, $A(r)$ cannot be reduced by one, that is either in $c_1$ or in $c_2$, there is a route $r'$ using the tics just before $A(r)$. See Fig.~\ref{fig:compact} for an example of a compact assignment, obtained by the procedure of the next proposition. 
-
+  \begin{figure}
+      \begin{center} 
+      \includegraphics[width=0.7\textwidth]{compacttoassignment.pdf}
+      \end{center}
+      \caption{A compact assignment $A'$ built from an assignment $A$}
+      \label{fig:compact}
+      \end{figure}
 \begin{proposition}\label{prop:compactification}
 Let $N = ({\cal R}, \omega)$ be a star routed network. If there is a $(P,\tau)$-periodic bufferless assignment of $N$, then there is a compact $(P,\tau)$-periodic assignment of $N$.
 \end{proposition}
