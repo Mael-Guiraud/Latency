@@ -18,6 +18,7 @@ int cmptbeb;
 int genbe;
 long long int moyenne;
 int nb_elem_moy ;
+int fifomode;
 void init_arcs_state(Graph * g)
 {
 	for(int i=0;i<g->arc_pool_size;i++)
@@ -88,6 +89,56 @@ Elem * ajoute_elem_fifo(Elem * l,int numero_route,int arc_id,int arrival_in_queu
 	new->kind_message = kind_message;
 	new->arc_id = arc_id;
 	new->deadline = deadline;
+	Elem * debut = l;
+	if(fifomode)
+	{
+
+		if(est_vide(l))//la liste est vide
+		{
+			new->suiv = NULL;
+			return new;
+		}
+			
+		//messageBE
+		if(kind_message == 0)
+		{
+			while(l->suiv)
+			{
+				if(l->suiv->kind_message)
+					l = l->suiv;
+				else
+					break;
+					
+			//printf("%d  %p\n",l->kind_message,l);
+			}
+			fifomode = 0;
+			l->suiv = ajoute_elem_fifo(l->suiv,numero_route,arc_id,arrival_in_queue,time_elapsed,deadline,kind_p,kind_message);
+			fifomode = 1;
+			free(new);
+			return debut;
+		}
+		if((l->arrival_in_queue < arrival_in_queue)||(l->kind_message == 0))//insertion au debut
+		{
+			new->suiv = l;
+			return new;
+		}
+
+		//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
+		while(l->suiv)
+		{
+			if((l->suiv->arrival_in_queue < arrival_in_queue)||(l->kind_message == 0))//insertion au milieu
+			{
+				new->suiv = l->suiv;
+				l->suiv = new;
+				return debut;
+			}
+			l = l->suiv;
+		}
+		//Si on arrive la, c'est qu'on est à la fin.
+		l->suiv = new;
+		new->suiv = NULL;
+		return debut;
+	}
 	if(est_vide(l))//la liste est vide
 	{
 		new->suiv = NULL;
@@ -99,7 +150,7 @@ Elem * ajoute_elem_fifo(Elem * l,int numero_route,int arc_id,int arrival_in_queu
 		new->suiv = l;
 		return new;
 	}
-	Elem * debut = l;
+
 	//on sarrête soit quand on est au bout, soit quand on doit ajouter l'element
 	while(l->suiv)
 	{
@@ -675,8 +726,9 @@ Event * arc_free_fct(Graph * g, Event * liste_evt,int message_size, int * p_time
 	
 	return liste_evt;
 }
-int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be,FILE * fichier,int reinit_be,int * moy)
+int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy pol,int computed,int * time_be,FILE * fichier,int reinit_be,int * moy,int fifom)
 {
+	fifomode = fifom;
 	moyenne = 0;
 	nb_elem_moy=0;
 	if(reinit_be)
@@ -806,7 +858,8 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 
 	fclose(logs);
 	//printf("%d %d \n",longest_time_elapsed,time_be);
-	*moy = moyenne/nb_elem_moy;
+	if(nb_elem_moy)
+		*moy = moyenne/nb_elem_moy;
 	return longest_time_elapsed;
 }
 

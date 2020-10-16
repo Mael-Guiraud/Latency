@@ -1,12 +1,15 @@
 
- file = "resmult60solo"
+ file = "resmult95solo"
+ file2 = "resmult40solo"
 
 
-plot   file  using 5:(1.) smooth cumulative title  "FIFO" 
-replot   file  using 6:(1.) smooth cumulative title  "Deadline" 
-replot   file  using 7:(1.) smooth cumulative title  "computed" 
-replot   file  using 8:(1.) smooth cumulative title  "Distrib" 
-
+plot   file  using 2:(1.) smooth cumulative title  "FIFO 95" 
+replot   file  using 3:(1.) smooth cumulative title  "CRAN FIRST - FIFO 95" 
+replot   file  using 4:(1.) smooth cumulative title  "CRAN FIRST - DEADLINE 95" 
+replot   file  using 6:(1.) smooth cumulative title  "DETERMINISTIC 95" 
+replot   file2  using 2:(1.) smooth cumulative title  "FIFO 40" 
+replot   file2  using 3:(1.) smooth cumulative title  "CRAN FIRST - FIFO 40" 
+replot   file2  using 4:(1.) smooth cumulative title  "CRAN FIRST - DEADLINE 40" 
 
 
 ######### Pour une sortie dans un fichier .ps ##################"
@@ -27,7 +30,7 @@ set ylabel "Success(%)"
 set xlabel "Additional Latency"
 set xrange [0:24000]
 
-set key center left
+set key center right
 set key font ",10"
 
 set border 3
