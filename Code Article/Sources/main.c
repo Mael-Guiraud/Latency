@@ -29,7 +29,7 @@ int main()
 	/*****
 	Taux de reussite de chaque algo PAZL en fonction de la periode
 	*****/
-	//echec_PAZL(8,2500,20000,1000);
+	//echec_PAZL(16,2500,700,10000);
 
 
 	/******************************************/
@@ -48,7 +48,7 @@ int main()
 	/*****
 	Taux de reussite de départ PALL avec un retour GP sur une periode donnée (on fait varier la marge)
 	*****/
-	//sucess_aller_PALL(8,2500,20000,3000,10000,25000);
+sucess_aller_PALL(8,2500,20000,3000,10000,25000);
 
 
 	/******************************************/
@@ -88,7 +88,7 @@ int main()
 	
 
 	//Test stochastique vs pmls
-	stochastic_vs_PMLS(8,2500,700,1000, 12000);
+	//stochastic_vs_PMLS(8,2500,700,1000, 12000);
 
 
 

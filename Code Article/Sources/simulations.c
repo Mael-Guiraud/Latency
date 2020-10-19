@@ -118,7 +118,7 @@ void echec_PAZL(int nb_routes, int taille_message,int taille_routes, int nb_simu
 	long long int total_3NT, total_brute, total_sl,total_theorique;
 	int res_brute;
 
-	for(int j = taille_message*nb_routes ; j<=50000;j+=500)
+	for(int j = taille_message*nb_routes ; j<=taille_message*nb_routes/0.4;j+=500)
 	{
 		
 		total_3NT = 0;
@@ -161,7 +161,7 @@ void sucess_aller_PALL(int nb_routes, int taille_paquets,int taille_route,int ma
 	int resa,resb,resc,resd,rese;
 	float a0,a1,a2,b,c,d,e;
 	int tmax;
-	int nb_rand = 1000;
+	int nb_rand = 1;
 	int * m_i;
 	int * offsets;
 	int permutation[nb_routes];
