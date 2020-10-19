@@ -1110,36 +1110,41 @@ void simultiplexing(int seed)
 	
 	int P;
 				
-	FILE* f = fopen("resmult60solo","w");
-
+	FILE* f = fopen("resmult6020distrib","w");
+	int nbsim = 1000;
 
 
 	int multfifo ;
+	int multfifo2 ;
 	int multdeadline;
 	int multcomputed;
 
 	int fpt ;
 	int timebefifo;
+	int timebefifo2;
 	int timebedeadline;
 	int timebecomputed;
 	int timebedistrib;
 
 	int moyfifo;
+	int moyfifo2;
 	int moydeadline;
 	int moycomputed;
 	int moydistrib;
 	
 	int longest;
 	long long moymoyfifo = 0;
+	long long moymoyfifo2 = 0;
 	long long moymoydeadline = 0;
 	long long moymoycpomputed = 0;
 	long long moymoydistrib = 0;
-	system("rm -f distrififo distrideadline districomputed distridistrib");
-	for(int i=0;i<100;i++)
+	system("rm -f distrififo distrififo2 distrideadline districomputed distridistrib");
+	for(int i=0;i<nbsim;i++)
 	{
 		Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
 		P = PERIOD;
 		timebefifo=0;
+		timebefifo2=0;
 		timebedeadline=0;
 		timebecomputed=0;
 		timebedistrib=0;
@@ -1147,11 +1152,15 @@ void simultiplexing(int seed)
 
 		FILE* fichier = fopen("distrififo","a");
 		//printf("FIFO \n");
-		multfifo =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo,fichier,1,&moyfifo) - longest;
+		multfifo =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo,fichier,1,&moyfifo,0) - longest;
+		fclose(fichier);
+			fichier = fopen("distrififo2","a");
+		//printf("FIFO \n");
+		multfifo2 =multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo2,fichier,1,&moyfifo2,1) - longest;
 		fclose(fichier);
 		//printf("DEADLINE \n");
 			 fichier = fopen("distrideadline","a");
-		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline,fichier,0,&moydeadline) - longest;
+		multdeadline =multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebedeadline,fichier,0,&moydeadline,0) - longest;
 	fclose(fichier);
 
 		/*fpt  = dichostarspall(&g,  P,  message_size);
@@ -1170,38 +1179,41 @@ void simultiplexing(int seed)
 			l++;
 			//fprintf(stdout,"\r fpt1     %d",l );fflush(stdout);
 		}
-		if(l!=0)
-			printf("etrange.\n");
+		
 			 fichier = fopen("districomputed","a");
-		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebecomputed,fichier,0,&moycomputed) ;
+		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebecomputed,fichier,0,&moycomputed,0) ;
 		fclose(fichier);
+		
 		fpt = 1;
-		 l = 0;
+		int l2 = 0;
 		while(fpt)
 		{
-			fpt =  FPT_PALL_star(&g,P,message_size+l,longest);
+			fpt =  FPT_PALL_star(&g,P,message_size+l2,longest);
 			if(!fpt)
 			{
 				//printf("%d %d \n",fpt,l);
-				fpt =  FPT_PALL_star(&g,P,message_size+l-1,longest);
+				fpt =  FPT_PALL_star(&g,P,message_size+l2-1,longest);
 				break;
 			}
-			l+=1;
+			l2+=1;
 			//fprintf(stdout,"\r    %d",l );fflush(stdout);
 		}
 		
 			 fichier = fopen("distridistrib","a");
-		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebedistrib,fichier,0,&moydistrib) ;
+		multcomputed =multiplexing(&g, P, message_size, 10, DEADLINE,1,&timebedistrib,fichier,0,&moydistrib,0) ;
 		fclose(fichier);
+
+		
 		free_graph(&g);
 		moymoyfifo += moyfifo;
+		moymoyfifo2 += moyfifo2;
 		moymoydeadline += moydeadline;
 		moymoycpomputed += moycomputed;
 		moymoydistrib += moydistrib;
-		fprintf(f,"%d %d %d %d %d %d %d %d %d %d %d %d %d \n",i,multfifo,multdeadline,multcomputed,timebefifo,timebedeadline,timebecomputed,timebedistrib,l,moyfifo,moydeadline,moycomputed,moydistrib);
-		fprintf(stdout,"\r                                                                         %d/100",i+1);fflush(stdout);
+		fprintf(f,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d \n",i,multfifo,multfifo2,multdeadline,multcomputed,l,timebefifo,timebefifo2,timebedeadline,timebecomputed,timebedistrib,moyfifo,moyfifo2,moydeadline,moycomputed,moydistrib);
+		fprintf(stdout,"\r                                                                         %d/%d",i+1,nbsim);fflush(stdout);
 	}
-	printf("\nFIFO %d %d\nDeadline %d %d\n Computed %d %d\n,Distrib%d %d\n",moymoyfifo/100,timebefifo,moymoydeadline/100,timebedeadline,moymoycpomputed/100,timebecomputed,moymoydistrib/100,timebedistrib);
+	printf("\nFIFO %d %d\nFIFO 2 %d %d\nDeadline %d %d\n Computed %d %d\n,Distrib%d %d\n",moymoyfifo/nbsim,timebefifo,moymoyfifo2/nbsim,timebefifo2,moymoydeadline/nbsim,timebedeadline,moymoycpomputed/nbsim,timebecomputed,moymoydistrib/nbsim,timebedistrib);
 		
 		
 	
