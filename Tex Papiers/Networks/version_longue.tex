@@ -31,6 +31,10 @@
 \newcommand\MLS{\texttt{MLS}\xspace}
 \newcommand\PMLS{\texttt{PMLS}\xspace}
 \newcommand\ASPMLS{\texttt{ASPMLS}\xspace}
+\newcommand\SASPMLS{\texttt{SASPMLS}\xspace}
+\newcommand\FIFO{\texttt{FIFO}\xspace}
+\newcommand\framepre{\texttt{Frame preemption}\xspace}
+\newcommand\critdead{\texttt{Critical deadline}\xspace}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
@@ -1422,9 +1426,21 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
      \subsection{PMLS Compared to Statistical Multiplexing}
 
      \textbf{TODO:} donner deux politiques de buffering: FIFO, deadline et les comparer à PMLS.
+      \subsubsection{Description of statistical multiplexing}
+    Here, we describe how the statistical mulitplexing simulator is implemented.
+    The networks are generated are the same as in the previous experiments. However, consider that the contention points can receive several messages to send at the same tic: it is thus now possible to buffer somme messages in every contention points of the network. 
+    
+    In the network we study here, two kinds of traffic are present: the Cloud Ran traffic, the one we studied in this paper, and another traffic, less critical, for which there is no needed guarantee, the Best Effort (BE) traffic. We propose three policies to manage the traffics in the nodes.
+    
+
+    The first one is the \FIFO (First In First Out) policy, the trivial one, which consists in sending the messages, regardless their kind, in the same order in which they reached the contention point.
+    
+
+    
+    The second proposed policy is called \critdead, and consists in sending first the message which has almost spent the largest time in the network between all buffered messages. 
 
 
-     Now that we have found the best amongst the algorithms solving \pall, we compare its performances against the actual way to manage the messages in a network:  statistical multiplexing, with a FIFO buffer in each node of the network to resolve collisions. For statistical multiplexing, the time at which the messages are sent in the network is not set by the user as in our approach, thus we fix the offsets of each route to some random value.
+     Now that we have found the best amongst the algorithms solving \pall, we compare its performances against the actual way to manage the messages in a network:  statistical multiplexing, with a \FIFO buffer in each node of the network to resolve collisions. For statistical multiplexing, the time at which the messages are sent in the network is not set by the user as in our approach, thus we fix the offsets of each route to some random value.
      Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. Remark that the process is not periodic, therefore we must measure the process time of each route over several periods if we want to compute its maximum. We choose to simulate it for $1,000$ periods and we have observed that the process time usually stabilizes in less than $10$ periods. The margin is defined as the maximum process time, computed as explained, minus twice the size of the longest route. 
 	    
      In Figure~\ref{fig:sto} and Figure~\ref{fig:stobad}, we represent the probability of success of statistical multiplexing and PMLS for different margins. The success rates are computed from $10,000$ star routed networks for each margin. On Figure~\ref{fig:sto}, the arcs of the network are uniformly drawn between $0$ and $20,000$, while on Figure~\ref{fig:stobad}, the arcs of the network are uniformly drawn between $P-800$ and $P+800$. The others parameters of the experiences are the same as previously. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
@@ -1432,16 +1448,15 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
     \begin{figure}
        \begin{center}
-      \includegraphics[width = 0.45\textwidth]{stochastic.pdf}
+      \includegraphics[width = \textwidth]{stochasticdistrib.pdf}
        %\input{figures/stochastic}
       \end{center}
       \caption{Probability of success of statistical multiplexing and PMLS for several margins on random topologies}
       \label{fig:sto}   
      \end{figure}    
-     
          \begin{figure}
        \begin{center}
-      \includegraphics[width = 0.45\textwidth]{stochasticbad.pdf}
+      \includegraphics[width = \textwidth]{stochastic.pdf}
        %\input{figures/stochastic}
       \end{center}
       \caption{Probability of success of statistical multiplexing and PMLS for several margins on random topologies where the routes have almost the same size}
@@ -1465,13 +1480,6 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     Thus, we propose an adaptation of any algorithm solving \pazl, to find assignments where the unused tics are optimally spaced in the period as in Figure~\ref{fig:space}.
    
     
-    \subsubsection{Description of statistical multiplexing}
-    This section shortly describe how the statistical mulitplexing simulator is implemented.
-    The networks are generated in the same way as previously, but since the contention points can receive several messages to send at the same tic, it is possible to buffer somme messages in every contention points of the node. Two policies to manage which message must be sent in first when contention arise.
-    
-    The first one is the \texttt{FIFO} (First In First Out) policy, the trivial one, which consists in sending the messages in the same order in which they reached the contention point.
-
-    The second proposed policy is called \texttt{LTE} (Longest Time Elapsed) and consists in sending first the message which has almost spent the largest time in the network between all buffered messages
     
     \subsubsection{Adapted \ASPMLS for BE traffic}
 
@@ -1485,11 +1493,36 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     Faire une expérience sur 1000 instances, 60 pour cent de charge, 8 routes
     pour savoir quelle est la taille du + gd tau trouvé en moyenne -> mieux la distribution
     de ce +gd tau. Ça va nous dire que l'algo réussi bien à espacer (avant de voir l'effet sur la latence).
-
+ 
 
     Since \ASPMLS always finds an optimal solution for deterministic traffic, we focus on the impact it has on statistical traffic. As mentioned previously, \ASPMLS tends to create some long sequences of deterministic messages and then, avoid the best effort traffic to go through the nodes during those intervals.
-    To fix this issue, the idea is to compute an optimal solution with PMLS with the largest messages size $\tau$ possible. Once this solution is computed, the times at which the deterministical traffic will reach every contention points of the network without latency are well computed, but since the messages are shorter than in the computed solution, it induce some free tics to avoid best effort traffic flow.
+    
+    To fix this issue, we compute an optimal solution with \ASPMLS with the largest messages size $\tau' \geq \tau$ possible. Once this solution is computed, the times at which the deterministic traffic will reach every contention points of the network without latency are well computed, but since the messages are shorter than in the computed solution, it induce some free tics to avoid best effort traffic flow.
     Such a similar work focusing on decreasing the BE latency while scheduling CRAN messages on an optical ring can be found in~\cite{DBLP:conf/ondm/BarthGS19}.
+    
+    \begin{proposition}\label{prop:space}
+Let $N = ({\cal R}, \omega)$ be a star routed network. If there is a $(P,\tau)$-periodic assignment $A$ of $N$, then there is a $(P,\tau')$-periodic assignment $A'$ of $N$ with $\tau' \geq \tau$, for which $TR(A') = TR(A)$ that spaces the messages in the period.
+\end{proposition}
+\begin{proof}
+Consider $A$ a $(P,\tau)$-periodic assignment of $N$ given by \ASPMLS. Then, $A$ is the assignment with the minimal margin $m$.
+By running \ASPMLS with the same $m$ but a greater $\tau$, if \ASPMLS finds an assignment, $TR(A') = TR(A)$ since $m$ is minimal.
+
+Thus, by computing \ASPMLS with a larger $\tau'$ untill there is no solutions, we compute the assignment with the largest $\tau'$ possible. 
+
+We propose the algorithm \texttt{Spaced ASPMLS} (\SASPMLS): starting from a $(P,\tau)$-periodic assignment $A$ with margin $m$, compute a $(P,\tau')$-periodic assignment $A'$ with the same margin $m$ and the maximal $\tau'$. Then, transform $A'$ into $A$, keeping the same offsets and waiting time, and reducing only the message size from $\tau' - \tau$. Thus, there is somme free space of size $\tau' - \tau$ between each messages in $A$.
+
+The space given by \SASPMLS is illustrated in Figure~\ref{fig:space}
+\end{proof}
+
+
+           \begin{figure}
+       \begin{center}
+      \includegraphics[width = \textwidth]{space.pdf}
+       %\input{figures/stochastic}
+      \end{center} 
+      \caption{Illustration of free space given by \SASPMLS}
+      \label{fig:space}   
+     \end{figure}   
     
     \subsubsection{Performance evaluation}
     
@@ -1505,12 +1538,15 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     Here, the different ways to manage both statistical and deterministic traffic in the same network is evaluated.
     The star networks are generated with $8$ routes in which the length of the arcs are drawn between $0$ and $P$.
     The network is loaded of $60\%$ of C-RAN traffic, and the size of a Cloud Ran message $\tau$ is $2500$ that means the period is set to $33,333$.
-
+ 
     \paragraph{Best effort generation}
     The best effort traffic is generated following an exponential distribution. The size of a BE packet is set to $50$ tics. The generation is split in two different exponential distribution. A first one, which loads the network in average of $15\%$, and generate one BE packets every $333$ tics in average. The second models a burst of BE messages, that is, a generation of $10$ packets every $10,000$ tics, in average.
     
-    Figure~\ref{fig:belatency} shows the cumulative distribution of the logical latency of BE packets, that is, the time each BE packets has wait in the buffers of the network. The experiment is made under several ways to schedule the C-RAN traffic. In \texttt{FIFO}, all CRAN and BE traffic are managed following the \texttt{FIFO} policy, regardless of the packet kind.
-    In the three other experiment, the BE traffic is managed in \texttt{FIFO}, but the C-RAN is always prioritized following either \texttt{LTE}, \ASPMLS or adapted \ASPMLS.
+    
+    In order to help C-RAN traffic to be as less buffered as possible in the network, we implemented the \framepre. This policy rally the TSN 802.1Qbu principle~\cite{ieee802} that allows to define priority class in the traffic and to schedule first the traffic whith the highest prioirity (here the C-RAN traffic). 
+    
+    Figure~\ref{fig:belatency} shows the cumulative distribution of the logical latency of BE packets, that is, the time each BE packets has wait in the buffers of the network. The experiment is made under several ways to schedule the C-RAN traffic. In \FIFO, all CRAN and BE traffic are managed following the \FIFO policy, regardless of the packet kind.
+    In the three other experiment, the BE traffic is managed in \FIFO, but the C-RAN is always prioritized following either \framepre, \ASPMLS or \SASPMLS.
     The experiment are made over $100$ random instances.
      \begin{figure}
        \begin{center}
@@ -1521,17 +1557,26 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
       \label{fig:belatency}   
      \end{figure}    
      
-     As expected, the latency of BE packets is better when both CRAN and BE packets are managed in \texttt{FIFO} than when the CRAN packets are prioritized without consideration of BE packets(\texttt{LTE} or \ASPMLS). Also, \ASPMLS performs worst than \texttt{LTE} because of the long sequence of BE traffic it creates.
+     As expected, the latency of BE packets is better when both CRAN and BE packets are managed in \FIFO than when the CRAN packets are prioritized without consideration of BE packets(\framepre or \ASPMLS). Also, \ASPMLS performs worst than \framepre because of the long sequence of BE traffic it creates.
      
-     In adapted \ASPMLS, the CRAN traffic is smoothed on the period, in order to leave some free tics for BE traffic. One can remark that this phenomenon improve the BE traffic latency, even more than with a statistical approach. 
+     In \SASPMLS, the CRAN traffic is smoothed on the period, in order to leave some free tics for BE traffic. One can remark that this phenomenon improve the BE traffic latency, even more than with a statistical approach. 
    
+    \begin{figure}
+       \begin{center}
+      \includegraphics[width = 0.8\textwidth]{distribtau.pdf}
+       %\input{figures/stochastic}
+      \end{center}
+      \caption{Cumulative distribution of $\tau'$ for \SASPMLS. $P/n=4166$, the drop point of the function}
+      \label{fig:belatency}   
+     \end{figure}    
+     
 
    Average
    
    
     \begin{tabularx}{0.9\textwidth}{|X|X|X|X|}
     \hline
-    \texttt{FIFO} & \texttt{LTE} & \ASPMLS & Adapted \ASPMLS \\
+    \FIFO & \framepre& \ASPMLS & \SASPMLS \\
      \hline
      $1977$ & $3256$ & $4909$ & $949$ \\
      \hline
@@ -1541,7 +1586,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
       
     \begin{tabularx}{0.9\textwidth}{|X|X|X|X|}
     \hline
-     \texttt{FIFO} & \texttt{LTE} & \ASPMLS & Adapted \ASPMLS \\
+    \FIFO & \framepre & \ASPMLS & \SASPMLS \\
      \hline
       $20723$ & $15099$ & $23945$ & $4677$ \\
      \hline

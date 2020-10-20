@@ -1,41 +1,36 @@
 
- file = "resmult95solo"
- file2 = "resmult40solo"
+ file = "resmult95solodistrib"
 
 
-plot   file  using 2:(1.) smooth cumulative title  "FIFO 95" 
-replot   file  using 3:(1.) smooth cumulative title  "CRAN FIRST - FIFO 95" 
-replot   file  using 4:(1.) smooth cumulative title  "CRAN FIRST - DEADLINE 95" 
-replot   file  using 6:(1.) smooth cumulative title  "DETERMINISTIC 95" 
-replot   file2  using 2:(1.) smooth cumulative title  "FIFO 40" 
-replot   file2  using 3:(1.) smooth cumulative title  "CRAN FIRST - FIFO 40" 
-replot   file2  using 4:(1.) smooth cumulative title  "CRAN FIRST - DEADLINE 40" 
+
+plot   file  using 2:(1.) lt rgb "red"  smooth cnorm with points title "Statistical multiplexing - FIFO" 
+replot   file  using 3:(1.) lt rgb "#EE82EE"  smooth cnorm with points title "Statistical multiplexing - Frame preemption" 
+replot   file  using 4:(1.)  smooth cnorm with points title "Statistical multiplexing - Frame preemption + Critical deadline" 
+replot   file  using 6:(1.) lw 4 smooth cnorm with points title "Deterministic networking" 
 
 
-######### Pour une sortie dans un fichier .ps ##################"
 
- set pointsize 1
+set pointsize 0.5
 
-set tics font ", 10"
-set xlabel font ", 25"
-set ylabel font ", 25"
+set tics font ", 12"
+set xlabel font ", 12"
+set ylabel font ", 12"
+set key font ", 15"
 
 
 
 
-
-
+set size 1,0.75
 set notitle
-set ylabel "Success(%)"
+set ylabel "Probability of Success"
 set xlabel "Additional Latency"
-set xrange [0:24000]
 
-set key center right
-set key font ",10"
-
+set yrange [0:1]
 set border 3
 set term postscript color solid
-set output '| ps2pdf - max.pdf'
+set output '| ps2pdf - stochasticdistrib.pdf'
 
-
+set key right bot
 replot
+
+
