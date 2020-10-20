@@ -983,7 +983,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 
       \paragraph{Short Routes}
       
-      \textbf{TODO:} mettre l'expérience habituelle avec le taux de succès à la place de ce truc + un truc qui regarde ce qui se passe quand on augmente le nombre de routes (on refait la même figure pour 12 et 16 routes).
+    
 
 
       We consider first routes which are shorter than $\tau$: a message cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing uniformly at random the weigths of the arcs between $0$ and $700$, which corresponds to links of less than $5$km between a BBU and an RRH.
@@ -991,11 +991,12 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
       We evaluate the highest load under which a $(P,\tau)$-periodic assignment can be found by each algorithm when we change the number of routes. In our experiment, we generate $1,000$ random instances of \pazl for $1$ to $14$ routes. We represent in Figure~\ref{fig:short} the average of the maximal load for which each algorithm finds a solution. A bound on the maximum load is given by the exhaustive search which always finds a solution if there is one. 
 %       The lower and upper bound $n\tau$ and $3n\tau$ are also represented.
       
-      \textbf{TODO:} dire ici qu'on se permet de changer la période pour qu'elle soit la plus petite possible. C'est pas très convaincant ... faut-il changer l'expérience ?  
-        
+     
+        \todo{je n'ai pas touché le texte, a gauche 8 route a droite 12, ca calcul encore pour 16...}
       \begin{figure}[h]
       \begin{center}
-	 \includegraphics[width=0.47\textwidth]{periode_petite.pdf}
+	 \includegraphics[width=0.47\textwidth]{pazlshort8.pdf}
+	 \includegraphics[width=0.47\textwidth]{pazlshort12.pdf}
       \end{center}
       \caption{Maximal load averaged over $1,000$ random instances}\label{fig:short}
       \end{figure}
@@ -1094,13 +1095,36 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
    We now solve the problem \wta, hence we are given a routed network, a deadline function and an offset for each route. The \textbf{release time} of a route 
    is defined as the first time its datagram can go through $c_2$: for a route $r$ with offest $o_r$, it is $\lambda(r,c_2) + o_r$.
 
-    The first algorithm we propose to solve \wta is a greedy algorithm which sets the waiting times in a greedy way, by prioritizing the routes with the earliest deadline to best satisfy the constraints on the process time. We call it \greedydeadline, and it works as follows. Set $t=0$ and $U = \cal{R}$. While there is a route in $U$, find $s \geq t$ the smallest time for which there is $r \in U$ with a release time larger or equal to $s$. If there are several routes in $U$ with a release time larger or equal to $s$, then $r$ with the smallest deadline is selected and set $w_r = s - \lambda(r,c_2)$, $t = s + \tau$ and $ U = U \setminus \{r\}$.
+    The first algorithm we propose to solve \wta is a greedy algorithm which sets the waiting times in a greedy way, by prioritizing the routes with the earliest deadline to best satisfy the constraints on the process time. We call it \greedydeadline, and it works as follows. Set $t=0$ and $U = \cal{R}$. While there is a route in $U$, find $s \geq t$ the smallest time for which there is $r \in U$ with a release time larger or equal to $s$. If there are several routes in $U$ with a release time larger or equal   \todo{lower or equal non ?}
+ to $s$, then $r$ with the smallest deadline is selected and set $w_r = s - \lambda(r,c_2)$, $t = s + \tau$ and $ U = U \setminus \{r\}$.
 
     This algorithm does not take into account the periodicity, which may create collisions. Let $r_0$ be the first route selected by the algorithm, then $t_0 = t(r_0,c_2)$ is the first time at which a datagram go through $c_2$.
 	Then, if all routes $r$ are such that $t(r, c_2) \leq t_0 + P - \tau$, 
 	then by construction, there are no collisions on the central arc.
-    However, if a route $r$ has a larger $t(r, c_2)$, since we consider everything modulo $P$ to determine collision, it may collide with another route. Therefore we correct \greedydeadline by this simple modification: $s \geq t$ is the smallest time for which there is $r \in U$ with a release time larger or equal to $s$ \emph{such that there is no collision if a datagram goes through $c_2$ at time $s$}. This rule guarantes that if \greedydeadline succeeds to set all waiting times, it finds a solution to \wta. However, it can fails to find the value $s$ at some point because of the constraint on collisions cannot be satisfied. In that case \greedydeadline stops without finding a solution.
+    However, if a route $r$ has a larger $t(r, c_2)$, since we consider everything modulo $P$ to determine collision, it may collide with another route. Therefore we correct \greedydeadline by this simple modification: $s \geq t$ is the smallest time for which there is $r \in U$ with a release time larger or equal to $s$ \emph{such that there is no collision if a datagram goes through $c_2$ at time $s$}. This rule guarantes that if \greedydeadline succeeds to set all waiting times, it finds a solution to \wta, as illustrated in figure~\ref{fig:greedydeadline}. However, it can fails to find the value $s$ at some point because of the constraint on collisions cannot be satisfied. In that case \greedydeadline stops without finding a solution.
     
+    \begin{figure}
+          \begin{center}
+   \begin{tabularx}{0.7\textwidth}{|c|X|X|X|X|X|X|}
+    \hline
+     Route& $0$ & $1$ & $2$& $3$ & $4$\\
+    \hline
+    Deadline & $10$ &$15$&$5$&$7$&$30$\\
+    \hline
+     Release time & $0$ &$2$&$3$&$16$&$17$\\
+    \hline
+    Waiting time & $0$ &$5$&$1$&$0$&$15$\\
+    \hline
+      \end{tabularx}
+      
+      
+      \includegraphics[width=0.7\textwidth]{examplegreedy.pdf}
+      \caption{Example of a running of \greedydeadline with $P = 20, \tau = 4$.}
+           \label{fig:greedydeadline}
+      \end{center}
+      
+    \end{figure}
+
     %Algorithm~\ref{alg:GD} is the formal description of the previous algorithm. 
     % The function  min\_non\_assigned(eligible\_time) returns the non assigned route with the smallest time eligible time. The function update(t,free\_intervals) removes an interval of size $\tau$ beginning at t, which correspond to the message,  from free\_intervals.
      
@@ -1135,8 +1159,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
      %\end{algorithmic}
      %\end{algorithm}
 
-     \textbf{TODO:} Donner un exemple de run de cet algo.
-
+   
 
 
     The complexity of \greedydeadline is in $O(n\log(n))$, using the proper data structures. The set of routes $U$ must be maintained in a binary heap to be able to find the one with smallest deadline in time $O(\log(n))$. To deal with the possible collisions, one maintains a list of the intervals
@@ -1273,15 +1296,21 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
 \begin{figure}[h] 
   \centering
-          \includegraphics[width=0.5\textwidth]{departs_gp_25000.pdf}
+          \includegraphics[width=0.5\textwidth]{1random.pdf}
       \caption{Success rate of different sending orders, $80\%$ load.}
+           \label{fig:success80}
+     \end{figure}
+\begin{figure}[h] 
+  \centering
+          \includegraphics[width=0.5\textwidth]{departs_gp_25000.pdf}
+      \caption{Success rate of different sending orders, $80\%$ load. The random orders are generated $1000$ times.}
            \label{fig:success80}
      \end{figure}
      
 \begin{figure}[h] 
   \centering
     \includegraphics[width=0.5\textwidth]{departs_gp_21000.pdf}
-      \caption{Success rate of different sending orders, $95\%$ load.}
+      \caption{Success rate of different sending orders, $95\%$ load. The random orders are generated $1000$ times.}
       \label{fig:success95}
           \end{figure}
 

@@ -19,7 +19,7 @@ run : prog
 	./prog
 
 prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o $(DIRbin)random_inters.o $(DIRbin)graphes.o
-	$(CC) -fopenmp -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o $(DIRbin)graphes.o
+	$(CC) -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o $(DIRbin)graphes.o -fopenmp -lm
 
 $(DIRbin)main.o: main.c
 	$(CC) $(CFLAGS) main.c -o $(DIRbin)main.o 
