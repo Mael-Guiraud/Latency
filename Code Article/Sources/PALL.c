@@ -393,7 +393,7 @@ int longest_etoile_periodique(Graphe g,int taille_paquets,int periode, int Tmax,
 
 	//affiche_tab(m_i,nb_routes);
 	//affiche_tab(w_i,nb_routes);
-
+	//affiche_solution(g,taille_paquets,m_i,w_i,periode);
 	if(!is_ok(g,taille_paquets,m_i,w_i,periode)){printf("ERROR 2!!\n");exit(16);}
 	//printf("-------------------------\n\n");
 	if(!SYNCH)

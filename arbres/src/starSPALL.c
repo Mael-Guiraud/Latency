@@ -6,6 +6,7 @@
 #include <limits.h>
 #include "treatment.h"
 #include "starSPALL.h"
+#include "random_inters.h"
 
 void print_tab(element_sjt * tab, int taille)
 {
@@ -285,7 +286,21 @@ int FPT_PALL_star(Graph * g, int P, int message_size, int tmax)
 			permutation[k]=k;
 		}
 		fisher_yates(permutation, g->nb_routes);
+		/*int *random = random_inters(P-g->nb_routes*message_size, g->nb_routes);
+
+		offsets=(int*)malloc(sizeof(int)*g->nb_routes);
+		int offset = 0;
+
+		for(int i=0;i<g->nb_routes;i++)
+		{
+				offsets[permutation[i]]=offset;
+				offset+=message_size;
+
+		}
+		free(random);*/
+
 		offsets= retourne_offset(g, message_size, permutation);
+		
 		m_i = retourne_departs( g, offsets);
 
 

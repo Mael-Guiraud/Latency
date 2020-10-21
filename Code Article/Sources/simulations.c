@@ -161,7 +161,7 @@ void sucess_aller_PALL(int nb_routes, int taille_paquets,int taille_route,int ma
 	int resa,resb,resc,resd,rese;
 	float a0,a1,a2,b,c,d,e;
 	int tmax;
-	int nb_rand = 1000;
+	int nb_rand = 1;
 	int * m_i;
 	int * offsets;
 	int permutation[nb_routes];
@@ -180,7 +180,7 @@ void sucess_aller_PALL(int nb_routes, int taille_paquets,int taille_route,int ma
 		#pragma omp parallel for private(t0,t1,t2,m_i,offsets,permutation,resa,resb,resc,resd,rese,g,tmax) if (PARALLEL) schedule (static)
 		for(int i = 0;i<nb_simuls;i++)
 		{
-			
+
 			g = init_graphe(2*nb_routes+1);
 			graphe_etoile(g,taille_route);
 			tmax = marge + longest_route(g);
@@ -343,9 +343,9 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
-			//graphe_etoile(g,taille_route);
+			graphe_etoile(g,taille_route);
 			//graphe_etoile_dur( g,taille_route,1000);
-			graphe_etoile_Psur2( g, taille_route,1000 );
+			//graphe_etoile_Psur2( g, taille_route,1000 );
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
