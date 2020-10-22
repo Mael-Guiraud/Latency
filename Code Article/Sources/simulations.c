@@ -1042,8 +1042,8 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 					
 
 					//printf("%d %d %d %d\n",taille_paquets,tmax,periode,longest_route(g));
-					ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
-					
+					//ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
+					ressp =  FPT_PALL(g,taille_paquets, tmax, periode, m_i);
 					if(ressp != -1)
 					{
 						
@@ -1073,7 +1073,7 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
 
-			if(i%(nb_simuls/100) == 0){fprintf(stdout,"\r%3d%%",i);fflush(stdout);}
+			{fprintf(stdout,"\r%d/%d",i,nb_simuls);fflush(stdout);}
 			
 
 		}
