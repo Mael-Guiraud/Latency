@@ -48,7 +48,7 @@ int main()
 	/*****
 	Taux de reussite de départ PALL avec un retour GP sur une periode donnée (on fait varier la marge)
 	*****/
-sucess_aller_PALL(8,2500,20000,3000,10000,25000);
+//sucess_aller_PALL(8,2500,20000,3000,10000,25000);
 
 
 	/******************************************/

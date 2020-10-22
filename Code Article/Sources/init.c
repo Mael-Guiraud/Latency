@@ -83,7 +83,7 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 	//for(int i=0;i<pivot/2;i++)
 	for(int i=0;i<pivot/2;i++)
 	{
-		alea = (taille_liens/2)+diff-rand()%(2*diff);
+		alea = (taille_liens/2)+rand()%(2*diff);
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
 		alea = (taille_liens/2)+diff-rand()%(2*diff);
@@ -92,7 +92,7 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 	}
 	for(int i=pivot/2;i<pivot;i++)
 	{
-		alea = taille_liens+diff-rand()%(2*diff);
+		alea = rand()%(2*diff);
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
 		alea = taille_liens+diff-rand()%(2*diff);
@@ -110,7 +110,7 @@ void graphe_etoile_Psur2(Graphe g,int taille_liens,int diff)
 
 	for(int i=0;i<g.N;i++)
 	{
-		alea = taille_liens/2+diff-rand()%(2*diff);
+		alea = rand()%(2*diff);
 
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
