@@ -1211,7 +1211,7 @@ void simultiplexing(int seed)
 		moymoycpomputed += moycomputed;
 		moymoydistrib += moydistrib;
 		fprintf(f,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",i,multfifo,multfifo2,multdeadline,multcomputed,l,timebefifo,timebefifo2,timebedeadline,timebecomputed,timebedistrib,moyfifo,moyfifo2,moydeadline,moycomputed,moydistrib ,message_size+l2);
-		fprintf(stdout,"\r                                                                         %d/%d",i+1,nbsim);fflush(stdout);
+		fprintf(stdout,"\r %d/%d",i+1,nbsim);fflush(stdout);
 	}
 	printf("\nFIFO %d %d\nFIFO 2 %d %d\nDeadline %d %d\n Computed %d %d\n,Distrib%d %d\n",moymoyfifo/nbsim,timebefifo,moymoyfifo2/nbsim,timebefifo2,moymoydeadline/nbsim,timebedeadline,moymoycpomputed/nbsim,timebecomputed,moymoydistrib/nbsim,timebedistrib);
 		

@@ -118,7 +118,7 @@ void echec_PAZL(int nb_routes, int taille_message,int taille_routes, int nb_simu
 	long long int total_3NT, total_brute, total_sl,total_theorique;
 	int res_brute;
 
-	for(int j = taille_message*nb_routes ; j<=taille_message*nb_routes/0.4;j+=500)
+	for(int j = taille_message*nb_routes ; j<=taille_message*nb_routes/0.4;j+=(taille_message*nb_routes/0.4 - taille_message*nb_routes )*0.0083)
 	{
 		
 		total_3NT = 0;
@@ -180,6 +180,7 @@ void sucess_aller_PALL(int nb_routes, int taille_paquets,int taille_route,int ma
 		#pragma omp parallel for private(t0,t1,t2,m_i,offsets,permutation,resa,resb,resc,resd,rese,g,tmax) if (PARALLEL) schedule (static)
 		for(int i = 0;i<nb_simuls;i++)
 		{
+
 			g = init_graphe(2*nb_routes+1);
 			graphe_etoile(g,taille_route);
 			tmax = marge + longest_route(g);
@@ -342,9 +343,9 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
-			//graphe_etoile(g,taille_route);
+			graphe_etoile(g,taille_route);
 			//graphe_etoile_dur( g,taille_route,1000);
-			graphe_etoile_Psur2( g, taille_route,1000 );
+			//graphe_etoile_Psur2( g, taille_route,1000 );
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -1012,8 +1013,8 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 
 			g = init_graphe(2*nb_routes+1);
 			//graphe_etoile(g,taille_route);
-			//graphe_etoile_dur( g,periode,margin);
-			graphe_etoile_Psur2( g, periode,margin);
+			graphe_etoile_dur( g,periode,margin);
+			//graphe_etoile_Psur2( g, periode,margin);
 			
 			//printf("-------------\nGraphe : \n");
 			//affiche_etoile(g);
@@ -1041,8 +1042,8 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 					
 
 					//printf("%d %d %d %d\n",taille_paquets,tmax,periode,longest_route(g));
-					ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
-					
+					//ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
+					ressp =  FPT_PALL(g,taille_paquets, tmax, periode, m_i);
 					if(ressp != -1)
 					{
 						
@@ -1072,7 +1073,7 @@ void distrib_margins_departs(int nb_routes, int taille_paquets,int taille_route,
 			//printf("-----------------------------------------\n");
 			libere_matrice(g);
 
-			if(i%(nb_simuls/100) == 0){fprintf(stdout,"\r%3d%%",i);fflush(stdout);}
+			{fprintf(stdout,"\r%d/%d",i,nb_simuls);fflush(stdout);}
 			
 
 		}

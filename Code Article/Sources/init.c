@@ -86,7 +86,7 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 		alea = (taille_liens/2)+rand()%(2*diff);
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
-		alea = (taille_liens/2)+diff-rand()%(2*diff);
+		alea = (taille_liens/2)+rand()%(2*diff);
 		g.matrice[pivot][1+pivot+i] = alea;
 		g.matrice[1+pivot+i][pivot] = alea;
 	}
@@ -95,7 +95,7 @@ void graphe_etoile_dur(Graphe g,int taille_liens,int diff)
 		alea = rand()%(2*diff);
 		g.matrice[pivot][i] = alea;
 		g.matrice[i][pivot] = alea;
-		alea = taille_liens+diff-rand()%(2*diff);
+		alea = rand()%(2*diff);
 		g.matrice[pivot][1+pivot+i] = alea;
 		g.matrice[1+pivot+i][pivot] = alea;
 	}
