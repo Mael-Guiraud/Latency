@@ -12,7 +12,7 @@ Justifier l'envie de ne rien buffuriser par l'utilisation des réseaux optiques.
 
 
 
-    \section{The Star Routed Network} \label{sec:star_routed_network}
+ \subsection{The Star Routed Network} \label{sec:star_routed_network}
   
 	In this section, we define a family of simple routed networks modeling a Multipoint-to-Multipoint fronthaul (see figure~\ref{fig:star}), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$. The load on each of the two contention points is thus $n\tau / P$.
 
@@ -141,7 +141,7 @@ Justifier l'envie de ne rien buffuriser par l'utilisation des réseaux optiques.
             \end{center}
 	         \end{figure}
 	         
-  When solving \pall or \pazl on a star routed network, a period, a message size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Figure~\ref{fig:canonical} for an example of the canonical star routed network of Figure~\ref{fig:star}.  
+  When solving \pall or \pazl on a star routed network, a period, a datagram size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Figure~\ref{fig:canonical} for an example of the canonical star routed network of Figure~\ref{fig:star}.  
   
 \begin{figure}
 \begin{center}
@@ -339,7 +339,8 @@ $\downarrow$
   $(c_1,c_2)$. We let $\omega'(r_i,c_1) = \omega'(r_i,c_1) - \omega'(r_0,c_1)$, which implies that $\omega'(r_0,c_1) = 0$.  All lengths between $c_1$ and $c_2$ change by the same value, hence collisions are not modified. We change $d'(r_i)$ to  $d'(r_i) - \omega'(r_0,c_1)$ for all $i$ so that the constraint on the deadline stay the same.
   \end{proof}
 
-   From now on, we may assume that a star routed network is canonical, using Proposition~\ref{prop:canonical}. To give a instance of \pall where the routed network is a canonical star routed network, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the message size, and $d$ the deadline function. For an instance of \pazl we can also omit $d$.
+   From now on, we may assume that a star routed network is canonical, using Proposition~\ref{prop:canonical}. To give a instance of \pall where the routed network is a canonical star routed network, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the datagram size, and $d$ the deadline function. For an instance of \pazl we can also omit $d$.
+
 
 \section{Finding Bufferless Assignments} \label{sec:PAZL}
   
@@ -369,7 +370,9 @@ $\downarrow$
 
      We propose a greedy algorithm to build a periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore, in the rest of the article we will be only concerned with load larger than $1/3$. In fact, in~\cite{guiraud2020scheduling}, we prove that there is always an assignment for load smaller than $0.4$ and with high probability for load less than $0.5$.
 
-     The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new messages. However, it allows reducing the number of forbidden offsets for unscheduled messages. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each message, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as offset for the assignment until one does not create a collision with the current partial assignment. 
+
+     The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new datagrams. However, it allows reducing the number of forbidden offsets for unscheduled datagrams. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each datagram, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as offset for the assignment until one does not create a collision with the current partial assignment. 
+      %To simplify, we assume that $P$ is a multiple of $\tau$, there is a reduction to this case presented in~\cite{guiraud2020scheduling}.
 
 
 \begin{theorem}
@@ -377,7 +380,7 @@ $\downarrow$
 The assignment is found in time $O(n^2)$.
 \end{theorem}
     \begin{proof}
-    Let us prove that \metaoffset always schedules the $n$ routes when the load is less than $1/3$. Let us assume it has built an assignment for the routes $r_0$,$r_1$, $r_{k-1}$, using only meta-offsets. The number of meta-offsets is $P/\tau$ and already $k$ of them are used, hence to avoid collision in $c_1$, we have $P/\tau - k$ choices. We choose an offset among those for the route $r_k$ so that there is no collision in $c_2$. Remark that exactly two consecutive meta-offsets can create a collision between $r_k$ and some route $r_i$ with $i < k$ in $c_2$, since the messages are all of size $\tau$, see Figure~\ref{fig:metaoffset}. Hence, there are at most $2k$ meta-offsets forbidden by collisions in $c_2$. In conclusion, there are at least $P/\tau - k - 2k$ possible meta-offsets so that its choice for $r_k$ does not create a collision in $c_1$ or $c_2$.  \metaoffset terminates and provides a valid bufferless assignment as soon as $P/\tau - 3(n-1) > 0$, which can be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
+    Let us prove that \metaoffset always schedules the $n$ routes when the load is less than $1/3$. Let us assume it has built an assignment for the routes $r_0$,$r_1$, $r_{k-1}$, using only meta-offsets. The number of meta-offsets is $P/\tau$ and already $k$ of them are used, hence to avoid collision in $c_1$, we have $P/\tau - k$ choices. We choose an offset among those for the route $r_k$ so that there is no collision in $c_2$. Remark that exactly two consecutive meta-offsets can create a collision between $r_k$ and some route $r_i$ with $i < k$ in $c_2$, since the datagrams are all of size $\tau$, see Figure~\ref{fig:metaoffset}. Hence, there are at most $2k$ meta-offsets forbidden by collisions in $c_2$. In conclusion, there are at least $P/\tau - k - 2k$ possible meta-offsets so that its choice for $r_k$ does not create a collision in $c_1$ or $c_2$.  \metaoffset terminates and provides a valid bufferless assignment as soon as $P/\tau - 3(n-1) > 0$, which can be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
 
      This algorithm works in time $O(n^2)$, since for the $k$th route we have to try at most $3k$ meta-offsets before finding a correct one. We can test whether these $3k$ offsets cause a collision in $c_2$ in time $O(k)$ by maintaining an ordered list of the intervals of tics in the period used by already scheduled routes in $c_2$.
      \end{proof}
@@ -499,7 +502,8 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 
    \paragraph{Experimental Settings}
 
-     The default parameters of experiments in this article are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The messages are approximately of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. 
+
+     The defaults parameters of all experiment in this article are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are approximately of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. 
 
      All experiments are done on synthetic data generated randomly. We generate the physical fronthaul
      network represented in Figure~\ref{fig:star}, by drawing the size of each link according 
@@ -564,16 +568,16 @@ In this regime, the performances of \shortestlongest are abysmal because it depe
       \label{fig:table}
       \end{figure}
       
- \section{Solving \texttt{PALL} on Star Routed Networks}\label{sec:PALL}
+         \section{Solving \texttt{PALL} on Star Routed Networks}\label{sec:PALL}
     
-    In this section, we consider the more general \pall problem on star routed networks. The messages are allowed to wait in the BBUs to yield more possible assignments. Hence, we allow the process time of a route to be greater than the length of the route, but it must be bounded by its deadline.
+    In this section, we consider the more general \pall problem on star routed networks. The datagrams are allowed to wait in the BBUs to yield more possible assignments. Hence, we allow the process time of a route to be greater than the length of the route, but it must be bounded by its deadline.
 
 
 	\subsection{Simple Star Routed Networks}
 		
 
 	Often in real networks, the length of the routes are not arbitrary and we may exploit that to solve \pall easily. For instance all the weights on the arcs $(c_1,c_2)$ are the same if all the BBUs are in the same data-center and all datagrams require the same time to be processed in the BBUs.
-Finding an assignment in that case is trivial: send all messages so that they follow each other without gaps in $c_1$. In the corresponding canonical routed network, one can set $o_i = i\tau$.  Since all arcs $(c_1,c_2)$ are of weight zero in this case, the interval of time used in $c_2$ are the same as for $c_1$ and there is no collision in $c_2$.
+Finding an assignment in that case is trivial: send all datagrams so that they follow each other without gaps in $c_1$. In the corresponding canonical routed network, one can set $o_i = i\tau$.  Since all arcs $(c_1,c_2)$ are of weight zero in this case, the interval of time used in $c_2$ are the same as for $c_1$ and there is no collision in $c_2$.
 
 	Another possible assumption would be that all deadlines are larger than the longest route. It may happens when, in the network we model, all RRHs are at almost the same distance to the shared link.
 
@@ -647,7 +651,7 @@ Finding an assignment in that case is trivial: send all messages so that they fo
     \end{figure}
 
     %Algorithm~\ref{alg:GD} is the formal description of the previous algorithm. 
-    % The function  min\_non\_assigned(eligible\_time) returns the non assigned route with the smallest time eligible time. The function update(t,free\_intervals) removes an interval of size $\tau$ beginning at t, which correspond to the message,  from free\_intervals.
+    % The function  min\_non\_assigned(eligible\_time) returns the non assigned route with the smallest time eligible time. The function update(t,free\_intervals) removes an interval of size $\tau$ beginning at t, which correspond to the datagram,  from free\_intervals.
      
     %  \begin{algorithm}\label{alg:GD}
     % \caption{ Greedy deadline ({\bf GD}) }
@@ -690,7 +694,7 @@ Finding an assignment in that case is trivial: send all messages so that they fo
      
      
      The problem \wta is the same as a classical earliest deadline scheduling problem, if we forget the periodicity. Given a set of jobs with \emph{release times} and \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be dealt with before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution which minimizes the time at which the last job is scheduled. On the other hand, if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
-     The polynomial time algorithm which solves this scheduling problem is similar to \greedydeadline. However, when it fails because a job finishes after its deadline, it changes the schedule of the last messages to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there is no solution, which proves that the algorithm is in polynomial time.
+     The polynomial time algorithm which solves this scheduling problem is similar to \greedydeadline. However, when it fails because a job finishes after its deadline, it changes the schedule of the last jobs to find a possible schedule for the problematic job. The change in the scheduling is so that the algorithm cannot fail on the same job a second time except if there is no solution, which proves that the algorithm is in polynomial time.
      
      The problem \wta is the same as this scheduling problem but adding constraints arising from
      the periodicity. The jobs are the routes, the size of a datagram is the running time of a job, 
@@ -699,7 +703,7 @@ Finding an assignment in that case is trivial: send all messages so that they fo
      
 
     
-     Recall that $t(r,c_2)$ is the time at which the message of $r$ goes through $c_2$. Let us denote by $t_{min}$ and $t_{max}$ the smallest and largest value of $t(r_i,c_2)$ for all $i \in[n]$. When \MLS finds an assignment $A$, it always satisfies $PT(r) < d(r)$ for all $r$. Moreover, by construction \MLS schedules the datagrams without collision if we forget about the periodicity (each route send only one datagram). Let us assume that $t_{max}- t_{min} \leq P -\tau $, then all datagrams go through $c_2$ during a interval of time less than $P$. Hence, when we compute potential collisions modulo $P$, all the relative positions of the datagrams stay the same which implies there is no collision. However, if $t_{max}- t_{min} > P -\tau $, then computing $t(r_i,c_2)$ modulo $P$ for all $i$ may show some collision. Since the scheduling algorithm minimizes $t_{max}$, it tends to find  small values for $t_{max} - t_{min}$ and \PMLS may succeed in finding a valid assignment (as shown in Section~\ref{sec:resultsPALL}), but not for all instances. 
+     Recall that $t(r,c_2)$ is the time at which the datagram of $r$ goes through $c_2$. Let us denote by $t_{min}$ and $t_{max}$ the smallest and largest value of $t(r_i,c_2)$ for all $i \in[n]$. When \MLS finds an assignment $A$, it always satisfies $PT(r) < d(r)$ for all $r$. Moreover, by construction \MLS schedules the datagrams without collision if we forget about the periodicity (each route send only one datagram). Let us assume that $t_{max}- t_{min} \leq P -\tau $, then all datagrams go through $c_2$ during a interval of time less than $P$. Hence, when we compute potential collisions modulo $P$, all the relative positions of the datagrams stay the same which implies there is no collision. However, if $t_{max}- t_{min} > P -\tau $, then computing $t(r_i,c_2)$ modulo $P$ for all $i$ may show some collision. Since the scheduling algorithm minimizes $t_{max}$, it tends to find  small values for $t_{max} - t_{min}$ and \PMLS may succeed in finding a valid assignment (as shown in Section~\ref{sec:resultsPALL}), but not for all instances. 
      
      We now present a variant of the previous algorithm, that we call
      \textbf{P} \textbf{M}inimal \textbf{L}atency \textbf{S}cheduling, denoted by \PMLS. The aim is to deal with the periodicity, by modifiying the instance without changing the assignments, so that the chance of finding a solution with $t_{max}- t_{min} \leq P -\tau $ are larger.  Remark that if an instance has a valid assignment, we can guarantee that one route has a waiting time zero in some valid assignment. 
@@ -825,11 +829,11 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
      \end{figure}
 
           
-     According to our experiments, policy IA, that is sending the messages on increasing order on the lenght of the arcs $(c_1,c_2)$, does not work well. It corresponds to the policy of Proposition~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending on decreasing order on the margin of the routes (DM) or on the length of the arcs $(c_1,c_2)$ (DA) work better and it seems that DA is better than DM, especially in a loaded network. 
+     According to our experiments, policy IA, that is sending the datagrams on increasing order on the lenght of the arcs $(c_1,c_2)$, does not work well. It corresponds to the policy of Proposition~\ref{prop:SL} which we already know to be bad for \pazl when the routes are long as in this experiment. Sending on decreasing order on the margin of the routes (DM) or on the length of the arcs $(c_1,c_2)$ (DA) work better and it seems that DA is better than DM, especially in a loaded network. 
      
-     Remark that sending the messages using a random order does not perform well,
+     Remark that sending the datagrams using a random order does not perform well,
      but better than IM and IA, which shows that the latters are a poor choice for the first stage of our algorithm. The interest of using a random order is that we can draw many of them. In Figure~\ref{fig:success1000random} the same experiment is made for the three heuristics choosing an order at random, but we now draw $1,000$ different random orders and solve each induced \wta instance. The algorithm is considered to succeed as soon as a valid assignment is found for one order. Each random order drawn is used for RO, RORS and ROBS to make the comparison fairer.
- 
+
 \begin{figure}[h] 
   \centering
   \includegraphics[width=0.45\textwidth]{Chapitre4/departs_gp_25000.pdf}
@@ -939,3 +943,4 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
          \end{center}
       \end{minipage}\hfill
      
+
