@@ -402,6 +402,10 @@ We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -
 
      The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new datagrams. However, it allows reducing the number of forbidden offsets for unscheduled datagrams. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each datagram, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as offset for the assignment until one does not create a collision with the current partial assignment. 
       %To simplify, we assume that $P$ is a multiple of $\tau$, there is a reduction to this case presented in~\cite{guiraud2020scheduling}.
+      Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$. 
+ By definition, two messages with a different meta-offset cannot collide in the first period.
+Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
+
 
 
 \begin{theorem}
@@ -416,7 +420,7 @@ The assignment is found in time $O(n^2)$.
          
      \begin{figure}
       \begin{center}
-      \includegraphics[width=0.7\textwidth]{Chapitre4/ex3nt.pdf}
+      \includegraphics[width=0.7\textwidth]{Chapitre4PAZL/ex3nt.pdf}
       \end{center}
       \caption{Times used in the period in $c_1$ and $c_2$, when scheduling the $k$th route in \metaoffset}
       \label{fig:metaoffset}
@@ -430,18 +434,14 @@ In fact, experimental data in Section~\ref{sec:exp_PAZL} suggest that the algori
 %The idea is to restrict the possible offsets at which messages can be scheduled. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new messages. However, it allows reducing the number of forbidden offsets for unscheduled messages. A \textbf{meta-offset} is an offset of value $i\tau$,
 %with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as \firstfit, but consider only meta-offsets when scheduling messages. 
 
-Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$. 
- By definition, two messages with a different meta-offset cannot collide in the first period.
-Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
 
+%\begin{theorem}[Proposition 3 of~\cite{dominique2018deterministic}]
+%\metaoffset solves \pma positively on instances of load less than $1/3$.
+%\end{theorem}
 
-\begin{theorem}[Proposition 3 of~\cite{dominique2018deterministic}]
-\metaoffset solves \pma positively on instances of load less than $1/3$.
-\end{theorem}
-
-A naive implementation of \metaoffset is in $O(n P/\tau)$, while \firstfit is in $O(nP)$.
-However, it is not useful to consider every possible (meta-)offset at each step. By maintaining
-a list of positions of scheduled messages in first and second period, both algorithms can be implemented in $O(n^2)$.
+%A naive implementation of \metaoffset is in $O(n P/\tau)$, while \firstfit is in $O(nP)$.
+%However, it is not useful to consider every possible (meta-)offset at each step. By maintaining
+%a list of positions of scheduled messages in first and second period, both algorithms can be implemented in $O(n^2)$.
 
 \subsection{Compact Tuples}
 
@@ -561,6 +561,71 @@ Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and usin
 The code computing the $n_i$ can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/}}.
 To make \texttt{Compact 8-tuples} work, there must be at least $220$ messages to
 produce enough compact $8$-tuples in the first phase. It is not a strong restriction for two reasons. First, the bound of Lemma~\ref{lemma:uple_find} can be improved, using a smarter polynomial time algorithm to find compact tuples, which better takes into account repetitions of values and compute the compact tuples in both directions. Second, on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and we can just build the tuples greedily. Therefore, for most instances, forming compact $k$-uples is not a problem and in practice \texttt{Compact 8-tuples} works even for small $n$.
+
+
+\subsection{Compact Assignment}
+
+In this section, we show how every bufferless assignment can be put into a canonical form.
+We use that form to design an algorithm solving \pazl in fixed parameter tractable time ($\FPT$), with parameter $n$ the number of routes (for more on parametrized complexity see~\cite{downey2012parameterized}). This is justified since $n$ is small in practice, from $10$ to $20$ in our settings, and the other parameters such as $P$, $\tau$ or the weights are large.
+
+Let $({\cal R},\omega)$ be a star routed network and let $A$ be a bufferless $(P,\tau)$-periodic assignment.
+We say that that $A$ is \textbf{compact} if there is a route $r_0 \in \cal{R}$ such that the following holds: for all subsets $S\subset \cal{R}$ with $r_0 \notin S$, the bufferless assignment $A'$, defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S$ and $A(r)$ otherwise, is not valid. In other words, an assignment is compact if for all routes $r$ but one, $A(r)$ cannot be reduced by one, that is either in $c_1$ or in $c_2$, there is a route $r'$ using the tics just before $A(r)$. See Figure~\ref{fig:compact} for an example of a compact assignment, obtained by the procedure of the next proposition. 
+  \begin{figure}
+      \begin{center} 
+      \includegraphics[width=\textwidth]{Chapitre4/compacttoassignment.pdf}
+      \end{center}
+      \caption{Transformation of a bufferless assignment $A$ into a compact assignment $A'$, following the process of Proposition~\ref{prop:compactification}}
+      \label{fig:compact}
+      \end{figure}
+\begin{proposition}\label{prop:compactification}
+Let $N = ({\cal R}, \omega)$ be a star routed network. If there is a $(P,\tau)$-periodic bufferless assignment of $N$, then there is a compact $(P,\tau)$-periodic assignment of $N$.
+\end{proposition}
+\begin{proof}
+Consider $A$ a $(P,\tau)$-periodic bufferless assignment of $N$.
+We describe an algorithm which builds a sequence $(r_0,\dots,r_{n-1})$ and a sequence  
+$A_i$ of valid bufferless assignments. We denote by $COMP_i = \{ r_j \mid j < i\}$
+
+Let $r_0$ be an arbitrary route of ${\cal R}$ and $A_0 = A$. For $i = 1$ to $n$, we choose $r_i$ as follows.
+Let $A_{i} = A_{i-1}$. While there is no collision, for all routes $r \in {\cal R} \setminus COMP_i$, let $A_i(r) = A_i(r) - 1$. Then choose any route $r$ in ${\cal R} \setminus COMP$ such that setting $A_i(r) = A_i(r-1)$ creates a collision and let $r_i = r$. By construction $A_i$ is a valid bufferless assignment, since it is modified only when no collision is created.
+
+We prove by induction on $i$, that $A_i$ is compact when restricted to $COMP_{i+1}$.
+For $i = 0$, $|COMP_1| = 1$ and the property is trivially satisfied. Let us consider $A_i$,
+by induction hypothesis, since the offsets of routes in $COMP_{i}$ are not modified at step $i$ of the algorithm, $A$ is compact when restricted to $COMP_{i}$. 
+
+ Consider $S \subseteq COMP_i$ which does not contain $r_0$. If $S$ contains
+an element of $COMP_{i}$, then $S \setminus {r_i}$ is not empty and by compacity and we cannot decrement all offsets of $S\setminus {r_i}$ without creating a collision. The same property is true for $S$. If $S = \{r_i\}$, then by construction of $r_i$ by the algorithm, removing one from $A_i(r_i)$ creates a collision. Hence,
+$A_i$ is compact restricted to $COMP_{i+1}$, which proves the induction and the proposition.
+\end{proof}
+
+We now present an algorithm to find a $(P,\tau)$-periodic assignment by trying all compact assignments.
+
+\begin{theorem}\label{th:FPT}
+$\pazl \in \FPT$ over star routed networks when parametrized by the number of routes.
+\end{theorem}
+\begin{proof}
+Let $N = ({\cal R},\omega)$ be a canonical star routed network and let $P$ be the period and $\tau$ the size of a datagram. First, remark that for a given assignment and a route $r$ with offset $o_r$, by removing $o_r$ to all offsets, we can always assume that $o_r = 0$. By this remark and Proposition~\ref{prop:compactification}, we need only to consider all \emph{compact assignments} with an \emph{offset $0$} for the route $r_0$. We now evaluate the number of compact assignments and prove that it only depends on $n$ the number of routes to prove the theorem.
+
+ We describe a way to build any compact assignment $A$ by determining its offsets one after the other, which gives a bound on their number and an algorithm to generate them all. We fix an arbitrary total order on ${\cal R}$. Let $r_0$ be the smallest route of $\cal{R}$, its offset is set to $0$ and we let $S = \{r_0\}$,
+ $S_1 = \{r_0\}$ and $S_2 = \{r_0\}$. $S$ represent the routes whose offsets are fixed, 
+ offsets of unscheduled routes are chosen so that they follow a route of $S_1$ in $c_1$ or a route of $S_2$ in $c_2$.
+
+ At each step, we add an element to $S$: let $r$ be the smallest element of $S_1$, if it is non empty. Then, select any route $r' \in {\cal R} \setminus S$ 
+ such that $o_{r'} = o_{r} + \tau$ does not create collision (by construction $o_{r'} = o_{r} + \tau - 1$ does create a collision in $c_1$). Then, we update the sets as follows:
+ $S = S \{r'\}$, $S_1 = S_1 \setminus \{r\} \cup \{r'\}$ and $S_2 = S_2 \cup \{r'\}$. If 
+ $S_1$ is empty, $r$ is smallest element of $S_2$, and we set $o_{r'} = o_{r} + \tau + \omega(r,c_2) - \omega(r',c_2)$.
+ We can also remove $r$ from $S_1$ (or from $S_2$ if $S_1$ is empty) without adding any element to $S$. Remark that the value of the offset of the route added to $S$ is entirely determined by the values of the offsets of the routes in $S$.
+
+ Now, remark that any compact assignment can be built by this procedure, if the proper choice of element to add is made at each step. Hence, this process generates all compact assignments. We now bound the number of compact assignments it can produce. Remark that, when $|S| = i$, we can add any of the $n-i$ routes in ${\cal R} \setminus S$ to $S$. Hence, the number of sequences of choices of routes to add is $n!$ (but some of these sequences can fail to produce a valid assigment). We have not yet taken into account the steps at which an element is removed from either $S_1$ or $S_2$, without adding something to $S$. At each step of the algorithm, we can remove an element or not, there are at most $2n$ steps in the algorithm, hence there are at most $4^n$ sequences of such choices during the algorithm. As a conclusion, there are at most $4^nn!$ compact assignments.
+
+The algorithm to solve \pazl builds every possible compact assignment in the incremental manner described here, and tests at each step whether, in the built partial assginment, there is a collision, which can be done in time linear in the size of $N$. Therefore $\pazl \in \FPT$.
+\end{proof}
+
+
+We call the algorithm described in Theorem~\ref{th:FPT} \textbf{Exhaustive Search of Compact Assignments}
+or \ESCA. The complexity of \ESCA is in $O(4^n n!)$. While a better analysis
+of the number of compact assignments could improve this bound, the simple star routed networks with all arcs of weights $0$ has $(n-1)!$ compact assignments. Hence, to improve significantly on \ESCA, one should find an even more restricted notion of bufferless assignment than compact assignment.
+
+To make \ESCA more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set $S$ of $k$ routes whose offsets have been fixed at some point in the search tree. We consider the times used by these routes in $c_1$. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ where the intervals $(a_i,b_i)$ are the times not used yet in $c_1$. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor}$ routes can still send a datagram through $c_1$. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the current one on $S$ and we backtrack in the search tree. The same cut is also used for the contention point $c_2$. These cuts rely on the fact that the partial assignment is wasting bandwith by creating intervals which are not multiples of $\tau$. It helps with instances of large load, which are also the hardest to solve.
 
 
 \subsection{Experimental Results} \label{sec:perf_large}
