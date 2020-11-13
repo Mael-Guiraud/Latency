@@ -220,6 +220,340 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	The \textbf{contention width} of a routed network is the maximal width of its vertices. 
 	Remark that a $(P,\tau)$-periodic assignment must satisfy that $P/\tau$ is larger or equal to its contention width. Now, let us fix $P$ and $\tau$, for a given vertex of contention width $c$, we define its \textbf{load} as $c\tau/P$. It represents the proportion of the period used by datagrams at this contention point. The load of the routed network is the maximum of the loads of its vertices. A routed network must have a load less or equal to one to admit a valid assignment.
 
+
+ \subsection{The Star Routed Network} \label{sec:star_routed_network}
+  
+  In this section, we define a family of simple routed networks modeling a Multipoint-to-Multipoint fronthaul (see figure~\ref{fig:star}), which has been designed for C-RAN \cite{tayq2017real}. Let $N = (\cal{R},\,\cal{B},\,\omega)$ be a routed network, we say it is a \textbf{star routed network} if and only if the routes are $\{r_0,\dots,r_{n-1}\}$, $r_i$ is $(s_i,c_1,c_2,t_i)$ and ${\cal B} = \{ c_2 \}$ (datagrams can wait in $c_2$). Star routed networks have contention depth two but a maximal contention width of $n$. The load on each of the two contention points is thus $n\tau / P$.
+
+  The fronthaul network we model with star routed network has a single shared link, which connects all RRHs at one end and all BBUs at the other end. The links are all \emph{full-duplex}, meaning that the datagrams going from RRHs to BBUs do not interact with those going in the other direction. 
+  The two contention points $c_1$ and $c_2$ model the beginning of the shared link (used to go from the RRHs to the BBUs) and the other end of the shared link (used in the other direction). 
+  The computation in the BBU of an answer to a datagram on the route $r$ takes some time.
+  In the star routed network, this time is encoded in the weight of the arc between $c_1$ and $c_2$ in $r$. The weight $\omega(r,c_1)$ is the time needed to go through the shared link, then to arrive at the BBU, plus the computation time and the time to return to the shared link, see Figure~\ref{fig:star}.
+
+
+    Star routed network may seem simplistic, but every network in which all routes share an arc and satisfy a coherent routing condition can be modeled by a star routed network.
+    It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Section~\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
+
+      
+     
+  % \begin{minipage}{0.40\linewidth}
+    % \includegraphics[scale=0.5]{starfronthaul}\\
+      
+
+
+ %  \end{minipage}\hfill
+%\begin{minipage}{0.55\linewidth}   
+
+\begin{figure}
+\begin{center}
+\scalebox{0.4}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+ 
+
+  \node (s1) at (0,4) {\includegraphics[width = 1cm]{rrh.png}};
+  \node[below] at (s1.south) {\huge $r_1$};
+  \node (s2) at (0,2) {\includegraphics[width = 1cm]{rrh.png}};
+  \node[below] at (s2.south) {\huge $r_2$};
+  \node (s3) at (0,0) {\includegraphics[width = 1cm]{rrh.png}};
+  \node[below] at (s3.south) {\huge $r_3$};
+  
+   \node (t1) at (12,4) {\includegraphics[width = 1cm]{bbu.png}};
+  \node[below] at (t1.south) {\huge $b_1$};
+  \node at (t1.north west) {\textcolor{green}{3}};
+  \node (t2) at (12,2) {\includegraphics[width = 1cm]{bbu.png}};
+  \node[below] at (t2.south) {\huge $b_2$};
+   \node at (t2.north west) {\textcolor{green}{2}};
+  \node (t3) at (12,0) {\includegraphics[width = 1cm]{bbu.png}};
+  \node[below] at (t3.south) {\huge $b_3$};
+   \node at (t3.north west) {\textcolor{green}{3}};
+    \node (c1) at (4,2) {\includegraphics[width = 1cm]{switch.png}};
+  \node[below] at (c1.south) {\huge $c_1$};
+    \node (c2) at (8,2) {\includegraphics[width = 1cm]{switch.png}};
+  \node[below] at (c2.south) {\huge $c_2$};
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [<->] node[anchor=south,inner sep = 0.2cm]{$5$} (c1);
+
+\path (s2) edge [<->] node[anchor=south,inner sep = 0.2cm]{$3$} (c1);
+\path (s3) edge [<->] node[anchor=south,inner sep = 0.2cm]{$7$} (c1);
+\path (c2) edge [<->] node[anchor=south,inner sep = 0.2cm]{$4$} (t2);
+\path (c2) edge [<->] node[anchor=south,inner sep = 0.2cm]{$1$} (t3);
+
+\path (c2) edge [<->] node[anchor=south,inner sep = 0.2cm]{$2$} (t1);
+
+\path (c1) edge [<->] node[anchor=south,inner sep = 0.2cm]{$7$} (c2);
+
+
+  \Vertex[x=14,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=14,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=14,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=26,y=4, L = {\huge $t_1$}]{s1p};
+\Vertex[x=26,y=2, L = {\huge $t_2$}]{s2p};
+\Vertex[x=26,y=0, L = {\huge $t_3$}]{s3p};
+\Vertex[x=22,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=18,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south,inner sep = 0.2cm]{$5$} (c1);
+
+\path (s2) edge [->] node[anchor=south,inner sep = 0.2cm]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south,inner sep = 0.2cm]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$7+7$} (s3p);
+
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south,inner sep = 0.2cm]{$7+4+\textcolor{green}{2}+4$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south,inner sep = 0.2cm]{$7+2+\textcolor{green}{3}+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north,inner sep = 0.2cm]{$7+1+\textcolor{green}{3}+1$} (c2);
+   \node[circle] (buf) at (22, 0.5) {$\cal{B}$};
+   \draw[dashed] (22,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+
+
+%\end{minipage}
+
+             \caption{Left, a physical fronthaul network and right, the star routed network modeling a round trip in the fronthaul network. The computation time in the BBU is given in green.}
+
+           \label{fig:star}
+            \end{center}
+           \end{figure}
+           
+  When solving \pall or \pazl on a star routed network, a period, a datagram size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Figure~\ref{fig:canonical} for an example of the canonical star routed network of Figure~\ref{fig:star}.  
+  
+\begin{figure}
+\begin{center}
+
+
+
+
+ \scalebox{0.5}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $t_1$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $t_2$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $t_3$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+
+\path (s2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+\path (s3) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$10$} (s2p);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$14$} (s3p);
+
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$12$} (s1p);
+
+\path (c1) edge [->] node[anchor=south,inner sep = 0.2cm]{$15$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south,inner sep = 0.2cm]{$11$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north,inner sep = 0.2cm]{$9$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+ $d_1 = 25$, $d_2 = 31$, $d_3 = 25$
+
+$\downarrow$
+
+
+ \scalebox{0.5}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $t_1$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $t_2$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $t_3$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$0$} (c1);
+
+\path (s2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+\path (s3) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (s2p);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (s3p);
+
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (s1p);
+
+\path (c1) edge [->] node[anchor=south,inner sep = 0.2cm]{$15$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south,inner sep = 0.2cm]{$11$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north,inner sep = 0.2cm]{$9$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+ $d_1 = 14$, $d_2 = 21$, $d_3 = 11$
+
+$\downarrow$
+
+
+ \scalebox{0.5}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $t_1$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $t_2$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $t_3$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$0$} (c1);
+
+\path (s2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+\path (s3) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c1);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (s2p);
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (s3p);
+
+\path (c2) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (s1p);
+
+\path (c1) edge [->] node[anchor=south,inner sep = 0.2cm]{$0$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south,inner sep = 0.2cm]{$1$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north,inner sep = 0.2cm]{$4$} (c2);
+   \node[circle] (buf) at (10, 0.5) {$\cal{B}$};
+   \draw[dashed] (10,2) ellipse  (0.6cm and 1cm);
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+ $d_1 = 4$, $d_2 = 6$, $d_3 = 6$
+ 
+\end{center}
+
+\caption{Transformation of the star routed network of Figure~\ref{fig:star} to its canonical form, initially with $\tau = 1$, $P=5$, $d_1 = 30$, $d_2 = 34$, $d_3 = 32$.}
+\label{fig:canonical}
+\end{figure}
+
+  \begin{proposition}\label{prop:canonical}
+   Let $I = (N, P, \tau , d)$, with $N = (\cal{R},\,\cal{B},\,\omega)$ a star routed network, then there is 
+   $I' = (N', P, \tau , d')$, with  $N' = (\cal{R},\,\cal{B},\,\omega')$ a canonical star routed network, such that:
+     $$I \in \pall \Leftrightarrow I' \in \pall \text{ and } I \in \pazl \Leftrightarrow I' \in \pazl$$
+  \end{proposition}
+
+  \begin{proof}
+  Let us define $\omega'$ and $d'$ from $\omega$ and $d$ in such a way that there is a bijection 
+   between valid assignments of $I$ and $I'$, which proves the proposition. In this bijection,
+   the offsets $o_i$ for an assignment of $I$ will be mapped to $o'_i$, while the waiting times remain the same.
+  
+  The routed network $N'$ is equal to $N$ except for the weight function $\omega'$.
+  We set the weights of the arcs $(s_i,c_1)$ to zero in $N'$. We obtain the bijection between valid assigments of $I$ and $I'$ by setting $o_i' + \omega(r_i,s_i) = o_i $ and $d'(r_i) = d(i) - \omega(r_i,s_i)$. The weights $\omega'(r_i,c_2)$ are also set to $0$, it does not change the possible collisions
+  for an assignment but it changes the transmission time, hence we set $d'(r_i) = d'(r_i) - \omega(r_i,c_2)$
+  to preserve the bijection between assignments of $I$ and $I'$. 
+
+  We let $\omega'(r_i,c_1) = \omega(r_i,c_1) \mod P$. Again, it does not change the collisions since computing a possible collision is done modulo $P$. However, we must change $d'$ to be $d'(r_i) = d'(r_i) - \omega(r_i,c_1) + \omega'(r_i,c_1)$.
+
+  Finally, we assume w.l.o.g. that $\omega'(r_0,c_1)$ is the smallest weight among the weights of the arcs
+  $(c_1,c_2)$. We let $\omega'(r_i,c_1) = \omega'(r_i,c_1) - \omega'(r_0,c_1)$, which implies that $\omega'(r_0,c_1) = 0$.  All lengths between $c_1$ and $c_2$ change by the same value, hence collisions are not modified. We change $d'(r_i)$ to  $d'(r_i) - \omega'(r_0,c_1)$ for all $i$ so that the constraint on the deadline stay the same.
+  \end{proof}
+
+   From now on, we may assume that a star routed network is canonical, using Proposition~\ref{prop:canonical}. To give a instance of \pall where the routed network is a canonical star routed network, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the datagram size, and $d$ the deadline function. For an instance of \pazl we can also omit $d$. In order to simplify the notation, the lenght of the arc $(c_1,c_2)$ on the route $i$ that is $\omega(r_i,c_1)$ is denoted by $\notationdelay_i$ and is called \nomdelay.
+
+   Chapter~\ref{chap:PAZL} focuses on solving \pazl on star routed network. Chapter~\ref{chap:PALL} will focus on solving \pall on such topologies.
+
+
+
 \section{Hardness of \texttt{PALL} and \texttt{PAZL}}
   \label{sec:complexity}
 
