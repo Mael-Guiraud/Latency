@@ -740,7 +740,58 @@ int meta_offset(int *graph,int nb_routes,int period,int message_size)
 	
 	return nb_routes_ok;
 }
+int shortestlongest(int *graph,int nb_routes,int period,int message_size)
+{
+	if(period%message_size != 0)
+	{
+		printf("Warning, P/tau != 0, meta offset cannot run\n");
+		return 0;
+	}
+	int aller[nb_routes] ;
+	int retour[nb_routes] ;
+	int budget = period;
+	for(int i=0;i<nb_routes;i++)
+	{
+		aller[i]=0;
+		retour[i]=0;
+	}
+	int release[nb_routes];
+	for(int i=0;i<nb_routes;i++)
+	{
+		release[i]= graph[i];
+	}
 
+	tri_bulles(release,graph,nb_routes);
+	int nb_routes_ok=0;
+	int offset = 0;
+	for(int i=0;i<nb_routes;i++)
+	{
+		if(i>0)
+		{
+
+			budget -= graph[i]-graph[i-1];
+
+			if(budget < 0)
+			{
+				break;
+			}
+		}
+		offset = i*message_size;
+		aller[nb_routes_ok]=offset;
+		retour[nb_routes_ok]=(offset+graph[i])%period;
+		nb_routes_ok++;
+		
+
+	
+	}	
+	if(!verifie_solution(aller,retour,message_size,nb_routes_ok,period))
+	{
+		printf("Error verifie solution MetaOffset\n") ;
+		exit(4);
+		}
+	
+	return nb_routes_ok;
+}
 //check if two messages are a pair or not
 int check_pair(int di, int dj,int message_size,int period)
 {
