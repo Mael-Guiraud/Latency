@@ -12,12 +12,12 @@ All rights reserved.
 #include <limits.h>
 #include<sys/time.h>
 #include <omp.h>
-#define MESSAGE_SIZE 1000
-#define PERIOD 100000
-#define ROUTES_SIZE_MAX 1000
+#define MESSAGE_SIZE 2500
+#define PERIOD 10000
+#define ROUTES_SIZE_MAX 1400
 #define NB_SIMULS 10000
-#define PARALLEL 0
-#define EXHAUSTIVE_SEARCH 0
+#define PARALLEL 1
+#define EXHAUSTIVE_SEARCH 1
 double time_diff(struct timeval tv1, struct timeval tv2)
 {
     return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));
@@ -221,11 +221,11 @@ int first_fit(int* graph,int nb_routes,int period,int message_size)
 int first_fit_random(int* graph,int nb_routes,int period,int message_size)
 {
 
-	if(period%message_size != 0)
+	/*if(period%message_size != 0)
 	{
 		printf("Warning, P/tau != 0, meta offset firstfit cannot run\n");
 		return 0;
-	}
+	}*/
 	int aller[nb_routes] ;
 	int retour[nb_routes] ;
 	int out;
@@ -701,11 +701,11 @@ int super_compact(int *graph,int nb_routes,int period,int message_size)
 }
 int meta_offset(int *graph,int nb_routes,int period,int message_size)
 {
-	if(period%message_size != 0)
+	/*if(period%message_size != 0)
 	{
 		printf("Warning, P/tau != 0, meta offset cannot run\n");
 		return 0;
-	}
+	}*/
 	int aller[nb_routes] ;
 	int retour[nb_routes] ;
 	int out;
@@ -742,14 +742,14 @@ int meta_offset(int *graph,int nb_routes,int period,int message_size)
 }
 int shortestlongest(int *graph,int nb_routes,int period,int message_size)
 {
-	if(period%message_size != 0)
+	/*if(period%message_size != 0)
 	{
 		printf("Warning, P/tau != 0, meta offset cannot run\n");
 		return 0;
-	}
+	}*/
 	int aller[nb_routes] ;
 	int retour[nb_routes] ;
-	int budget = period;
+	int budget = period-nb_routes*message_size;
 	for(int i=0;i<nb_routes;i++)
 	{
 		aller[i]=0;
@@ -761,7 +761,7 @@ int shortestlongest(int *graph,int nb_routes,int period,int message_size)
 		release[i]= graph[i];
 	}
 
-	tri_bulles(release,graph,nb_routes);
+	tri_bulles(graph,release,nb_routes);
 	int nb_routes_ok=0;
 	int offset = 0;
 	for(int i=0;i<nb_routes;i++)
@@ -769,7 +769,7 @@ int shortestlongest(int *graph,int nb_routes,int period,int message_size)
 		if(i>0)
 		{
 
-			budget -= graph[i]-graph[i-1];
+			budget -= release[i]-release[i-1];
 
 			if(budget < 0)
 			{
@@ -778,7 +778,7 @@ int shortestlongest(int *graph,int nb_routes,int period,int message_size)
 		}
 		offset = i*message_size;
 		aller[nb_routes_ok]=offset;
-		retour[nb_routes_ok]=(offset+graph[i])%period;
+		retour[nb_routes_ok]=(offset+release[i])%period;
 		nb_routes_ok++;
 		
 
@@ -786,7 +786,7 @@ int shortestlongest(int *graph,int nb_routes,int period,int message_size)
 	}	
 	if(!verifie_solution(aller,retour,message_size,nb_routes_ok,period))
 	{
-		printf("Error verifie solution MetaOffset\n") ;
+		printf("Error verifie solution ShortestLongest\n") ;
 		exit(4);
 		}
 	
@@ -1261,18 +1261,157 @@ int main(int argc,char * argv[])
 
 	int nb_simuls = NB_SIMULS;
 	int message_size = MESSAGE_SIZE;
-	int period = PERIOD;
-	int nb_routes = PERIOD / message_size;
+	
+	int nb_routes = 16;
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
 	struct timeval tv1, tv2;
-	int nb_algos = 5;
+	int nb_algos = 6;
 	if(EXHAUSTIVE_SEARCH)
 		nb_algos++;
 	int tmp[nb_algos];
 	float running_time[nb_algos]; 
 		//Toujours mettre exhaustivesearch en derniere
-	char * noms[] = {"FirstFit","MetaOffset","RandomOffset","CompactPairs","CompactFit","ExhaustiveSearch"};
+	char * noms[] = {"ShortestLongest","FirstFit","MetaOffset","RandomOffset","CompactPairs","CompactFit","ExhaustiveSearch"};
+	char buf[256];
+	FILE * F = fopen("results_echec_short16.data","w");
+	float success[nb_algos];
+	for(int i=0;i<nb_algos;i++)
+	{
+		//sprintf(buf,"%s.plot",noms[i]);
+		//printf("Opening %s ...",buf);
+		//f[i] = fopen(buf,"w");
+		//if(!f[i])perror("Error while opening file\n");
+		success[i]=0.0;
+		//printf("OK\n");
+		running_time[i] = 0.0;
+	}
+
+	for(int period = message_size*nb_routes ; period<=message_size*nb_routes/0.4;period+=(message_size*nb_routes/0.4 - message_size*nb_routes )*0.0083)
+	{
+		
+
+		for(int algo=0;algo<nb_algos;algo++)
+		{
+			success[algo]= 0.0;
+
+		}
+		#pragma omp parallel for private(graph,tmp)  if (PARALLEL)
+		for(int j=0;j<nb_simuls;j++)
+		{
+			fprintf(stdout,"\r Computing period %d :  %d/%d",period,j+1,nb_simuls);fflush(stdout);
+			graph = random_graph(nb_routes,size_route);
+			pair(graph,nb_routes,period,message_size);
+				
+			
+			for(int algo = 0;algo<nb_algos;algo++)
+			{
+				gettimeofday (&tv1, NULL);	
+				switch(algo){
+					case 0:
+					
+						tmp[algo] =  shortestlongest(graph,nb_routes,period,message_size);
+						
+						break;
+						case 1:
+						tmp[algo] =  first_fit(graph,nb_routes,period,message_size);
+						
+						break;
+					case 2:
+						
+						tmp[algo] = meta_offset(graph,nb_routes,period,message_size);
+						break;
+					case 3:
+						tmp[algo] = random_offset(graph,nb_routes,period,message_size);
+
+						break;
+					//case 3:
+					//	tmp[algo] = super_compact(graph,i,period,message_size);
+				//		break;
+				//	case 4:
+				//		tmp[algo] = pair(graph,i,period,message_size);
+				//		break;
+					case 4:
+						tmp[algo] = pair_meta_offset(graph,nb_routes,period,message_size);
+						break;
+					
+						
+					case 5:
+						tmp[algo] = first_fit_random(graph,nb_routes,period,message_size);
+						break;
+					case 6:
+						tmp[algo] = search(graph,nb_routes,period,message_size);
+						break;
+					}
+					gettimeofday (&tv2, NULL);	
+					#pragma omp critical
+					running_time[algo] += time_diff(tv1,tv2);
+		
+					
+						if(tmp[algo] == nb_routes)
+						{
+							#pragma omp atomic
+								success[algo]++;
+						}
+					
+					
+					
+						
+			}
+			if(EXHAUSTIVE_SEARCH)
+			{
+				for(int k = 0;k<nb_algos-1;k++)
+				{
+					if( (tmp[k]==nb_routes) && (!tmp[nb_algos-1]))
+					{
+						printf("Pas possible algo %s %d %d\n",noms[k],tmp[k],tmp[nb_algos-1]);
+						exit(9);
+					}	
+				}
+			}
+			
+			
+			free(graph);
+			
+		}
+			fprintf(F, "%f ",((float)message_size*nb_routes)/period*100);
+		for(int algo = 0;algo<nb_algos;algo++)
+		{
+			 fprintf(F,"%f ",success[algo]/nb_simuls *100);
+			//fprintf(f[algo],"%2f %f \n",(float)i/nb_routes,success[algo]*100/nb_simuls);
+			
+		}
+		fprintf(F,"\n");
+	}
+
+	for(int i=0;i<nb_algos;i++)
+	{
+		//fprintf(F, "%d %lld %lld %lld %lld\n",j,total_sl/(nb_simuls/100),total_3NT/(nb_simuls/100),total_brute/(nb_simuls/100),total_theorique/(nb_simuls/100));
+	
+		printf("Temps d'execution %s = %f \n",noms[i],running_time[i]);
+		
+	}
+	fclose(F);
+	//print_gnuplot( noms,  nb_algos,period, message_size,nb_routes);
+	return 0;
+/*
+
+	int* graph;
+
+	int nb_simuls = NB_SIMULS;
+	int message_size = MESSAGE_SIZE;
+	int period = PERIOD;
+	int nb_routes = PERIOD / message_size;
+	int size_route = ROUTES_SIZE_MAX;
+	srand(time(NULL));
+	struct timeval tv1, tv2;
+	int nb_algos = 6;
+	if(EXHAUSTIVE_SEARCH)
+		nb_algos++;
+	int tmp[nb_algos];
+	float running_time[nb_algos]; 
+		//Toujours mettre exhaustivesearch en derniere
+	char * noms[] = {"ShortestLongest","FirstFit","MetaOffset","RandomOffset","CompactPairs","CompactFit","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	float success[nb_algos];
@@ -1301,7 +1440,7 @@ int main(int argc,char * argv[])
 		{
 			fprintf(stdout,"\r Computing %d routes :  %d/%d",i,j+1,nb_simuls);fflush(stdout);
 			graph = random_graph(i,size_route);
-			pair(graph,i,period,message_size);
+			
 				
 			
 			for(int algo = 0;algo<nb_algos;algo++)
@@ -1309,32 +1448,37 @@ int main(int argc,char * argv[])
 				gettimeofday (&tv1, NULL);	
 				switch(algo){
 					case 0:
+					
+						tmp[algo] =  shortestlongest(graph,i,period,message_size);
+						
+						break;
+						case 1:
 						tmp[algo] =  first_fit(graph,i,period,message_size);
 						
 						break;
-					case 1:
+					case 2:
 						
 						tmp[algo] = meta_offset(graph,i,period,message_size);
 						break;
-					case 2:
+					case 3:
 						tmp[algo] = random_offset(graph,i,period,message_size);
 
 						break;
-					/*case 3:
-						tmp[algo] = super_compact(graph,i,period,message_size);
-						break;
+					//case 3:
+					//	tmp[algo] = super_compact(graph,i,period,message_size);
+				//		break;
+				//	case 4:
+				//		tmp[algo] = pair(graph,i,period,message_size);
+				//		break;
 					case 4:
-						tmp[algo] = pair(graph,i,period,message_size);
-						break;*/
-					case 3:
 						tmp[algo] = pair_meta_offset(graph,i,period,message_size);
 						break;
 					
 						
-					case 4:
+					case 5:
 						tmp[algo] = first_fit_random(graph,i,period,message_size);
 						break;
-					case 5:
+					case 6:
 						tmp[algo] = search(graph,i,period,message_size);
 						break;
 					}
@@ -1382,6 +1526,6 @@ int main(int argc,char * argv[])
 	}
 	print_gnuplot( noms,  nb_algos,period, message_size,nb_routes);
 	return 0;
-		
+		*/
 	
 }

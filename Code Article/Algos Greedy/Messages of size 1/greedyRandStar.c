@@ -618,6 +618,80 @@ int swap(entree e){
 	}
 	return scheduled_message;
 } 
+//trie le tableau decalage en fonction des releases
+void tri_bulles(int* releases,int* decalage,int taille)
+{
+	int sorted;
+	int tmp;
+	int tmp_ordre;
+
+	int tabcpy[taille];
+	for(int i=0;i<taille;i++)tabcpy[i]=releases[i];
+
+	for(int i=taille-1;i>=1;i--)
+	{
+		sorted = 1;
+		for(int j = 0;j<=i-1;j++)
+		{
+
+			if(tabcpy[j+1]<tabcpy[j])
+			{
+				tmp_ordre = decalage[j+1];
+				decalage[j+1]=decalage[j];
+				decalage[j]=tmp_ordre;
+				tmp = tabcpy[j+1];
+				tabcpy[j+1]= tabcpy[j];
+				tabcpy[j]= tmp;
+				sorted = 0;
+			}
+		}
+		if(sorted){return;}
+	}
+
+}
+
+int shortestlongest(entree e)
+{
+	int period = e.periode ;
+	int nb_routes = e.nb_routes ;
+	e.aller = malloc(sizeof(int)*e.periode);
+	e.retour = malloc(sizeof(int)*e.periode);
+	e.decalages = malloc(sizeof(int)*e.nb_routes);
+
+	
+	int budget = period-nb_routes;
+
+	int release[nb_routes];
+	for(int i=0;i<nb_routes;i++)
+	{
+		release[i]= e.decalages[i];
+	}
+
+	tri_bulles(e.decalages,release,nb_routes);
+	int nb_routes_ok=0;
+	int offset = 0;
+	for(int i=0;i<nb_routes;i++)
+	{
+		if(i>0)
+		{
+
+			budget -= release[i]-release[i-1];
+
+			if(budget < 0)
+			{
+				break;
+			}
+		}
+		offset = i;
+		e.aller[nb_routes_ok]=offset;
+		e.retour[nb_routes_ok]=(offset+release[i])%period;
+		nb_routes_ok++;
+		
+
+	
+	}	
+	return nb_routes_ok;
+}
 
 int recsearch(entree e){
 	return search(e.decalages,e.nb_routes,e.periode,1); 
@@ -703,10 +777,10 @@ int main()
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
 		//Toujours mettre exhaustivesearch en derniere
-	int nb_algos = 5;
+	int nb_algos = 6;
 	struct timeval tv1, tv2;
 	float running_time[nb_algos];
-	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move","ExhaustiveSearch"};
+	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move","ShortestLongest","ExhaustiveSearch"};
 	char buf[256];
 	FILE * f[nb_algos];
 	FILE * time = fopen("time.plot","w");
@@ -720,35 +794,39 @@ int main()
 		running_time[i]=0.0;
 	}
 	float success = 0.0;
-	for(int i=50;i<=1000;i+=100)
+	for(int i=50;i<=NB_ROUTES;i++)
 	{
-		for(int i=0;i<nb_algos;i++)
+		for(int j=0;j<nb_algos;j++)
 		{
-			running_time[i]=0.0;
+			running_time[j]=0.0;
 		}
 		printf("%d Routes \n",i);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
+		fprintf(f[0],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, TAILLE_ROUTES,NB_SIMUL,seed,greedy_uniform,"GreedyUniform")); //ça n'est pas sur les memes entrees a cause du rand
 		gettimeofday (&tv2, NULL);	
 		running_time[0] += time_diff(tv1,tv2);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i,i));
+		fprintf(f[1],"%f %f\n",i/(float)NB_ROUTES,prob_theo(i, TAILLE_ROUTES));
 		gettimeofday (&tv2, NULL);	
 		running_time[1] += time_diff(tv1,tv2);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[2],"%f %f\n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,greedy_first_fit,"FirstFit"));
+		fprintf(f[2],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, TAILLE_ROUTES,NB_SIMUL,seed,greedy_first_fit,"FirstFit"));
 		gettimeofday (&tv2, NULL);	
 		running_time[2] += time_diff(tv1,tv2);
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,greedy_profit,"Profit"));
+		fprintf(f[3],"%f %f\n",i/(float)NB_ROUTES,statistique(PERIODE,i, TAILLE_ROUTES,NB_SIMUL,seed,greedy_profit,"Profit"));
 		gettimeofday (&tv2, NULL);	
 		running_time[3] += time_diff(tv1,tv2);
 		//statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,greedy_advanced,"advanced_profit");
 		//algo bugué, ne marche pas pour 50%
 		gettimeofday (&tv1, NULL);	
-		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(i,i, i,NB_SIMUL,seed,swap,"Swap and Move"));
+		fprintf(f[4],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, TAILLE_ROUTES,NB_SIMUL,seed,swap,"Swap and Move"));
 		gettimeofday (&tv2, NULL);	
 		running_time[4] += time_diff(tv1,tv2);
+		gettimeofday (&tv1, NULL);	
+		fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, TAILLE_ROUTES,NB_SIMUL,seed,shortestlongest,"ShortestLongest"));
+		gettimeofday (&tv2, NULL);	
+		running_time[5] += time_diff(tv1,tv2);
 		fprintf(time,"%d ",i);
 		for(int i=0;i<nb_algos;i++)
 		{
@@ -757,7 +835,7 @@ int main()
 		}
 		fprintf(time,"\n");
 
-		//fprintf(f[5],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
+		//fprintf(f[6],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{
