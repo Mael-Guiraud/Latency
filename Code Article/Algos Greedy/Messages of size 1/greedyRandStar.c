@@ -11,10 +11,10 @@ All rights reserved.
 
 #include<sys/time.h>
 
-#define PERIODE 100
+#define PERIODE 10
 #define NB_ROUTES 100
-#define TAILLE_ROUTES 100
-#define NB_SIMUL 1000
+#define TAILLE_ROUTES 10
+#define NB_SIMUL 10000
 
 #define DEBUG 0
 
@@ -654,9 +654,7 @@ int shortestlongest(entree e)
 {
 	int period = e.periode ;
 	int nb_routes = e.nb_routes ;
-	e.aller = malloc(sizeof(int)*e.periode);
-	e.retour = malloc(sizeof(int)*e.periode);
-	e.decalages = malloc(sizeof(int)*e.nb_routes);
+
 
 	
 	int budget = period-nb_routes;
@@ -664,6 +662,7 @@ int shortestlongest(entree e)
 	int release[nb_routes];
 	for(int i=0;i<nb_routes;i++)
 	{
+		//printf("%d %d \n",release[i],e.decalages[i]);
 		release[i]= e.decalages[i];
 	}
 
@@ -676,7 +675,7 @@ int shortestlongest(entree e)
 		{
 
 			budget -= release[i]-release[i-1];
-
+			//printf("%d %d %d %d %d \n",i,nb_routes,budget,release[i],release[i-1]);
 			if(budget < 0)
 			{
 				break;
@@ -777,7 +776,7 @@ int main()
 	int seed = time(NULL); 
 	printf("Paramètres :\n -Periode %d\n-Nombre de routes %d\n-Taille maximum des routes %d\n-Nombre de simulations %d\n",PERIODE,NB_ROUTES,TAILLE_ROUTES,NB_SIMUL);
 		//Toujours mettre exhaustivesearch en derniere
-	int nb_algos = 6;
+	int nb_algos = 7;
 	struct timeval tv1, tv2;
 	float running_time[nb_algos];
 	char * noms[] = {"GreedyUniform","Theoric","FirstFit","Profit","Swap and Move","ShortestLongest","ExhaustiveSearch"};
@@ -794,7 +793,7 @@ int main()
 		running_time[i]=0.0;
 	}
 	float success = 0.0;
-	for(int i=50;i<=NB_ROUTES;i++)
+	for(int i=5;i<=NB_ROUTES;i++)
 	{
 		for(int j=0;j<nb_algos;j++)
 		{
@@ -835,7 +834,7 @@ int main()
 		}
 		fprintf(time,"\n");
 
-		//fprintf(f[6],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,NB_ROUTES, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
+		fprintf(f[6],"%f %f \n",i/(float)NB_ROUTES,statistique(PERIODE,i, PERIODE,NB_SIMUL,seed,recsearch,"ExhaustiveSearch"));
 	}
 	for(int i=0;i<nb_algos;i++)
 	{
