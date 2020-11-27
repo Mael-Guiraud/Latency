@@ -4,6 +4,9 @@
 \minitoc
 
 
+This chapter correspond to the section 3 of~\cite{DBLP:conf/ict/BarthGLMS18} and to~\cite{DBLP:journals/corr/abs-2002-07606}.
+
+
  In this chapter, we sutdy the problem \pazl on \emph{star routed networks}. Here, once a datagram has been emmited, no buffering is allowed in the network. Such an hypothesis is not yet easily implementable, but full optical networks mentioned in Chapter~\ref{chap:TSN} aims to provide a transparent transmission of data without opto-electronic conversion that induces additional latency. 
 
  In the problem \pazl (and also in the problem \pall studied in Chapter~\ref{chap:PALL}), the datagram emissions are not synchronized. This means the sources does not send the datagram at the same time in the period. This is why we can choose the offset on the period without adding latency to the datagram. Such a problem does not perfectly match with C-RAN in actual 5G, but can be used in many other applications in which the sources does not need to be synchronized (industry 4.0, monitoring, sensor network, multicore over a bus, two processor scheduling, ...).  Moreover, we can hope that future evolutions of the 5G standard will allow to use unsynchronized antennas.
@@ -64,7 +67,7 @@ We show in the experiments of Section~\ref{sec:perf_large}, that \pazl can be ve
 
 Consider some partial assignment $A$, the message $i$ uses all times from $A(i)$ to $A(i) + \tau -1$ in the first period. If a message $j$ is scheduled by $A$, with $A(j) < A(i)$, then the last time it uses in the first period is $A(j)+\tau-1$ and it should be less than $A(i)$, which implies that $A(j) \leq A(i) - \tau$. Symmetrically, if $A(j) > A(i)$, to avoid collision between messages $j$ and $i$, we have $A(j) \geq A(i) + \tau$. Hence, message $i$ forbids the interval $]A(i) - \tau, A(i) + \tau[$ as offsets for messages still not scheduled because of its use of time in the first period. The same reasoning shows that $2\tau -1$ offsets are also forbidden because of the times used in the second period. Hence, if $|S|$ messages are already scheduled, then $|S|(4\tau -2)$ offsets are forbidden for any unscheduled message. It is an upper bound on the number of forbidden offsets, since the same offset can be forbidden twice because of a message on the first and on the second period.
 
-Let $Fo(A)$ be the maximum number of forbidden offsets when extending $A$. Formally, assume $A$ is defined over $S$ and $i\notin S$, $Fo(A)$ is the maximum over all possible values of $\notationdelay_i$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has no collision}\right\}|$. The previous paragraph shows that $Fo(A)$ is always bounded by $(4 \tau -2)|S|$. 
+Let $Fo(A)$ be the maximum number of forbidden offsets when extending $A$. Formally, assume $A$ is defined over $S$ and $i\notin S$, $Fo(A)$ is the maximum over all possible values of $\o_i$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has no collision}\right\}|$. The previous paragraph shows that $Fo(A)$ is always bounded by $(4 \tau -2)|S|$. 
 
 Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), it tests all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment and use it to extend the assignment. If $Fo(A) < P$, then whatever the delay of the route we want to extend $A$ with, there is an offset to do so. Since $Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, \firstfit (or any greedy algorithm) will always succeed when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
 It turns out that \firstfit always creates compact assignments (as defined in Proposition~\ref{prop:compactification}), that is a message is always next to another one in one of the two periods. Hence, we can prove a better bound on $Fo(A)$, when $A$ is built by \firstfit, as stated in the following theorem.
@@ -326,7 +329,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 \subsubsection{Cloud Ran parameters}\label{sec:pazlcran}
 In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized.
 
-  The defaults parameters of all experiment in this article are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are approximately of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. 
+  The defaults parameters of all experiment in this article are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are approximately of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. In the Cloud-RAN problem, the period fixed by the protocol HARQ correspond to approximately $21,000$ tics. This means that a network with $8$ routes is loaded at $95\%$, which seems unrealistic and cannot be solved for \pazl, as we experimentally show it in this section. Nevertheless, as explained at the begining of this chapter, thoses parameters are some reference to realistic parameters and the objective here is to evaluate our algorithm performances.
 
      All experiments are done on synthetic data generated randomly. We generate the physical fronthaul
      network represented in Figure~\ref{fig:star}, by drawing the size of each link according 
@@ -548,14 +551,14 @@ To go above $1/2$ of load, we optimize a potential measuring how many offsets ar
 The algorithm is not greedy, since we allow to exchanging a scheduled message with an unscheduled one. It cannot work online, since it requires to know all delays of the messages in advance. 
 
 \begin{definition}
-The potential of a message of delay $d$, for a partial assignment $A$
+The potential of a message of delay $\notationdelay$, for a partial assignment $A$
 is the number of integers $i \in [P]$ such that $i$ is used in the first period and $i+d \mod P$ is used in the second period.
 \end{definition}
 
 The computation of the potential of a message of delay $3$, is illustrated in Fig.~\ref{fig:messagepotential}.
 The potential of a message counts the configurations which reduce the number of forbidden offsets.
 Indeed, when $i$ is used in the first period and $i+d \mod P$ is used in the second period,
-then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
+then the same offset is forbidden \emph{twice} for a message of delay $\notationdelay$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
 \begin{figure}
  \begin{center}
 \includegraphics[scale=1]{Chapitre4PAZL/messagepotential}
@@ -575,7 +578,7 @@ We call our measure \textbf{the potential of an assignment} and we denote it by 
 
 
 \begin{definition}
-The potential of a position $i$, for a partial assignment $A$, is the number of messages of delay $d$ such that $i+d \mod P$ is used by a route scheduled by $A$. 
+The potential of a position $i$, for a partial assignment $A$, is the number of messages of delay $\notationdelay$ such that $i+d \mod P$ is used by a route scheduled by $A$. 
 \end{definition}
 
 \begin{figure}
@@ -602,7 +605,7 @@ The sum of potentials of all positions for a partial assignment with $k$ schedul
 
  As a consequence of this lemma, $Pot(A) \leq nk$. Let us define a \textbf{Swap operation},
  which guarantees to obtain at last half the maximal value of the potential.
-Let $A$ be some partial assignment of size $s$ and let $i$ be an unscheduled message of delay $d$. 
+Let $A$ be some partial assignment of size $s$ and let $i$ be an unscheduled message of delay $\notationdelay$. 
 Assume that $i$ cannot be used to extend $A$. The Swap operation is the following: 
 select a free position $o$ in the first period, remove the message which uses the position $o+d$ in the second period from $A$ and extend $A$ by $i$ with offset $o$. We denote this operation by $Swap(i,o,A)$.
 
@@ -628,7 +631,7 @@ Let us precisely describe the algorithm \swapandmove:  messages are scheduled wh
 \begin{proof}
 We determine for which value of the load \swapandmove always works. We let $n = (1/2 + \epsilon)P$ be the number of messages, the load is $1/2 + \epsilon$. We need only to study the case when $n-1$ messages are scheduled by $A$ and \swapandmove tries to schedule the last one, since the previous steps are similar but easier. 
 
-Let $d$ be the delay of the unscheduled message. We consider the pairs 
+Let $\notationdelay$ be the delay of the unscheduled message. We consider the pairs 
 of times $(o,o+d)$ for $o \in [P]$. Since the message
 cannot be scheduled, there are three cases. First, $o$ is unused in the first period but $o+d$ is used in the second period. Since there are $n-1$ scheduled messages, there are $P-n+1$ such value of $o$. If a message using the time $o+d$ in the second period can be scheduled elsewhere, so that the unscheduled message can use offset $o$, then \swapandmove succeeds.
 Otherwise, the message has no possible offsets, which means its potential is equal to $2(\epsilon P -1)$.
@@ -652,7 +655,7 @@ strictly increase the potential. Moreover, when one or two messages are moved, t
 a message is added to the partial assignment. The potential is bounded by $O(n^2)$ and the move operations all together can only remove $O(n^2)$ to the potential, hence there are at most $O(n^2)$ Swap operations during \swapandmove. A Swap operation can be performed in time $O(n)$, since for a given message, all free offsets must be tested and the potential is evaluated in time $O(1)$ (by maintaining the potential of each position). This proves that Swap and Move is in $O(n^3)$.  
 \end{proof}
 
-Consider a partial assignment of size $n' = (1/2 + \epsilon)P$, and a message of delay $d$.
+Consider a partial assignment of size $n' = (1/2 + \epsilon)P$, and a message of delay $\notationdelay$.
 If we consider all $n'$ used offsets $o$ and all times time $o+d$ in the second period, 
 then $o$ and $o+d$ are both used for at least $n' - (P -n') = 2\epsilon P$ values of $o$.
 The potential of any message is thus larger or equal to $2\epsilon P$. When a message cannot be scheduled, its potential is less or equal to $2\epsilon P$, hence it is equal to $2\epsilon P$.
