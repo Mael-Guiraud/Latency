@@ -6,7 +6,9 @@
 
  In the problem \pazl (and also in the problem \pall studied in Chapter~\ref{chap:PALL}), the datagram emission are not synchronized. This means the sources does not send the datagram at the same time. This is why we can choose the offset on the period without adding some latency to the datagram. Such a problem does not perfectly matches with the C-RAN in 5G use case, but can be used in many other applications in which the sources does not need to be synchronized in the datagram emission (industry 4.0, monitoring, two processor scheduling, ...).
 
- Since \pazl is a more constrained problem than \pall, we simplify the notation. Indeed, since no buffuring is allowed at all, the notion of deadline on each route does not have sense anymore because all messages will have a minimal latency, if there is a solution. Thus, an instance of \pazl can be reduced to the lenght of the arc $(c_1,c_2)$ on the route $i$ that is $\omega(r_i,c_1)$ , denoted by $\notationdelay_i$ and called \nomdelay.
+ Since \pazl is a more constrained problem than \pall, we simplify the notation. Indeed, since no buffuring is allowed at all, the notion of deadline on each route does not have sense anymore because all messages will have a minimal latency, if there is a solution. Thus, an instance of \pazl can be reduced to the lenght of the arc $(c_1,c_2)$ on the route $i$ that is $\omega(r_i,c_1)$ , denoted by $\notationdelay_i$ and called \nomdelay. 
+
+ In this chapter, the representations of the times at which datagrams on the routes $r_i$ reaches the contention point $c_1$, that is $\{t(r_i,c_1) | i \in n\}$ is called \textbf{first period}. Also, it is called \textbf{second period} for $c_2$.
 
 The chapter is composed of two parts. In Section~\ref{sec:large}, we study the case in which the size of the datagrams is unconstrained. This cover the use cases previously mentioned. Section~\ref{sec:small} focuses on datagrams of size $1$. Some algorithms focusing on this constrained problem are proposed and analyzed.
 
@@ -32,7 +34,7 @@ We show in the experiments of Section~\ref{sec:perf_large}, that \pazl can be ve
   \subsection{Shortest-Longest policy}
     
 
-    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the length of the routes modulo the period are close. The algorithm is called \shortestlongest: it sends datagrams on the shared link from the route with the lowest delay (i.e the shortest arc $(c_1,c_2)$) to the greatest (i.e. the longest one). There is no idle time in the contention point $c_1$, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
+    We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the length of the routes modulo the period are close. The algorithm is called \shortestlongest: it sends datagrams on the shared link from the route with the lowest delay (i.e the shortest arc $(c_1,c_2)$) to the greatest (i.e. the longest one). There is no idle time in the first period, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
       
       \begin{proposition} Let $N$ be a canonical star routed network, with $r$ the longest route. If $n\tau + \lambda(r) \leq P$ then \shortestlongest produces a $(P,\tau)$-periodic bufferless assignment of $N$ in time $O(n\log(n))$.\label{prop:SL}
       \end{proposition}
@@ -44,7 +46,7 @@ We show in the experiments of Section~\ref{sec:perf_large}, that \pazl can be ve
     The complexity of the algorithm is dominated by the sorting of the routes in $O(n\log(n))$. 
       \end{proof}
 
-      If the period is slightly smaller that the bound of Proposition~\ref{prop:SL}, there is a collision with $r_0$ on $c_1$. Hence, this policy is not useful as a heuristic for longer routes, as confirmed by the experimental results of Section~\ref{sec:perf_large}. 
+      If the period is slightly smaller that the bound of Proposition~\ref{prop:SL}, there is a collision with $r_0$ on the first period. Hence, this policy is not useful as a heuristic for longer routes, as confirmed by the experimental results of Section~\ref{sec:perf_large}. 
 
 \subsection{First Fit}
 
@@ -80,16 +82,16 @@ Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
 The assignment is found in time $O(n^2)$.
 \end{theorem}
     \begin{proof}
-    Let us prove that \metaoffset always schedules the $n$ routes when the load is less than $1/3$. Let us assume it has built an assignment for the routes $r_0$,$r_1$, $r_{k-1}$, using only meta-offsets. The number of meta-offsets is $P/\tau$ and already $k$ of them are used, hence to avoid collision in $c_1$, we have $P/\tau - k$ choices. We choose an offset among those for the route $r_k$ so that there is no collision in $c_2$. Remark that exactly two consecutive meta-offsets can create a collision between $r_k$ and some route $r_i$ with $i < k$ in $c_2$, since the datagrams are all of size $\tau$, see Figure~\ref{fig:metaoffset}. Hence, there are at most $2k$ meta-offsets forbidden by collisions in $c_2$. In conclusion, there are at least $P/\tau - k - 2k$ possible meta-offsets so that its choice for $r_k$ does not create a collision in $c_1$ or $c_2$.  \metaoffset terminates and provides a valid bufferless assignment as soon as $P/\tau - 3(n-1) > 0$, which can be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
+    Let us prove that \metaoffset always schedules the $n$ routes when the load is less than $1/3$. Let us assume it has built an assignment for the routes $r_0$,$r_1$, $r_{k-1}$, using only meta-offsets. The number of meta-offsets is $P/\tau$ and already $k$ of them are used, hence to avoid collision in the first period, we have $P/\tau - k$ choices. We choose an offset among those for the route $r_k$ so that there is no collision in the second period. Remark that exactly two consecutive meta-offsets can create a collision between $r_k$ and some route $r_i$ with $i < k$ in the second period, since the datagrams are all of size $\tau$, see Figure~\ref{fig:metaoffset}. Hence, there are at most $2k$ meta-offsets forbidden by collisions in the second period. In conclusion, there are at least $P/\tau - k - 2k$ possible meta-offsets so that its choice for $r_k$ does not create a collision in the first or the second period.  \metaoffset terminates and provides a valid bufferless assignment as soon as $P/\tau - 3(n-1) > 0$, which can be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
 
-     This algorithm works in time $O(n^2)$, since for the $k$th route we have to try at most $3k$ meta-offsets before finding a correct one. We can test whether these $3k$ offsets cause a collision in $c_2$ in time $O(k)$ by maintaining an ordered list of the intervals of tics in the period used by already scheduled routes in $c_2$.
+     This algorithm works in time $O(n^2)$, since for the $k$th route we have to try at most $3k$ meta-offsets before finding a correct one. We can test whether these $3k$ offsets cause a collision in the second period in time $O(k)$ by maintaining an ordered list of the intervals of tics in the period used by already scheduled routes in the second period.
      \end{proof}
          
      \begin{figure}
       \begin{center}
       \includegraphics[width=0.7\textwidth]{Chapitre4PAZL/ex3nt.pdf}
       \end{center}
-      \caption{Times used in the period in $c_1$ and $c_2$, when scheduling the $k$th route in \metaoffset}
+      \caption{Times used in the first and second period, when scheduling the $k$th route in \metaoffset}
       \label{fig:metaoffset}
       \end{figure}
 
@@ -256,7 +258,7 @@ In this section, we show how every bufferless assignment can be put into a canon
 We use that form to design an algorithm solving \pazl in fixed parameter tractable time ($\FPT$), with parameter $n$ the number of routes (for more on parametrized complexity see~\cite{downey2012parameterized}). This is justified since $n$ is small in practice, from $10$ to $20$ in our settings, and the other parameters such as $P$, $\tau$ or the weights are large.
 
 Let $({\cal R},\omega)$ be a star routed network and let $A$ be a bufferless $(P,\tau)$-periodic assignment.
-We say that that $A$ is \textbf{compact} if there is a route $r_0 \in \cal{R}$ such that the following holds: for all subsets $S\subset \cal{R}$ with $r_0 \notin S$, the bufferless assignment $A'$, defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S$ and $A(r)$ otherwise, is not valid. In other words, an assignment is compact if for all routes $r$ but one, $A(r)$ cannot be reduced by one, that is either in $c_1$ or in $c_2$, there is a route $r'$ using the tics just before $A(r)$. See Figure~\ref{fig:compact} for an example of a compact assignment, obtained by the procedure of the next proposition. 
+We say that that $A$ is \textbf{compact} if there is a route $r_0 \in \cal{R}$ such that the following holds: for all subsets $S\subset \cal{R}$ with $r_0 \notin S$, the bufferless assignment $A'$, defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S$ and $A(r)$ otherwise, is not valid. In other words, an assignment is compact if for all routes $r$ but one, $A(r)$ cannot be reduced by one, that is either in the first or the second period, there is a route $r'$ using the tics just before $A(r)$. See Figure~\ref{fig:compact} for an example of a compact assignment, obtained by the procedure of the next proposition. 
   \begin{figure}
       \begin{center} 
       \includegraphics[width=\textwidth]{Chapitre4PAZL/compacttoassignment.pdf}
@@ -294,10 +296,10 @@ Let $N = ({\cal R},\omega)$ be a canonical star routed network and let $P$ be th
 
  We describe a way to build any compact assignment $A$ by determining its offsets one after the other, which gives a bound on their number and an algorithm to generate them all. We fix an arbitrary total order on ${\cal R}$. Let $r_0$ be the smallest route of $\cal{R}$, its offset is set to $0$ and we let $S = \{r_0\}$,
  $S_1 = \{r_0\}$ and $S_2 = \{r_0\}$. $S$ represent the routes whose offsets are fixed, 
- offsets of unscheduled routes are chosen so that they follow a route of $S_1$ in $c_1$ or a route of $S_2$ in $c_2$.
+ offsets of unscheduled routes are chosen so that they follow a route of $S_1$ in the first period or a route of $S_2$ in the second period.
 
  At each step, we add an element to $S$: let $r$ be the smallest element of $S_1$, if it is non empty. Then, select any route $r' \in {\cal R} \setminus S$ 
- such that $o_{r'} = o_{r} + \tau$ does not create collision (by construction $o_{r'} = o_{r} + \tau - 1$ does create a collision in $c_1$). Then, we update the sets as follows:
+ such that $o_{r'} = o_{r} + \tau$ does not create collision (by construction $o_{r'} = o_{r} + \tau - 1$ does create a collision in the first period). Then, we update the sets as follows:
  $S = S \{r'\}$, $S_1 = S_1 \setminus \{r\} \cup \{r'\}$ and $S_2 = S_2 \cup \{r'\}$. If 
  $S_1$ is empty, $r$ is smallest element of $S_2$, and we set $o_{r'} = o_{r} + \tau + \omega(r,c_2) - \omega(r',c_2)$.
  We can also remove $r$ from $S_1$ (or from $S_2$ if $S_1$ is empty) without adding any element to $S$. Remark that the value of the offset of the route added to $S$ is entirely determined by the values of the offsets of the routes in $S$.
@@ -312,7 +314,7 @@ We call the algorithm described in Theorem~\ref{th:FPT} \exactresolution
 or \ESCA. The complexity of \ESCA is in $O(4^n n!)$. While a better analysis
 of the number of compact assignments could improve this bound, the simple star routed networks with all arcs of weights $0$ has $(n-1)!$ compact assignments. Hence, to improve significantly on \ESCA, one should find an even more restricted notion of bufferless assignment than compact assignment.
 
-To make \ESCA more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set $S$ of $k$ routes whose offsets have been fixed at some point in the search tree. We consider the times used by these routes in $c_1$. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ where the intervals $(a_i,b_i)$ are the times not used yet in $c_1$. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor}$ routes can still send a datagram through $c_1$. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the current one on $S$ and we backtrack in the search tree. The same cut is also used for the contention point $c_2$. These cuts rely on the fact that the partial assignment is wasting bandwith by creating intervals which are not multiples of $\tau$. It helps with instances of large load, which are also the hardest to solve.
+To make \ESCA more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set $S$ of $k$ routes whose offsets have been fixed at some point in the search tree. We consider the times used by these routes in the first period. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ where the intervals $(a_i,b_i)$ are the times not used yet in the first period. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor}$ routes can still send a datagram through the first period. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the current one on $S$ and we backtrack in the search tree. The same cut is also used for the second period. These cuts rely on the fact that the partial assignment is wasting bandwith by creating intervals which are not multiples of $\tau$. It helps with instances of large load, which are also the hardest to solve.
 
 
 \subsection{Experimental Results} \label{sec:perf_large}
@@ -676,7 +678,7 @@ The distribution of traces of assignments produced by \greedyuniform when it suc
 The proof is by induction on $n$, the number of messages. It is clear for $n=1$,
 since the delay of the first message is uniformly drawn and all offsets can be used.
 Assume now the theorem true for some $n>1$. \greedyuniform, by induction hypothesis has produced
-uniform traces from the first $n$ messages.  Hence, we should prove that, if we draw the weights of the arcs $(c_1,c_2)$
+uniform traces from the first $n$ messages.  Hence, we should prove that, if we draw delays
 of the $n+1^{th}$ message randomly, extending the trace by a random possible offset produces a random distribution on the traces of size $n+1$. 
 
  If we draw an offset uniformly at random (among all $m$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces \greedyuniform. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
