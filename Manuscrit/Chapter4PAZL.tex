@@ -2,13 +2,27 @@
 \chapter{Scheduling Unsynchronized Periodic Datagrams without Buffer}
 \label{chap:PAZL}
 \minitoc
- In this chapter, we focus on the problem \pazl on star routed networks. Here, once a datagram has been emited, no buffuring is allowed in the network. Such an hypothesis seems not realistic yet in practice, but full optical networks mentioned in Chapter~\ref{chap:TSN} aims to provide a transparent transimissions of data without opto-electronic conversion that induces additional latency. 
 
- In the problem \pazl (and also in the problem \pall studied in Chapter~\ref{chap:PALL}), the datagram emission are not synchronized. This means the sources does not send the datagram at the same time. This is why we can choose the offset on the period without adding some latency to the datagram. Such a problem does not perfectly matches with the C-RAN in 5G use case, but can be used in many other applications in which the sources does not need to be synchronized in the datagram emission (industry 4.0, monitoring, two processor scheduling, ...).
 
- Since \pazl is a more constrained problem than \pall, we simplify the notation. Indeed, since no buffuring is allowed at all, the notion of deadline on each route does not have sense anymore because all messages will have a minimal latency, if there is a solution. Thus, an instance of \pazl can be reduced to the lenght of the arc $(c_1,c_2)$ on the route $i$ that is $\omega(r_i,c_1)$ , denoted by $\notationdelay_i$ and called \nomdelay.
 
-The chapter is composed of two parts. In Section~\ref{sec:large}, we study the case in which the size of the datagrams is unconstrained. This cover the use cases previously mentioned. Section~\ref{sec:small} focuses on datagrams of size $1$. Some algorithms focusing on this constrained problem are proposed and analyzed.
+ In this chapter, we focus on the problem \pazl on \emph{star routed networks}. Here, once a datagram has been emmited, no buffering is allowed in the network. Such an hypothesis is not yet easily implementable, but full optical networks mentioned in Chapter~\ref{chap:TSN} aims to provide a transparent transmission of data without opto-electronic conversion that induces additional latency. 
+
+ In the problem \pazl (and also in the problem \pall studied in Chapter~\ref{chap:PALL}), the datagram emissions are not synchronized. This means the sources does not send the datagram at the same time in the period. This is why we can choose the offset on the period without adding latency to the datagram. Such a problem does not perfectly match with C-RAN in actual 5G, but can be used in many other applications in which the sources does not need to be synchronized (industry 4.0, monitoring, sensor network, multicore over a bus, two processor scheduling, ...).  Moreover, we can hope that future evolutions of the 5G standard will allow to use unsynchronized antennas.
+
+ Since \pazl is a more constrained problem than \pall, we simplify the notations. No buffering is allowed, hence the notion of deadline on each route is not relevant anymore because all messages will have the smallest possible process time, if there is a solution. Thus, an instance of \pazl can be reduced to the lenght of the arc $(c_1,c_2)$ on the route $i$ that is $\omega(r_i,c_1)$ , denoted by $\notationdelay_i$ and called \nomdelay. A message is emmited an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of an interval of $P$ units of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. 
+
+Recall that an \textbf{offset} of a message is a choice of time at which it arrives
+at the first contention point (i.e. in the first period). Let us consider a message $i$
+of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period). An \textbf{assignment} is a function from the messages to their offsets, such that there is no collision.
+
+
+The complexity of \pazl over a star routed network is not yet known. We prove in this section that, when parameterized by
+$n$ the number of messages, the problem is \FPT. A slight generalization of the star routed network, with more contention points, but each message only going through two of them, is \NP-hard, see Theorem~\ref{th:hardness_contention_depth}. If the shared link is not full-duplex, that is, there is a single contention point and each message goes through it twice, it is also \NP-hard, since we can encode a similar non periodic problem~\cite{orman1997complexity}. Hence, we conjecture that \pazl is \NP-hard over star routed networks.
+
+To overcome the supposed hardness of \pazl, we study it when the load of the system is small enough, which is defined here as
+the number of units of time used in a period by all messages divided by the period that is $n\tau /P$. There cannot be an assignment when the load is larger than one; we prove in this chapter that, for moderate loads, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm. This kind of result is very helpful when solving the following optimization version of \pazl: given a set of messages, find the largest subset which admits an assignment. A weigthed version, where the messages have different values can also be considered. An optimal solution to the optimization problem is a set of messages corresponding to a load of at most $1$. Assume we have an algorithm that always finds an assignment for an instance of load $\lambda$. Then, such an algorithm finds an assignment for any subset of load $\lambda$ and is an approximation algorithm for the optimization problem with approximation ratio $\lambda$.
+
+The chapter is composed of two parts. In Section~\ref{sec:large}, we study the case in which the size of the datagrams is unconstrained. This cover the use cases previously mentioned. Section~\ref{sec:small} focuses on datagrams of size $\tau = 1$ and we also provide methods to convert the general problem to datagrams of size $1$, at the cost of additional latency or load. Several algorithms solving the case $\tau = 1$ are proposed and analyzed.
 
 \section{Greedy Algorithms for Large Messages} \label{sec:large}
 
@@ -20,7 +34,7 @@ A \textbf{partial assignment} $A$ is a function defined from a subset $S$ of $[n
 The cardinal of $S$ is the \textbf{size} of partial assignment $A$. A message in $S$ is \textbf{scheduled} (by $A$), and a message not in $S$ is \textbf{unscheduled}. We only consider partial assignments such that no pair of messages of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the message $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
   We give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. 
-All presented algorithms exept the \exactresolution (the FPT algorithm) build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. 
+All presented algorithms except \exactresolution build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. 
 
 In the rest of the chapter, we sometimes compare the relative position of messages, but one should remember that the
 time is periodic and these are relative positions on a circle. Moreover, when it is unimportant and can hinder comprehension, we may omit to write \emph{mod P} in some definitions and computations.
@@ -33,7 +47,7 @@ We show in the experiments of Section~\ref{sec:perf_large}, that \pazl can be ve
     
 
     We first present a simple policy, which works when the period is large with regard to the lengths of the routes. More generally, it works as soon as the length of the routes modulo the period are close. The algorithm is called \shortestlongest: it sends datagrams on the shared link from the route with the lowest delay (i.e the shortest arc $(c_1,c_2)$) to the greatest (i.e. the longest one). There is no idle time in the contention point $c_1$, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
-      
+
       \begin{proposition} Let $N$ be a canonical star routed network, with $r$ the longest route. If $n\tau + \lambda(r) \leq P$ then \shortestlongest produces a $(P,\tau)$-periodic bufferless assignment of $N$ in time $O(n\log(n))$.\label{prop:SL}
       \end{proposition}
       \begin{proof}
@@ -65,13 +79,9 @@ We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -
 
 \subsection{Meta-Offset}
 
-
-     We propose a greedy algorithm to build a periodic assignment, which always finds an assignment when the load is less than $1/3$. Therefore, in the rest of the article we will be only concerned with load larger than $1/3$. 
-          The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new datagrams. However, it allows reducing the number of forbidden offsets for unscheduled datagrams. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each datagram, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as offset for the assignment until one does not create a collision with the current partial assignment. 
-      %To simplify, we assume that $P$ is a multiple of $\tau$, there is a reduction to this case presented in~\cite{guiraud2020scheduling}.
-      Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$. 
- By definition, two messages with a different meta-offset cannot collide in the first period.
-Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
+     We propose an alternative greedy algorithm to build a periodic assignment, which always finds an assignment when the load is less than $1/3$.  
+     The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new datagrams. However, it allows reducing the number of forbidden offsets for unscheduled datagrams. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each datagram, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as offset for the assignment until one does not create a collision with the current partial assignment. 
+     Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$. By definition, two messages with a different meta-offset cannot collide in the first period. Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
 
 
 
@@ -154,7 +164,7 @@ The \textbf{gap} between $i$ and $j$ is defined as  $g = \notationdelay_{i}' + 1
 \end{figure}
 
 \begin{lemma}\label{lemma:pair_find}
-Given three messages, two of them form a compact pair. 
+Given three messages of delay $\notationdelay_{1}$, $\notationdelay_{2}$ and $\notationdelay_{3}$, two of them form a compact pair. 
 \end{lemma}
 \begin{proof}
 If the first two messages or the first and the third message form a compact pair,
@@ -234,10 +244,9 @@ produce enough compact $8$-tuples in the first phase. It is not a strong restric
 
 
 
-We describe here a last simple algorithm called \compactfit. The idea is, as for \compactpair, to combine 
-the absence of collision on the first period of \metaoffset and the compactness of assignments given by \firstfit.
+We describe here a last algorithm called \compactfit, which is a simpler variant of the previous one. The idea is, as for \compactpair, to combine the absence of collision on the first period of \metaoffset and the compactness of assignments given by \firstfit.
 The messages are ordered by increasing remainder of delay modulo $\tau$, and each message is scheduled so that 
-it extends an already scheduled compact tuples. In other words, it is scheduled using meta offsets, so that using one less for meta offset creates a collision on \emph{the second period}. If it is not possible to schedule the message in that way, the first possible meta-offset is chosen. This algorithm is designed to work well on random instances. Indeed, it 
+it extends an already scheduled compact tuples. In other words, it is scheduled using meta offsets, so that using one less as a meta-offset for some message creates a collision in \emph{the second period}. If it is not possible to schedule the message in that way, the first possible meta-offset is chosen. This algorithm is designed to work well on random instances. Indeed, it 
 is easy to evaluate the average size of the created compact tuples, and from that, to prove that \compactfit works with high probability when the load is strictly less than $1/2$.
 \begin{figure}[h]
  \begin{center}
@@ -246,7 +255,7 @@ is easy to evaluate the average size of the created compact tuples, and from tha
 \caption{Execution of \compactfit creating two compact pairs with $P=12$ and $\tau =2$}
 \label{fig:compactfit}
 \end{figure}
-Fig.~\ref{fig:compactfit} shows how \compactfit builds an assignment from a given instance. The messages are ordered by increasing remainder of delay modulo $\tau$. A compact pair is built with messages $0$ and $1$. Message $2$ cannot increase the size of the compact pair, it so create a new uple, completed by message $3$
+Fig.~\ref{fig:compactfit} shows how \compactfit builds an assignment from a given instance. The messages are ordered by increasing remainder of delay modulo $\tau$. A compact pair is built with messages $0$ and $1$. Message $2$ cannot increase the size of the compact pair, it so create a new tuple, completed by message $3$
 
 
 
@@ -308,9 +317,7 @@ The algorithm to solve \pazl builds every possible compact assignment in the inc
 \end{proof}
 
 
-We call the algorithm described in Theorem~\ref{th:FPT} \exactresolution
-or \ESCA. The complexity of \ESCA is in $O(4^n n!)$. While a better analysis
-of the number of compact assignments could improve this bound, the simple star routed networks with all arcs of weights $0$ has $(n-1)!$ compact assignments. Hence, to improve significantly on \ESCA, one should find an even more restricted notion of bufferless assignment than compact assignment.
+We call the algorithm described in Theorem~\ref{th:FPT} \textbf{E}xhaustive \textbf{S}earch of \textbf{C}ompact \textbf{A}ssignments or \ESCA. The complexity of \ESCA is in $O(4^n n!)$. While a better analysis of the number of compact assignments could improve this bound, the simple star routed networks with all arcs of weights $0$ has $(n-1)!$ compact assignments. Hence, to improve significantly on \ESCA, one should find an even more restricted notion of bufferless assignment than compact assignment.
 
 To make \ESCA more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set $S$ of $k$ routes whose offsets have been fixed at some point in the search tree. We consider the times used by these routes in $c_1$. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ where the intervals $(a_i,b_i)$ are the times not used yet in $c_1$. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor}$ routes can still send a datagram through $c_1$. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the current one on $S$ and we backtrack in the search tree. The same cut is also used for the contention point $c_2$. These cuts rely on the fact that the partial assignment is wasting bandwith by creating intervals which are not multiples of $\tau$. It helps with instances of large load, which are also the hardest to solve.
 
@@ -340,7 +347,7 @@ In this section, the performance on random instances of the algorithms presented
 \todo{trouver l'explication de pourquoi ca ne bug pas ici sans la transofmration de Lemma~\ref{lemma:multiple}}.
 
      In the following experiments, we illustrate how well the algorithms work with regards to the load. To change the load, both parameters $\tau$ and $n$ are fixed and we modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
-We generate $10,000$ random instances of \pazl for $100\%$ to $40\%$ of load. We represent, in Figure~\ref{fig:short}, the percentage of success of each algorithm as a function of the load. We make three experiments with $8$, $12$ and $16$ routes to understand the effect of the number of routes on the quality of our algorithms. A bound on the maximal success rate is given by the exhaustive search which always finds a solution if there is one. 
+	We generate $10,000$ random instances of \pazl for $100\%$ to $40\%$ of load. We represent, in Figure~\ref{fig:short}, the percentage of success of each algorithm as a function of the load. We make three experiments with $8$, $12$ and $16$ routes to understand the effect of the number of routes on the quality of our algorithms. A bound on the maximal success rate is given by the exhaustive search (\ESCA) which always finds a solution if there is one. 
 
          The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i5 and the sources are compiled with gcc version 7.5.0. All experiments end in at most a few dozen seconds.
 
@@ -352,36 +359,34 @@ We generate $10,000$ random instances of \pazl for $100\%$ to $40\%$ of load. We
    \includegraphics[width=0.32\textwidth]{Chapitre4PAZL/pazlshort12.pdf}
    \includegraphics[width=0.32\textwidth]{Chapitre4PAZL/pazlshort16.pdf}
       \end{center}
-      \caption{Success rate of the three algorithms solving \pazl, for short routes and $8$ routes (left), $12$ routes (middle) and $16$ routes (right)}\label{fig:short}
+      \caption{Success rate of three algorithms solving \pazl, for short routes and $8$ routes (left), $12$ routes (middle) and $16$ routes (right)}\label{fig:short}
       \end{figure}
 
-      First, we remark that \ESCA finds a solution even when the load is high. It justifies the idea to look for an assignment without waiting time, in this short routes regime. 
-      It seems that increasing the number of routes makes the exhaustive search even more efficient, meaning that the more the routes, the more instances have a bufferless assignment. 
+      First, we remark that \ESCA finds a solution even when the load is high. It justifies the idea to look for a bufferless assignment in this short routes regime. It seems that increasing the number of routes increases the success rate of \ESCA, meaning that the more the routes, the more instances have a bufferless assignment. 
       Second, remark that \shortestlongest is as good as the exhaustive search. While it was expected to be good with short routes (see Proposition~\ref{prop:SL}), it turns out to be optimal for all the random star routed networks we have tried. Therefore, we should use it in practical applications with short routes, instead of the exhaustive search which is much more computationally expensive. 
-      Also, \compactpair and \compactfit have the same results than \ESCA and \shortestlongest. This is not surprising when the routes are drawn on a lower range than $\tau$. Indeed, since we sort the routes by remainder modulo $\tau$ in \compactpair and \compactfit, those two algorithms builds the same assignment than \shortestlongest.
+      Also, \compactpair and \compactfit have the same performances as \ESCA and \shortestlongest. This is not surprising when the routes are drawn on a lower range than $\tau$. Indeed, since we sort the routes by remainder modulo $\tau$  in \compactpair and \compactfit (which are just there values then), these two algorithms build the same assignment as \shortestlongest.
 
-       \firstfit present some good performances ($100\%$ of success under loads lower to $0.8$). Moreover, since this algorithms does not give any theoretical results and does not performs as well as \shortestlongest in this regime, it is not interesting to focus on it.
+       \firstfit has also excellent performances ($100\%$ of success under loads lower to $0.8$). However, since we do not have strong theoritical results for this algorithms and it does not performs as well as \shortestlongest in this regime, it is not interesting to rely on it.
 
-      \metaoffset and \greedyuniform seems to always work when the load is less than $1/2$ and has a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seem to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger, which happens each time $\tau$ is added to the period and is more frequent when there are more routes.
+      \metaoffset and \greedyuniform both seem to always work when the load is less than $1/2$ and has a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seems to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger, which happens each time $\tau$ is added to the period (to decrease the load, the period is increased) and is more frequent when there are more routes.
       
-      \greedyuniform and \metaoffset performances semms to depend of the number of routes. The more routes there is the lower are the success rate. This is renforced in experiment of Figure~\ref{fig:shortroutes} in next section in which there is $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and has no theoretical analysis for arbitrary $\tau$.
+      \greedyuniform and \metaoffset performances depend on the number of routes. The more routes there is, the lower the success rate. This is reinforced in experiment of Figure~\ref{fig:shortroutes} of the next section in which there is $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and random delays and has no theoretical guarantee for arbitrary $\tau$ and small delay.
      
 
 
 
 \subsubsection{A larger number of routes}\label{sec:pazlmanyroutes} 
 
-Once we studied the C-RAN parameters, we now want to experiment to performance of our algorithm whith a large the number of routes and/or delays drawn in a larger interval.
+After studying the C-RAN parameters, we want to experiment to performance of our algorithm whith a large the number of routes and/or delays drawn in a larger interval.
 We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. Notice that all algorithm exept \ESCA are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, \ESCA finds a solution if it exists, but works in exponential time in $n$.
  The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$ or $[\tau]$ for Figure~\ref{fig:shortroutes}. 
 
 
-
-On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the exact value of the success rate given by the exact resolution is only available in the experiment with at most $10$ messages (the algorithm cannot compute a solution in less than an hour for twenty messages and high load). 
+On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except \ESCA, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the optimal value of the success rate given by \ESCA is only available in the experiment with at most $10$ messages (the algorithm cannot compute a solution in less than an hour for twenty messages and high load). 
 Note that while \firstfit, \compactpair, \metaoffset, \compactfit all run in almost the same time,
-\greedyuniform seems to be three times longer than the other algorithms to run on instances with $100$ messages. It is expected since it must find all available offsets at each step instead of one.
+\greedyuniform seems to be three times longer than the other algorithms to run on instances with $100$ messages. It is expected since, at each step, it must find all available offsets to draw one uniformly at random instead of just choosing one.
 
-In the following experiment, since Lemma~\ref{lemma:multiple} explains how to transform any instance in one of this class, we consider to simplify that $P = m\tau$.
+In the following experiment, since Lemma~\ref{lemma:multiple} explains how to transform any instance in one with  $P = m\tau$, we chose for simplicity that $P = m\tau$.
 
 \begin{minipage}[c]{.49\linewidth}
 
@@ -422,23 +427,22 @@ In the following experiment, since Lemma~\ref{lemma:multiple} explains how to tr
 
 In Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall} the performances of \shortestlongest are abysmal (falls into $10\%$ of success rate when the load is greater than $0.2$, and $0\%$ at $0.3$ of load) and are thus not represented in this figures, in order to focus on the other algorithms. This can be explained by the fact it depends on the difference of size between the longest and the smallest route, which is large here since the delays are drawn in $[P]$. This observation is reinforced by the results of Figure~\ref{fig:10mess}. Indeed, since the number of route is lower than in the two previous experiment, the probability of drawing a set of delays with a large difference is lower, and thus the success rate of \shortestlongest is better. 
 
-For all sets of parameters, the other greedy have the same relative performances. \metaoffset and \greedyuniform
+For all sets of parameters, the other greedy algorithms have the same relative performances. \metaoffset and \greedyuniform
 perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
 less than $1/2$, while it is easy to build an instance of \pma of load $1/3 +\epsilon$ which makes them fail. 
 The difference between the worst case analysis and the average case analysis is explained for \greedyuniform, when $\tau = 1$ in Section~\ref{sec:small}.
 
-\firstfit performs better than \metaoffset while they have the same worst case. \compactpair, which is the best theoretically also performs well in the experiments, always finding assignments for load of 
-$0.6$.  \compactfit, which is similar in spirit to \compactpair but is designed to have a good success rate on random instances is indeed better than  \compactpair, when there are enough messages.
+\firstfit performs better than \metaoffset while they have the same worst case. \compactpair, which is the best theoretically also performs well in the experiments, always finding assignments for load of $0.6$.  \compactfit, which is similar in spirit to \compactpair but is designed to have a good success rate on random instances is indeed better than  \compactpair, when there are enough messages.
 
-As demonstrated by Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall}, the size of the messages have little impact on the success rate of the algorithms, when the number of messages is constant. Comparing Fig.~\ref{fig:10mess} and Figure~\ref{fig:100messBig} shows that for more messages, the transition between success rate of $100\%$ to success rate of $0\%$ is faster.
-Finally, the results of Exact Resolution in Figure~\ref{fig:10mess} show that the greedy algorithm are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which \pma can always be solved positively.
+As demonstrated by Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall}, the size of the messages have little impact on the success rate of the algorithms, when the number of messages stay the same. Comparing Figure~\ref{fig:10mess} and Figure~\ref{fig:100messBig} shows that for more messages, the transition between success rate of $100\%$ to success rate of $0\%$ is faster.
+Finally, the results of \ESCA in Figure~\ref{fig:10mess} show that the greedy algorithm are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which \pma can always be solved positively.
 
 We also investigate the behavior of the algorithms when the delay of the messages are drawn in $[\tau]$ in 
-Figure~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficent: they always find a solution for $99$ messages. It is expected, since all $d'_i$ are equal in these settings and 
+Figure~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficient: they always find a solution for $99$ messages. It is expected, since all $d'_i$ are equal in these settings and 
 they will both build a $99$-compact tuples and thus can only fail for load $1$.
 
 
-       As illustrated on Figure~\ref{fig:10mess}, when the load is larger than $50\%$, the \ESCA finds more solutions than the greedy algorithms, which justifies its use. However, for load larger than $80\%$ there are instances for which there are no solutions to \pazl. It means that with long routes and high load, looking for a bufferless assignment is far too restrictive. This justifies the design of algorithms for the general \pall problem, which we present in the next section. We will test them on $8$ long routes and a load between $100\%$ and $80\%$, parameters for which, as shown here, there are not always a bufferless assignment.
+       As illustrated on Figure~\ref{fig:10mess}, when the load is larger than $50\%$,\ESCA finds more solutions than the greedy algorithms, which justifies its use. However, for load larger than $80\%$ there are instances for which there are no solutions to \pazl. It means that with long routes and high load, looking for a bufferless assignment is far too restrictive. This justifies the design of algorithms for the general \pall problem, which we present in the next section. We will test them on $8$ long routes and a load between $100\%$ and $80\%$, parameters for which, as shown here, there are not always a bufferless assignment.
       
        The computation time of \ESCA is bounded by $O(4^nn!)$ as shown in Theorem~\ref{th:FPT}, but it can be much better in practice, either because it finds a solutions quickly or because a large part of the tree of compact assignments is pruned during the algorithm. We study the evolution of the running time  of the algorithm when $n$ grows in the following experiment. The weights of the arcs are drawn following a uniform distribution in $[P]$ and the load is set to $95\%$.  The table of Figure~\ref{fig:table} shows the time before the exhaustive search ends, for $8$ to $16$ routes, averaged on $100$ random star routed networks. This shows that for less than $20$ routes, which corresponds to all current topologies, the algorithm is efficient enough, but we should improve it further to work on more routes.
        
@@ -667,7 +671,7 @@ on instances drawn uniformly at random. To this aim, we analyze the algorithm \g
 We analyze \greedyuniform over random instances:  all messages have 
 their delays drawn independently and uniformly in $[m]$. We compute the probability of success of \greedyuniform over all random choices by the algorithm \emph{and all possible instances}. 
 It turns out that this probability, for a fixed load strictly less than one, goes to one when $m$ grows. 
-For a given partial assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, the trace of an assignment is a pair of subsets of $[m]$ of size $n$. We now show that these traces are produced uniformly by \greedyuniform.
+For a given partial assignment, we are only interested in its \textbf{trace}: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, the trace of an assignment is a pair of subsets of $[m]$ of size $n$. We now show that these traces are produced uniformly by \greedyuniform.
 
 \begin{theorem}
 The distribution of traces of assignments produced by \greedyuniform when it succeeds, from instances drawn uniformly at random, is also uniform.
@@ -714,8 +718,8 @@ It explains why \greedyuniform is good in practice for large $m$.
 
 
 In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:small} is experimentally characterized. The settings are as in Sec.~\ref{sec:perf_large}, with $\tau = 1$.
-Because $\tau =1$, the algorithms based on meta-offsets are not relevant anymore. Here, the evaluated algorithms are thus:
-\todo{pas sur de cette phrase}
+Because $\tau =1$, the algorithms based on meta-offsets are not relevant anymore. The evaluated algorithms are:
+
 
 \begin{itemize}
   \item \firstfit
@@ -723,12 +727,12 @@ Because $\tau =1$, the algorithms based on meta-offsets are not relevant anymore
   \item \greedypotential, a greedy algorithm which leverages the notion of potential introduced for Swap. 
   It schedules the messages in arbitrary order, choosing the possible offset which maximizes the potential of the unscheduled messages
   \item \swapandmove 
-  \item \texttt{Exact Resolution}
+  \item \ESCA
 \end{itemize}
 
-In Figure~\ref{fig:tau1}, the performances of \shortestlongest are the same as in Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall}( $10\%$ for load  $0.2$, and $0\%$ at $0.3$ of load). The algorithm seems to performs better on Figure~\ref{fig:tau1-10mess} ($25\%$ of success at load $0.5$), but the algorithm is not interesting since \greedypotential, \firstfit or \greedyuniform give some better results for a similar complexity.
+In Figure~\ref{fig:tau1}, the performances of \shortestlongest are the same as in Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall}( $10\%$ for load  $0.2$, and $0\%$ at $0.3$ of load). The algorithm seems to performs better on Figure~\ref{fig:tau1-10mess} ($25\%$ of success at load $0.5$), but the algorithm is not interesting since \greedypotential, \firstfit or \greedyuniform have much better success rate for a similar complexity.
 
-For the other algorithms, as in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than the bound given by worst case analysis. In the experiment presented in Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. \greedyuniform behaves exactly as proved in Th.~\ref{theorem:uniform}, with a very small variance. The performance of \swapandmove and of its simpler variant \greedypotential, which optimizes the potential in a greedy way, are much better than \firstfit or \greedyuniform. Amazingly, \swapandmove always finds an assignment when the load is less than $0.95$. \swapandmove is extremely close to Exact Resolution, but for $P=10$ and load $0.9$ or $1$, it fails to find some assignments, as shown in Fig.~\ref{fig:tau1-10mess}.
+For the other algorithms, as in Section~\ref{sec:perf_large}, the success rate on random instances is much better than the bound given by worst case analysis. In the experiment presented in Figure~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. \greedyuniform behaves exactly as proved in Theorem~\ref{theorem:uniform}, with a very small variance. The performance of \swapandmove and of its simpler variant \greedypotential, which optimizes the potential in a greedy way, are much better than \firstfit or \greedyuniform. Amazingly, \swapandmove always finds an assignment when the load is less than $0.95$. \swapandmove is extremely close to \ESCA, but for $P=10$ and load $0.9$ or $1$, it fails to find some assignments, as shown in Figure.~\ref{fig:tau1-10mess}.
 
 \begin{minipage}[c]{.49\linewidth} 
 \begin{center} 
@@ -767,5 +771,5 @@ Hence, we can use the simple algorithms presented here to schedule C-RAN message
 Several questions on \pma are still unresolved, in particular its $\NP$-hardness
 and the problem of doing better than load $0.5$ for arbitrary $\tau$ and random instances.
 We could also consider more complex network topologies with several shared links.
-\firstfit or \metaoffset can easily be transfered to this context, and we could also try to adapt \compactpair or \swapandmove. Finally, to model networks carrying several types of messages, different message sizes must be allowed, which would require to design an algorithm which does not use meta-offsets. \todo{revoir ce paragraph de conclusion ?}
+\firstfit or \metaoffset can easily be transfered to this context, and we could also try to adapt \compactpair or \swapandmove. Finally, to model networks carrying several types of messages, different message sizes must be allowed, which would require to design an algorithm which does not use meta-offsets. 
 
