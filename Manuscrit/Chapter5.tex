@@ -12,7 +12,7 @@ To do so, we modify the model in order to take into account the buffers, and we 
 
 
 \section{Model changes}
-
+\todo{Routed network pas exactement défini pareil.}
 As a reminder, the  \textbf{contention depth} of a routed network $(G,{\cal R})$ is the number of contention points on the route with the most vertices in the routed network. 
 
 In the previous chapter, the set of vertices in which the buffering was allowed was denoted by ${\cal B}$. Here, we define by ${\cal C}$ is the set of its contention vertices, in which buffering is allowed in each vertices.  
@@ -44,7 +44,7 @@ We then define the following problem :
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
     depending on $n$ the number of routes and $d$ the contention level. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Then, the complexity will surprisingly not depend on $P$, $\tau$ or the weights of the routed network.
 
- \begin{theorem}\label{th:braFPT}
+ \begin{theorem}\label{th:spallHard}
 The problem $\spall$ is $\NP$-hard, even in routed networks of conflict depth $2$ (star shaped network)
 \end{theorem}
 \begin{proof}
@@ -65,10 +65,10 @@ It allows to design an FPT algorithm for \spall by going through all compact rep
 
 
 \begin{definition}[Compact assignment]
-Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a function which maps to each contention point $u$ in $G$ a pair $(O_u,S_u)$, where $O_u$ is an order on $R_u$ and $S_u$ is a subset of $R_u$.
+Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a function which maps to each contention point $u$ in $G$ a pair $(O_u,S_u)$, where $O_u$ is an order on $\mathcal{R}_u$ and $S_u$ is a subset of $\mathcal{R}_u$.
 \label{definition:compact}
 \end{definition}
-
+\todo{On défini quelque part que $\mathcal{R}_u$ c'est les ensembles de routes sur u ?}
 
 \subsection{From a Valid Assignment to its Compact Representation}
 
@@ -76,7 +76,7 @@ Let us define a function which maps a valid assignment $A$ to a compact assignme
 
 We assume that routes in $\mathcal{R}$ are indexed by the integers in $[n]$. Say w.l.o.g. that $r_0$ is the route of smallest index such that $A(r_0,u) = 0$. The datagram of $r_0$ arrives, and goes to the next contention vertex, at time $t(r_0,u)$. Let us define the \textbf{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \textbf{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
 
-We define $O_u$ as the order on the routes of $R_u$ induced by the values $ns(r,u)$. The set $S_u$ is defined as the set of routes going through $u$ such that $ns(r_0,r,u) < nt(r_0,r,u)$. Represent the time as cut into periods $[t(r_0,u) + iP,t(r_0,u) + (i+1)P [$ with $i \in \mathbb{N}$. Intuitively, $S_u$ represents the set of routes with a datagram going through $u$ in the period \emph{after} the one it has been available in. 
+We define $O_u$ as the order on the routes of $\mathcal{R}_u$ induced by the values $ns(r,u)$. The set $S_u$ is defined as the set of routes going through $u$ such that $ns(r_0,r,u) < nt(r_0,r,u)$. Represent the time as cut into periods $[t(r_0,u) + iP,t(r_0,u) + (i+1)P [$ with $i \in \mathbb{N}$. Intuitively, $S_u$ represents the set of routes with a datagram going through $u$ in the period \emph{after} the one it has been available in. 
 
 Fig.~\ref{fig:normalizedassignment} illustrates how a compact representation is computed from an assignment on a single node $u$. On top, the datagrams are represented by sending time $s(r_i,u)$ while the bottom of the figure shows the datagrams in a single period, represented by normalized sending times $ns(r_0,r_i,u)$.  
 \begin{figure}[!h]
@@ -647,7 +647,7 @@ It appears that drawing more than $100$ compact representation per level does no
 
 \section{Branch and Bound}
 
-\subsection{Partial Compact Representation and Relaxation}
+\subsection{Partial Compact Assignment and Relaxation}
 
 D'abord introduire la notion de solution partielle avec seulement les temps d'attente fixée
 sur seulement une partie des sommets de contention (dans l'ordre des niveaux de contention).
@@ -663,6 +663,20 @@ Expliquer que la solution optimale pour le problème relaxé est meilleure (born
 ce qu'on cherche. On définit ensuite une borne supérieure meilleure en faisant le max des 
 relaxations pour tous les points de contention. Expliquer que cette borne se calcule facilement
 en pratique (algo Simmons FPT vs algo branch and bound simplifié).
+
+\todo{dire quelque part que au contention level 0, on envoie tout à 0?}
+
+Let us consider the contention points ordered from $0$ to $|{\cal C}|$. We say that $u < v | u,v\in{\cal C}$ if $cl(u) \leq cl(v)$. This means the contention points are ordered by contention level, and an arbitrary order is set in a same contention level.
+
+
+We define a \textbf{partial Compact Assignment} \textit{on a contention point $u$}, $CA(u)$ as a choice of $(O_u,S_u)$ for a contention points $u$ and such that, for all vertices $v < u$, $(O_v,S_v)$ has been set.
+Once $CA(u)$ has been set, it is possible to determine $A(r,u)$ for all $r \in \mathcal{R}_u$ by using $Real(CA(u))$
+
+
+A \textbf{partial routed Network} defined by \textit{a partial compact assignment} $CA(u)$, $N_u = (CA(u),\cal{R}',\omega')$ is a routed network $N = (\cal{R},\omega)$ for witch a partial compact assignment is determined for each contention point $v$, with $v<u$.
+
+Consider a partial routed network $N_u$.
+A route $r = (v_0,u,v_2\ldots,v_l)$ in $\cal{R}$ becomes $(v_0,v_2,\ldots,v_l)$ in $\cal{R}'$ and $\omega'(r,v_0) = \omega(r,v_0)+\omega(r,u) + A(r,u)$. This means $u$ is not considered anymore in $N_u$ since the contention point $u$ is considered as solved.
 
 \subsection{The Branch and Bound Algorithms}
 
