@@ -13,28 +13,29 @@ To do so, we modify the model in order to take into account the buffers, and we 
 
 \section{Model changes}
 \todo{Routed network pas exactement défini pareil.}
-As a reminder, the  \textbf{contention depth} of a routed network $(G,{\cal R})$ is the number of contention points on the route with the most vertices in the routed network. 
+As a reminder, the  \textbf{contention depth} of a routed network $N = ({\cal R},\,{\cal B},\,\omega)$ is the maximal number of contention points on a route in the routed network. 
 
-In the previous chapter, the set of vertices in which the buffering was allowed was denoted by ${\cal B}$. Here, we define by ${\cal C}$the set of its contention vertices, in which buffering is allowed in each vertices.  
-Let $r \in {\cal R}$, with $r = (u_0,u_1,\dots,u_l)$, then we say that $u_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(u_i,r) = i$. The contention level of a node $u$ is the maximum of its contention level over all routes going through itself: 
-	$cl(u) = \max\limits_{r\in{\cal R} \text{ and } u \in r} cl(u,r)$.
+In the previous chapter, the set of vertices in which the buffering was allowed was denoted by ${\cal B}$. Here, we define by ${\cal C}$ the set of its contention vertices, in which buffering is allowed in each vertices. 
+In the previous chapter, every routes in $\mathcal{R}$ had the same contention points $c_1$ and $c_2$. Since it is not the case anymore in this chapter, we define $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ belonging to $c$
+Let $r \in {\cal R}$, with $r = (s,c_1,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(c_i,r) = i$. The contention level of a contention point $c$ is the maximum of its contention level over all routes going through itself: 
+	$cl(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cl(c,r)$.
 
 
-   Let $r=(u_0,\dots,u_l)$ be a route. As mentioned above, in order to avoid contention, it is possible to buffer datagrams in contention points. The function $A$, called an \textbf{assignment}, associates an integer value, greater or equal to $0$, to each couple (route,vertex) of the routed network $(G,{\cal R})$. Those integers represent the buffering time of the datagrams in the nodes of the network: a datagram of route $r$ waits $A(r,u)$ tics in the buffer of vertex $u$.
+   Let $r=(s,c_0,\dots,c_l,t)$ be a route. As mentioned above, in order to avoid contention, it is possible to buffer datagrams in contention points. The function $A$, called an \textbf{assignment}, associates an integer value, greater or equal to $0$, to each couple (route,vertex) of the routed network $N = ({\cal R},\,{\cal C},\,\omega)$. Those integers represent the buffering time of the datagrams in the contention points of the network: a datagram of route $r$ waits $A(r,c)$ tics in the buffer of $c$.
           
        
 
- The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(u_i,r) + \sum_{k=0}^{i-1} A(r,u_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
+ The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(r,u_i) + \sum_{k=0}^{i-1} A(r,u_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
   The \textbf{sending time} of a datagram at vertex $u_i$ of $r$, is the first time at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the arrival time of the datagram plus the buffer time given by $A$.
  
-  If $u_l$ is the last vertex of the route $r$, the transmission time of the datagram on 
-  $r$ is denoted by $TR(A,r)$ and is equal to $t(r,u_l)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
+  Consider $t$ the last vertex of the route $r$, the transmission time of the datagram on 
+  $r$ is denoted by $TR(A,r)$ and is equal to $t(r,t)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
 
 We then define the following problem :
 
  \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
 
-      \noindent {\bf Input:}  Symmetric routed network $(G,{\cal R})$, period $P$, datagram size $\tau$.%, a bound on the latency $T$.
+      \noindent {\bf Input:}  Symmetric routed network $N = ({\cal R},\,{\cal C},\,\omega)$, period $P$, datagram size $\tau$ and a deadline function $d$.%, a bound on the latency $T$.
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
@@ -58,17 +59,17 @@ We reduce an instance of $\spall$ in an instance of the two flow shop proplem: A
 
 \section{Compact Representation of an Assignment}
 
- We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in \cal{R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments for $\prec$ to solve \spall.
+ We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in {\cal R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments for $\prec$ to solve \spall.
 
 We explain in this section how to represent most assignment in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without a compact representation when solving \spall. 
 It allows to design an FPT algorithm for \spall by going through all compact representations, but also to design good polynomial time heuristics using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.
 
 
 \begin{definition}[Compact assignment]
-Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a function which maps to each contention point $u$ in $G$ a pair $(O_u,S_u)$, where $O_u$ is an order on $\mathcal{R}_u$ and $S_u$ is a subset of $\mathcal{R}_u$.
+Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a function which maps to each contention point $c$ in $G$ a pair $(O_c,S_c)$, where $O_c$ is an order on $\mathcal{R}_c$ and $S_c$ is a subset of $\mathcal{R}_c$.
 \label{definition:compact}
 \end{definition}
-\todo{On défini quelque part que $\mathcal{R}_u$ c'est les ensembles de routes sur u ?}
+
 
 \subsection{From a Valid Assignment to its Compact Representation}
 
@@ -99,7 +100,7 @@ We apply this transformation by increasing contention level. Since, the transfor
 \end{proof}
 
 
-\subsection{From a Compact Assignment to its Realization}
+\subsection{From a Compact Assignment to its Realization}\label{sec:real}
 
 
 We now explain how to transform a compact representation into a canonical assignment.
@@ -206,49 +207,6 @@ the induction hypothesis, we have $Real(CR(A))(r_{i+1},u) \leq A(r_{i+1},u)$. Th
 %\end{proof}
 
 
-To solve \spall, we need to find an assignment for which $TR(A)$ is minimal. 
-To do so, because of the previous Lemmas, it is enough to 
-enumerate all canonical compact representations, to compute their realization and the corresponding transmission time.
-
-
-%\begin{lemma}
- %The number of compact representation $(O,S)$ for a contention point with $k$ routes is $k!2^{k}$.
-% \label{lemma:numberarcs}
-%\end{lemma}
-%\begin{proof}
-%Consider the datagrams are numeroted $d_1,\ldots,d_k$.
-% There is $k$ routes on the contention point. Thus, there is $k!$ possible orders for the sequence of datagram in a period.
- %Once the order $O$ of the compact representation is given, one can fix, w.l.o.g. $b(d_1) = 0$.
- %Then, there is $k-1$ remaining datagram that can be set in $S$.
- %This mean there is $k!2^{k-1}$ pairs of different $(O,S)$, i.e. compact representation for this arc.
-%\end{proof}
-
-%From lemma~\ref{lemma:numberarcs}, one can determine the numbre of compact representation of an entire routed network.
-%We define $k_1,\ldots,k_l$ the number of routes on the $l$ contention points of a routed network.
-%\begin{lemma}
- %The number of compact representation for a routed network $(G,{\cal R})$ is $\prod_{i=1}^l k_i!2^{k_i}$ .
- %\label{lemma:numbergraph}
-%\end{lemma}
-
-%We consider a routed network $(G,{\cal R})$. As a reminder, $CD$ is the contention depth of the routed network, and  there is $n$ routes in ${\cal R}$.
-\begin{theorem}\label{theorem:FPT}
-For routed networks of fixed contention depth $d$, the problem \spall parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
-\end{theorem}
-\begin{proof}
-The algorithm to solve \spall is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time
-$O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
-to compute the minimum of $TR(Real(CA))$.
-
- Now, we need to evaluate the number of compact assignments. 
-On a single contention vertex $u$ with $s = |\mathcal{R}_u|$ routes going through, there are $s!2^s$ possible restrictions of a compact assignment by counting the number of pairs of set and order over $\mathcal{R}_u$.
-On a given contention level consisting in the vertices $\{u_1,\dots,u_l\}$, with $s_i = |\mathcal{R}_{u_{i}}|$, there are 
-$\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention level, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. Since $\prod_{1 \leq i\leq l} s_i! \leq (\sum_{1 \leq i\leq l} s_i)!$, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$. There are $d$ contention levels, thus we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
-\end{proof}
-
-Note that for the vertices of the last contention level, compact assignments can be considered independently, since
-they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this paper, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
-\todo{Mettre ça plutot dans la partie branch and bound et dire qu'on peut encore plus faire baisser la complexité en utilisant not simmons FPT à ce niveau. Enfin analyser le nombre de solutions qu'on voit en ne regardant que les canoniques,
-(minimales ?)}
 
 
 
@@ -261,7 +219,7 @@ they do not interact. Hence, if the last level contains the vertices $\{u_1,\dot
 We first present an simple algorithm, which is the natural approach in a context witout \emph{periodicity}.
 The contention vertices are sorted by contention level, and the contention levels are dealt with in ascending order. The assignment, on contention vertices of the same contention level, is computed independently. The \greedydeadline algorithm consists in selecting among the routes of arrival time less than the current time the one with the longest transmission time. If no route are available at the current time, select the one with the smallest arrival time.
 
-GD works precisely as follow. For a vertex $u$, first, select the route $r$ such that the arrival time $t(r,u)$ is minimal and fix $A(r,u) = 0$. Consider that some datagrams have been scheduled, the last one on the route $r$ at time $s(r,u)$, we explain here how to schedule the next route.  If there are several routes $r'$ for which $t(r',u) < s(r,u) + \tau $, we need to select one of those. For each $r'$, we compute the value $\lambda(u,r) - t(r',u)$ and select the one which minimizes this value. Then, the selected datagram $r'$ is sent with a delay $A(r',u) = t(r,u) + \tau - t(r',u)$. If no route satifies $t(r',u) < s(r,u) + \tau$, the route with the lowest $t(r,u)$ is sent without delay ($A(r',u) = 0$). 
+GD works precisely as follow. For a vertex $u$, first, select the route $r$ such that the arrival time $t(r,u)$ is minimal and fix $A(r,u) = 0$. Consider that some datagrams have been scheduled, the last one on the route $r$ at time $s(r,u)$, we explain here how to schedule the next route.  If there are several routes $r'$ for which $t(r',u) < s(r,u) + \tau $, we need to select one of those. For each $r'$, we compute the value $\lambda(r,u) - t(r',u)$ and select the one which minimizes this value. Then, the selected datagram $r'$ is sent with a delay $A(r',u) = t(r,u) + \tau - t(r',u)$. If no route satifies $t(r',u) < s(r,u) + \tau$, the route with the lowest $t(r,u)$ is sent without delay ($A(r',u) = 0$). 
 Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ computed, it is possible that there is a collision. If so, $s(r',u)$ is increased to the first time such that there is no collision. If there is no such time, the algorithm fails.
 
 
@@ -323,7 +281,7 @@ However, \greedydeadline and \greedynormalized may fail to give a valid assignme
 
 
 A compact assignment is needed to initialize the local search algorithms presented in the next section. Hence, we propose the \greedypacked algorithm that is guaranteed to find an assignment, even if the transmission time may be worse on average.
-The contention vertices are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(u,r) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(u,r) - t(r,u) - nt(r_0,r,u)$ is chosen and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
+The contention vertices are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(r,u) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(r,u) - t(r,u) - nt(r_0,r,u)$ is chosen and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
 
 
 \subsection{Random generation of routed network}
@@ -420,7 +378,7 @@ Informally, a compact representation is in the $r$-neighborood of another one if
 moving down $r$ once (or not changing it) in the order and adding or removing $r$ and the previous route from the set. 
 Remark that the $r$-neighborood of any pair $(O_u,S_u)$ has at most $6$ members (it can be $4$ when the route $r$ is in first position and cannot be exchanged with the previous one). 
 
-The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborood of $(O_u,S_u)$. Finally, the \emph{neighborood} of an assignment $CA$ is the union for all $r \in \cal{R}$ of the $r$-neighboroods of $CA$.
+The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborood of $(O_u,S_u)$. Finally, the \emph{neighborood} of an assignment $CA$ is the union for all $r \in {\cal R}$ of the $r$-neighboroods of $CA$.
 
 % 
 % 
@@ -443,7 +401,7 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 % $$ \bigcup_{r\in{\cal R}} (\prod_{u\in r} N_u ) $$.
 
  Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
- a routed network $(G,\cal{R})$. Then, a compact representation has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
+ a routed network. Then, a compact representation has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
   All algorithms presented in this section will do a walk in the transposition graph, trying to find a vertex with optimal
   transmission time. 
 
@@ -655,30 +613,67 @@ sur seulement une partie des sommets de contention (dans l'ordre des niveaux de 
 Puis définir le graphe associé à une solution partielle, en enlevant les sommets déjà traités 
 et en mettant à jour les délais. Un exemple serait le bienvenu.
 
-
-
 Donner la relaxation du problème général au problème sur un point de contention, 
 c'est à dire remplacer tous les chemins vers et depuis le sommet par un arc de la même longueur.
 Expliquer que la solution optimale pour le problème relaxé est meilleure (borne supérieure) de
 ce qu'on cherche. On définit ensuite une borne supérieure meilleure en faisant le max des 
 relaxations pour tous les points de contention. Expliquer que cette borne se calcule facilement
 en pratique (algo Simmons FPT vs algo branch and bound simplifié).
+\subsubsection{Partial Compact Assignment and restricted routed Network}
 
-\todo{dire quelque part que au contention level 0, on envoie tout à 0?}
-
-Let us consider the contention points ordered from $0$ to $|{\cal C}|$. We say that $u < v | u,v\in{\cal C}$ if $cl(u) \leq cl(v)$. This means the contention points are ordered by contention level, and an arbitrary order is set in a same contention level.
-
-
-We define a \textbf{partial Compact Assignment} \textit{on a contention point $u$}, $CA(u)$ as a choice of $(O_u,S_u)$ for a contention points $u$ and such that, for all vertices $v < u$, $(O_v,S_v)$ has been set.
-Once $CA(u)$ has been set, it is possible to determine $A(r,u)$ for all $r \in \mathcal{R}_u$ by using $Real(CA(u))$
+Let us consider the contention points ordered from $0$ to $|{\cal C}|$ by contention level, and an arbitrary order is set in a same contention level. This means that if $i < j | i,j\in{\cal C}$, then  $cl(c_1) \leq cl(c_j)$. 
 
 
-A \textbf{partial routed Network} defined by \textit{a partial compact assignment} $CA(u)$, $N_u = (CA(u),\cal{R}',\omega')$ is a routed network $N = (\cal{R},\omega)$ for witch a partial compact assignment is determined for each contention point $v$, with $v<u$.
+Let us denote $CA|i$ the \textbf{partial Compact Assignment} function. This is the restriction $CA:[{\cal C}]\nrightarrow[i]$ of the domain of definition of $CA$ from $[{\cal C}]$ to $[i]$. This means that a couple $(O_{c_j},S_{c_j})$ has been set only for $j \leq i$.
 
-Consider a partial routed network $N_u$.
-A route $r = (v_0,u,v_2\ldots,v_l)$ in $\cal{R}$ becomes $(v_0,v_2,\ldots,v_l)$ in $\cal{R}'$ and $\omega'(r,v_0) = \omega(r,v_0)+\omega(r,u) + A(r,u)$. This means $u$ is not considered anymore in $N_u$ since the contention point $u$ is considered as solved.
+A \textbf{restricted routed Network} is defined by $N_i = (CA|i,{\cal R}',{\cal C}',\omega')$. It is a routed network $N = ({\cal R},{\cal C},\omega)$ modified by a partial compact assignment $CA|i$.
+Let us explain how to build $N_i$ from $N$ and $CA|i$.
+Consider that $CA$ is defined only on the first contention point $c_1$ on a routed network $N$.
+A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. Indeed, as explianed on Section~\ref{sec:real}, the function $Real$ can be independently computed on each contention points of contention level $1$, then on each contention points of level $2$ etc. Thus, we can compute $Real(CA|1)$ that gives $A(r,c_1)$ for each $r \in {\cal R}_{c_1}$. Also, since $c_1$ is not considered anymore in $N_i$, ${\cal R}' = {\cal C} \backslash {c_1}$\\
+This transformation can be repeated on each contention points for which $CA$ is defined, because, as we defined, the contention points are ordered by increasing contention level.
+
+\subsubsection{Relaxation on a single contention point}
+
+In order to describe the Branch and Bound Algorithm on the next section, we need to be able to compute an lower bound for $TR(A)$.
+We show here how to transform an instance of \spall into an instance on a single contention points, which is the problem \wta solved in Chapter~\ref{chap:PALL}. 
+
+Consider the routed network $N = ({\cal R},{\cal C},\omega)$. We want to compute an upper bound of $TR(A)$ with $A$ the optimal solution for \spall. 
+
+We describe here how to relax an instance $I$ of \spall with a routed network $N$, and deadline function $d$ into an instance $I'$ of \wta. 
+To transform $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$. Remeber that an instance of \wta consists in a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. The arrival time is computed from $Real(CA|1)$.
+We consider there is no other contention points than $c_1$ in the rest of the network. Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - \lambda(r) - t(r,c_1) + \lambda(r,c_1)$. The deadline now correspond to the margin of previous chapter.
+Such a relaxation can be done on every contention point $c_i$ for which $CA|j$ is defined, with $cl(j)<cl(i)$ . In other words, if $CA$ is defined on all contention points of a same level (let's say $k$), it is possible to build an instance of \wta for each contention points with a contention level lower or equal to $k$. Indeed, it is possible because we can compute $t(r,c_i)$.
+
+
+
+Thus, considering $CA|i$, one can compute a lower bound for $TR(Real(CA|i))$. First, build an instance $I'$ of \wta for each contention points as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we thus have a lower bound for $TR(Real(CA|i))$.
+
 
 \subsection{The Branch and Bound Algorithms}
+
+
+To solve \spall, we need to find an assignment for which $TR(A)$ is minimal. 
+To do so, because of Lemmas of Section~\ref{sec:real}, it is enough to 
+enumerate all canonical compact representations, to compute their realization and the corresponding transmission time.
+
+\begin{theorem}\label{theorem:FPT}
+For routed networks of fixed contention depth $d$, the problem \spall parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
+\end{theorem}
+\begin{proof}
+The algorithm to solve \spall is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time
+$O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
+to compute the minimum of $TR(Real(CA))$.
+
+ Now, we need to evaluate the number of compact assignments. 
+On a single contention vertex $u$ with $s = |\mathcal{R}_u|$ routes going through, there are $s!2^s$ possible restrictions of a compact assignment by counting the number of pairs of set and order over $\mathcal{R}_u$.
+On a given contention level consisting in the vertices $\{u_1,\dots,u_l\}$, with $s_i = |\mathcal{R}_{u_{i}}|$, there are 
+$\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention level, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. Since $\prod_{1 \leq i\leq l} s_i! \leq (\sum_{1 \leq i\leq l} s_i)!$, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$. There are $d$ contention levels, thus we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
+\end{proof}
+
+Note that for the vertices of the last contention level, compact assignments can be considered independently, since
+they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
+\todo{dire qu'on peut encore plus faire baisser la complexité en utilisant not simmons FPT à ce niveau. Enfin analyser le nombre de solutions qu'on voit en ne regardant que les canoniques,
+(minimales ?)}
 
 Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes
 qu'on peut faire grâce à la borne sup qu'on vient de définir (en gardant la valeur de la meilleur solution
