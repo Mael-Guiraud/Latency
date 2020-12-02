@@ -57,9 +57,8 @@ We show in the experiments of Section~\ref{sec:perf_large}, that \pazl can be ve
       \begin{proof}
       Let us define the assignment $A(i) = i \tau$. Since $n\tau + \notationdelay_{n-1} - \notationdelay_0 \leq P$ and $\notationdelay_{n-1} \geq \notationdelay_0$, we have $n\tau \leq P$. Hence, there is no collision in the first period.
 
-      The \nomdelaypluriel are sorted so that for all $i$, $\notationdelay_i \leq \notationdelay_{i+1}$. Thus, each times \shortestlongest adds a route on $A$ there is $\notationdelay_i - \notationdelay_{i-1}$ tics between the begining of the datagram $i$ and the one of the datagram $i+1$.
-       This means that, for $n$ routes, the second period must be of size $$ n\tau + \sum_{i=1}^{n} \notationdelay_i - \notationdelay_{i-1} = n\tau + \notationdelay_n - \notationdelay_{n-1} - \ldots - \notationdelay_{0} =  n\tau \notationdelay_n - \notationdelay_0$$
-
+      The \nomdelaypluriel are sorted so that for all $i$, $\notationdelay_i \leq \notationdelay_{i+1}$. We can also assume, without loss of generality that $\notationdelay_0 = 0$. The interval of time used by $i$ in the second period is $[i]_2 = \{ (\notationdelay_i + A(i) + t) \mod P \mid 0 \leq t < \tau \}$. By hypothesis, and because the delays are in increasing order, we have for all $i\leq n$, $n\tau + \notationdelay_{i} \leq P$. Hence, $[i]_2 = [\notationdelay_i + i\tau, \notationdelay_i + (i+1)\tau[$. Since the delays are in increasing order, $\notationdelay_i + (i+1)\tau \leq \notationdelay_{i+1} + (i+1)\tau$, then $[i]_2 \cap [i+1]_2 = \emptyset$
+      and we have proved that the assignment $A$ does not induce any collision.
         The complexity of the algorithm is dominated by the sorting of the \nomdelaypluriel in $O(n\log(n))$. 
       
       \end{proof}
@@ -98,7 +97,7 @@ We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -
      We propose an alternative greedy algorithm to build a bufferless assignment, which always finds an assignment when the load is less than $1/3$.  
      The idea is to restrict the possible offsets which can be chosen for the datagrams. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new datagrams. However, it allows reducing the number of forbidden offsets for unscheduled datagrams. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each datagram, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as offset for the assignment until one does not create a collision with the current partial assignment. Note that \metaoffset works as \firstfit, but consider only meta-offsets when scheduling datagrams. It is also equivalent to \shortestlongest when the delays are sorted in increasing order and that the conditions of Proposition~\ref{prop:SL} are satisfied.
 
-     Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$. 
+     Let $Fmo(A)$ be the maximal number of meta-offsets forbidden by $A$ when trying to schedule any new datagram. 
 
 
 
@@ -108,8 +107,9 @@ The assignment is found in time $O(n^2)$.
 \end{theorem}
     \begin{proof}
     Let us prove that \metaoffset always schedules the $n$ datagrams when the load is less than $1/3$. Let us consider a datagram $i \notin S$ such that \metaoffset builds $A[i \rightarrow o]$ from $A$ defined on the datagrams $0$ to $i-1$. Let us evaluate $Fmo(A)$, that is the number of values $o$, such that $A[i \rightarrow o]$ is a correct partial assignment.
-    Since $i$ datagrams are schedules by $A$, there are $i$ meta-offsets which cannot be chosen to avoid collision in the 
-    first period. In the second period, the set of $\tau consecutive tics used by a datagram forbid at most two meta_offsets, since the datagrams are all of size $\tau$, see Figure~\ref{fig:metaoffset}.  Hence, there are at most $2i$ meta-offsets forbidden by collisions in the second period. We have proved that $Fmo(A) \geq P/\tau - 3i$. As a consequence, \metaoffset terminates and provides a valid bufferless assignment as soon as $P/\tau - 3(n-1) > 0$, which can be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
+    Since $i$ datagrams are scheduled by $A$, there are $i$ meta-offsets which cannot be chosen to avoid collision in the 
+    first period. In the second period, the set of $\tau consecutive tics used by a datagram forbid at most two meta_offsets, since the datagrams are all of size $\tau$, see Figure~\ref{fig:metaoffset}.  Hence, there are at most $2i$ meta-offsets forbidden by collisions in the second period. We have proved that $Fmo(A) \leq  3i$. There is always a way to extend $A$ into $A[i \rightarrow o]$ when 
+    $Fmo(A) < P/\tau$. Hence, \metaoffset terminates and provides a valid bufferless assignment as soon as $P/\tau > 3(n-1)$, which can be rewritten $(n-1)\tau /P > 1/3$: the load is larger than $1/3$.
 
      This algorithm works in time $O(n^2)$, since for the $i$th datagram we schedule, we have to try at most $3i$ meta-offsets before finding a correct one. We can test whether these $3i$ offsets cause a collision in the second period in time $O(i)$ by maintaining an ordered list of intervals of tics in the second period used by already scheduled datagram.
      \end{proof}
