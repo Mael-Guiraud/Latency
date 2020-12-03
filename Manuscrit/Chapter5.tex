@@ -634,7 +634,7 @@ This transformation can be repeated on each contention points for which $CA$ is 
 
 \subsubsection{Relaxation on a single contention point}
 
-In order to describe the Branch and Bound Algorithm on the next section, we need to be able to compute an lower bound for $TR(A)$.
+In order to describe the Branch and Bound Algorithm on the next section, we need to be able to compute an upper bound for $TR(A)$.
 We show here how to transform an instance of \spall into an instance on a single contention points, which is the problem \wta solved in Chapter~\ref{chap:PALL}. 
 
 Consider the routed network $N = ({\cal R},{\cal C},\omega)$. We want to compute an upper bound of $TR(A)$ with $A$ the optimal solution for \spall. 
@@ -645,9 +645,11 @@ We consider there is no other contention points than $c_1$ in the rest of the ne
 Such a relaxation can be done on every contention point $c_i$ for which $CA|j$ is defined, with $cl(j)<cl(i)$ . In other words, if $CA$ is defined on all contention points of a same level (let's say $k$), it is possible to build an instance of \wta for each contention points with a contention level lower or equal to $k$. Indeed, it is possible because we can compute $t(r,c_i)$.
 
 
-
-Thus, considering $CA|i$, one can compute a lower bound for $TR(Real(CA|i))$. First, build an instance $I'$ of \wta for each contention points as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we thus have a lower bound for $TR(Real(CA|i))$.
-
+\begin{lemma}\label{lemma:bound}
+Given an instance $I$, one can compute an upper bound for the optimal solution of \spall.
+\end{lemma} 
+\begin{proof}First, build an instance $I'$ of \wta for each contention points of the first level as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain an upper bound for $I$.
+\end{proof}
 
 \subsection{The Branch and Bound Algorithms}
 
@@ -665,15 +667,101 @@ $O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for wh
 to compute the minimum of $TR(Real(CA))$.
 
  Now, we need to evaluate the number of compact assignments. 
-On a single contention vertex $u$ with $s = |\mathcal{R}_u|$ routes going through, there are $s!2^s$ possible restrictions of a compact assignment by counting the number of pairs of set and order over $\mathcal{R}_u$.
-On a given contention level consisting in the vertices $\{u_1,\dots,u_l\}$, with $s_i = |\mathcal{R}_{u_{i}}|$, there are 
+On a single contention vertex $c$ with $s = |\mathcal{R}_c|$ routes going through, there are $s!2^s$ possible restrictions of a compact assignment by counting the number of pairs of set and order over $\mathcal{R}_c$.
+On a given contention level consisting in the vertices $\{c_1,\dots,c_l\}$, with $s_i = |\mathcal{R}_{c_{i}}|$, there are 
 $\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention level, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. Since $\prod_{1 \leq i\leq l} s_i! \leq (\sum_{1 \leq i\leq l} s_i)!$, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$. There are $d$ contention levels, thus we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
 \end{proof}
+
+We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A partial tree is a subtree in which the leaves represent all possibles compact assignments for a contention point. As an example, for the first contention point $c_1$, define $s_1 = |\mathcal{R}_{c_1}|$, There is $s_1!$ nodes at the first level of the partial tree (corresponding to a choice of order $O_{c_1}$, with each one $2^{s_1}$ leaves (corresponding to a choice of subset $S_{c_1}$), that makes $s_1!2^{s_1}$ leaves on the tree. Figure~\ref{fig:partialtree} illustrates the building of the tree for $1$ contention point with $3$ routes.
+
+\begin{figure}
+\begin{center}
+\scalebox{0.4}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+ 
+  \Vertex[x=14,y=14, L = {Root}]{r};
+  \Vertex[x=10,y=11, L = {\huge $O_{{c_1}_1}$}]{o1};
+  \Vertex[x=20,y=11, L = {\huge $O_{{c_1}_2}$}]{o2};
+  \Vertex[x=22,y=11, L = {\huge $O_{{c_1}_3}$}]{o3};
+  \Vertex[x=24,y=11, L = {\huge $O_{{c_1}_4}$}]{o4};
+  \Vertex[x=26,y=11, L = {\huge $O_{{c_1}_5}$}]{o5};
+  \Vertex[x=28,y=11, L = {\huge $O_{{c_1}_6}$}]{o6};
+
+\SetVertexNoLabel
+%level 1
+  \Vertex[x=5,y=7 ]{s1};
+    \node[left] at (s1.south west) {\huge $S_{C_1} = \{\emptyset\}$};
+  \Vertex[x=15,y=7]{s2};
+  \node[left] at (s2.south west) {\huge $S_{C_1} = \{1\}$};
+%level2
+  \Vertex[x=2.5,y=4 ]{s3};
+    \node[left] at (s3.south west) {\huge $S_{C_1} = \{\emptyset\}$};
+  \Vertex[x=7.5,y=4]{s4};
+  \node[left] at (s4.south west) {\huge $S_{C_1} = \{2\}$};
+
+  \Vertex[x=12.5,y=4 ]{s5};
+    \node[left] at (s5.south west) {\huge $S_{C_1} = \{1\}$};
+  \Vertex[x=17.6,y=4]{s6};
+  \node[left] at (s6.south west) {\huge $S_{C_1} = \{1,2\}$};
+%level 3
+  \Vertex[x=0,y=1 ]{s7};
+    \node[left] at (s7.south west) {\huge $S_{C_1} = \{\emptyset\}$};
+  
+  \Vertex[x=20,y=1]{s8};
+  \node[left] at (s8.south west) {\huge $S_{C_1} = \{1,2,3\}$};
+
+  \path (s7) edge[dashed] (s8);
+  \path (20,7) edge[dashed] (28,7);
+  \path (22,4) edge[dashed] (28,4);
+  \path (24,1) edge[dashed] (28,1);
+  \tikzset{myptr/.style={decoration={markings,mark=at position 1 with %
+    {\arrow[scale=3,>=stealth]{>}}},postaction={decorate}}}
+
+    \draw [myptr] (r) -- (o1.north);
+    \draw [myptr] (r) -- (o2.north);
+    \draw [myptr] (r) -- (o3.north);
+    \draw [myptr] (r) -- (o4.north);
+    \draw [myptr] (r) -- (o5.north);
+    \draw [myptr] (r) -- (o6.north);
+
+    \draw [myptr] (o1) -- (s1);
+    \draw [myptr] (o1) -- (s2);
+    \draw [myptr] (s1) -- (s3);
+    \draw [myptr] (s1) -- (s4);
+    \draw [myptr] (s2) -- (s5);
+    \draw [myptr] (s2) -- (s6);
+    \draw [myptr] (s3) -- (s7);
+    \draw [myptr] (s6) -- (s8);
+ 
+%\path (s1) edge [->] node[anchor=south,inner sep = 0.2cm]{$5$} (c1);
+
+
+
+\end{tikzpicture}
+}
+
+
+ \caption{A partial tree build for the first contention point by the branch and bound algorithm for $s_1 = 3$.}
+
+\label{fig:partialtree}
+\end{center}
+\end{figure}
+
+Such a partial tree is then built for the second contention point $c_2$, and each leaves of $c_1$ can be a root of the partial tree of $c_2$, that makes $s_1!2^{s_1} \times s_2!2^{s_2}$ leaves to the tree. If we repeat this operation for every contention point of a same level, we then get, as explained in Theorem~\ref{theorem:FPT} $n!2^n$ leaves on the tree representing the contention level, that makes $ (n!2^{n})^{d}$ leaves on the final tree if there is $d$ contention levels.
 
 Note that for the vertices of the last contention level, compact assignments can be considered independently, since
 they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
 \todo{dire qu'on peut encore plus faire baisser la complexité en utilisant not simmons FPT à ce niveau. Enfin analyser le nombre de solutions qu'on voit en ne regardant que les canoniques,
 (minimales ?)}
+
+Consider the partial tree of a contention point $c_i$. For leaf of this partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:bound} we compute an upper bound $X$ given $CA_i$. If 
+
+
 
 Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes
 qu'on peut faire grâce à la borne sup qu'on vient de définir (en gardant la valeur de la meilleur solution
