@@ -4,11 +4,11 @@
 \label{chap:SPALL}
 \minitoc
 
-In this chapter, we consider problem similar to \pall with an additional constraint : the sending of the messages in all the sources of the routes must be \textbf{synchronized}. This constraints brings us to allow the buffuring in every contention points of the nodes, in order to manage the datagrams to avoid collisions. Indeed, by allowing buffuring in every contention points of the routed network network (and not only in the one corresponding to the BBU), we have an higher degree of liberty to schedule the datagrams.
+In this chapter, we consider problem similar to \pall with an additional constraint : the sending of the messages in all the sources of the routes must be \textbf{synchronized}. This constraints brings us to allow the buffering in every contention points of the nodes, in order to manage the datagrams to avoid collisions. Indeed, by allowing buffering in every contention points of the routed network network (and not only in the one corresponding to the BBU), we have an higher degree of liberty to schedule the datagrams.
 
 To do so, we modify the model in order to take into account the buffers, and we define the problem \textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency (\spall). The algorithm presented in this section solves not only the star shaped network, but every directed acyclic multigraphs representing a routed network. We first show that the greedy algorithms principles used for star shaped networks are not efficient in routed network of higher contention depth, then we present some local search heuristics (hill climbing, simulated annealing, tabu search) that helps to solve the problem, and we present an FPT algorithm that gives the optimal solution, for which the exponential parameters are the number of routes and the contention depth of the routed network.
 
-\todo{expliquer que buffuriser au debut ou au milieu c'est pareil donc que ca couvre PALL ? ou regarder ce que ca donnerais avec la metrique PALL}.
+\todo{expliquer que bufferiser au debut ou au milieu c'est pareil donc que ca couvre PALL ? ou regarder ce que ca donnerais avec la metrique PALL}.
 
 
 \section{Model changes}
@@ -54,7 +54,7 @@ We reduce an instance of $\spall$ in an instance of the two flow shop proplem: A
 \end{proof}
 
 
-  \todo{petit bout sur l'explication qu'on ne considère pas le buffuring dans le Datacenter}
+  \todo{petit bout sur l'explication qu'on ne considère pas le buffering dans le Datacenter}
 
 
 \section{Compact Representation of an Assignment}
@@ -542,7 +542,7 @@ In order to understand what happends during the tabu search, we investigate the 
 For $10$ steps of memory, tabu search finds the best assignment in average in $3.8$ steps, with a memory of $100$ steps, the average step that gives the best assignment is $18.1$, and for $1000$ steps, tabu search needs in average $84.3$ steps to find the best solution. 
 Also, it appears that, in most of $60\%$ of the cases, tabu search finds it's best assignment before $10$ steps, but some computation finds a better assignment up to the $900^{th}$ step. This means that running the tabu search longer could improove the quality of the result. Nevertheless, this the computation is really expensive, using simulated annealing is more interesting.
 
-\subsection{Simulated annealing}
+\subsection{Simulated annealing}\label{sec:recuit}
 
 Simulated annealing works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn unfiformly at random in the neighborood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. The algorithm is an anser to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
 
@@ -621,34 +621,41 @@ relaxations pour tous les points de contention. Expliquer que cette borne se cal
 en pratique (algo Simmons FPT vs algo branch and bound simplifié).
 \subsubsection{Partial Compact Assignment and restricted routed Network}
 
-Let us consider the contention points ordered from $0$ to $|{\cal C}|$ by contention level, and an arbitrary order is set in a same contention level. This means that if $i < j | i,j\in{\cal C}$, then  $cl(c_1) \leq cl(c_j)$. 
+Let us consider the contention points ordered from $1$ to $|{\cal C}|$ by contention level, and an arbitrary order is set in a same contention level. This means that if $i < j | i,j\in{\cal C}$, then  $cl(c_i) \leq cl(c_j)$. 
 
 
-Let us denote $CA|i$ the \textbf{partial Compact Assignment} function. This is the restriction $CA:[{\cal C}]\nrightarrow[i]$ of the domain of definition of $CA$ from $[{\cal C}]$ to $[i]$. This means that a couple $(O_{c_j},S_{c_j})$ has been set only for $j \leq i$.
+Let us denote $CA_i$ the \textbf{partial Compact Assignment} function. This is the restriction $CA_{|\{c_1,\ldots,c_i\}}$  of the domain of definition of $CA$ from ${\cal C}$ to $[\{c_1,\ldots,c_i\}$. This means that a couple $(O_{c_j},S_{c_j})$ has been set only for $j \leq i$.
 
-A \textbf{restricted routed Network} is defined by $N_i = (CA|i,{\cal R}',{\cal C}',\omega')$. It is a routed network $N = ({\cal R},{\cal C},\omega)$ modified by a partial compact assignment $CA|i$.
-Let us explain how to build $N_i$ from $N$ and $CA|i$.
+A \textbf{restricted routed Network} is defined by $N_i = (CA_i,{\cal R}',{\cal C}',\omega')$. It is a routed network $N = ({\cal R},{\cal C},\omega)$ modified by a partial compact assignment $CA_i$.
+Let us explain how to build $N_i$ from $N$ and $CA_i$.
 Consider that $CA$ is defined only on the first contention point $c_1$ on a routed network $N$.
-A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. Indeed, as explianed on Section~\ref{sec:real}, the function $Real$ can be independently computed on each contention points of contention level $1$, then on each contention points of level $2$ etc. Thus, we can compute $Real(CA|1)$ that gives $A(r,c_1)$ for each $r \in {\cal R}_{c_1}$. Also, since $c_1$ is not considered anymore in $N_i$, ${\cal R}' = {\cal C} \backslash {c_1}$\\
+A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. Indeed, as explianed on Section~\ref{sec:real}, the function $Real$ can be independently computed on each contention points of contention level $1$, then on each contention points of level $2$ etc. Thus, we can compute $Real(CA_1)$ that gives $A(r,c_1)$ for each $r \in {\cal R}_{c_1}$. Also, since $c_1$ is not considered anymore in $N_i$, ${\cal R}' = {\cal C} \backslash {c_1}$\\
 This transformation can be repeated on each contention points for which $CA$ is defined, because, as we defined, the contention points are ordered by increasing contention level.
 
 \subsubsection{Relaxation on a single contention point}
 
-In order to describe the Branch and Bound Algorithm on the next section, we need to be able to compute an upper bound for $TR(A)$.
-We show here how to transform an instance of \spall into an instance on a single contention points, which is the problem \wta solved in Chapter~\ref{chap:PALL}. 
+In order to describe the Branch and Bound Algorithm on the next section, we need to be able to compute an upper bound for $TR(A)$, that is, the optimal value of the solution. This upper bound evolves following the partial compact assignment. The objective is to evaluate as early as possible if a choice of compact assignment is bad in order to cut the exploration of the tree.
+
+We first show how to transform an instance of \spall into an instance on a single contention points, which is the problem \wta solved in Chapter~\ref{chap:PALL}. 
 
 Consider the routed network $N = ({\cal R},{\cal C},\omega)$. We want to compute an upper bound of $TR(A)$ with $A$ the optimal solution for \spall. 
 
-We describe here how to relax an instance $I$ of \spall with a routed network $N$, and deadline function $d$ into an instance $I'$ of \wta. 
-To transform $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$. Remeber that an instance of \wta consists in a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. The arrival time is computed from $Real(CA|1)$.
-We consider there is no other contention points than $c_1$ in the rest of the network. Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - \lambda(r) - t(r,c_1) + \lambda(r,c_1)$. The deadline now correspond to the margin of previous chapter.
-Such a relaxation can be done on every contention point $c_i$ for which $CA|j$ is defined, with $cl(j)<cl(i)$ . In other words, if $CA$ is defined on all contention points of a same level (let's say $k$), it is possible to build an instance of \wta for each contention points with a contention level lower or equal to $k$. Indeed, it is possible because we can compute $t(r,c_i)$.
+\begin{lemma}\label{lemma:reduce}
+An instance $I$ of \spall with a routed network $N$, and deadline function $d$ can be reduced to an instance $I'$ of \wta. 
+\end{lemma}
+\begin{proof}
+To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$. Remeber that an instance of \wta consists in a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
+We consider there is no other contention points than $c_1$ in the rest of the network. Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - \lambda(r) - t(r,c_1) + \lambda(r,c_1)$. In the first level of contention points, $t(r,c_1) = \lambda(r,c_1)$, but while extending this reduction on the next contention level, $t(r,c_i)$ can be impacted by buffering times.
+
+Such a relaxation can be done on every contention point $c_i$ when $CA$ is defined on all contention points of the level preceding $cl(c_i)$. Indeed, the arrival time $t(r,c_i)$ and the deadline $d'(r)$ are computed for each route, taking into account the buffers defined by $Real(CA)$.
+\end{proof}
+
 
 
 \begin{lemma}\label{lemma:bound}
-Given an instance $I$, one can compute an upper bound for the optimal solution of \spall.
+Given a partial compact assignment $CA_i$, one can compute an upper bound for the best solution for \spall that can be built with $CA_i$.
 \end{lemma} 
-\begin{proof}First, build an instance $I'$ of \wta for each contention points of the first level as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain an upper bound for $I$.
+\begin{proof}First, build an instance $I'$ of \wta for each contention points of level lower or equal to $cl(c_i)$ as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built following $CA_i$.
 \end{proof}
 
 \subsection{The Branch and Bound Algorithms}
@@ -759,7 +766,17 @@ they do not interact. Hence, if the last level contains the vertices $\{u_1,\dot
 \todo{dire qu'on peut encore plus faire baisser la complexité en utilisant not simmons FPT à ce niveau. Enfin analyser le nombre de solutions qu'on voit en ne regardant que les canoniques,
 (minimales ?)}
 
+In order to avoid to explore subtrees that will not give the optimal solution, we want to evaluate as often as possible the quality of the solution which is built. 
+First, an upper bound of the optimal solution is computed using simulated annealing described in Section~\ref{sec:recuit}. The assignment $A$ given by simulated annealing gives $X =TR(A)$ the upper bound.
+
+
+
+\subsubsection{Updating bounds}
+When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) > X$
+
+
 Consider the partial tree of a contention point $c_i$. For leaf of this partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:bound} we compute an upper bound $X$ given $CA_i$. If 
+
 
 
 
