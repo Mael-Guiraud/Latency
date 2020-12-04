@@ -8,11 +8,8 @@ In this chapter, we consider problem similar to \pall with an additional constra
 
 To do so, we modify the model in order to take into account the buffers, and we define the problem \textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency (\spall). The algorithm presented in this section solves not only the star shaped network, but every directed acyclic multigraphs representing a routed network. We first show that the greedy algorithms principles used for star shaped networks are not efficient in routed network of higher contention depth, then we present some local search heuristics (hill climbing, simulated annealing, tabu search) that helps to solve the problem, and we present an FPT algorithm that gives the optimal solution, for which the exponential parameters are the number of routes and the contention depth of the routed network.
 
-\todo{expliquer que bufferiser au debut ou au milieu c'est pareil donc que ca couvre PALL ? ou regarder ce que ca donnerais avec la metrique PALL}.
-
-
 \section{Model changes}
-\todo{Routed network pas exactement défini pareil.}
+\subsection{A synchronized version of \pall}
 As a reminder, the  \textbf{contention depth} of a routed network $N = ({\cal R},\,{\cal B},\,\omega)$ is the maximal number of contention points on a route in the routed network. 
 
 In the previous chapter, the set of vertices in which the buffering was allowed was denoted by ${\cal B}$. Here, we define by ${\cal C}$ the set of its contention vertices, in which buffering is allowed in each vertices. 
@@ -45,6 +42,22 @@ We then define the following problem :
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
     depending on $n$ the number of routes and $d$ the contention level. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Then, the complexity will surprisingly not depend on $P$, $\tau$ or the weights of the routed network.
 
+\subsection{Fronthaul networks modelization}\label{sec:fronthaul}
+
+\paragraph*{Contention Depth One}
+Each contention vertex of a routed network of contention depth one induces a connected component. 
+Problem \spall can be independently solved on each connected component, hence the case with a single contention point is equivalent to contention depth one. 
+Solving solving \spall over 
+a routed network with a single contention point is equivalent to \wta. 
+
+\paragraph*{Contention Depth Two and More}
+
+The most simple case of contention depth $2$ is a routed network with two contention points. 
+This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
+there is a single contention point (a shared link between the RRHs and the data centers). 
+This topology, is the star shaped network sutdied in previous chapters for problem \pall.
+
+
  \begin{theorem}\label{th:spallHard}
 The problem $\spall$ is $\NP$-hard, even in routed networks of conflict depth $2$ (star shaped network)
 \end{theorem}
@@ -54,7 +67,34 @@ We reduce an instance of $\spall$ in an instance of the two flow shop proplem: A
 \end{proof}
 
 
-  \todo{petit bout sur l'explication qu'on ne considère pas le buffering dans le Datacenter}
+
+
+However, star shaped networks may not be the most general topology with regard to problem \spall.
+  This thesis is motivated by a problem arising from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this article is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU is not a node of the routed network, since each RRH has its own BBU, there are no contention when going through the BBU. The datagram arrives at the BBU somewhere on an arc of the route. Once a datagram arrives at its BBU, the answer is computed and sent back over the fronthaul network. The computation time is usually the same for all messages; it is encoded into the arc corresponding to the BBU by adding it to the physical delay of transmission over the arc.
+  
+  In this article, we consider that the links of the fronthaul network are full duplex, that is the messages can go through the links in both ways, without interacting. Usually the route from the RRH to the BBU is the same (with the orientation reversed) as the route from the BBU to the RRH. This property does not need to be enforced in our theoritical modeling, but it matches real fronthaul network and we will use such examples for our experiments. 
+
+  %Remark that the routed network induced by such topologies are symmetric. Pas vraiment
+  
+    Several BBUs are gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all routes use the same link in the way back, it is not considerd as a contention point, as illustrated in figure~\ref{fig:bbuaggreg}. If the length of the links into some datacenter are different, the contention point before the datacenter is also a contention point at the exit of the datacenter and the routes are symmetrical around this vertex.
+
+    \begin{figure}
+
+  \centering
+  \includegraphics[scale=0.8]{Chapitre5/bbuaggreg}
+
+
+\caption{One or several contention points around the BBU according to the lenght of the link}
+\label{fig:bbuaggreg}
+\end{figure}
+
+The fronthaul networks we study have \textbf{coherent} routings, a classical 
+requirement in telecommunication networks (see e.g. ~\cite{schwiebert1996necessary}). It means that
+if the routes $r$ and $r'$ go through two contention points $u$ and $v$, they have the same subpath
+between $u$ and $v$.
+This is true for the fronthaul networks we modelize. The coherent property is respected from the source 
+to the arc representing the BBU and then form the arc representing the BBU to the target.
+ As a consequence, routed networks obtained from fronthaul networks are directed acyclic multigraphs, as required in the definition of routed network.
 
 
 \section{Compact Representation of an Assignment}
@@ -259,8 +299,6 @@ Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ comp
 %	\end{algorithmic}
 %	\end{algorithm}
 
-\todo{pb algo psuedocode compilation }
-\todo{ajouter la routine FIRST VALID qui donne la premiere position a laquelle on peut placer le message a partir de l'offset donné}
    \begin{figure} 
 	\centering
 	\includegraphics[scale=0.8]{Chapitre5/examplegreedyfail}
@@ -272,7 +310,7 @@ Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ comp
 We present here a variant of \greedydeadline: select as first datagram the one with minimal $t(r,u)$, then select the datagrams by lowest normalized arrival times instead of arrival times. Let us call this algorithm
 \greedynormalized. In practice, it performs better than \greedydeadline.
 
-However, \greedydeadline and \greedynormalized may fail to give a valid assignment for some routed networks, for which there is a valid assignment. The way we select departure times for the routes can create unused interval of times of size less than $\tau$. These intervals are not usable to schedule datagram of size $\tau$. If too much time is wasted in this way, the algorithms will fail while there is always a solution when the load is less or equal to $1$. Since each datagram forbids at most $2\tau -1$ tics in the period to the other datagrams, by a pigeonhole argument, all routes can be scheduled when the load is less than $0.5$ by greedy algorithms considering all departure times (see~\todo{bon chapitres} for similar arguments).
+However, \greedydeadline and \greedynormalized may fail to give a valid assignment for some routed networks, for which there is a valid assignment. The way we select departure times for the routes can create unused interval of times of size less than $\tau$. These intervals are not usable to schedule datagram of size $\tau$. If too much time is wasted in this way, the algorithms will fail while there is always a solution when the load is less or equal to $1$. Since each datagram forbids at most $2\tau -1$ tics in the period to the other datagrams, by a pigeonhole argument, all routes can be scheduled when the load is less than $0.5$ by greedy algorithms considering all departure times (see Chapters~\ref{chap:PALL,chap:PAZL} for similar arguments).
 
 \todo{donner un exemple ou ça fail pour chacun des deux algorithmes} 
 
@@ -281,12 +319,14 @@ However, \greedydeadline and \greedynormalized may fail to give a valid assignme
 
 
 A compact assignment is needed to initialize the local search algorithms presented in the next section. Hence, we propose the \greedypacked algorithm that is guaranteed to find an assignment, even if the transmission time may be worse on average.
-The contention vertices are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(r,u) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(r,u) - t(r,u) - nt(r_0,r,u)$ is chosen and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
+The contention vertices are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(r,u) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(r,u) - t(r,u) - nt(r_0,r,u)$, choose it, and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
 
 
 \subsection{Random generation of routed network}
 
-We propose several experiments to assess the practical performance (in speed and quality) of the poposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in figure~\ref{fig:randomnetworks}, in which the dotted arcs represents each the arcs of two routes. As explained is section~\ref{sec:contentiondepth}, there is only one contention vertex for each datacenter, they are the two vertices of contention level $2$.
+We propose several experiments to assess the practical performance (in speed and quality) of the poposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in figure~\ref{fig:randomnetworks}, in which the dotted arcs represents each the arcs of two routes. 
+
+As explained is section~\ref{sec:fronthaul}, there is only one contention vertex for each datacenter, they are the two vertices of contention level $2$.
    \begin{figure} 
 	\centering
 	\includegraphics[scale=0.8]{Chapitre5/networksrandom}
@@ -295,16 +335,13 @@ We propose several experiments to assess the practical performance (in speed and
 \label{fig:randomnetworks}
 \end{figure}
 
-To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the the impact of those parameters, in terms of computation time and quality, on the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the graph as in Figure~\ref{fig:randomnetworks}. The results are not significantly impacted if we change those values. 
+To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the impact of those parameters, in terms of computation time and quality, on the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the graph as in Figure~\ref{fig:randomnetworks}. The results are not significantly impacted if we change those values. 
 
  
-\todo{dire que par défaut on fixe 80pour cent, mais qu'on va montrer l'effet}
  The impact of the load on the quality of the results was investigated: When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load. This means that $P = \frac{\tau \times n}{0.8}$, whith $n$ the number of routes on the graph. The size of the C-RAN traffic depends of the service requirement~\cite{mobile2011c}. Here, we fix $\tau = 2500$ tics.
   
 In a C-RAN context, the number of route is low. In the network we study, there is $n=8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the number of routes in the graph at the end of this section. The length of the arcs is drawn uniformly between $0$ and $P$. This choice makes the periodicity of our problem impactful, and does not allow for algorithms reused from a non periodic setting.
 
-\todo{rendre très clair que n est fixé à 8 la plupart du temps. Il manque la valeur de $\tau$. 
-Avec la charge à 80 pour cent, ça donne tous les paramètres du problème}
 
 
 \subsection{Success Rate and Performance of the Greedy Algorithms}
@@ -405,8 +442,46 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
   All algorithms presented in this section will do a walk in the transposition graph, trying to find a vertex with optimal
   transmission time. 
 
-\todo{Faire un dessin d'un routed network simple}
 
+\begin{figure}
+\begin{center}
+\scalebox{0.4}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+ 
+
+  \node[align=center] (p0) at (10,5) {$O_u = (0,2,1)$\\$S = \{1\}$};
+  \node[align=center] (p1) at (10,7) {$O_u = (0,2,1)$\\$S = \{1,2\}$};
+  \node[align=center] (p2) at (13.6,7) {$O_u = (2,0,1)$\\$S = \{1\}$};
+  \node[align=center] (p3) at (13.6,3) {$O_u = (2,0,1)$\\$S = \{1\}$};
+  \node[align=center] (p4) at (10,3) {$O_u = (2,0,1)$\\$S = \{0,1\}$};
+  \node[align=center] (p5) at (6.4,3) {$O_u = (2,0,1)$\\$S = \{1,2\}$};
+  \node[align=center] (p6) at (6.4,7) {$O_u = (2,0,1)$\\$S = \{0,1,2\}$};
+
+
+ 
+\path (p0) edge [-] (p1);
+\path (p0) edge [-] (p2);
+\path (p0) edge [-] (p3);
+\path (p0) edge [-] (p4);
+\path (p0) edge [-] (p5);
+\path (p0) edge [-] (p6);
+
+
+
+\end{tikzpicture}
+}
+
+
+ \caption{Transposition graph for one contention point with $O = (0,2,1)$ and $S = \{1\}$.}
+
+\label{fig:partialtree}
+\end{center}
+\end{figure}
 
 \begin{lemma}\label{lemma:path}
 There is a path from a realizable compact representation CR, with $CR(u) = (O_u,S_u)$ to $CR'$, such that 
@@ -658,8 +733,10 @@ Given a partial compact assignment $CA_i$, one can compute an upper bound for th
 \begin{proof}First, build an instance $I'$ of \wta for each contention points of level lower or equal to $cl(c_i)$ as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built following $CA_i$.
 \end{proof}
 
-\subsection{The Branch and Bound Algorithms}
-
+\subsection{The Branch and Bound Algorithm}\label{sec:branchBound}
+Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes
+qu'on peut faire grâce à la borne sup qu'on vient de définir (en gardant la valeur de la meilleur solution
+et en initialisant cette valeur par un algo de bonne qualité, genre hill clibming ou carrément recuit simulé).
 
 To solve \spall, we need to find an assignment for which $TR(A)$ is minimal. 
 To do so, because of Lemmas of Section~\ref{sec:real}, it is enough to 
@@ -763,26 +840,19 @@ Such a partial tree is then built for the second contention point $c_2$, and eac
 
 Note that for the vertices of the last contention level, compact assignments can be considered independently, since
 they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
-\todo{dire qu'on peut encore plus faire baisser la complexité en utilisant not simmons FPT à ce niveau. Enfin analyser le nombre de solutions qu'on voit en ne regardant que les canoniques,
-(minimales ?)}
+
 
 In order to avoid to explore subtrees that will not give the optimal solution, we want to evaluate as often as possible the quality of the solution which is built. 
-First, an upper bound of the optimal solution is computed using simulated annealing described in Section~\ref{sec:recuit}. The assignment $A$ given by simulated annealing gives $X =TR(A)$ the upper bound.
+First, an upper bound of the optimal solution is computed using simulated annealing described in Section~\ref{sec:recuit}. The assignment $A$ given by simulated annealing gives $X =TR(A)$ the first upper bound on the optimal solution.
 
+When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) < X$ then we found an assignment that have better performance that the previous one, and the upper bound is thus updated.
 
-
-\subsubsection{Updating bounds}
-When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) > X$
-
-
-Consider the partial tree of a contention point $c_i$. For leaf of this partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:bound} we compute an upper bound $X$ given $CA_i$. If 
+This bound helps us to cut the exploration of the tree as soon as possible. Each time the algorithm reaches a leaf of a partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:bound} we evaluate the quality of the best solution that can be built from $CA_i$. If the value computed is greater than the upper bound already computed, we cut the tree and we backtrack to the following branch.
 
 
 
 
-Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes
-qu'on peut faire grâce à la borne sup qu'on vient de définir (en gardant la valeur de la meilleur solution
-et en initialisant cette valeur par un algo de bonne qualité, genre hill clibming ou carrément recuit simulé).
+
 
 
 \subsection{Locally minimal representation}
@@ -795,12 +865,36 @@ non minimales. Proposer une caractérisation des solutions localement minimales 
 
 Montrer avec des expériences (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques valides, et presque aucunes dont la réalisation n'est pas minimale.
 
-\subsection{Last Contention Level}
+Since the algorithm enumerates a large number of solutions, we want to develop some indicators that avoid to browse branch that will not give a good solution.
 
+For a given contention point $c$, we want to generate only compact assignments $CA_c$ such that $Real(CA_c)$ is minimal for $\prec$. Let us call those assignments locally minimal compact assignments. We thus propose several cuts that can be either computed at the end of during the building of a partial tree. There is no cut for the first level of the partial tree, that is, the choice of and order $O_c$. All the cuts are implemented while choosing to add or not a route in $S_c$.
+
+A partial Assignment $A_{c}$ is computed from $Real(CA_{c})$. Since the couple $(O_c,S_c)$ is set for $c$ (and thus for each contention points of previous levels, it is possible to compute the buffering time of each datagrams in $c$.
+
+Two cuts are computed once we reach a leaf of a partial tree.
+The first cut is trivial and consists to check if $CA_c$ is realizable.
+If it is, we check for each datagrams on a route $i$ that has been set in $S_{c}$, we define $CA'_c = (O_c,S_c\backslash\{i\})$. If $CA'_c$ is realizable, cut the branch. Ineed, by setting $i$ in $S_c$, the solution is necessarily degraded and $CA'_c$ will be explored in another branch of the tree.
+
+
+The following cuts are computed while building the partial tree of a contention point. To do so, we compute the partial assignment while building the tree: Each time a datagram on the route $i$ has been set or not in $S_c$, one can compute $A_{c}(i,c)$, that is the value of the buffer given by the choice.
+
+The third cut proposed is the following. After choosing not to set $i$ in $S_c$, if $t(i-1,c) + A_{c}(i-1,c) + \tau = t(i,c) + A_{c}(i,c)$, we do not browse the subtree with $i \in S_c$. This means that the datagram $i$ is compact with the datagram $i-1$. In such a case, there is no point to set $i$ in the second period because there is no lost by setting $i$ in the first period.
+
+At the same level of the building, that is after choosing not to set $i$ in $S_c$, if $A_{c}(i,c) = 0$, then the datagram $i$ is not buffered at all. We propose two last cuts.
+
+For each routes $j$ which has not been set or not in $S_c$, if $t(j,c) + \tau < t(i,c)$, then it is possible to schedule $j$ before $i$ and such a case will be explored in another subtree.
+
+The last cut is based on the definition of a cannonical assignment. Remember that all assignments given by $Real(CA)$ are cannonicals, and that in a cannonical assignment, there is a route for which a datagram is not delayed at all. In such a situation, assume w.l.o.g. that it is the datagram with the lowest id. Thus, if we find a partial assignment for which $A_{c}(i,c) = 0$ computed from $CA_i$ in which $j$ is the first datagram of the order, if $i<j$, then we cut because this case is also explored in another subtree.
+
+
+
+\subsection{Last Contention Level}
 Mettre ici le traitement spécifique du dernier niveau -> analyse de la complexité différente 
 à mettre ici, certaines coupes à ne pas faire car seul l'objectif de temps global nous importe 
 (à vérifier c'est un tradeoff, mais certaines sont évidemment à retirer). 
 
+
+As explained in Section~\ref{sec:branchBound}, the last level of the tree can be computed independently. For one contention point with $s$ datagrams , one can compute an assignment with a complexity $s!2^{s}$. By using Lemma~\ref{lemma:reduce}, we can compute the assignment with \ASPMLS in time $2^ss^3log(s)$. By doing this on each contention points of the last level and taking the maximum of the values, we obtain the best value of $TR(A)$ that can be found.
 
 \section{Experimental Evaluation}
 
