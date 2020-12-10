@@ -167,7 +167,7 @@ with size of datagrams multiple of $m$ (see Proposition~\ref{prop:compactificati
 
 We are interested in the remainder modulo $\tau$ of the delays, let $\notationdelay_i = \notationdelay_{i}'\tau + r_i$ be the Euclidean division of $\notationdelay_i$ by $\tau$. We assume, from now on, that \emph{datagrams are sorted by increasing $r_i$}.
 A \textbf{Compact pair}, as shown in Fig.~\ref{fig:compactpair} is a pair of datagrams $(i,j)$ with $i < j$ that can be scheduled using meta-offsets such that $A(i) + (d'_i+1)\tau = A(j) + d'_j\tau$, i.e. $j$ is positioned less than $\tau$ unit of times after $i$ in the second period.
-The \textbf{gap} between $i$ and $j$ is defined as  $g = \notationdelay_{i}' + 1 - d'_{j} \mod m$, it is the distance in meta offsets between $i$ and $j$ in the first period. By definition, we can make a compact pair out of $i$ and $j$, if and only if their gap is not zero.
+The \textbf{gap} between $i$ and $j$ is defined as  $g = \notationdelay_{i}' + 1 - \notationdelay_{j}' \mod m$, it is the distance in meta offsets between $i$ and $j$ in the first period. By definition, we can make a compact pair out of $i$ and $j$, if and only if their gap is not zero.
 
 \begin{figure}[h]
 \begin{center}
@@ -220,7 +220,7 @@ Solving this equation, we obtain that $n_1 \geq \frac{m}{8}$ thus the number of 
 \end{proof}
 
 \compactpair can be improved by forming compact tuples instead of compact pairs.
-A compact $k$-tuple is a sequence of datagrams $i_1 < \dots < i_k$ (with $r_{i_1},\dots,r_{i_k}$ increasing), for which meta-offsets can be chosen so that, there is no collision, the datagrams in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau = A(i_{l+1}) + d'_{i_{l+1}}\tau$.
+A compact $k$-tuple is a sequence of datagrams $i_1 < \dots < i_k$ (with $r_{i_1},\dots,r_{i_k}$ increasing), for which meta-offsets can be chosen so that, there is no collision, the datagrams in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (\notationdelay'_{i_l} + 1)\tau = A(i_{l+1}) + \notationdelay'_{i_{l+1}}\tau$.
 The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples
 using meta offsets while possible, then scheduling compact $k-1$-tuples and so on until $k=1$.
 
@@ -341,14 +341,13 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 
 \subsection{Experimental Results} \label{sec:perf_large}
 
-\subsubsection{Cloud Ran parameters}\label{sec:pazlcran}
+\subsubsection{Cloud Ran Parameters}\label{sec:pazlcran}
 In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized.
 
   The defaults parameters of all experiment in this article are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are approximately of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. In the Cloud-RAN problem, the period fixed by the protocol HARQ correspond to approximately $21,000$ tics. This means that a network with $8$ routes is loaded at $95\%$, which seems unrealistic and cannot be solved for \pazl, as we experimentally show it in this section. Nevertheless, as explained at the begining of this chapter, thoses parameters are some reference to realistic parameters and the objective here is to evaluate our algorithm performances.
 
      All experiments are done on synthetic data generated randomly. We generate the physical fronthaul
-     network represented in Figure~\ref{fig:star}, by drawing the size of each link according 
-     to the following. We consider routes which are shorter than $\tau$: a datagram cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing uniformly at random the weigths of the arcs in $[700]$. This corresponds to links of the networks of less than $5$km between a BBU and an RRH. Then, the corresponding canonical star routed network is built from the generated fronthaul and the algorithms tested on it. The, the delays here are drawn in $[1400]$.
+     network represented in Figure~\ref{fig:star}. We consider routes which are shorter than $\tau$: a datagram cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing uniformly at random the weigths of the arcs in $[700]$. This corresponds to links of the networks of less than $5$km between a BBU and an RRH. Then, the corresponding canonical star routed network is built from the generated fronthaul and the algorithms tested on it. Then, it is mostly equivalent to drawing the delays randomly in $[1400]$.
 
      We consider the following algorithms:
 \begin{itemize}
@@ -363,9 +362,9 @@ In this section, the performance on random instances of the algorithms presented
 %Since the delays are drawn in $\tau$, the algorithms based on meta-offsets works without the transformation of Lemma~\ref{lemma:multiple}. Indeed, since we consider only the offsets that are multiples of $\tau$ in the first period, the tics corresponding to the remainder of $P mod \tau$ are naturally lost. Furthermore, by considering the last
 
      In the following experiments, we illustrate how well the algorithms work with regards to the load. To change the load, both parameters $\tau$ and $n$ are fixed and we modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
-	We generate $10,000$ random instances of \pazl for $100\%$ to $40\%$ of load. We represent, in Figure~\ref{fig:short}, the percentage of success of each algorithm as a function of the load. We make three experiments with $8$, $12$ and $16$ routes to understand the effect of the number of routes on the quality of our algorithms. A bound on the maximal success rate is given by the exhaustive search (\ESCA) which always finds a solution if there is one. 
+	   We generate $10,000$ random instances of \pazl of load from $1$ to $0.4$. We represent, in Figure~\ref{fig:short}, the percentage of success of each algorithm as a function of the load. We make three experiments with $8$, $12$ and $16$ routes to understand the effect of the number of routes on the quality of our algorithms. A bound on the maximal success rate is given by \ESCA (exhaustive search) which always finds a solution if there is one. 
 
-         The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i5 and the sources are compiled with gcc version 7.5.0. All experiments end in at most a few dozen seconds.
+     The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i5 and the sources are compiled with gcc version 7.5.0. All experiments end in at most a few dozen seconds.
 
 
 
@@ -386,23 +385,23 @@ In this section, the performance on random instances of the algorithms presented
 
       \metaoffset and \greedyuniform both seem to always work when the load is less than $1/2$ and has a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seems to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger, which happens each time $\tau$ is added to the period (to decrease the load, the period is increased) and is more frequent when there are more routes.
       
-      \greedyuniform and \metaoffset performances depend on the number of routes. The more routes there is, the lower the success rate. This is reinforced in experiment of Figure~\ref{fig:shortroutes} of the next section in which there is $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and random delays and has no theoretical guarantee for arbitrary $\tau$ and small delay.
+      \greedyuniform and \metaoffset performances depend on the number of routes. The more routes there is, the lower the success rate. This is even clearer in experiment of Figure~\ref{fig:shortroutes} in the next section in which there is $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and random delays and has no theoretical guarantee for arbitrary $\tau$ and small delay.
      
 
 
 
-\subsubsection{A larger number of routes}\label{sec:pazlmanyroutes} 
+\subsubsection{Larger Route Number}\label{sec:pazlmanyroutes} 
 
-After studying the C-RAN parameters, we want to experiment to performance of our algorithm whith a large the number of routes and/or delays drawn in a larger interval.
+After studying the C-RAN parameters, we want to experiment the performance of our algorithm whith a larger tnumber of routes and/or delays drawn in a larger interval.
 We experiment with several periods and datagram sizes. For each set of parameters, we try every possible load by changing the number of datagrams and give the success rate of each algorithm. Notice that all algorithm exept \ESCA are polynomial time algorithms but are not always able to find a solution, depending on the load or the size of the routes. On the other hand, \ESCA finds a solution if it exists, but works in exponential time in $n$.
  The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each datagram in $[P]$ or $[\tau]$ for Figure~\ref{fig:shortroutes}. 
 
 
-On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ datagrams except \ESCA, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the optimal value of the success rate given by \ESCA is only available in the experiment with at most $10$ datagrams (the algorithm cannot compute a solution in less than an hour for twenty datagrams and high load). 
+On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ datagrams except \ESCA, whose complexity is exponential in the number of routes (but polynomial in the rest of the parameters). Hence, the optimal value of the success rate given by \ESCA is only available in the experiment with at most $10$ routes (the algorithm cannot compute a solution in less than an hour for twenty datagrams and high load). 
 Note that while \firstfit, \compactpair, \metaoffset, \compactfit all run in almost the same time,
 \greedyuniform seems to be three times longer than the other algorithms to run on instances with $100$ datagrams. It is expected since, at each step, it must find all available offsets to draw one uniformly at random instead of just choosing one.
 
-In the following experiment, since Lemma~\ref{lemma:multiple} explains how to transform any instance in one with  $P = m\tau$, we chose for simplicity that $P = m\tau$.
+In the following experiments, since Lemma~\ref{lemma:multiple} explains how to transform any instance into one with  $P = m\tau$, we chose for simplicity that $P = m\tau$.
 
 \begin{minipage}[c]{.49\linewidth}
 
@@ -441,7 +440,7 @@ In the following experiment, since Lemma~\ref{lemma:multiple} explains how to tr
 
 \vspace{1cm}
 
-In Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall} the performances of \shortestlongest are abysmal (falls into $10\%$ of success rate when the load is greater than $0.2$, and $0\%$ at $0.3$ of load) and are thus not represented in this figures, in order to focus on the other algorithms. This can be explained by the fact it depends on the difference of size between the longest and the smallest route, which is large here since the delays are drawn in $[P]$. This observation is reinforced by the results of Figure~\ref{fig:10mess}. Indeed, since the number of route is lower than in the two previous experiment, the probability of drawing a set of delays with a large difference is lower, and thus the success rate of \shortestlongest is better. 
+In Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall} the performances of \shortestlongest are abysmal (falls to $10\%$ of success rate when the load is greater than $0.2$, and $0\%$ at $0.3$ of load) and are thus not represented in this figures, in order to focus on other algorithms. This can be explained by the fact it depends on the difference of size between the longest and the smallest route, which is large here since the delays are drawn in $[P]$. This observation is reinforced by the results of Figure~\ref{fig:10mess}. Indeed, since the number of route is lower than in the two previous experiment, the probability of drawing a set of delays with a large difference is lower, and thus the success rate of \shortestlongest is better. 
 
 For all sets of parameters, the other greedy algorithms have the same relative performances. \metaoffset and \greedyuniform
 perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
@@ -454,13 +453,12 @@ As demonstrated by Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall}
 Finally, the results of \ESCA in Figure~\ref{fig:10mess} show that the greedy algorithm are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which \pma can always be solved positively.
 
 We also investigate the behavior of the algorithms when the delay of the datagrams are drawn in $[\tau]$ in 
-Figure~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficient: they always find a solution for $99$ datagrams. It is expected, since all $d'_i$ are equal in these settings and 
-they will both build a $99$-compact tuples and thus can only fail for load $1$.
+Figure~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficient: they always find a solution for $99$ datagrams. It is expected, since all $\notationdelay'_i$ are equal in these settings and they will both build a $99$-compact tuples and thus can only fail for load $1$.
 
 
-       As illustrated on Figure~\ref{fig:10mess}, when the load is larger than $50\%$,\ESCA finds more solutions than the greedy algorithms, which justifies its use. However, for load larger than $80\%$ there are instances for which there are no solutions to \pazl. It means that with long routes and high load, looking for a bufferless assignment is far too restrictive. This justifies the design of algorithms for the general \pall problem, which we present in the next section. We will test them on $8$ long routes and a load between $100\%$ and $80\%$, parameters for which, as shown here, there are not always a bufferless assignment.
+       As illustrated on Figure~\ref{fig:10mess}, when the load is larger than $0.5$,\ESCA finds more solutions than the greedy algorithms, which justifies its use. However, for load larger than $0.8$ there are instances for which there are no solutions to \pazl. It means that with long routes and high load, looking for a bufferless assignment is far too restrictive. This justifies the design of algorithms for the general \pall problem, which we present in the next section. We will test them on $8$ long routes and a load between $1$ and $0.8$, parameters for which, as shown here, there are not always a bufferless assignment.
       
-       The computation time of \ESCA is bounded by $O(4^nn!)$ as shown in Theorem~\ref{th:FPT}, but it can be much better in practice, either because it finds a solutions quickly or because a large part of the tree of compact assignments is pruned during the algorithm. We study the evolution of the running time  of the algorithm when $n$ grows in the following experiment. The weights of the arcs are drawn following a uniform distribution in $[P]$ and the load is set to $95\%$.  The table of Figure~\ref{fig:table} shows the time before the exhaustive search ends, for $8$ to $16$ routes, averaged on $100$ random star routed networks. This shows that for less than $20$ routes, which corresponds to all current topologies, the algorithm is efficient enough, but we should improve it further to work on more routes.
+       The computation time of \ESCA is bounded by $O(4^nn!)$ as shown in Theorem~\ref{th:FPT}, but it can be much better in practice, either because it finds a solutions quickly or because a large part of the tree of compact assignments is pruned during the algorithm. We study the evolution of the running time  of the algorithm when $n$ grows in the following experiment. The weights of the arcs are drawn following a uniform distribution in $[P]$ and the load is set to $0.95$.  The table of Figure~\ref{fig:table} shows the time before the exhaustive search ends, for $8$ to $16$ routes, averaged on $100$ random star routed networks. This shows that for less than $20$ routes, which corresponds to all current topologies, the algorithm is efficient enough, but we should improve it further to work on more routes.
        
              \begin{figure}[h]
          \begin{center}
