@@ -2236,7 +2236,7 @@ int CritMetropolis(int delta, float t)
 
 		float random = (float)rand() / (float)RAND_MAX;
 	
-		if(random < expf(-proba))
+		if(random <= expf(-proba))
 		{
 				//printf("exp(-%f/%f ) = %f\n",(float)delta,t,expf(-proba));
 			return 1;
@@ -2253,14 +2253,14 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	float coeff= 0.90;
 	int b;
 	int seuil_arret = 2;
-	float seuil_incr_cmpt = 0.1;
+	float seuil_incr_cmpt = 0.01;
 
 	int a=0;
 	b=descente( g,  P, message_size, 0, nb_pas);
 
 	//b = best_of_x( g, P, message_size,100,nb_pas);
-	/*
-		if(!greedy_deadline(g, P, message_size))
+	
+	/*	if(!greedy_deadline(g, P, message_size,0))
 		{
 			printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
 			return a;

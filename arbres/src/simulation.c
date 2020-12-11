@@ -332,9 +332,9 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =9 ;
-	char * noms[] = {"Hybrid Greedy Deadline","Greedy Packed","Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
-	
+	int nb_algos =7 ;
+	char * noms[] = {"Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	printf("%d contention \n",NB_COLLISIONS);
 	
 	
 	int message_size = MESSAGE_SIZE;
@@ -387,12 +387,6 @@ void simuldistrib(int seed)
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
 
-			if(algo < 2)
-				algo = 2;
-			if(algo > 8)
-				break;
-			if(algo > 2)
-				algo = 8;
 			
 				
 			//printf("Algorithm %s \n",noms[algo]);
@@ -402,7 +396,7 @@ void simuldistrib(int seed)
 				gettimeofday (&tv1, NULL);	
 		
 			switch(algo){
-				case 0:
+				/*case 0:
 					a =  greedy_deadline_assignment( &g, P, message_size);
 
 				break;
@@ -410,26 +404,26 @@ void simuldistrib(int seed)
 					a =  greedy_deadline_assignment2( &g, P, message_size);
 					
 
-				break;
-				case 2:
+				break;*/
+				case 0:
 					a =  greedy_deadline_assignment3( &g, P, message_size);
 					
 				break;
-				case 3:
+				case 1:
 					time[algo] = borneInf2( &g, message_size)-l;	
 				break;
-				case 4:
+				case 2:
 					time[algo] = borneInf( &g, P, message_size)-l;	
 					//printf("%d longest_route\n",l);
 				break;
-				case 5:
+				case 3:
 				{
 					a = descente( &g, P, message_size,0,&nb);
 					#pragma omp critical
 						nb_pas[0] += nb;
 				}
 				break;
-				case 6:
+				case 4:
 				
 					
 					a = best_of_x( &g, P, message_size,100,&nb);
@@ -438,8 +432,8 @@ void simuldistrib(int seed)
 					
 					
 				break;
-				case 7:
-					a = taboo( &g, P, message_size,100,10,&nb);
+				case 5:
+					a = taboo( &g, P, message_size,1000,10,&nb);
 					
 					#pragma omp critical
 						nb_pas[2] += nb;
@@ -447,13 +441,13 @@ void simuldistrib(int seed)
 				break;
 				
 				
-				case 8:
-					a = recuit( &g, P, message_size,50,&nb);
+				case 6:
+					a = recuit( &g, P, message_size,2000,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;
 					break;
-				case 9:
+				case 7:
 					a = branchbound( &g, P, message_size,NULL,NULL,1);
 					break;
 				}
@@ -470,7 +464,7 @@ void simuldistrib(int seed)
 					
 				else
 				{
-					if((algo != 3) && (algo != 4))
+					if((algo != 1) && (algo != 2))
 					time[algo] = INT_MAX;
 
 				}
@@ -944,8 +938,8 @@ void simuldescente(int seed)
 void simultaboo(int seed)
 {
 	srand(seed);
-	int nb_algos =1 ;
-	char * noms[] = {"1.000 Steps","100 Steps","1.000 Steps"};
+	int nb_algos =2 ;
+	char * noms[] = {"100 Steps","1.000 Steps","1.000 Steps"};
 	
 	
 	
@@ -1009,13 +1003,13 @@ void simultaboo(int seed)
 		
 			switch(algo){
 				case 0:
-					a = taboo( &g, P, message_size,1000,1000,&nb);
+					a = taboo( &g, P, message_size,1000,100,&nb);
 					
 					#pragma omp critical
 						nb_pas[0] += nb;
 				break;
 				case 1:
-					a = taboo( &g, P, message_size,1000,100,&nb);
+					a = taboo( &g, P, message_size,1000,1000,&nb);
 					
 					#pragma omp critical
 						nb_pas[1] += nb;

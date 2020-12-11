@@ -1,1 +1,1 @@
-#define NB_BBU 2
+#define NB_BBU 4
