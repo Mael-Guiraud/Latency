@@ -4,8 +4,9 @@
 \chapter{Model, Problems}
 \label{chap:model}
 \minitoc
-
+The model and the proofs presented in this chapter has been introduced in~\cite{DBLP:conf/ict/BarthGLMS18} and extended in a long version of the paper in~\cite{DBLP:journals/corr/abs-1801-07029}.
 \section{Model}
+
 
 Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
@@ -40,7 +41,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	 
  	\subsection{Dynamic of Datagrams Transmissions}
 	    
- 		In this thesis, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. One of the authors is developing a prototype of this work based on ethernet base-X~\cite{ieee_8023}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
+ 		In this thesis, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. We are developing a prototype of this work based on ethernet base-X~\cite{ieee_8023}, detailled in chapter~\ref{chap:TSN} using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
 
         In the process we study, a message, called a {\bf datagram}, is sent on each route from the source node. The \textbf{size} of a datagram is an integer, denoted by $\tau$, it is the number of tics needed by a node to emit the full datagram through a link.  In this thesis, we assume that $\tau$ is the same for all routes. It is justified by our application to C-RAN, where all source nodes are RRHs sending the same type of message. There is no preemption: Once a datagram has been emitted, it cannot be fragmented during its travel in the network. 
 
@@ -155,10 +156,10 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
       
       \noindent {\bf Question:} does there exist a $(P,\tau)$-periodic assignment of $N$ such that for all $r \in {\cal R}$, $TR(r,A) \leq d(r)$?
 
-	  In the next section, this problem is proved to be $\NP$-hard. In Section~\ref{sec:PALL}, we propose heuristics solving the search version of \pall (computing a valid assignment), also denoted by \pall for simplicity. In the definition of \pall, we have chosen to bound the transmission time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. 
+	  In the next section, this problem is proved to be $\NP$-hard. In Chapter~\ref{chap:PALL}, we propose heuristics solving the search version of \pall (computing a valid assignment), also denoted by \pall for simplicity. In the definition of \pall, we have chosen to bound the transmission time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. 
 
 	 We say that an assignment is \textbf{bufferless} when the waiting time of all routes are zero.
-	 The assignment can then be seen as a function from the routes to the integers (the waiting time is omited). We consider a restricted version of \pall, requiring to find a bufferless assignment. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.
+	 The assignment can then be seen as a function from the routes to the integers (the waiting time is omited). We consider a restricted version of \pall, requiring to find a bufferless assignment and studied in Chapter~\ref{chap:PAZL}. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.
 
       An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
@@ -232,7 +233,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 
     Star routed network may seem simplistic, but every network in which all routes share an arc and satisfy a coherent routing condition can be modeled by a star routed network.
-    It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Section~\ref{sec:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
+    It is common in fronthaul networks, since often all the BBUs are located in the same data-center. In such a situation, we can see the weights of the arcs $(c_1,c_2)$ either as all equals (in that case \pazl is trivial, see Chapter~\ref{chap:PALL}) or different due to the structure of the network inside the data-center and the various hardwares used for the BBUs. 
 
       
      
@@ -589,17 +590,92 @@ If $\P \neq \NP$, the problem \minpazl on the classe of routed networks of conte
 \end{theorem}
 
 \begin{proof}
- We reduce the problem of finding the minimal vertex coloring of a graph to \minpazl. Let $H = (U,E)$ be a graph, an instance of the problem of finding a minimal vertex coloring.  We define the routed network $N$ from $H$ as in Proposition\ref{prop:monotonic}.
+ We reduce the problem of finding the minimal vertex coloring of a graph to \minpazl. Let $H = (U,E)$ be a graph, an instance of the problem of finding a minimal vertex coloring.  We define the routed network $N$ from $H$ as in Proposition~\ref{prop:monotonic}.
  
  Let $<$ be an arbitrary total order on $U$. 
  The vertices of $N$ are in the set $\{v_{u,w} \mid (u,w) \in E\} \cup \{u^1, u^2 \mid u \in U\}$. 
  For each vertex $u$ in $H$, there is a route $r_u$ in ${\cal R}$, whose first and last vertices
- are $u^1$ and $u^2$. In between, the route contains all vertices $v_{u,w}$, following the order $<$ on the $w$. The weights of all arcs is zero. By construction, a contention vertex corresponds to an edge and belongs to exactly two routes representing the vertices of the edge, thus $N$ is of contention width $2$.
+ are $u^1$ and $u^2$. In between, the route contains all vertices $v_{u,w}$, following the order $<$ on the $w$. The weights of all arcs is zero. By construction, a contention vertex corresponds to an edge and belongs to exactly two routes representing the vertices of the edge, thus $N$ is of contention width $2$. This reduction is illustrated in Figure~\ref{fig:reductionminpazl}.
 
   The existence of a $P$-coloring of $H$ is equivalent to the existence of a $(P,1)$-periodic assignment of $N$ without waiting time: the offset of a route can be identified with the color of the corresponding vertex. Indeed, since all weigths are zero, the absence of collision at contention point $v_{u,w}$ is equivalent to the fact that the offsets of $r_u$ and $r_w$ are different and reciprocally.
 
    Therefore, if we can approximate the minimum value of $P$ within some factor such that there is a $(P,1)$-periodic assignment, we could approximate the minimal number of colors needed to color a graph within the same factor. The proof follows from the hardness of approximability of finding a minimal vertex coloring~\cite{zuckerman2006linear}.
 \end{proof}
+
+    \begin{figure}[ht]
+    \centering
+    \scalebox{0.37}{
+    \begin{tikzpicture}
+    \tikzset{
+      LabelStyle/.style = { rectangle, rounded corners, draw,
+        font = \bfseries },
+    EdgeStyle/.append style = {->} }
+      \SetGraphUnit{5}
+      
+      
+      \node[draw,circle] (s3) at (4, 2) {$w^1$}; 
+      \node[draw,circle] (s2) at (0, 4) {$v^1$}; 
+      \node[draw,circle] (s1) at (0, 6) {$u^1$}; 
+
+      \node[draw,circle] (t3) at (12, 3) {$w^2$}; 
+      \node[draw,circle] (t2) at (10, 5) {$v^2$}; 
+      \node[draw,circle] (t1) at (10, 2) {$u^2$}; 
+      
+
+      \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
+  \tikzset{
+   VertexStyle/.append style = {blue} }
+  \Vertex[x=-8,y=3]{u}
+        \tikzset{
+      VertexStyle/.append style = {green} }
+    \Vertex[x=-7,y=5]{v}
+
+      \tikzset{
+      VertexStyle/.append style = {red} }
+    \Vertex[x=-6,y=4]{w}
+    \tikzset{
+      VertexStyle/.append style = {black} }
+      
+       
+       \SetVertexNoLabel
+       \Vertex[x=2,y=5]{A}
+
+
+       \Vertex[x=6,y=3]{E}
+
+       \tikzset{
+       EdgeStyle/.append style = {green} }
+       \Edge(s2)(A)
+       
+      \Edge(A)(t2)
+ 
+       
+       \tikzset{
+      EdgeStyle/.append style = {red} }
+       \Edge(s3)(E)
+       \Edge(E)(t3) 
+  \tikzset{
+       EdgeStyle/.append style = {blue} }
+       \Edge(s1)(A)
+    
+       \Edge(A)(E)
+              
+       \Edge(E)(t1)
+       
+  \tikzset{
+       EdgeStyle/.append style = {black,-} }
+
+       \Edge(u)(v)
+       \Edge(u)(w)
+     \node (1) at (-3,4){\Huge $\rightarrow$};
+      
+     \node (2) at (-7,0){\Huge H};
+      \node (3) at (10,0){$\Huge N$};
+     \end{tikzpicture}
+     }
+     \caption{Reduction from k-coloring to \minpazl}
+     \label{fig:reductionminpazl}
+     \end{figure}
 
 The previous theorem implies that \pazl is $\NP$-complete on the class of routed networks with contention width two. This also underlines the fact that, for general graphs, the best $P$ such that there is a 
 $(P,\tau)$-periodic assignment may correspond to a very small load. We can build on the reduction of the previous theorem to prove that \mintra, the problem of minimizing $TR(A)$, is hard to approximate too.
@@ -627,85 +703,8 @@ The second part of the routes, from $v_i^1$ to $v_i^2$ is built exactly as in th
 in the graph of Theorem~\ref{th:inapprox}: the valid $(n,1)$-assignments are in bijection with colorings of $H$, the waiting times corresponding to the colors.
 
 Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, such that, for all $i,j \in [n]^2$, $\lambda(r_i) = \lambda(r_j)$.  Since all routes are of the same size, $TR(A)$ is equal to the maximal waiting time of $A$. Hence, the maximum waiting time is equal to the number of different waiting times required to have a valid assignment. A valid $(n,1)$-assignment which minimizes $TR(A)$ is in bijection with a minimal proper coloring of $H$, which proves the theorem.
+
 \end{proof}
-    %\begin{figure}[ht]
-   % \centering
-   % \scalebox{0.37}{
-    %\begin{tikzpicture}
-   % \tikzset{
-    %  LabelStyle/.style = { rectangle, rounded corners, draw,
-	%		  font = \bfseries },
-    %  EdgeStyle/.append style = {->} }
-    %  \SetGraphUnit{5}
-      
-      
-    %  \node[draw,circle] (s3) at (4, 2) {$s_2$}; 
-     % \node[draw,circle] (s2) at (0, 4) {$s_1$}; 
-      %\node[draw,circle] (s1) at (0, 6) {$s_0$}; 
-
-      %\node[draw,circle] (t3) at (12, 3) {$t_2$}; 
-      %\node[draw,circle] (t2) at (14, 4) {$t_1$}; 
-      %\node[draw,circle] (t1) at (10, 2) {$t_0$}; 
-      
-
-      %\tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
-	%\tikzset{
-     % VertexStyle/.append style = {blue} }
-	%\Vertex[x=-8,y=3]{1}
-	 %     \tikzset{
-      %VertexStyle/.append style = {green} }
-	  %\Vertex[x=-7,y=5]{2}
-
-	   % \tikzset{
-     % VertexStyle/.append style = {red} }
-	  %\Vertex[x=-6,y=4]{3}
-		%\tikzset{
-      %VertexStyle/.append style = {black} }
-      
-%       
-%       \SetVertexNoLabel
-%       \Vertex[x=2,y=5]{A}
-%       \Vertex[x=4,y=5]{B}
-%       \Vertex[x=10,y=5]{C}
-%       \Vertex[x=12,y=5]{D}
-%       \Vertex[x=6,y=3]{E}
-%       \Vertex[x=8,y=3]{F}
-%       \tikzset{
-%       EdgeStyle/.append style = {green} }
-%       \Edge(s2)(A)
-%       \Edge ([yshift=-0.5ex]A.east)([yshift=-0.5ex]B.west)
-%       \Edge(B)(C)
-%       \Edge(C)(D)
-%       \Edge(D)(t2)
-% 
-%       
-%       \tikzset{
-%       EdgeStyle/.append style = {red} }
-%        \Edge ([yshift=-0.5ex]E.east)([yshift=-0.5ex]F.west)
-%       \Edge(s3)(E)
-%       \Edge(F)(t3) 
-% 	\tikzset{
-%       EdgeStyle/.append style = {blue} }
-%       \Edge(s1)(A)
-%      \Edge ([yshift=0.5ex]A.east)([yshift=0.5ex]B.west)
-%       \Edge(B)(E)
-%              \Edge ([yshift=0.5ex]E.east)([yshift=0.5ex]F.west)
-%       \Edge(F)(t1)
-%       
-% 	\tikzset{
-%       EdgeStyle/.append style = {black,-} }
-% 
-%       \Edge(1)(2)
-%       \Edge(1)(3)
-%     \node (1) at (-3,4){\Huge $\rightarrow$};
-% %     
-% %     \node (2) at (-7,0){\Huge H};
-% %     \node (3) at (10,0){\Huge G};
-%     \end{tikzpicture}
-%     }
-%     \caption{Reduction from k-coloring to \minpazl}
-%     \label{fig:reduction}
-%     \end{figure}
 
 	We would like to prove hardness for even more restricted networks, in particular star routed networks.
    The problem \pazl on star routed networks is similar to the minimization of makespan in a two flow-shop with delays (see Section~\ref{sec:wtaheuristic}), a problem known to be $\NP$-complete~\cite{yu2004minimizing}. It suggests that \pazl is $\NP$-complete on star routed network, however we have not been able to prove it yet,  because the makespan cannot easily be encoded in \pazl. If we relax the definition of routed network by allowing loops,  we can model a network with a single half-duplex shared link, that is collisions can happen between datagrams going in both directions. This variant can be shown to be $\NP$-complete by a reduction from the subset sum problem, as it is done for a similar problem of scheduling pair of tasks~\cite{orman1997complexity}.
