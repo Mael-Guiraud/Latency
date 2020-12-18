@@ -433,7 +433,7 @@ void simuldistrib(int seed)
 					
 				break;
 				case 5:
-					a = taboo( &g, P, message_size,1000,10,&nb);
+					a =  taboo( &g, P, message_size,10,10,&nb);
 					
 					#pragma omp critical
 						nb_pas[2] += nb;
@@ -442,7 +442,7 @@ void simuldistrib(int seed)
 				
 				
 				case 6:
-					a = recuit( &g, P, message_size,2000,&nb);
+					a = recuit( &g, P, message_size,100,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;
