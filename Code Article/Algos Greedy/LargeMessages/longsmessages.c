@@ -1262,7 +1262,7 @@ int main(int argc,char * argv[])
 	int nb_simuls = NB_SIMULS;
 	int message_size = MESSAGE_SIZE;
 	
-	int nb_routes = 12;
+	int nb_routes = 8;
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
 	struct timeval tv1, tv2;
@@ -1274,7 +1274,7 @@ int main(int argc,char * argv[])
 		//Toujours mettre exhaustivesearch en derniere
 	char * noms[] = {"ShortestLongest","FirstFit","MetaOffset","RandomOffset","CompactPairs","CompactFit","ExhaustiveSearch"};
 	char buf[256];
-	FILE * F = fopen("results_echec_short12.data","w");
+	FILE * F = fopen("results_echec_short8.data","w");
 	float success[nb_algos];
 	for(int i=0;i<nb_algos;i++)
 	{
