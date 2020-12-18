@@ -14,8 +14,8 @@ All rights reserved.
 #include <omp.h>
 #define MESSAGE_SIZE 2500
 #define PERIOD 10000
-#define ROUTES_SIZE_MAX 30000
-#define NB_SIMULS 1000000
+#define ROUTES_SIZE_MAX 1400
+#define NB_SIMULS 10000
 #define PARALLEL 1
 #define EXHAUSTIVE_SEARCH 0
 double time_diff(struct timeval tv1, struct timeval tv2)
@@ -1266,7 +1266,7 @@ int main(int argc,char * argv[])
 	int size_route = ROUTES_SIZE_MAX;
 	srand(time(NULL));
 	struct timeval tv1, tv2;
-	int nb_algos = 6;
+	int nb_algos = 7;
 	if(EXHAUSTIVE_SEARCH)
 		nb_algos++;
 	int tmp[nb_algos];
@@ -1374,7 +1374,7 @@ int main(int argc,char * argv[])
 			free(graph);
 			
 		}
-			fprintf(F, "%f ",((float)message_size*nb_routes)/period*100);
+			fprintf(F, "%f ",((float)message_size*nb_routes)/period);
 		for(int algo = 0;algo<nb_algos;algo++)
 		{
 			 fprintf(F,"%f ",success[algo]/nb_simuls *100);

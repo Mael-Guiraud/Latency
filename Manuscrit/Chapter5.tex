@@ -5,7 +5,7 @@
 \minitoc
 
 In this chapter, we consider problem similar to \pall with an additional constraint: the sending of the messages in all the sources of the routes must be \textbf{synchronized}. We need to add buffering on the first contention points, otherwise the synchronization constraint leads to collisions. Since it is much harder to find assignments with low latency in this context,
-we allow buffering in every contention points of the routed netork (and not only in the one corresponding to the BBU). Hopefully, this higher degree of liberty to schedule the datagrams should help decrease the process time of the assigments.
+we allow buffering in every contention points of the routed network (and not only in the one corresponding to the BBU). Hopefully, this higher degree of liberty to schedule the datagrams helps decrease the process time of the assigments.
 
 To do so, we modify the model in order to take into account the buffers, and we define the problem \textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency (\spall). The algorithm presented in this section solves \spall on the star shaped network as in Chapters~\ref{chap:PAZL,chap:PAZL}, but also on any directed acyclic multigraphs representing a routed network. We first show that the greedy algorithms similar to those used for star shaped networks are not efficient in routed network of higher contention depth. Then, we present some local search heuristics (hill climbing, simulated annealing, tabu search) that improve on the greedy algorithms and find low latency assignments. Finally, we present an \FPT branch and bound algorithm that gives the optimal solution, which allows to assess the performances of previous algorithms on small networks.
 
@@ -13,50 +13,50 @@ To do so, we modify the model in order to take into account the buffers, and we 
 \section{Model changes}
 \subsection{A synchronized version of \pall}
 
+The fronthaul is still represented by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is ommited. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention vertices, that is buffering is allowed in all vertices. 
+
+In Chapter~\ref{chap:PAZL,chap:PALL}, the routed network is assumed to be a star routed network, a restriction that we now lift.
+We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_1,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(c_i,r) = i$. The contention level of a contention point $c$ is the maximum of its contention level over all routes going through $c$: $cl(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cl(c,r)$. 
 As a reminder, the \textbf{contention depth} of a routed network $N = ({\cal R},\,{\cal B},\,\omega)$ is the maximal number of contention points on a route in the routed network. 
 
-In the previous chapter, the set of vertices in which the buffering was allowed was denoted by ${\cal B}$ and there was exactly one vertex of each route in ${\cal B}$. Here, ${\cal B}$ is equal to ${\cal C}$, the set of contention vertices, that is buffering is allowed in all vertices. 
-In the previous chapter, every routes in $\mathcal{R}$ had the same contention points $c_1$ and $c_2$. Since it is not the case anymore in this chapter, we define $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ belonging to $c$. Let $r \in {\cal R}$, with $r = (s,c_1,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(c_i,r) = i$. The contention level of a contention point $c$ is the maximum of its contention level over all routes going through $c$: $cl(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cl(c,r)$.
 
-
-   Let $r=(s,c_0,\dots,c_l,t)$ be a route. As mentioned above, in order to avoid contention, it is possible to buffer datagrams in contention points. The function $A$, called an \textbf{assignment}, associates an integer value, greater or equal to $0$, to each couple (route,vertex) of the routed network $N = ({\cal R},\,{\cal C},\,\omega)$. Those integers represent the buffering time of the datagrams in the contention points of the network: a datagram of route $r$ waits $A(r,c)$ tics in the buffer of $c$.
+   Let $r=(s,c_0,\dots,c_l,t)$ be a route. As mentioned above, in order to avoid contention, it is possible to buffer datagrams in all contention points. An \textbf{assignment}, denoted by  $A$, is a function which associates a non negative integer value $A(r,c)$ to each couple $(r,c)$ with $r \in \mathcal{R}$ and $c$ a vertex of $r$. The values $A(r,c)$ represent the buffering time: a datagram of route $r$ waits $A(r,c)$ tics in the buffer of $c$.
           
        
 
- The \textbf{arrival time} of a datagram in vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(r,u_i) + \sum_{k=0}^{i-1} A(r,u_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
-  The \textbf{sending time} of a datagram at vertex $u_i$ of $r$, is the first time at which the datagram is sent by $u_i$. It is defined by $s(r,u_i) = t(r,u_i) +  A(r,u_i) $. This is the arrival time of the datagram plus the buffer time given by $A$.
+ The \textbf{arrival time} of a datagram in vertex $c_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $c_i$, and is defined by $t(r,c_i) = \lambda(r,c_i) + \sum_{k=0}^{i-1} A(r,c_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
+  The \textbf{sending time} of a datagram at vertex $c_i$ of $r$, is the first time at which the datagram is sent by $c_i$. It is defined by $s(r,c_i) = t(r,c_i) +  A(r,c_i) $. This is the arrival time of the datagram plus the buffering time given by $A$.
  
   Consider $t$ the last vertex of the route $r$, the transmission time of the datagram on 
   $r$ is denoted by $TR(A,r)$ and is equal to $t(r,t)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
 
-We then define the following problem :
+We then define the following problem:
 
  \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
 
-      \noindent {\bf Input:}  Symmetric routed network $N = ({\cal R},\,{\cal C},\,\omega)$, period $P$, datagram size $\tau$ and a deadline function $d$.%, a bound on the latency $T$.
+      \noindent {\bf Input:}  A routed network $N = ({\cal R},\,\omega)$, period $P$, datagram size $\tau$ and a deadline function $d$.%, a bound on the latency $T$.
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
-      \noindent {\bf Output:} assignment $A$ which minimizes $TR(A)$.
+      \noindent {\bf Output:} an assignment $A$ which minimizes $TR(A)$.
       \\
     
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
-    depending on $n$ the number of routes and $d$ the contention level. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Then, the complexity will surprisingly not depend on $P$, $\tau$ or the weights of the routed network.
+    depending on $n$ the number of routes and $d$ the contention depth. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Surprisingly, the complexity of the presented algorithms not depend on $P$, $\tau$ or the weights of the routed network.
 
 \subsection{Fronthaul networks modelization}\label{sec:fronthaul}
 
 \paragraph*{Contention Depth One}
+
 Each contention vertex of a routed network of contention depth one induces a connected component. 
-Problem \spall can be independently solved on each connected component, hence the case with a single contention point is equivalent to contention depth one. 
-Solving solving \spall over 
-a routed network with a single contention point is equivalent to \wta. 
+Problem \spall can be independently solved on each connected component of the network, hence the case with a single contention point is equivalent to contention depth one. Problem \spall over a routed network with a single contention point is equivalent to \wta, a problem presented in Chapter~\ref{chap:PALL}. 
 
 \paragraph*{Contention Depth Two and More}
 
-The most simple case of contention depth $2$ is a routed network with two contention points. 
+The simplest case of contention depth $2$ is a routed network with two contention points. 
 This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
 there is a single contention point (a shared link between the RRHs and the data centers). 
-This topology, is the star shaped network sutdied in previous chapters for problem \pall.
+This topology is the star shaped network on which we have solved \pazl in Chapter~\ref{chap:PAZL} and \pall in Chapter~\ref{chap:PALL}.
 
 
  \begin{theorem}\label{th:spallHard}
@@ -64,13 +64,13 @@ The problem $\spall$ is $\NP$-hard, even in routed networks of conflict depth $2
 \end{theorem}
 \begin{proof}
 The two flow shop problem studied in~\cite{yu2004minimizing} is shown to be $\NP$-hard. The problem is as follows, a set of jobs have to be processed in sequence on two machines; a job must be processed on machine $1$ before beeing processed on machine $2$. There is, for each job, a delay between the end of the processing on the first machine and the begining of the processing on the second one. The objective is to minimize the makespan. The time needed to process each job is the same.\\
-We reduce an instance of $\spall$ in an instance of the two flow shop proplem: A message is a job, the delay of the jobs are equivalent to the lenght of the routes between the two contention points. We then set the makespan value to $P$, and the instance of $\spall$ becomes an instance of two flow shop.
+We reduce an instance of $\spall$ to an instance of the two flow shop problem: A message is a job, the delay of the jobs are equivalent to the lenght of the routes between the two contention points. We then set the makespan value to $P$, and the instance of $\spall$ becomes an instance of two flow shop.
 \end{proof}
 
 
 
 
-However, star shaped networks may not be the most general topology with regard to problem \spall.
+  Star shaped networks may not be the most general topology with regard to problem \spall.
   This thesis is motivated by a problem arising from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this section is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU is not a node of the routed network, since each RRH has its own BBU, there are no contention when going through the BBU. The datagram arrives at the BBU somewhere on an arc of the route. Once a datagram arrives at its BBU, the answer is computed and sent back over the fronthaul network. The computation time is usually the same for all messages; it is encoded into the arc corresponding to the BBU by adding it to the physical delay of transmission over the arc.
   
   In this section, we consider that the links of the fronthaul network are full duplex, that is the messages can go through the links in both ways, without interacting. Usually the route from the RRH to the BBU is the same (with the orientation reversed) as the route from the BBU to the RRH. This property does not need to be enforced in our theoritical modeling, but it matches real fronthaul network and we will use such examples for our experiments. 
@@ -705,33 +705,37 @@ Let us denote $CA_i$ the \textbf{partial Compact Assignment} function. This is t
 A \textbf{restricted routed Network} is defined by $N_i = (CA_i,{\cal R}',{\cal C}',\omega')$. It is a routed network $N = ({\cal R},{\cal C},\omega)$ modified by a partial compact assignment $CA_i$.
 Let us explain how to build $N_i$ from $N$ and $CA_i$.
 Consider that $CA$ is defined only on the first contention point $c_1$ on a routed network $N$.
-A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. Indeed, as explianed on Section~\ref{sec:real}, the function $Real$ can be independently computed on each contention points of contention level $1$, then on each contention points of level $2$ etc. Thus, we can compute $Real(CA_1)$ that gives $A(r,c_1)$ for each $r \in {\cal R}_{c_1}$. Also, since $c_1$ is not considered anymore in $N_i$, ${\cal R}' = {\cal C} \backslash {c_1}$\\
-This transformation can be repeated on each contention points for which $CA$ is defined, because, as we defined, the contention points are ordered by increasing contention level.
+A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. Indeed, as explianed on Section~\ref{sec:real}, the function $Real$ can be independently computed on each contention points of contention level $1$, then on each contention points of level $2$ etc. Thus, we can compute $Real(CA_1)$ that gives $A(r,c_1)$, the buffers of the datagrams on $c_1$ for each $r \in {\cal R}_{c_1}$. Then, $c_1$ is not considered anymore in $N_i$, that is ${\cal R}' = {\cal C} \backslash {c_1}$.\\
+Because the contention points are ordered by increasing contention level, it is possible to repeat this transformation on each contention points $j$ with $j\leq i$.
 
 \subsubsection{Relaxation on a single contention point}
 
-In order to describe the Branch and Bound Algorithm on the next section, we need to be able to compute an upper bound for $TR(A)$, that is, the optimal value of the solution. This upper bound evolves following the partial compact assignment. The objective is to evaluate as early as possible if a choice of compact assignment is bad in order to cut the exploration of the tree.
+In order to describe the Branch and Bound Algorithm on the next section, we need to be able to evaluate the quality of the partial solution given by $CA_i$. The quality of the solution evolves each time $CA$ is extended to another contention point. The objective is to evaluate as early as possible if a choice of compact assignment is bad in order to cut the exploration of the tree.
 
-We first show how to transform an instance of \spall into an instance on a single contention points, which is the problem \wta solved in Chapter~\ref{chap:PALL}. 
-
-Consider the routed network $N = ({\cal R},{\cal C},\omega)$. We want to compute an upper bound of $TR(A)$ with $A$ the optimal solution for \spall. 
+\paragraph{Reducing \spall to \wta}
+We first show how to transform an instance of \spall into an instance of \wta (solved in Chapter~\ref{chap:PALL}) on a single contention points. 
 
 \begin{lemma}\label{lemma:reduce}
 An instance $I$ of \spall with a routed network $N$, and deadline function $d$ can be reduced to an instance $I'$ of \wta. 
 \end{lemma}
 \begin{proof}
-To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$. Remeber that an instance of \wta consists in a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
-We consider there is no other contention points than $c_1$ in the rest of the network. Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - \lambda(r) - t(r,c_1) + \lambda(r,c_1)$. In the first level of contention points, $t(r,c_1) = \lambda(r,c_1)$, but while extending this reduction on the next contention level, $t(r,c_i)$ can be impacted by buffering times.
-
-Such a relaxation can be done on every contention point $c_i$ when $CA$ is defined on all contention points of the level preceding $cl(c_i)$. Indeed, the arrival time $t(r,c_i)$ and the deadline $d'(r)$ are computed for each route, taking into account the buffers defined by $Real(CA)$.
+To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$ ande consider there is no other contention points than $c_1$ in the rest of the network. Remeber that an instance of \wta consists in a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
+ Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - t(r,c_1) $
 \end{proof}
 
 
+Consider the routed network $N = ({\cal R},{\cal C},\omega)$. We want to compute an upper bound on $TR(A)$, the optimal solution for \spall. To do so, apply the reduction of Lemma~\ref{lemma:reduce} on every contention points. This means we solve $|{\cal C}|$ instance of \wta denoted $(A_{c_1},\ldots,A_{|{\cal C}|})$ independently on each contention point with \ASPMLS. Then take $\max_{i=1}^{|{\cal C}|} TR(A_i)$. Since \ASPMLS gives an optimal solution for \wta, we obtain an upper bound for the instance $A$.
 
-\begin{lemma}\label{lemma:bound}
-Given a partial compact assignment $CA_i$, one can compute an upper bound for the best solution for \spall that can be built with $CA_i$.
+
+\begin{lemma}\label{lemma:quality}
+Given a partial compact assignment $CA_i$, one can evaluate the quality of the best solution for \spall that can be built extending $CA_i$.
 \end{lemma} 
-\begin{proof}First, build an instance $I'$ of \wta for each contention points of level lower or equal to $cl(c_i)$ as defined above. Then, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built following $CA_i$.
+\begin{proof}
+
+We apply the same reduction as in Lemma~\ref{lemma:reduce}. While creating an instance of \wta for $c_1$, remember that for all $r \in {\cal R}_{c_1}$,  $d'(r) = d(r) - t(r,c_1)$. In the first level of contention points, $t(r,c_1) = \lambda(r,c_1)$, but while extending this reduction on the next contention level, $t(r,c_i)$ can be impacted by buffering times.
+
+Such a relaxation can be done on every contention point $c_i$ if $CA_k$ is defined such that $cl(c_k) < cl(c_i)$. This means that all contention points of the level preceding $cl(c_i)$ have a chosen compact assignment. Indeed, the arrival time $t(r,c_i)$ and the deadline $d'(r)$ are computed for each route, taking into account the buffers defined by $Real(CA)$.
+Once we have built an instance $I'$ of \wta for each those contention points, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built by extending $CA_i$.
 \end{proof}
 
 \subsection{The Branch and Bound Algorithm}\label{sec:branchBound}
@@ -848,7 +852,7 @@ First, an upper bound of the optimal solution is computed using simulated anneal
 
 When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) < X$ then we found an assignment that have better performance that the previous one, and the upper bound is thus updated.
 
-This bound helps us to cut the exploration of the tree as soon as possible. Each time the algorithm reaches a leaf of a partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:bound} we evaluate the quality of the best solution that can be built from $CA_i$. If the value computed is greater than the upper bound already computed, we cut the tree and we backtrack to the following branch.
+This bound helps us to cut the exploration of the tree as soon as possible. Each time the algorithm reaches a leaf of a partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:quality} we evaluate the quality of the best solution that can be built from $CA_i$. If the value computed is greater than the upper bound already computed, we cut the tree and we backtrack to the following branch.
 
 
 
