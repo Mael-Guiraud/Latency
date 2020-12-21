@@ -28,9 +28,9 @@ As a reminder, the \textbf{contention depth} of a routed network $N = ({\cal R},
   The \textbf{sending time} of a datagram at vertex $c_i$ of $r$, is the first time at which the datagram is sent by $c_i$. It is defined by $s(r,c_i) = t(r,c_i) +  A(r,c_i) $. This is the arrival time of the datagram plus the buffering time given by $A$.
  
   Consider $t$ the last vertex of the route $r$, the transmission time of the datagram on 
-  $r$ is denoted by $TR(A,r)$ and is equal to $t(r,t)$. We define the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(A,r) $. This is the time elapsed before the reception of the beginning of the last datagram. 
+  $r$ is denoted by $TR(r,A)$ as in Chapter~\ref{chap:pall} and is equal to $t(r,t)$. Then, the \textbf{transmission time} of an assignment $A$ as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(r,A) $. This is the time elapsed before the reception of the beginning of the last datagram. 
 
-We then define the following problem:
+  As in Chapter~\ref{chap:pall}, the objective is to minimize $TR(A)$, we thus define \minstra, the problem of finding the minimal value of $TR(A)$ where $A$ is a $(P,\tau)$-periodic valid assignment for a routed network. We define the decision problem of \minstra which is called \spall (\textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency) in which each route must respect a deadline function $d$.
 
  \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
 
@@ -38,7 +38,7 @@ We then define the following problem:
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
-      \noindent {\bf Output:} an assignment $A$ which minimizes $TR(A)$.
+      \noindent {\bf Question:} Does there exist a $(P,\tau)$-periodic assignment of $N$ such that for all $r \in {\cal R}$, $TR(r,A) \leq d(r)$?
       \\
     
     Several parameters are important for the study of \spall. The algorithms we present have a complexity
@@ -60,35 +60,18 @@ This topology is the star shaped network on which we have solved \pazl in Chapte
 
 
  \begin{theorem}\label{th:spallHard}
-The problem $\spall$ is $\NP$-hard, even in routed networks of conflict depth $2$ (star shaped network)
+The problem $\minstra$ is $\NP$-hard, even in routed networks of conflict depth $2$ (star shaped network)
 \end{theorem}
 \begin{proof}
-The two flow shop problem studied in~\cite{yu2004minimizing} is shown to be $\NP$-hard. The problem is as follows, a set of jobs have to be processed in sequence on two machines; a job must be processed on machine $1$ before beeing processed on machine $2$. There is, for each job, a delay between the end of the processing on the first machine and the begining of the processing on the second one. The objective is to minimize the makespan. The time needed to process each job is the same.\\
-We reduce an instance of $\spall$ to an instance of the two flow shop problem: A message is a job, the delay of the jobs are equivalent to the lenght of the routes between the two contention points. We then set the makespan value to $P$, and the instance of $\spall$ becomes an instance of two flow shop.
+The two flow shop problem studied in~\cite{yu2004minimizing} is shown to be $\NP$-hard. The problem is defined as follows; a set of jobs have to be processed in sequence on two machines. A job must be processed on machine $1$ before beeing processed on machine $2$. There is, for each job, a delay between the end of the processing on the first machine and the begining of the processing on the second one. The objective is to minimize the makespan. The time needed to process each job is the same.\\
+We reduce an instance of the two flow shop problem to an instance of $\spall$ on a star routed network (cf Section~\ref{sec:star_routed_network}): A job is a datagram, the delay of the jobs are equivalent to the lenght of the arcs $(c_1,c_2)$.
+We arbitrarily fix the period such that $P > n\tau$, where $n$ is the maximal number of datagram on a same contention point.
+Since the makespan represent the same value as $TR(A)$, solving an instance of two flow shop is equivalent to solve an instance of $\minstra$.
 \end{proof}
 
 
-
-
-  Star shaped networks may not be the most general topology with regard to problem \spall.
-  This thesis is motivated by a problem arising from Cloud RAN: messages containing local radio information are sent by a radio antena (called RRH) to a BaseBand Unit (BBU) in a datacenter through a fronthaul network. Then, the datacenter sends back an answer to the RRH. The routed network presented in this section is used to modelize both ways of this communication, from an RRH to the corresponding BBU and back to the RRH. Hence, each RRH corresponds to the first and the last vertex of a route. The BBU is not a node of the routed network, since each RRH has its own BBU, there are no contention when going through the BBU. The datagram arrives at the BBU somewhere on an arc of the route. Once a datagram arrives at its BBU, the answer is computed and sent back over the fronthaul network. The computation time is usually the same for all messages; it is encoded into the arc corresponding to the BBU by adding it to the physical delay of transmission over the arc.
+  Star routed networks may not be the most general topology with regard to problem \spall.
   
-  In this section, we consider that the links of the fronthaul network are full duplex, that is the messages can go through the links in both ways, without interacting. Usually the route from the RRH to the BBU is the same (with the orientation reversed) as the route from the BBU to the RRH. This property does not need to be enforced in our theoritical modeling, but it matches real fronthaul network and we will use such examples for our experiments. 
-
-  %Remark that the routed network induced by such topologies are symmetric. Pas vraiment
-  
-    Several BBUs are gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all routes use the same link in the way back, it is not considerd as a contention point, as illustrated in figure~\ref{fig:bbuaggreg}. If the length of the links into some datacenter are different, the contention point before the datacenter is also a contention point at the exit of the datacenter and the routes are symmetrical around this vertex.
-
-    \begin{figure}
-
-  \centering
-  \includegraphics[scale=0.8]{Chapitre5/bbuaggreg}
-
-
-\caption{One or several contention points around the BBU according to the lenght of the link}
-\label{fig:bbuaggreg}
-\end{figure}
-
 The fronthaul networks we study have \textbf{coherent} routings, a classical 
 requirement in telecommunication networks (see e.g. ~\cite{schwiebert1996necessary}). It means that
 if the routes $r$ and $r'$ go through two contention points $u$ and $v$, they have the same subpath
@@ -103,7 +86,7 @@ to the arc representing the BBU and then form the arc representing the BBU to th
  We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in {\cal R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments for $\prec$ to solve \spall.
 
 We explain in this section how to represent most assignment in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without a compact representation when solving \spall. 
-It allows to design an FPT algorithm for \spall by going through all compact representations, but also to design good polynomial time heuristics using taboo search or simulated annealing, since one can easily define the neighborood of a compact representation.
+It allows to design an FPT algorithm for \spall by going through all compact representations, but also to design good polynomial time heuristics using tabu search or simulated annealing, since one can easily define the neighborhood of a compact representation.
 
 
 \begin{definition}[Compact assignment]
@@ -325,9 +308,22 @@ The contention vertices are still managed level by level. For a vertex $u$, we e
 
 \subsection{Random generation of routed network}
 
+This chapter presents several algorithms that each have several variants or need to be parametrized. Thus, each section of subsection describing a new algorithm present some experimental results. We describe here how the instances are generated for every experiment of the chapter untill Section~\ref{sec:evalperfspall} that present some more general performance evaluations.
+
+First, remark that, in contrary to our representation of star routed networks, we consider that the physical length of the links into the datacenter are the same for all routes. Indeed, several BBUs are gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all routes use the same link in the way back, it is not considerd as a contention point, as illustrated in figure~\ref{fig:bbuaggreg}. If the length of the links into some datacenter are different, the contention point before the datacenter is also a contention point at the exit of the datacenter and the routes are symmetrical around this vertex.
+
+    \begin{figure}
+
+  \centering
+  \includegraphics[scale=0.8]{Chapitre5/bbuaggreg}
+
+
+\caption{One or several contention points around the BBU according to the lenght of the link}
+\label{fig:bbuaggreg}
+\end{figure}
+
 We propose several experiments to assess the practical performance (in speed and quality) of the poposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in figure~\ref{fig:randomnetworks}, in which the dotted arcs represents each the arcs of two routes. 
 
-As explained is section~\ref{sec:fronthaul}, there is only one contention vertex for each datacenter, they are the two vertices of contention level $2$.
    \begin{figure} 
 	\centering
 	\includegraphics[scale=0.8]{Chapitre5/networksrandom}
@@ -336,21 +332,20 @@ As explained is section~\ref{sec:fronthaul}, there is only one contention vertex
 \label{fig:randomnetworks}
 \end{figure}
 
-To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the impact of those parameters, in terms of computation time and quality, on the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the graph as in Figure~\ref{fig:randomnetworks}. The results are not significantly impacted if we change those values. 
+To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the impact of those parameters, in terms of computation time and quality, on the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the graph as in Figure~\ref{fig:randomnetworks}. The difference between the performances of the presented algorithms are not significantly impacted if we change the values of the number of contention points. 
 
  
  The impact of the load on the quality of the results was investigated: When the load is increased, the performances of the local search algorithm does not changes significantly. Otherwise, we choose to fix the load to $80\%$, which is, in practice, an already high load. This means that $P = \frac{\tau \times n}{0.8}$, whith $n$ the maximal number of routes over a contention vertex. The size of the C-RAN traffic depends of the service requirement~\cite{mobile2011c}. Here, we fix $\tau = 2500$ tics.
   
-In a C-RAN context, the number of route is low. In the network we study, there is $n=8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the number of routes in the graph at the end of this section. The length of the arcs is drawn uniformly between $0$ and $P$. This choice makes the periodicity of our problem impactful, and does not allow for algorithms reused from a non periodic setting.
+In a C-RAN context, the number of route is low. In the network we study, there is $n=8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We will study the impact of the number of routes in the graph in Section~\ref{sec:evalperfspall}. The length of the arcs is drawn uniformly between $0$ and $P$. This choice makes the periodicity of our problem impactful, and does not allow for algorithms reused from a non periodic setting.
 
+We also remember the notion of \textbf{margin} of a route $r$, which is equal to $d(r) - \lambda(r)$, that is, the difference between the deadline function and the physical delay of the route. In other words, this represent the time allowed for logical delays, that are set by the assignments.
 
 
 \subsection{Success Rate and Performance of the Greedy Algorithms}
 
-\todo{Mettre les settings expérimentaux ici, sans s'attarder sur leur justification pour l'instant. Définir la additionnal latency qui va servir de mesure de performance.}
 
-
-We want to compare the succes rate and the performance of the different algorithms presented here.
+We want to compare the succes rate and the performance of the different algorithms presented in this section.
 First, we consider the impact of the load of the network on the succes rate of the three greedy algorithms.
 The more we increase the load, the less margin the algorithms will have to schedule the datagrams. We have seen that all greedy algorithms succeeds when the load is less than $0.5$ and that GP will always succeed.
 Figure~\ref{tab:success} shows the success rate of \greedydeadline and \greedynormalized on $1000$ random instances for loads from $70\%$ to $100\%$. %The graph are gererated as explained in section~\ref{subsection:CRANGRAPH}.
@@ -374,7 +369,7 @@ Figure~\ref{tab:success} shows the success rate of \greedydeadline and \greedyno
  \end{figure}
  \end{center}
  
- \greedydeadline fails less than \greedynormalized on highly loaded networks, while \greedynormalized seems more robust on loads between $80\%$ and $90\%$. We now want to compare the performance of those algorithms. Figure~\ref{fig:90load} shows the additional latency induced by the assignments given by the algorithms, when there is one. As expected, the additional latency increases when the load increases and \greedypacked, that trades additional latency for success rate, performs worst than \greedydeadline and \greedynormalized when they are able to find an assignment.
+ \greedydeadline fails less than \greedynormalized on highly loaded networks, while \greedynormalized seems more robust on loads between $80\%$ and $90\%$. We now want to compare the performance of those algorithms. Figure~\ref{fig:90load} shows the margin needed by the assignments given by the algorithms, when there is one. As expected, the margin increases when the load increases and \greedypacked, that trades margin for success rate, performs worst than \greedydeadline and \greedynormalized when they are able to find an assignment.
 \greedynormalized performs better than \greedydeadline when it finds an assignment.  On vertices with high load,
  the three algorithms almost always find the same assignment (or fail). On vertices of small load, the constraint of packing the datagram imposed by \greedydeadline worsen the latency.
 
@@ -400,23 +395,23 @@ local search algorithms with a first assignment of sufficient quality.
 
 \section{Local Search Heuristics}
 
-The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: hill climbing, tabu search and simulated annealing. These methods works as long as a relevant notion of neighborood of a solution is proposed. The neighborood relation must satisfy two properties: it must be quick to compute (hence not to large) and the implicit graph of solutions defined
-by the neighborood relation should be connected. We now propose a simple neighborood relation over compact assignments.
+The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: hill climbing, tabu search and simulated annealing. These methods works as long as a relevant notion of neighborhood of a solution is proposed. The neighborhood relation must satisfy two properties: it must be quick to compute (hence not to large) and the implicit graph of solutions defined
+by the neighborhood relation should be connected. We now propose a simple neighborhood relation over compact assignments.
 
 Let $u$ be a contention vertex of a network, and let $CA$ be a compact assignment for this network, 
  which associates the pair $(O_u,S_u)$ to $u$. Let $O_u = (r_1,\dots,r_l)$.
-  Let $r_i \in \mathcal{R}_u$, the \emph{$r_i$-neighborood} of $(O_u,S_u)$ is the set of pairs $(O,S)$ such that:
+  Let $r_i \in \mathcal{R}_u$, the \emph{$r_i$-neighborhood} of $(O_u,S_u)$ is the set of pairs $(O,S)$ such that:
  
  \begin{enumerate} 
  \item $O = O_u$ and $S_u = S$ or $S \triangle \{r_i\}$  
  \item $O = (r_1,\dots,r_{i-2},r_{i},r_{i-1},\dots,r_{l})$ and $S_u = S$ or $S \triangle \{r_i\}$ or  $S \triangle \{r_{i-1}\}$ or $S \triangle \{r_i,r_{i-1}\}$ 
  \end{enumerate}
 
-Informally, a compact representation is in the $r$-neighborood of another one if it can be obtained by 
+Informally, a compact representation is in the $r$-neighborhood of another one if it can be obtained by 
 moving down $r$ once (or not changing it) in the order and adding or removing $r$ and the previous route from the set. 
-Remark that the $r$-neighborood of any pair $(O_u,S_u)$ has at most $6$ members (it can be $4$ when the route $r$ is in first position and cannot be exchanged with the previous one). 
+Remark that the $r$-neighborhood of any pair $(O_u,S_u)$ has at most $6$ members (it can be $4$ when the route $r$ is in first position and cannot be exchanged with the previous one). 
 
-The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborood of $(O_u,S_u)$. Finally, the \emph{neighborood} of an assignment $CA$ is the union for all $r \in {\cal R}$ of the $r$-neighboroods of $CA$.
+The \emph{$r$-neighborhood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborhood of $(O_u,S_u)$. Finally, the \emph{neighborhood} of an assignment $CA$ is the union for all $r \in {\cal R}$ of the $r$-neighborhoods of $CA$.
 
 % 
 % 
@@ -439,7 +434,7 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 % $$ \bigcup_{r\in{\cal R}} (\prod_{u\in r} N_u ) $$.
 
  Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
- a routed network. Then, a compact representation has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
+ a routed network. Then, a compact representation has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborhood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborhood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
   All algorithms presented in this section will do a walk in the transposition graph, trying to find a vertex with optimal
   transmission time. 
 
@@ -478,7 +473,7 @@ The \emph{$r$-neighborood} of a compact assignment $CA$ is the set of all compac
 }
 
 
- \caption{Transposition graph for one contention point with $O = (0,2,1)$ and $S = \{1\}$.}
+ \caption{Neighborhood for one contention point with $O = (0,2,1)$ and $S = \{1\}$.}
 
 \label{fig:partialtree}
 \end{center}
@@ -490,7 +485,7 @@ $CR'$ is equal to $CR$ except on $u$ where it is equal to $(O_u,S_u \cup E)$.
 \end{lemma}
 \begin{proof}
 The path is by adding elements in $E$ one by one. 
- To prove the existence of the path, it is enough to prove that for  $E = \{v\}$. By definition, $(O_u,S_u \cup{v})$ is in the neighborood of $(O_u,S_u)$. However, one should also prove that $CR'$ is realizable.
+ To prove the existence of the path, it is enough to prove that for  $E = \{v\}$. By definition, $(O_u,S_u \cup{v})$ is in the neighborhood of $(O_u,S_u)$. However, one should also prove that $CR'$ is realizable.
   Since the order in which the buffers are fixed by the algorithm of $Real$ is the same for $(O_u,S_u)$ and $(O_u,S_u \cup{v})$, it is easy to prove by induction that the normalized sending times of $(O_u,S_u \cup{v})$ are less than the normalized sending times of $(O_u,S_u)$. Thus, $CR$ realizable implies $CR'$ realizable. Indeed, 
 a compact assignment is realizable if and only if the last normalized sending time is less than $P - \tau$.
 \end{proof}
@@ -506,7 +501,7 @@ $O_u$ and let $E = \mathcal{R}_u \setminus \{ r \}$. By Lemma~\ref{lemma:path}, 
 $(O_u,S_u)$ to $(O_u,E)$. Consider now $O_u''$, the order $O_u'$ whith $r$ placed in first position.
 There is a path from $(O_u,E)$ to $(O_u'',E)$. Indeed, any order is realizable, when all elements but the first
 are in $E$ because there are no constraints on their normalized sending time. 
-Now, let $r'$ be the first element of $O_u'$. By definition, $(O_u',E \triangle \{r,r'\})$ is in the $r'$ neighborood of $(O_u'',E)$. Moreover, $(O_u',E \triangle \{r,r'\})$ is realizable because $E \triangle \{r,r'\}$ is equal to all routes but the first in $O_u'$. 
+Now, let $r'$ be the first element of $O_u'$. By definition, $(O_u',E \triangle \{r,r'\})$ is in the $r'$ neighborhood of $(O_u'',E)$. Moreover, $(O_u',E \triangle \{r,r'\})$ is realizable because $E \triangle \{r,r'\}$ is equal to all routes but the first in $O_u'$. 
 Finally, using Lemma~\ref{lemma:path} once again prove there is a path between $(O_u',E \triangle \{r,r'\})$ and $(O'_u,S'_u)$ since $(O'_u,S'_u)$ is realizable and $S'_u \subseteq E \triangle \{r,r'\}$, which proves the theorem.
  \end{proof}
 
@@ -523,7 +518,7 @@ Figure~\ref{fig:descente07} shows the difference between initalizing the hill cl
 \begin{figure}[h] 
 	\centering
 	\includegraphics[scale=0.3]{Chapitre5/descente07}
-\caption{ Additional latency needed to find a solution for hill climbing, intialized with HGN, 1,10 or 100 random compact representation.}
+\caption{ Margin needed to find a solution for hill climbing, intialized with HGN, 1,10 or 100 random compact representation.}
 \label{fig:descente07}
 \end{figure}
 Initializing the hill climbing with 100 randoms compact representation seems to give better results. Nevertheless remember that the set of compact representation does not always give a valid assignment. Drawing some random compact representation can be a limited option when the set of compact representation grows, because the chance of drawing a non valid, or bad random compact representation grows too.
@@ -531,7 +526,7 @@ Initializing the hill climbing with 100 randoms compact representation seems to 
 Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes} represent the probability of drawing at least one compact representation that gives a valid assignment, when drawing $1$,$10$ or $100$ random compact representations. Each result is computed on $1000$ random instances.
 
 \begin{minipage}[c]{.45\linewidth}
-\vspace{-0.4cm}
+\vspace{-0.2cm}
 \begin{tabular}{ |c|c|c|c|c| }
 \hline
     Load & $80\%$& $90\%$ & $100\%$\\
@@ -568,11 +563,11 @@ Those experiences shows that, even if initializing the hill climbing with $100$ 
 
 
 We thus propose an hybrid initialization of hill climbing: Between the assigments given by initializing the hill climbing either with HGN, or with $1$,$10$ or $100$ random compact representation, return the one that minimize $TR(A)$. We call this initialization respectively hybrid $1$, hybrid $10$ or hybrid $100$.
-Figure~\ref{fig:hybridhill} shows the additional latency needed by the best solution given by hill climbing, with different initialisations. The results are computed on $1000$ random instances.
+Figure~\ref{fig:hybridhill} shows the margin needed by the best solution given by hill climbing, with different initialisations. The results are computed on $1000$ random instances.
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.3]{Chapitre5/hybridhill}
-\caption{ Additional latency needed to find a solution for hill climbing, intialized with HGN, hybrid $1$, hybrid $10$ or hybrid $100$.}
+\caption{ Margin needed to find a solution for hill climbing, intialized with HGN, hybrid $1$, hybrid $10$ or hybrid $100$.}
 \label{fig:hybridhill}
 \end{figure}
 
@@ -591,22 +586,37 @@ We now focus on how many steps hill climbing computes before ending. Tabular~\re
 
  The more the hill climbing does steps before ending, the more the initial solution is improoved. When hill climbing starts from a \hybridgreedynormalized, it does not improove often the solution whereas with a huge number of random compact representation, the probability of drawing a solution that can be improoved a lot is increased.
  
- The concept of drawing a large number of random compact representation to initialize the hill climbing link with the concepts of taboo search and simulated annealing. Indeed, the two next meta-heuristics are designed to explore the compact representations, even if a local optimum is reached. Taboo remembers the explored solutions, in order to avoid it, and simulated annealing browse the compact representations with a stochastic aspect.
+ The concept of drawing a large number of random compact representation to initialize the hill climbing link with the concepts of tabu search and simulated annealing. Indeed, the two next meta-heuristics are designed to explore the compact representations, even if a local optimum is reached. Tabu remembers the explored solutions, in order to avoid it, and simulated annealing browse the compact representations with a stochastic aspect.
+
 \subsection{Tabu Search}
 
 Tabu search is a variation on hill climbing using memory. We also select the compact assignment $CA'$ which minimizes 
 $TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid loop in local minimum, we use a memory of the last 
 $N$ solutions explored and we forbid to visit them again. This algorithm can still loop on a cycle larger than $N$,
 hence we must fix some integer $M$ and stop the algorithm after $M$ steps.
+One can change the size $N$ and $M$ in tabu search. 
+
+We first investigate the impact of varying $M$. To do so, we fixe $N = M$ and we compute for a same instance tabu serach on $500$, $1.000$ or $2.000$ steps. After some simulation on few instances ($100$) with $M \in [10;2000]$, it appears that with $N=M$, the numbers of steps to find the best assignment are very close when $M > 50$. This means that tabu search finds the optimal solutions very fast in average. Those simulations have been made with $8$ and $20$ routes and the observation is the same.
 
 
-One can change the size $N$ and $M$ in tabu search -> explore how to fix these parameters. 
+%Figure~\ref{fig:nbstepstabu} shows the margin needed by the assignment given by tabu search for each regime.
+%\begin{figure}[h]
+%  \centering
+%  \includegraphics[scale=0.3]{Chapitre5/tabounbsteps}
+%\caption{ Margin needed by tabu search when computing $500$, $1.000$ or $2.000$ steps}
+%\label{fig:nbstepstabu}
+%\end{figure}
+%\todo{ce n'est pas la bonne figure, ca tourne. resultats?}
 
-After reaching a local optimum, tabu search continues it execution untill it has executed a given number of steps.
-Thus, we investigate the average number of steps needed by the tabu search to find the assignment it returns. Remember that, to each step, the search explores the entire neighborhood of a solution. The computation of a large number of steps is then long.
+%Thus, we investigate the average number of steps needed by the tabu search to find the assignment it returns. Remember that, to each step, the search explores the entire neighborhood of a solution. The computation of tabu search is thus exponential in the contention depth and linear in the number of routes.
 
-Tabu search has a memory, it remembers the compact assignment for which it explored the neighborhood for the $x$ last solutions in order to not visit them again. Varying the value of $x$ can improve or worsen the performance of the tabu search.
-Figure~\ref{fig:tabudistrib} shows cumulative distribution of the additional latency needed by tabu search with different size of memory. The number of steps computed by the tabu search is $1000$.
+%Tabu search has a memory, it remembers the compact assignment for which it explored the neighborhood for the $x$ last solutions in order to not visit them again. Varying the value of $x$ can improve or worsen the performance of the tabu search.
+
+
+Tabu search could either be improved or worsen by the value of $N$. Indeed, a too large for $N$ could restrict the tabu search to highly connected parts of the transposition graph while a little value of $N$ could induce loops on the search.
+
+We fix $M = 1000$ and we compute tabu search with $N$ equals $10$,$100$ or $1000$.
+Figure~\ref{fig:tabudistrib} shows cumulative distribution of the margin needed by tabu search with different values for $N$. 
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.3]{Chapitre5/taboo_distrib}
@@ -620,7 +630,7 @@ Also, it appears that, in most of $60\%$ of the cases, tabu search finds it's be
 
 \subsection{Simulated annealing}\label{sec:recuit}
 
-Simulated annealing works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn unfiformly at random in the neighborood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. The algorithm is an anser to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
+Simulated annealing works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn unfiformly at random in the neighborhood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. The algorithm is an anser to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
 
  When using simulated annealing, we need to fix several parameters: initial temperature, number of steps before decreasing the temperature, factor by which the temperature is decreased, the number of steps without improvement before ending the process.
 
@@ -644,7 +654,7 @@ Simulated annealing works as follow. An initial {\emph temperature} is set and a
 \item Deduce $t_0$ from the relation: $e^{-\frac{\bar{\Delta}}{t_0}} = \tau_0$ 
  \end{enumerate}
  
- Tab.~\ref{tab:poorgood} shows the additional latency of the solutions produced by simulated annealing when intialized with temperatures computed from the previous routine. The initial solution used by simulated annealing is the solution given by $0$-HHC. The experiment is made on $100$ random instances.
+ Tab.~\ref{tab:poorgood} shows the margin of the solutions produced by simulated annealing when intialized with temperatures computed from the previous routine. The initial solution used by simulated annealing is the solution given by $0$-HHC. The experiment is made on $100$ random instances.
 \begin{center}
 \begin{tabular}{ |c|c|c|c|c| }
 \hline
@@ -652,7 +662,7 @@ Simulated annealing works as follow. An initial {\emph temperature} is set and a
     \hline
     $t_0$ & $2200$& $13000$\\
     \hline
-    Additional latency & $4212$ & $4217$ \\
+    Margin & $4212$ & $4217$ \\
         \hline
     Computation time (ms) &  $2.817$&$4.035$ \\
 
@@ -666,12 +676,12 @@ Simulated annealing works as follow. An initial {\emph temperature} is set and a
  
  In simulated annealing, the temperature decrease slowly. Each \textbf{level}, several compact representation are drawn. At the end of a level, the temperature is decreased. Drawing too few compact representation per level induce decrasing the temperature too fast and thus, reducing the efficiency of simulated annealing. In an ohter hand, drawing too much compact representation increases the computation time of the algorithm.
   
- We investiage the impact of drawing a large number of compact representation before decreasing the temperature. Figure~\ref{fig:stepsrecuit} shows the additional latency needed by simulated annealing with different number of compact representation draw for each level. Those results comes from $1000$ random instances, in which the temperature is set to $2200$.
+ We investiage the impact of drawing a large number of compact representation before decreasing the temperature. Figure~\ref{fig:stepsrecuit} shows the margin needed by simulated annealing with different number of compact representation draw for each level. Those results comes from $1000$ random instances, in which the temperature is set to $2200$.
  
  \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.4]{Chapitre5/stepsrecuit}
-\caption{ Additional latency needed to find a solution for simulated annealing, with a different number of compact representation drawn to each level.}
+\caption{ Margin needed to find a solution for simulated annealing, with a different number of compact representation drawn to each level.}
 \label{fig:stepsrecuit}
 \end{figure}
 It appears that drawing more than $100$ compact representation per level does not improove the quality of the solution, while it increase the computation time.
@@ -902,7 +912,7 @@ Mettre ici le traitement spécifique du dernier niveau -> analyse de la complexi
 As explained in Section~\ref{sec:branchBound}, the last level of the tree can be computed independently. For one contention point with $s$ datagrams , one can compute an assignment with a complexity $s!2^{s}$. By using Lemma~\ref{lemma:reduce}, we can compute the assignment with \ASPMLS in time $2^ss^3log(s)$. By doing this on each contention points of the last level and taking the maximum of the values, we obtain the best value of $TR(A)$ that can be found.
 
 \section{Experimental Evaluation}
-
+\label{sec:evalperfspall}
 Comparer les temps de calcul et la qualité des solutions trouvées. 
 Le faire pour plusieurs régimes:
 -8 routes vs bcp de routes (branch and bound impossible)
@@ -919,7 +929,7 @@ Expliquer les rapports/différences de ces méthodes avec les algos greedys.
 Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
 \todo{expliquer pourquoi ces valeurs}
 
-Figure~\ref{tab:instances} shows the average additional latency needed by the branch and bound and the greedy algorithm that we call HGN presented in next section (used to intialize the local search algorithms) for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
+Figure~\ref{tab:instances} shows the average margin needed by the branch and bound and the greedy algorithm that we call HGN presented in next section (used to intialize the local search algorithms) for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
 
 \begin{center}
 \begin{figure}
@@ -939,5 +949,5 @@ Figure~\ref{tab:instances} shows the average additional latency needed by the br
  \label{tab:instances}
  \end{figure}
  \end{center}
- The objective is to find the instances in which a solution given can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the additional latency needed by HGN remains in the same order of magnitude.
+ The objective is to find the instances in which a solution given can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the branch and bound algorithm) is clearly lower than with the other kinds of instances while the margin needed by HGN remains in the same order of magnitude.
  

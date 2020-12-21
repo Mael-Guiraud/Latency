@@ -334,7 +334,7 @@ void simuldistrib(int seed)
 	srand(seed);
 	int nb_algos =7 ;
 	char * noms[] = {"Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
-	printf("%d contention \n",NB_COLLISIONS);
+
 	
 	
 	int message_size = MESSAGE_SIZE;
@@ -433,7 +433,7 @@ void simuldistrib(int seed)
 					
 				break;
 				case 5:
-					a =  taboo( &g, P, message_size,10,10,&nb);
+					a =  taboo( &g, P, message_size,1000,10,&nb);
 					
 					#pragma omp critical
 						nb_pas[2] += nb;
@@ -938,8 +938,8 @@ void simuldescente(int seed)
 void simultaboo(int seed)
 {
 	srand(seed);
-	int nb_algos =2 ;
-	char * noms[] = {"100 Steps","1.000 Steps","1.000 Steps"};
+	int nb_algos =3 ;
+	char * noms[] = {"N = 10","N = 100","N = 1000"};
 	
 	
 	
@@ -1003,7 +1003,7 @@ void simultaboo(int seed)
 		
 			switch(algo){
 				case 0:
-					a = taboo( &g, P, message_size,1000,100,&nb);
+					a = taboo( &g, P, message_size,1000,10,&nb);
 					
 					#pragma omp critical
 						nb_pas[0] += nb;
