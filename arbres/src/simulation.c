@@ -332,8 +332,8 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =7 ;
-	char * noms[] = {"Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	int nb_algos =3 ;
+	char * noms[] = {"Greedy Deadline","Greedy Packed", "Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 
 	
 	
@@ -396,7 +396,7 @@ void simuldistrib(int seed)
 				gettimeofday (&tv1, NULL);	
 		
 			switch(algo){
-				/*case 0:
+				case 0:
 					a =  greedy_deadline_assignment( &g, P, message_size);
 
 				break;
@@ -404,11 +404,12 @@ void simuldistrib(int seed)
 					a =  greedy_deadline_assignment2( &g, P, message_size);
 					
 
-				break;*/
-				case 0:
+				break;
+				case 2:
 					a =  greedy_deadline_assignment3( &g, P, message_size);
 					
 				break;
+				/*
 				case 1:
 					time[algo] = borneInf2( &g, message_size)-l;	
 				break;
@@ -450,7 +451,9 @@ void simuldistrib(int seed)
 				case 7:
 					a = branchbound( &g, P, message_size,NULL,NULL,1);
 					break;
+					*/
 				}
+
 				gettimeofday (&tv2, NULL);	
 				#pragma omp critical
 					running_time[algo] += time_diff(tv1,tv2);
@@ -464,7 +467,7 @@ void simuldistrib(int seed)
 					
 				else
 				{
-					if((algo != 1) && (algo != 2))
+					//if((algo != 1) && (algo != 2))
 					time[algo] = INT_MAX;
 
 				}
@@ -938,7 +941,7 @@ void simuldescente(int seed)
 void simultaboo(int seed)
 {
 	srand(seed);
-	int nb_algos =3 ;
+	int nb_algos =2 ;
 	char * noms[] = {"N = 10","N = 100","N = 1000"};
 	
 	
@@ -1009,7 +1012,7 @@ void simultaboo(int seed)
 						nb_pas[0] += nb;
 				break;
 				case 1:
-					a = taboo( &g, P, message_size,1000,1000,&nb);
+					a = taboo( &g, P, message_size,1000,100,&nb);
 					
 					#pragma omp critical
 						nb_pas[1] += nb;
