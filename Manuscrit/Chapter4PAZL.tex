@@ -19,14 +19,14 @@ This chapter corresponds to two articles: Section $3$ of~\cite{DBLP:conf/ict/Bar
  at the first contention point (i.e. in the first period). Let us consider a datagram $i$
  of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. Two datagrams $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that datagram $i$ uses time $t$ in the first period (resp. in the second period). An \textbf{assignment} is a function from the datagrams to their offsets, such that there is no collision.
 
-
-The complexity of \pma is yet unknown. We prove in this section that, when parameterized by
+\todo{rq olivier, pb np hard ou pas ?}
+The complexity of \pma is yet unknown. We prove in this chapter that, when parameterized by
 $n$ the number of datagrams, the problem is \FPT. On a slight generalization of the star routed network, with more contention points, but each datagram only going through two of them, \pazl is \NP-hard, see Theorem~\ref{th:hardness_contention_depth}. When the shared link is not full-duplex, that is, there is a single contention point and each datagram goes through it twice, the problem is also \NP-hard, since we can encode a similar non periodic problem~\cite{orman1997complexity}. Hence, we conjecture that \pma is \NP-hard.
 
 To overcome the supposed hardness of \pma, we study it when the load of the system is small enough, which is defined here as
-the number of units of time used in a period by all datagrams divided by the period that is $n\tau /P$. There cannot be an assignment when the load is larger than one; we prove in this chapter that, for moderate loads, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm. When an algorithm finds an assignment to the problem \pma, for any input in some set, we say it solves \pma \textbf{positively} on the set of inputs. This kind of result is very helpful when solving the following optimization version of \pma: given a set of datagrams, find the largest subset which admits an assignment. A weigthed version, where the datagrams have different values can also be considered. An optimal solution to the optimization problem is a set of datagrams corresponding to a load of at most $1$. Assume we have an algorithm that always finds an assignment for an instance of load $\lambda$. Then, such an algorithm finds an assignment for any subset of load $\lambda$ and is an approximation algorithm for the optimization problem with approximation ratio $\lambda$.
+the number of units of time used in a period by all datagrams divided by the period that is $n\tau /P$. There cannot be an assignment when the load is larger than one; \textbf{we prove in this chapter that, for moderate loads, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm}. When an algorithm finds an assignment to the problem \pma, for any input in some set, we say it solves \pma \textbf{positively} on the set of inputs. This kind of result is very helpful when solving the following optimization version of \pma: given a set of datagrams, find the largest subset which admits an assignment. A weigthed version, where the datagrams have different size can also be considered. An optimal solution to the optimization problem is a set of datagrams corresponding to a load of at most $1$. Assume we have an algorithm that always finds an assignment for an instance of load $\lambda$. Then, such an algorithm finds an assignment for any subset of load $\lambda$ and is an approximation algorithm for the optimization problem with approximation ratio $\lambda$.
 
-The chapter is composed of two parts. In Section~\ref{sec:large}, we study the case in which the size of the datagrams is unconstrained. This cover the use cases previously mentioned. Section~\ref{sec:small} focuses on datagrams of size $\tau = 1$ and we also provide methods to convert the general problem to datagrams of size $1$, at the cost of additional latency or load. Several algorithms solving the case $\tau = 1$ are proposed and analyzed.
+The chapter is composed of two parts. In Section~\ref{sec:large}, we study the case in which the size of the datagrams is unconstrained. This covers the use cases previously mentioned. Section~\ref{sec:small} focuses on datagrams of size $\tau = 1$ and we also provide methods to convert the general problem to datagrams of size $1$, at the cost of additional latency or load. Several algorithms solving the case $\tau = 1$ are proposed and analyzed.
 
 \section{Greedy Algorithms for Large Datagrams} \label{sec:large}
 
@@ -37,7 +37,7 @@ which is the case in C-RAN networks.
 A \textbf{partial assignment} $A$ is a function defined from a subset $S$ of $[n]$ to $[P]$.
 The cardinal of $S$ is the \textbf{size} of partial assignment $A$. A datagram in $S$ is \textbf{scheduled} (by $A$), and a datagram not in $S$ is \textbf{unscheduled}. We only consider partial assignments such that no pair of datagrams of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the datagram $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
-  We give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of datagrams only. All presented algorithms except \exactresolution build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a datagram, it is never changed. 
+  We give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of datagrams only. All presented algorithms except \exactresolution build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: once an offset is chosen for a datagram, it is never changed. 
 
 In the rest of the chapter, we sometimes compare the relative position of datagrams, but one should remember that the
 time is periodic and these are relative positions on a circle of size $P$. Moreover, when it is unimportant and can hinder comprehension, we may omit to write \emph{mod P} in some definitions and computations.
@@ -89,9 +89,10 @@ It turns out that \firstfit always creates compact assignments (as defined in Pr
 \firstfit solves \pma positively on instances of load less than $1/3$. 
 \end{theorem}
 \begin{proof}
-We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -1$. For $S = 1$, it is clear since a single datagram forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a route $i \notin S$ such that \firstfit builds $A[i \rightarrow o]$ from $A$. By definition of \firstfit, if choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled datagram between $o - \tau $ and $o-1$, hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, then only $3\tau -1$ new offsets are forbidden, that is $Fo(A[i \rightarrow o]) \leq Fo(A) + (3\tau -1)$, which proves the induction and the theorem.
+We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -1$. For $S = 1$, it is clear since a single datagram forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a route $i \notin S$ such that \firstfit builds $A[i \rightarrow o]$ from $A$. By definition of \firstfit, if choosing $o-1$ as offset creates a collision (W.l.o.g. say this is a collision in the first period), it means that there is a scheduled datagram between $o - \tau $ and $o-1$, hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, then only $3\tau -1$ new offsets are forbidden, that is $Fo(A[i \rightarrow o]) \leq Fo(A) + (3\tau -1)$, which proves the induction and the theorem.
 \end{proof}
 
+\todo{rq olivier: justifier meta offset vu que c'est la meme charge que firstfit}
 \subsection{Meta-Offset}
 
      We propose an alternative greedy algorithm to build a bufferless assignment, which always finds an assignment when the load is less than $1/3$.  
@@ -117,7 +118,7 @@ The assignment is found in time $O(n^2)$.
       \begin{center}
       \includegraphics[width=0.7\textwidth]{Chapitre4PAZL/ex3nt.pdf}
       \end{center}
-      \caption{Meta offsets used in the first and second period, when scheduling the $i$th datagram in \metaoffset}
+      \caption{Meta offsets used in the first and second period, when scheduling the $i+1^{th}$ datagram in \metaoffset. There is already 3 datagram in $S$ (in red, blue and greedn), and the meta offsets available for the yellow datagram are represented in grey.}
       \label{fig:metaoffset}
       \end{figure}
 
@@ -136,7 +137,7 @@ In fact, experimental data in Section~\ref{sec:perf_large} suggest that the algo
 
 A naive implementation of \metaoffset is in $O(n P/\tau)$, while \firstfit is in $O(nP)$.
 However, it is not useful to consider every possible (meta-)offset at each step. By maintaining
-a list of positions of scheduled datagrams in first and second period, both algorithms can be implemented in $O(n^2)$.
+a list of positions of scheduled datagrams in first and second period, both algorithms can be implemented in $O(n^2)$ ($n$ is the number of rotues).
 
 
 \subsection{Compact Tuples}\label{sec:compacttuple}
@@ -144,7 +145,7 @@ a list of positions of scheduled datagrams in first and second period, both algo
 We present in this section a family of greedy algorithms which solve \pma positively for larger loads. We try to combine the good properties of the two previous algorithms: the compactness of the assignments produced by \firstfit and the absence of collision in the first period of \metaoffset. The idea is to schedule several datagrams at once, using meta-offsets, to maximize the compactness of the obtained solution. We first describe the algorithm which schedules pairs of datagrams and then explain quickly how to extend it to any tuples of datagrams.
 
 
-From now on, we use Lemma~\ref{lemma:multiple} to assume $P = m\tau$. This hypothesis makes the analysis of algorithms based on meta-offsets simpler and tighter. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. The transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
+We now introduce Lemma~\ref{lemma:multiple} to assume $P = m\tau$ and we use it untill the end of the section. This hypothesis makes the analysis of algorithms based on meta-offsets simpler and tighter. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. The transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
 
 \begin{lemma}\label{lemma:multiple}
 Let $I$ be an instance of \pma with $n$ datagrams of size $\tau$, period $P$ and $m = P / \tau$. There is an instance $I'$ with $n$ datagrams of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $I'$ can be transformed into an assignment of $I$ in polynomial time.
@@ -346,7 +347,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized.
 rs are some reference to realistic parameters and the objective here is to evaluate our algorithm performances.
 
-  The defaults parameters of experiment of this section are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. In the Cloud-RAN problem, the period fixed by the protocol HARQ correspond to $21,000$ tics. This means that a network with $8$ routes is loaded at $95\%$, which seems unrealistic and cannot be solved for \pma, as we experimentally show it in this section. Nevertheless, we choose these parameters as a realistic reference and we modify them in order to evaluate our algorithm performances.
+  The defaults parameters of experiments of this section are derived from the C-RAN context: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. In the Cloud-RAN problem, the period fixed by the protocol HARQ correspond to $21,000$ tics. This means that a network with $8$ routes is loaded at $95\%$, which seems unrealistic and cannot be solved for \pma, as we experimentally show it in this section. Nevertheless, we choose these parameters as a realistic reference and we modify them in order to evaluate our algorithm performances.
 
 
      All experiments are done on synthetic data generated randomly. We generate the physical fronthaul
@@ -354,6 +355,7 @@ rs are some reference to realistic parameters and the objective here is to evalu
 
      We consider the following algorithms:
 \begin{itemize}
+  \item \shortestlongest
   \item \firstfit
   \item \metaoffset
   \item \compactpair
@@ -386,7 +388,7 @@ rs are some reference to realistic parameters and the objective here is to evalu
 
        \firstfit has also excellent performances ($100\%$ of success under loads lower to $0.8$). However, since we do not have strong theoritical results for this algorithms and it does not performs as well as \shortestlongest in this regime, it is not interesting to rely on it.
 
-      \metaoffset and \greedyuniform both seem to always work when the load is less than $1/2$ and has a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seems to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger, which happens each time $\tau$ is added to the period (to decrease the load, the period is increased) and is more frequent when there are more routes.
+      \metaoffset and \greedyuniform both seem to always work when the load is less than $1/2$ and have a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seems to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger, which happens each time $\tau$ is added to the period (to decrease the load, the period is increased) and is more frequent when there are more routes.
       
       \greedyuniform and \metaoffset performances depend on the number of routes. The more routes there is, the lower the success rate. This is even clearer in experiment of Figure~\ref{fig:shortroutes} in the next section in which there is $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and random delays and has no theoretical guarantee for arbitrary $\tau$ and small delay.
      
