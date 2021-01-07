@@ -6,7 +6,7 @@
 #define MESSAGE_SIZE 2500
 
 #define NB_BBU 2
-#define NB_COLLISIONS 3
+#define NB_COLLISIONS 4
 
 #define NB_ROUTES_PER_FLOW 1
 #define PROBA 1
@@ -31,7 +31,7 @@
 //CONFIG IF WE WANT TO use some given parameters (algorithms with waiting time)
 #define TMAX_MOD  0//1 activated, 0 dislabed
 #define TMAX 7812
-#define FIXED_PERIOD_MOD 1
+#define FIXED_PERIOD_MOD 0
 
 #define PERIOD 33333	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
@@ -57,3 +57,4 @@
 #define DATA_CENTER_ROUTES 0
 
 #define SIZE_BE_MESSAGE 50
+#define TABOO_KIND 0
