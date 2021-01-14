@@ -64,6 +64,9 @@ descente: dirs compil
 taboo: dirs compil 
 	./compil simultaboo
 
+recuit: dirs compil 
+	./compil simulrecuit
+
 simultiplexing: dirs compil 
 	./compil simultiplexing
 

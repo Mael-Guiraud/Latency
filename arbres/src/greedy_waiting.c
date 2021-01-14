@@ -784,11 +784,11 @@ int greedy_deadline_assignment(Graph * g, int P, int message_size)
 	if(!greedy_deadline(g, P, message_size,0))
 	{
 		
-			reset_periods( g, P); 
+			/*reset_periods( g, P); 
 				reinit_delays(g);
-		greedy_deadline(g, P, message_size,1);
+		greedy_deadline(g, P, message_size,1);*/
 		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions\n");
-		//return 0;
+		return 0;
 	}
 
 	int t = travel_time_max_buffers(g);
@@ -896,11 +896,11 @@ int greedy_deadline_assignment3(Graph * g, int P, int message_size)
 	if(!greedy_deadline(g, P, message_size,2))
 	{
 		
-		reset_periods( g, P); 
+		/*reset_periods( g, P); 
 				reinit_delays(g);
-				greedy_deadline(g, P, message_size,1);
+				greedy_deadline(g, P, message_size,1);*/
 		//printf("Error, L'algo d'initialisation greedy n'a pas pu trouver de solutions 3\n");
-		//return 0;
+		return 0;
 	}
 
 	int t = travel_time_max_buffers(g);

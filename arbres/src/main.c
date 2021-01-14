@@ -72,6 +72,10 @@ int main (int argc, char *argv[])
 	{
 		simultiplexing(seed);
 	}
+	if(!strcmp(argv[1],"simulrecuit") )
+	{
+		simulrecuit(seed);
+	}
 
 
 

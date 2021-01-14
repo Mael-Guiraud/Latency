@@ -12,3 +12,4 @@ void simultiplexing(int seed);
 void simuldescente(int seed);
 
 void simultaboo(int seed);
+void simulrecuit(int seed);

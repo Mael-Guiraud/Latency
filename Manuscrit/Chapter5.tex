@@ -15,7 +15,7 @@ To do so, we modify the model in order to take into account the buffers, and we 
 The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is ommited. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention vertices, that is buffering is allowed in all vertices. 
 
 In Chapter~\ref{chap:PAZL} and~\ref{chap:PALL}, the routed network is assumed to be a star routed network, a restriction that we now lift.
-We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_1,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention level} $i$ for the route $r$, and we denote it by $cl(c_i,r) = i$. The contention level of a contention point $c$ is the maximum of its contention level over all routes going through $c$: $cl(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cl(c,r)$. 
+We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_0,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention depth} $i$ for the route $r$, and we denote it by $cd(c_i,r) = i$. The contention depth of a contention point $c$ is the maximum of its contention depth over all routes going through $c$: $cd(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cd(c,r)$. 
 As a reminder, the \textbf{contention depth} of a routed network $N = ({\cal R},\,{\cal B},\,\omega)$ is the maximal number of contention points on a route in the routed network. 
 
 
@@ -129,9 +129,9 @@ Remark that for $CR(A)$ to be defined, we need that, on each contention point, a
 Let $A$ be a valid assignment, then there is a valid canonical assignment $A'$ such that $A' \preceq A$.
 \end{lemma}
 \begin{proof}
-Consider a vertex $u$ of contention level $1$, such that for all $r \in \mathcal{R}_u$, $A(r,u) > 0$. Let us define $m$ as the minimum of these values, we define $A'(r,u) = A(r,u) - m$. Assignment $A'$ has no collision on $u$, since all departure times have been shifted by the same value and $A$ has no collision. Moreover, if $v$ is the vertex after $u$ in a route $r$, we define  $A'(r,v) = A(r,v) + m$. Hence, all departure times for vertices of contention levels larger than one are the same in $A$ and $A'$, which implies that there are no collisions in these vertices. We have proven that $A'$ is still valid. Since all departure times of $A'$ are less or equal to those induced by $A$, we have $A' \preceq A$. Moreover, if $r_0$ is the route with $A(r_0,u) = m$, then $A'(r_0,u) = 0$. 
+Consider a vertex $u$ of contention depth $1$, such that for all $r \in \mathcal{R}_u$, $A(r,u) > 0$. Let us define $m$ as the minimum of these values, we define $A'(r,u) = A(r,u) - m$. Assignment $A'$ has no collision on $u$, since all departure times have been shifted by the same value and $A$ has no collision. Moreover, if $v$ is the vertex after $u$ in a route $r$, we define  $A'(r,v) = A(r,v) + m$. Hence, all departure times for vertices of contention depths larger than one are the same in $A$ and $A'$, which implies that there are no collisions in these vertices. We have proven that $A'$ is still valid. Since all departure times of $A'$ are less or equal to those induced by $A$, we have $A' \preceq A$. Moreover, if $r_0$ is the route with $A(r_0,u) = m$, then $A'(r_0,u) = 0$. 
 
-We apply this transformation by increasing contention level. Since, the transformation applied at some contention level do not change $A'$ for smaller contention levels, a trivial induction proves that $A'$ is valid, canonical and that $A' \preceq A$.
+We apply this transformation by increasing contention depth. Since, the transformation applied at some contention depth do not change $A'$ for smaller contention depths, a trivial induction proves that $A'$ is valid, canonical and that $A' \preceq A$.
 \end{proof}
 
 
@@ -161,8 +161,8 @@ Finally, since $r_0$ and $r_3 \notin S_u$, we set $A(r_0,u)$ and $A(r_3,u)$ such
 \label{fig:compacttoassignment} 
 \end{figure}
 
-The function $Real$ can easily be generalized to any routed network. Indeed, one can first consider all vertices of contention level $1$, the routes going through them form disjoint sets. Hence, we can define $Real$ independently on each vertex of contention level $1$. 
-Then using the buffering computed for these vertices, one can compute the arrival time of each route in vertices of contention level $2$ and compute $Real$ for these vertices in the exact same way, and so on for all contention levels. In the following lemmas and theorems, we always consider a single contention vertex, since it is trivial to extend any property for one contention vertex to the whole routed network as we just explained. 
+The function $Real$ can easily be generalized to any routed network. Indeed, one can first consider all vertices of contention depth $1$, the routes going through them form disjoint sets. Hence, we can define $Real$ independently on each vertex of contention depth $1$. 
+Then using the buffering computed for these vertices, one can compute the arrival time of each route in vertices of contention depth $2$ and compute $Real$ for these vertices in the exact same way, and so on for all contention depths. In the following lemmas and theorems, we always consider a single contention vertex, since it is trivial to extend any property for one contention vertex to the whole routed network as we just explained. 
 
 \begin{lemma}\label{lemma:canonical}
 The assignment $Real(CA)$ can be computed in time $O(nd)$, where $d$ is the contention
@@ -171,8 +171,8 @@ depth of the network. If $CA$ is realizable, then $Real(CA)$ is a valid canonica
 \begin{proof}
 In the inductive construction of $Real(CA)$, only a constant number of comparisons and additions are needed to compute the 
 buffer time of a route from the previous one. Hence, the time spent in a vertex $u$ is linear in $|\mathcal{R}_u|$. 
-A route can go through only one vertex of a given contention level, hence the time spent computing buffers for all vertices
-of a contention level is in $O(n)$ and for the whole graph it is in $O(nd)$.
+A route can go through only one vertex of a given contention depth, hence the time spent computing buffers for all vertices
+of a contention depth is in $O(n)$ and for the whole graph it is in $O(nd)$.
 
 To prove that there is no collision between pair of routes for a given assignment, it is enough to 
 prove it for any interval of time of size $P$. Hence, it is enough to consider the normalized sending time and to verify
@@ -207,7 +207,7 @@ the induction hypothesis, we have $Real(CR(A))(r_{i+1},u) \leq A(r_{i+1},u)$. Th
 \subsection{Greedy Deadline}
 
 We first present a simple algorithm, which is the natural approach in a context witout \emph{periodicity}.
-The contention vertices are sorted by contention level, and the contention levels are dealt with in ascending order. The assignment, on contention vertices of the same contention level, is computed independently. The \greedydeadline algorithm consists in selecting among the routes of arrival time less than the current time the one with the longest transmission time. If no route are available at the current time, select the one with the smallest arrival time.
+The contention vertices are sorted by contention depth, and the contention depths are dealt with in ascending order. The assignment, on contention vertices of the same contention depth, is computed independently. The \greedydeadline algorithm consists in selecting among the routes of arrival time less than the current time the one with the longest transmission time. If no route are available at the current time, select the one with the smallest arrival time.
 
 More precisely, \greedydeadline works as follow. For a vertex $u$, select the route $r$ such that the arrival time $t(r,u)$ is minimal and fix $A(r,u) = 0$. Assume that some datagrams have now been scheduled, the last one on the route $r$ at time $s(r,u)$, we explain here how to schedule the next route.  If there are several routes $r'$ for which $t(r',u) < s(r,u) + \tau $, we need to select one of those. For each $r'$, we compute the value $\lambda(r,u) - t(r',u)$ and select the one which minimizes this value. Then, the selected datagram $r'$ is sent with a delay $A(r',u) = t(r,u) + \tau - t(r',u)$. If no route satifies $t(r',u) < s(r,u) + \tau$, the route with the lowest $t(r,u)$ is sent without delay ($A(r',u) = 0$). 
 Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ computed, it is possible that there is a collision. If so, $s(r',u)$ is increased to the first time such that there is no collision. If there is no such time, the algorithm fails.
@@ -262,7 +262,6 @@ We present here a variant of \greedydeadline: select as first datagram the one w
 
 Both \greedydeadline and \greedynormalized may fail to find a valid assignment for some routed networks, for which there exist a valid assignment. The way we select departure times for the routes can create unused interval of time of size less than $\tau$. These intervals are not usable to schedule datagram of size $\tau$. If too much time is wasted in this way, the algorithms will fail while there is always a solution when the load is less or equal to $1$. Since each datagram forbids at most $2\tau -1$ tics in the period to the other datagrams, by a pigeonhole argument, all routes can be scheduled when the load is less than $0.5$ by greedy algorithms considering all departure times (see Chapters~\ref{chap:PAZL} for similar arguments).
 
-\todo{donner un exemple ou ça fail pour chacun des deux algorithmes} 
 
 
 \subsection{Greedy Packed}
@@ -276,7 +275,7 @@ The contention vertices are still managed level by level. For a vertex $u$, we e
 
 This chapter presents several algorithms that each have several variants or parameter values to fix. Thus, each section or subsection describing a new algorithm also provide some experimental results. We describe here how the instances are generated for every experiment of the chapter until Section~\ref{sec:evalperfspall} that present more general performance evaluations.
 
-First, remark that, contrary to our choice for star routed networks, we consider that the physical length of the links into the datacenter are the same for all routes. Indeed, several BBUs are often gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all routes use the same link in the way back, it is not considerd as a contention point, as illustrated in figure~\ref{fig:bbuaggreg}. If the length of the links into some datacenter are different, the contention point before the datacenter is also a contention point at the exit of the datacenter and the routes are symmetrical around this vertex.
+First, remark that, contrary to our choice for star routed networks, we consider that the physical length of the links into the datacenter are the same for all routes. Indeed, several BBUs are often gathered in one or several datacenters. The length of the links between the entrance of the datacenter and all BBUs may or may not be the same. In the first case, once the messages have been scheduled to go in the datacenter, they go out in the exact same order and thus, even if all routes use the same link in the way back, it is not considerd as a contention point (see figure~\ref{fig:bbuaggreg}), and the routes are symmetrical around the vertex representing the entrance in the BBU. If the length of the links into some datacenter are different, the aggregation node before the datacenter is represented by two contention points. The datagrams may collide in both the entrance and the exit of the datacenter and the routes are symmetrical around the arc between the two contention points.
 
     \begin{figure}
 
@@ -290,13 +289,150 @@ First, remark that, contrary to our choice for star routed networks, we consider
 
 We propose several experiments to assess the practical performance (in speed and quality) of the poposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in figure~\ref{fig:randomnetworks}, in which the dotted arcs represents each the arcs of two routes. 
 
-   \begin{figure} 
-	\centering
-	\includegraphics[scale=0.8]{Chapitre5/networksrandom}
 
-\caption{Shape of the randomly generated routed networks: $4$ vertices of contention level $1$, each with two routes going through, which go to the two different data centers in contention level $2$}
-\label{fig:randomnetworks}
-\end{figure}
+
+\begin{figure}
+\begin{center}
+\scalebox{0.4}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+ 
+
+  \node (s8) at (0,10.5) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s7) at (0,9) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s6) at (0,7.5) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s5) at (0,6) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s4) at (0,4.5) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s3) at (0,3) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s2) at (0,1.5) {\includegraphics[width = 1cm]{rrh.png}};
+  \node (s1) at (0,0) {\includegraphics[width = 1cm]{rrh.png}};
+  
+   \node (b2) at (10,7.25) {\includegraphics[width = 1cm]{bbu.png}};
+   \node (b1) at (10,2.25) {\includegraphics[width = 1cm]{bbu.png}};
+
+   \node (t6) at (8,7.25) {\includegraphics[width = 1cm]{switch.png}};
+   \node (t5) at (8,2.25) {\includegraphics[width = 1cm]{switch.png}};
+   \node (t4) at (4,9.75) {\includegraphics[width = 1cm]{switch.png}};
+   \node (t3) at (4,6.75) {\includegraphics[width = 1cm]{switch.png}};
+   \node (t2) at (4,3.75) {\includegraphics[width = 1cm]{switch.png}};
+   \node (t1) at (4,0.75) {\includegraphics[width = 1cm]{switch.png}};
+
+\path (s1) edge [<->,blue]  (t1);
+\path (s2) edge [<->,green]  (t1);
+\path (s3) edge [<->,red]  (t2);
+\path (s4) edge [<->,orange]  (t2);
+\path (s5) edge [<->,brown]  (t3);
+\path (s6) edge [<->,purple]  (t3);
+\path (s7) edge [<->,pink]  (t4);
+\path (s8) edge [<->]  (t4);
+
+\path (t1) edge [<->,blue]  (t5);
+\path (t1) edge [<->,green]  (t6);
+\path (t2) edge [<->,red]  (t5);
+\path (t2) edge [<->,orange]  (t6);
+\path (t3) edge [<->,brown]  (t5);
+\path (t3) edge [<->,purple]  (t6);
+\path (t4) edge [<->,pink]  (t5);
+\path (t4) edge [<->]  (t6);
+
+\path (t6) edge [<->,thick]  (b2);
+\path (t5) edge [<->,thick]  (b1);
+
+
+\node (k8) at (30,10.5) {$t_8$};
+\node (k7) at (30,9) {$t_7$};
+\node (k6) at (30,7.5) {$t_6$};
+\node (k5) at (30,6) {$t_5$};
+\node (k4) at (30,4.5) {$t_4$};
+\node (k3) at (30,3) {$t_3$};
+\node (k2) at (30,1.5) {$t_2$};
+\node (k1) at (30,0) {$t_1$};
+
+  \node (s8) at (14,10.5) {$s_8$};
+  \node (s7) at (14,9) {$s_7$};
+  \node (s6) at (14,7.5) {$s_6$};
+  \node (s5) at (14,6) {$s_5$};
+  \node (s4) at (14,4.5) {$s_4$};
+  \node (s3) at (14,3) {$s_3$};
+  \node (s2) at (14,1.5) {$s_2$};
+  \node (s1) at (14,0) {$s_1$};
+
+
+  
+  \node (t10) at (26,9.75) {$c_{10}$};
+   \node (t9) at (26,6.75) {$c_9$};
+   \node (t8) at (26,3.75) {$c_8$};
+   \node (t7) at (26,0.75) {$c_7$};
+   \node (t6) at (22,7.25) {$c_6$};
+   \node (t5) at (22,2.25) {$c_5$};
+   \node (t4) at (18,9.75) {$c_4$};
+   \node (t3) at (18,6.75) {$c_3$};
+   \node (t2) at (18,3.75) {$c_2$};
+   \node (t1) at (18,0.75) {$c_1$};
+
+\path (s1) edge [->,blue]  (t1);
+\path (s2) edge [->,green]  (t1);
+\path (s3) edge [->,red]  (t2);
+\path (s4) edge [->,orange]  (t2);
+\path (s5) edge [->,brown]  (t3);
+\path (s6) edge [->,purple]  (t3);
+\path (s7) edge [->,pink]  (t4);
+\path (s8) edge [->]  (t4);
+
+\path (t1) edge [->,blue]  (t5);
+\path (t1) edge [->,green]  (t6);
+\path (t2) edge [->,red]  (t5);
+\path (t2) edge [->,orange]  (t6);
+\path (t3) edge [->,brown]  (t5);
+\path (t3) edge [->,purple]  (t6);
+\path (t4) edge [->,pink]  (t5);
+\path (t4) edge [->]  (t6);
+
+\path (k1) edge [->,blue]  (t7);
+\path (k2) edge [->,green]  (t7);
+\path (k3) edge [->,red]  (t8);
+\path (k4) edge [->,orange]  (t8);
+\path (k5) edge [->,brown]  (t9);
+\path (k6) edge [->,purple]  (t9);
+\path (k7) edge [->,pink]  (t10);
+\path (k8) edge [->]  (t10);
+
+\path (t7) edge [->,blue]  (t5);
+\path (t7) edge [->,green]  (t6);
+\path (t8) edge [->,red]  (t5);
+\path (t8) edge [->,orange]  (t6);
+\path (t9) edge [->,brown]  (t5);
+\path (t9) edge [->,purple]  (t6);
+\path (t10) edge [->,pink]  (t5);
+\path (t10) edge [->]  (t6);
+
+
+
+
+\end{tikzpicture}
+}
+
+
+
+%\end{minipage}
+
+             \caption{Left, a physical fronthaul network and right, the routed network modeling a round trip in the fronthaul network. Each route is represented by the arcs of the same color.}
+
+           \label{fig:randomnetworks}
+            \end{center}
+           \end{figure}
+%
+%   \begin{figure} 
+%	\centering
+	%\includegraphics[scale=0.8]{Chapitre5/networksrandom}
+%
+%\caption{Shape of the randomly generated routed networks: $4$ vertices of contention depth $1$, each with two routes going through, which go to the two different data centers in contention depth $2$}
+%\label{fig:randomnetworks}
+%\end{figure}
 
 To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the impact of those parameters, in terms of computation time and quality, on the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the routed network as shown in Figure~\ref{fig:randomnetworks}. The difference between the performances of the presented algorithms are not significantly impacted if we change the values of the number of contention points. 
 
@@ -306,6 +442,7 @@ To generate random routed networks, several parameters must be chosen: The load 
 In a C-RAN context, the number of route is low. In the network we study, there is $n=8$ routes on the graph. This kind of graphs with few routes allows us to use the branch and boud algorithm as a lower bound for evaluating the performances of the other algorithms. We study the impact of the number of routes in the graph in Section~\ref{sec:evalperfspall}. The length of the arcs is drawn uniformly between $0$ and $P$. This choice makes the periodicity of our problem impactful, and does not allow to recylce algorithms from a non periodic setting.
 
 We also recall the notion of \textbf{margin} of a route $r$, which is equal to $d(r) - \lambda(r)$, that is, the difference between the deadline function and the physical delay of the route. In other words, this represent the time allowed for logical delays, that are set by the assignments.
+
 
 
 \subsection{Success Rate and Performance of the Greedy Algorithms}
@@ -322,9 +459,9 @@ Figure~\ref{tab:success} shows the success rate of \greedydeadline and \greedyno
 \hline
     \backslashbox{Sucess}{Load} & $70\%$ & $80\%$& $90\%$& $100\%$ \\
     \hline
-    \greedydeadline & $100\%$ & $95.1\%$& $43.4\%$& $11.2\%$ \\
+    \greedydeadline & $99.5\%$ & $92.4\%$& $43.4\%$& $15.7\%$ \\
  
-    \greedynormalized & $99.9\%$ & $95.5\%$& $51.2\%$& $0\%$ \\
+    \greedynormalized & $99.3\%$ & $93.2\%$& $51.2\%$& $0\%$ \\
    
   %  GP & $100\%$ & $100\%$& $100\%$& $100\%$ \\
     \hline
@@ -457,7 +594,7 @@ Finally, using Lemma~\ref{lemma:path} once again prove there is a path between $
 
 The most simple local search heuristic is hill climbing. This algorithm starts from a compact assignment $CA$, explore the entire neighborhood of $CA$, and select the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then, the algorithm stops and returns $Real(CA)$ which is a local minimum. 
 
-The quality of hill climbing depends on the the initial compact assignment. A first choice is to consider the compact representation $CR(A)$ of the assignment $A$ given by \hybridgreedynormalized. We can also choose a random compact assignment. Since a compact assignment does not always give a valid assignment nor a good one, we can draw many random compact assignments and return the best assignment found by hill climbing using these initial solutions.
+The quality of hill climbing depends on the the initial compact assignment. A first choice is to consider the compact representation $CR(A)$ of the assignment $A$ given by \hybridgreedynormalized (HGN). We can also choose a random compact assignment. Since a compact assignment does not always give a valid assignment nor a good one, we can draw many random compact assignments and return the best assignment found by hill climbing using these initial solutions.
 
 Figure~\ref{fig:descente07} shows the difference between initalizing the hill climbing with \hybridgreedynormalized, or with one or several random compact representation. Those results are computed from $1000$ random instances, with $80\%$ of load.
 \begin{figure}[h] 
@@ -592,8 +729,6 @@ Simulated annealing works as follow. An initial {\emph temperature} is set and a
 
  When using simulated annealing, we need to fix the following parameters: initial temperature, number of steps before decreasing the temperature, factor by which the temperature is decreased, the number of steps without improvement before ending the process.
 
- \todo{ During the computations $1000$ compact representation are drawn before decreasing the temperature.
- Mettre aussi par quel facteur tu diminues la température et ta condition d'arrêt}
 
  The temperature must be fixed in order to accept to worsen the solution at the begining of the execution, must decrease slowly. When the temperature is low, the simulated annealing rejects bad compact representations.
  Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the exection of the simulated annealing. The value $\Delta$ represent the difference $TR(Real(CA'))-TR(Real(CA))$ where $CA'$ is a compact assignment in the neighboorhood of $CA$. $CA'$ is accepted or rejected with probability $e^{-\frac{\Delta}{t}} $, where $t$ is the temperature.
@@ -612,7 +747,7 @@ Simulated annealing works as follow. An initial {\emph temperature} is set and a
 \item Deduce $t_0$ from the relation: $e^{-\frac{\bar{\Delta}}{t_0}} = \tau_0$ 
  \end{enumerate}
  
- Tabular~\ref{tab:poorgood} shows the margin of the solutions produced by simulated annealing when intialized with temperatures computed from the previous routine. The initial solution used by simulated annealing is the solution given by $0$-HHC. The experiment is made on $100$ random instances.
+ Tabular~\ref{tab:poorgood} shows the margin of the solutions produced by simulated annealing when intialized with temperatures computed from the previous routine. The initial solution used by simulated annealing is the solution given by hill climbing initialized by \hybridgreedynormalized. The experiment is made on $100$ random instances.
 \begin{center}
 \begin{tabular}{ |c|c|c|c|c| }
 \hline
@@ -630,11 +765,11 @@ Simulated annealing works as follow. An initial {\emph temperature} is set and a
  \caption{Comparison of two intial temperatures, considering the quality of the initial configuration}
      \label{tab:poorgood}
  \end{center}
- As observed, the initial solution given by hill climbing can be considered as ``good''. Indeed, increasing the initial temperature does not affect the quality of the solution, but increase the computation time.
+ We assume that the initial solution given by hill climbing can be considered as ``good''. Indeed, increasing the initial temperature does not affect the quality of the solution, but increase the computation time.
  
- In simulated annealing, the temperature should decrease slowly. At each \textbf{level}, several compact representations are drawn. At the end of a level, the temperature is decreased. Hence, drawing too few compact representations per level decreases the temperature too fast and reduces the efficiency of simulated annealing. However, drawing too much compact representations during a level increases the computation time of the algorithm, hence there is tradeoff between time an quality and lenth of a level should be set carefully.
+ In simulated annealing, the temperature should decrease slowly. At each \textbf{level}, $N$ compact representations are drawn. At the end of a level, the temperature is decreased of $10\%$. The algorithm stops if less than $1\%$ of the compact representations darwn are accepted during two consecutive steps. Hence, drawing too few compact representations per level decreases the temperature too fast and reduces the efficiency of simulated annealing. However, drawing too much compact representations during a level increases the computation time of the algorithm, hence there is tradeoff between time an quality and lenth of a level should be set carefully.
   
- We present the impact of this parameter in Figure~\ref{fig:stepsrecuit}: it shows the margin needed by simulated annealing with different number of compact representation draw for each level. Those results are computed on $1000$ random instances, in which the initial temperature is set to $2200$.
+Figure~\ref{fig:stepsrecuit} shows the margin needed by simulated annealing with different values for $N$. Those results are computed on $1,000$ random instances, in which the initial temperature is set to $2200$ and the load is $80\%$
  
  \begin{figure}[h]
 	\centering
@@ -665,20 +800,21 @@ relaxations pour tous les points de contention. Expliquer que cette borne se cal
 en pratique (algo Simmons FPT vs algo branch and bound simplifié).
 \subsubsection{Partial Compact Assignment and restricted routed Network}
 
-Let us consider the contention points ordered from $1$ to $|{\cal C}|$ by contention level, and an arbitrary order is set in a same contention level. This means that if $i < j | i,j\in{\cal C}$, then  $cl(c_i) \leq cl(c_j)$. 
+Let us consider the contention points ordered from $1$ to $|{\cal C}|$ by contention depth, and an arbitrary order is set in a same contention depth. This means that if $i < j | i,j\in{\cal C}$, then  $cd(c_i) \leq cd(c_j)$. 
 
 
 Let us denote $CA_i$ the \textbf{partial Compact Assignment} function. This is the restriction $CA_{|\{c_1,\ldots,c_i\}}$  of the domain of definition of $CA$ from ${\cal C}$ to $[\{c_1,\ldots,c_i\}$. This means that a couple $(O_{c_j},S_{c_j})$ has been set only for $j \leq i$.
+An extension of $CA_i$ to $CA_{i+1}$ is a choice of a couple $(O_{c_{i+1}},S_{c_{i+1}})$ for the next contention point.
 
 A \textbf{restricted routed Network} is defined by $N_i = (CA_i,{\cal R}',{\cal C}',\omega')$. It is a routed network $N = ({\cal R},{\cal C},\omega)$ modified by a partial compact assignment $CA_i$.
 Let us explain how to build $N_i$ from $N$ and $CA_i$.
 Consider that $CA$ is defined only on the first contention point $c_1$ on a routed network $N$.
-A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. Indeed, as explianed on Section~\ref{sec:real}, the function $Real$ can be independently computed on each contention points of contention level $1$, then on each contention points of level $2$ etc. Thus, we can compute $Real(CA_1)$ that gives $A(r,c_1)$, the buffers of the datagrams on $c_1$ for each $r \in {\cal R}_{c_1}$. Then, $c_1$ is not considered anymore in $N_i$, that is ${\cal R}' = {\cal C} \backslash {c_1}$.\\
-Because the contention points are ordered by increasing contention level, it is possible to repeat this transformation on each contention points $j$ with $j\leq i$.
+A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. $A(r,c_1)$ is given by the function $Real(CA_1)$, as explianed on Section~\ref{sec:real} and this function can be independently computed on each contention points $c_j,j<i$ of a same level while $CA_i$ is defined and $Real(CA_{j-1}$ is computed. So, we compute $Real(CA_1)$ for each $r \in {\cal R}_{c_1}$. Then, $c_1$ is not considered anymore in $N_i$, that is ${\cal R}' = {\cal C} \backslash {c_1}$.\\
+Because the contention points are ordered by increasing contention depth, it is possible to repeat this transformation on each contention points $j$ with $j\leq i$.
 
-\subsubsection{Relaxation on a single contention point}
+\subsubsection{Relaxation on a single contention point and computing a lower bound on $TR(A)$}
 
-In order to describe the Branch and Bound Algorithm on the next section, we need to be able to evaluate the quality of the partial solution given by $CA_i$. The quality of the solution evolves each time $CA$ is extended to another contention point. The objective is to evaluate as early as possible if a choice of compact assignment is bad in order to cut the exploration of the tree.
+
 
 \paragraph{Reducing \spall to \wta}
 We first show how to transform an instance of \spall into an instance of \wta (solved in Chapter~\ref{chap:PALL}) on a single contention points. 
@@ -687,24 +823,31 @@ We first show how to transform an instance of \spall into an instance of \wta (s
 An instance $I$ of \spall with a routed network $N$, and deadline function $d$ can be reduced to an instance $I'$ of \wta. 
 \end{lemma}
 \begin{proof}
-To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$ ande consider there is no other contention points than $c_1$ in the rest of the network. Remeber that an instance of \wta consists in a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
+To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$ and we consider there is no other contention points than $c_1$ in the rest of the network. The instance $I'$ of \wta build is a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
  Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - t(r,c_1) $
 \end{proof}
 
 
-Consider the routed network $N = ({\cal R},{\cal C},\omega)$. We want to compute an upper bound on $TR(A)$, the optimal solution for \spall. To do so, apply the reduction of Lemma~\ref{lemma:reduce} on every contention points. This means we solve $|{\cal C}|$ instance of \wta denoted $(A_{c_1},\ldots,A_{|{\cal C}|})$ independently on each contention point with \ASPMLS. Then take $\max_{i=1}^{|{\cal C}|} TR(A_i)$. Since \ASPMLS gives an optimal solution for \wta, we obtain an upper bound for the instance $A$.
-
-
-\begin{lemma}\label{lemma:quality}
-Given a partial compact assignment $CA_i$, one can evaluate the quality of the best solution for \spall that can be built extending $CA_i$.
-\end{lemma} 
+\begin{theorem}\label{th:lowerbound}
+Given a routed network $N = ({\cal R},{\cal C},\omega)$, one can compute a lower bound on $TR(A)$ in time $2^kk^3log(k)$, with $k$ the contention width of the network.
+\end{theorem}
 \begin{proof}
-
-We apply the same reduction as in Lemma~\ref{lemma:reduce}. While creating an instance of \wta for $c_1$, remember that for all $r \in {\cal R}_{c_1}$,  $d'(r) = d(r) - t(r,c_1)$. In the first level of contention points, $t(r,c_1) = \lambda(r,c_1)$, but while extending this reduction on the next contention level, $t(r,c_i)$ can be impacted by buffering times.
-
-Such a relaxation can be done on every contention point $c_i$ if $CA_k$ is defined such that $cl(c_k) < cl(c_i)$. This means that all contention points of the level preceding $cl(c_i)$ have a chosen compact assignment. Indeed, the arrival time $t(r,c_i)$ and the deadline $d'(r)$ are computed for each route, taking into account the buffers defined by $Real(CA)$.
-Once we have built an instance $I'$ of \wta for each those contention points, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$ in time $O(2^nn^3\log(n))$, where $n$ is the number of routes. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built by extending $CA_i$.
+Consider $N$, we compute a lower bound on $TR(A)$, the optimal solution for \spall. To do so, apply the reduction of Lemma~\ref{lemma:reduce} on every contention points. This means we solve $|{\cal C}|$ instance of \wta denoted $(A_{c_1},\ldots,A_{|{\cal C}|})$ independently on each contention point with \ASPMLS in time $2^kk^3log(k), k = |{\cal R}_{c_1}|$. Then take $\max_{i=1}^{|{\cal C}|} TR(A_i)$. Since \ASPMLS gives an optimal solution for \wta, we obtain a lower bound for the instance $A$.
 \end{proof}
+
+
+\begin{corollary}\label{th:restrictedlower}
+One can compute a lower bound for \spall on a restricted routed network $N_i = (CA_i,{\cal R}',{\cal C}',\omega')$ using theorem~\ref{th:lowerbound}.
+\end{corollary}
+\begin{proof}
+We apply the same reduction as in Lemma~\ref{lemma:reduce}. While creating an instance of \wta for $c_1$, remember that for all $r \in {\cal R}_{c_1}$,  $d'(r) = d(r) - t(r,c_1)$. In the of contention points of contention depth $1$, $t(r,c_1) = \lambda(r,c_1)$, but while extending this reduction on the next contention depth, $t(r,c_i)$ can be impacted by buffering times.
+
+This reduction is done on every contention point $c_i$ if $CA_k$ is defined such that $cd(c_k) < cd(c_i)$. This means that all contention points of the level preceding $cd(c_i)$ have a chosen compact assignment. Indeed, the arrival time $t(r,c_i)$ and the deadline $d'(r)$ are computed for each route, taking into account the buffers defined by $Real(CA)$.
+Once we have built an instance $I'$ of \wta for each those contention points, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built by extending $CA_i$.
+\end{proof}
+
+
+
 
 \subsection{The Branch and Bound Algorithm}\label{sec:branchBound}
 Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes
@@ -725,11 +868,11 @@ to compute the minimum of $TR(Real(CA))$.
 
  Now, we need to evaluate the number of compact assignments. 
 On a single contention vertex $c$ with $s = |\mathcal{R}_c|$ routes going through, there are $s!2^s$ possible restrictions of a compact assignment by counting the number of pairs of set and order over $\mathcal{R}_c$.
-On a given contention level consisting in the vertices $\{c_1,\dots,c_l\}$, with $s_i = |\mathcal{R}_{c_{i}}|$, there are 
-$\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention level, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. Since $\prod_{1 \leq i\leq l} s_i! \leq (\sum_{1 \leq i\leq l} s_i)!$, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$. There are $d$ contention levels, thus we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
+On a given contention depth consisting in the vertices $\{c_1,\dots,c_l\}$, with $s_i = |\mathcal{R}_{c_{i}}|$, there are 
+$\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention depth, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. Since $\prod_{1 \leq i\leq l} s_i! \leq (\sum_{1 \leq i\leq l} s_i)!$, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$. There are $d$ contention depths, thus we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
 \end{proof}
 
-We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A partial tree is a subtree in which the leaves represent all possibles compact assignments for a contention point. As an example, for the first contention point $c_1$, define $s_1 = |\mathcal{R}_{c_1}|$, There is $s_1!$ nodes at the first level of the partial tree (corresponding to a choice of order $O_{c_1}$, with each one $2^{s_1}$ leaves (corresponding to a choice of subset $S_{c_1}$), that makes $s_1!2^{s_1}$ leaves on the tree. Figure~\ref{fig:partialtree} illustrates the building of the tree for $1$ contention point with $3$ routes.
+We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A partial tree is a subtree in which the leaves represent all possibles choice of couple $(O_{c},S_c)$ for a contention point $c$. As an example, for the first contention point $c_1$, define $s_1 = |\mathcal{R}_{c_1}|$, There is $s_1!$ nodes at the first level of the partial tree (corresponding to a choice of order $O_{c_1}$, with each one $2^{s_1}$ leaves (corresponding to a choice of subset $S_{c_1}$), that makes $s_1!2^{s_1}$ leaves on the tree. Figure~\ref{fig:partialtree} illustrates the building of the tree for $1$ contention point with $3$ routes.
 
 \begin{figure}
 \begin{center}
@@ -742,35 +885,35 @@ We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A p
    \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
  
   \Vertex[x=14,y=14, L = {Root}]{r};
-  \Vertex[x=10,y=11, L = {\huge $O_{{c_1}_1}$}]{o1};
-  \Vertex[x=20,y=11, L = {\huge $O_{{c_1}_2}$}]{o2};
-  \Vertex[x=22,y=11, L = {\huge $O_{{c_1}_3}$}]{o3};
-  \Vertex[x=24,y=11, L = {\huge $O_{{c_1}_4}$}]{o4};
-  \Vertex[x=26,y=11, L = {\huge $O_{{c_1}_5}$}]{o5};
-  \Vertex[x=28,y=11, L = {\huge $O_{{c_1}_6}$}]{o6};
+  \Vertex[x=10,y=11, L = {\Large $O_{c_1}=(123)$}]{o1};
+  \Vertex[x=18,y=11, L = {\Large $O_{c_1}=(132)$}]{o2};
+  \Vertex[x=21,y=11, L = {\Large $O_{c_1}=(213)$}]{o3};
+  \Vertex[x=24,y=11, L = {\Large $O_{c_1}=(231)$}]{o4};
+  \Vertex[x=27,y=11, L = {\Large $O_{c_1}=(321)$}]{o5};
+  \Vertex[x=30,y=11, L = {\Large $O_{c_1}=(312)$}]{o6};
 
 \SetVertexNoLabel
 %level 1
   \Vertex[x=5,y=7 ]{s1};
-    \node[left] at (s1.south west) {\huge $S_{C_1} = \{\emptyset\}$};
+    \node[left] at (s1.south west) {\Large $S_{C_1} = \{\emptyset\}$};
   \Vertex[x=15,y=7]{s2};
-  \node[left] at (s2.south west) {\huge $S_{C_1} = \{1\}$};
+  \node[left] at (s2.south west) {\Large $S_{C_1} = \{1\}$};
 %level2
   \Vertex[x=2.5,y=4 ]{s3};
-    \node[left] at (s3.south west) {\huge $S_{C_1} = \{\emptyset\}$};
+    \node[left] at (s3.south west) {\Large $S_{C_1} = \{\emptyset\}$};
   \Vertex[x=7.5,y=4]{s4};
-  \node[left] at (s4.south west) {\huge $S_{C_1} = \{2\}$};
+  \node[left] at (s4.south west) {\Large $S_{C_1} = \{2\}$};
 
   \Vertex[x=12.5,y=4 ]{s5};
-    \node[left] at (s5.south west) {\huge $S_{C_1} = \{1\}$};
+    \node[left] at (s5.south west) {\Large $S_{C_1} = \{1\}$};
   \Vertex[x=17.6,y=4]{s6};
-  \node[left] at (s6.south west) {\huge $S_{C_1} = \{1,2\}$};
+  \node[left] at (s6.south west) {\Large $S_{C_1} = \{1,2\}$};
 %level 3
   \Vertex[x=0,y=1 ]{s7};
-    \node[left] at (s7.south west) {\huge $S_{C_1} = \{\emptyset\}$};
+    \node[left] at (s7.south west) {\Large $S_{C_1} = \{\emptyset\}$};
   
   \Vertex[x=20,y=1]{s8};
-  \node[left] at (s8.south west) {\huge $S_{C_1} = \{1,2,3\}$};
+  \node[left] at (s8.south west) {\Large $S_{C_1} = \{1,2,3\}$};
 
   \path (s7) edge[dashed] (s8);
   \path (20,7) edge[dashed] (28,7);
@@ -803,24 +946,24 @@ We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A p
 }
 
 
- \caption{A partial tree build for the first contention point by the branch and bound algorithm for $s_1 = 3$.}
+ \caption{A partial tree build for the first contention point by the branch and bound algorithm for a contention point with $3$ routes.}
 
 \label{fig:partialtree}
 \end{center}
 \end{figure}
 
-Such a partial tree is then built for the second contention point $c_2$, and each leaves of $c_1$ are a root of the partial tree of $c_2$, that makes $s_1!2^{s_1} \times s_2!2^{s_2}$ leaves to the tree. If we repeat this operation for every contention point of a same level, we then get, as explained in Theorem~\ref{theorem:FPT} $n!2^n$ leaves on the tree representing the contention level, that makes $ (n!2^{n})^{d}$ leaves on the final tree if there is $d$ contention levels.
+Such a partial tree is then built for the second contention point $c_2$, and each leaves of $c_1$ are a root of the partial tree of $c_2$, that makes $s_1!2^{s_1} \times s_2!2^{s_2}$ leaves to the tree. If we repeat this operation for every contention point of a same level, we then get, as explained in Theorem~\ref{theorem:FPT} $n!2^n$ leaves on the exploration tree, that makes $ (n!2^{n})^{d}$ leaves on the final tree if there is $d$ contention depth.
 
-Note that for the vertices of the last contention level, compact assignments can be considered independently, since
+Note that for the vertices of the last contention depth, compact assignments can be considered independently, since
 they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
 
 
 In order to avoid to explore subtrees that will not give the optimal solution, we want to evaluate as often as possible the quality of the solution which is built.
 
-First, a lower bound of the optimal solution is computed using simulated annealing described in Section~\ref{sec:recuit}. The assignment $A$ given by simulated annealing gives $X =TR(A)$ the first upper bound on the optimal solution.
-When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) < X$ then we found an assignment that have better performance that the previous one, and the lower bound is thus updated.
+First, an upper bound of the optimal solution is computed using simulated annealing described in Section~\ref{sec:recuit}. The assignment $A$ given by simulated annealing gives $X =TR(A)$ the first upper bound on the optimal solution.
+When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) < X$ then we found an assignment that have better performance that the previous one, and the upper bound is thus updated.
 
-This bound helps us to cut the exploration of the tree as soon as possible. Each time the algorithm reaches a leaf of a partial tree, $CA_i$ is fixed. Thus, following Lemma~{lemma:quality} we evaluate the quality of the best solution that can be built from $CA_i$. If the value computed is greater than the upper bound already computed, we cut the tree and we backtrack to the following branch.
+This bound helps us to cut the exploration of the tree as soon as possible. Each time the algorithm reaches a leaf of a partial tree, $CA_i$ is fixed. Thus, following Lemma~\ref{lemma:quality} we use theorem~\ref{th:restrictedlower} to evaluate the quality of the best solution that can be built from $CA_i$. If the value computed is greater than the upper bound already computed, we cut the tree and we explore the following branch.
 
 
 
@@ -861,7 +1004,7 @@ The last cut is based on the definition of a cannonical assignment. Remember tha
 
 
 
-\subsection{Last Contention Level}
+\subsection{Last contention depth}
 Mettre ici le traitement spécifique du dernier niveau -> analyse de la complexité différente 
 à mettre ici, certaines coupes à ne pas faire car seul l'objectif de temps global nous importe 
 (à vérifier c'est un tradeoff, mais certaines sont évidemment à retirer). 
