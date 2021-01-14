@@ -2332,18 +2332,82 @@ int CritMetropolis(int delta, float t)
 	}
 	return 0;
 }
+float calcul_tmp(Graph *g,int P,int message_size,double coeff)
+{
+
+		float b;
+
+		int a=0;
+		int nb_pas;
+		b=descente( g,  P, message_size, 0, &nb_pas);
+
+		int time_actuel =b;
+		reinit_delays(g);
+	
+		int nb_step;
+	
+		Voisin v;
+		
+		nb_step = 0;
+		int av=0;
+		//printf("Tour\n");
+		for(int i=0;i<1000;i++)
+		{
+			v = Voisin_alea(g);
+			
+			//aff_orders(orders,g);
+			if(VOISINAGE)
+				a= assignment_with_orders_vois1(g,P,message_size,0);
+			else
+				a = assignment_with_orders(g,P,message_size,0);
+			if(a)
+			{
+				nb_step++;
+			
+					b = travel_time_max_buffers(g);
+					av+= abs(b-time_actuel);
+					if(nb_step == 100)
+					{
+						//printf("average %d retour %d \n",av,av/nb_step);
+						reinit_delays(g);
+						reset_periods(g,P);
+						return av/nb_step;
+					}
+			
+					remet_voisin(g,v);
+				
+			}//On a pas reussi a construire une solution, on remet le voisin d'avant
+			else
+			{
+				remet_voisin(g,v);
+			}
+			reinit_delays(g);
+
+		}
+	
+	reinit_delays(g);
+	reset_periods(g,P);
+
+
+		return -b/log(coeff);
+}
 int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 {
-	static int instance = 0;
+	
 	//Parametres du recuit
+
+
+	float temperature = calcul_tmp(g,P,message_size,(double)20/100);
+	//printf("temperature %f coeff %d \n",temperature,param);
 	int nb_paliers = param;
-	float temperature = 2200.0;
-	float coeff= 0.90;
+
+	float coeff= 0.99;
 	int b;
 	int seuil_arret = 2;
-	float seuil_incr_cmpt = 0.01;
+	float seuil_incr_cmpt = 0.001;
 
 	int a=0;
+	
 	b=descente( g,  P, message_size, 0, nb_pas);
 
 	//b = best_of_x( g, P, message_size,100,nb_pas);
@@ -2390,9 +2454,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	int nb_amelio = 0;
 	char nom[64];
 	int av = 0;
-	sprintf(nom,"../recuittrace/plotrecuit%d",instance);
-	instance++;
-	FILE * f = fopen(nom,"w");
+
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
@@ -2410,13 +2472,10 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			if(a)
 			{
 				nb_step++;
-				b = travel_time_max_buffers(g);
-				/*av+= b-time_actuel;
-				printf("%d %d %d \n",nb_step,b-time_actuel,av/nb_step);
-				if(nb_step == 100)exit(12);*/
+				
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					
+					printf("accepté %d %d %f\n",b,time_actuel,temperature);
 					//if(time_actuel != b)
 						
 					time_actuel = b;
@@ -2450,26 +2509,25 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			//free_assignment(a);
 
 		}
-		fprintf(f,"%d %d %f %d\n",nb_amelio,time_actuel,temperature,min);
 		nb_amelio++;
 		acceptance_rate = (float)nb_moves/nb_paliers;
-		//printf("rate %f \n",acceptance_rate);
+		printf("rate %f step %d \n",acceptance_rate,nb_step);
 		if(acceptance_rate < seuil_incr_cmpt)
 		{
-			//printf("trop bas \n");
+			printf("trop bas                \n\n\n\n\n \n");
 			cmpt++;
 		}
-		//printf("Cmpt = %d \n",cmpt);
-		if((temperature < 7000) && (temperature>4000))
-			temperature *=  0.99;
-		else
-			temperature *=  0.99;
+
+		temperature *=  0.99;
 	//	printf("%10f \n",temperature);
 		if(temperature < 0.0000009)
+		{
+			printf("BREAk \n");
 			break;
+		}
 		//fprintf(f2,"%f \n",temperature);
 	}
-	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
+	printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
 
 	//On prend la meilleure solution vue
@@ -2498,7 +2556,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		exit(83);
 	}
 	*nb_pas = (float)nb_step;
-	fclose(f);
+
 
 	return b;
 

@@ -332,8 +332,9 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =3 ;
-	char * noms[] = {"Greedy Deadline","Greedy Packed", "Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	int nb_algos =8 ;
+	//"Hybrid Greedy Deadline","Greedy Packed",
+	char * noms[] = { "Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 
 	
 	
@@ -399,7 +400,7 @@ void simuldistrib(int seed)
 				case 0:
 					a =  greedy_deadline_assignment( &g, P, message_size);
 
-				break;
+				break;/*
 				case 1:
 					a =  greedy_deadline_assignment2( &g, P, message_size);
 					
@@ -409,7 +410,7 @@ void simuldistrib(int seed)
 					a =  greedy_deadline_assignment3( &g, P, message_size);
 					
 				break;
-				/*
+				*/
 				case 1:
 					time[algo] = borneInf2( &g, message_size)-l;	
 				break;
@@ -443,14 +444,14 @@ void simuldistrib(int seed)
 				
 				
 				case 6:
-					a = recuit( &g, P, message_size,100,&nb);
+					a = recuit( &g, P, message_size,1000,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;
 					break;
 				case 7:
 					a = branchbound( &g, P, message_size,NULL,NULL,1);
-					break;*/
+					break;
 					
 				}
 
@@ -467,8 +468,8 @@ void simuldistrib(int seed)
 					
 				else
 				{
-					//if((algo != 1) && (algo != 2))
-					time[algo] = INT_MAX;
+					if((algo != 1) && (algo != 2))
+						time[algo] = INT_MAX;
 
 				}
 					
@@ -1227,8 +1228,8 @@ void simultiplexing(int seed)
 void simulrecuit(int seed)
 {
 	srand(seed);
-	int nb_algos =4 ;
-	char * noms[] = {"10","100","1000","2000"};
+	int nb_algos =1 ;
+	char * noms[] = {"100","500","1000","2000"};
 	
 	
 	
@@ -1291,13 +1292,13 @@ void simulrecuit(int seed)
 		
 			switch(algo){
 				case 0:
-					a = recuit( &g, P, message_size,10,&nb);
+					a = recuit( &g, P, message_size,20,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
 				case 1:
-					a = recuit( &g, P, message_size,100,&nb);
+					a = recuit( &g, P, message_size,50,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
