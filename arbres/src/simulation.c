@@ -944,7 +944,7 @@ void simultaboo(int seed)
 {
 	srand(seed);
 	int nb_algos =5 ;
-	char * noms[] = {"M = 10","M = 100","M = 200","M = 500"};
+	char * noms[] = {"M = 100","M = 200","M = 500","M = 700","M = 1000"};
 	
 	
 	

@@ -57,4 +57,4 @@
 #define DATA_CENTER_ROUTES 0
 
 #define SIZE_BE_MESSAGE 50
-#define TABOO_KIND 0
+#define TABOO_KIND 1
