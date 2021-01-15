@@ -9,7 +9,7 @@
 
 
 
-Telecoms networks must manage more and more users while continually improving their bandwidth, latency and reliability. Nowadays, 4G is the standard deployed in most of the territory, and a new technology is under deployment: 5G. The term 5G defines a set of functional specifications. The organism that proposes these specifications is the ITU (International Telecommunication Union), an agency of the United Nation responsible for infromations and communications. For several years, the ITU-R (radiocommunication component of the ITU) has been working to determine the functional aspects that 5G must satisfy. Figure~\ref{fig:5gperf} from~\cite{dahlman20185g} illustrates some of those functional aspects, that ITU-R has formally referenced in IMT-2020 (the requirments of 4G are referenced as IMT-advanced): a bitrate up to 20Gbps ($\times 20$ compared to 4G), low end to end latencies down to 1ms ($10$ times lower than in 4G, we are focusing on this aspect in this thesis).
+Telecoms networks must manage more and more users while continually improving their bandwidth, latency and reliability. Nowadays, 4G is the standard deployed in most of the territory, and 5G is the new technology under deployment. The term 5G defines a set of functional specifications. The organism that proposes these specifications is the ITU (International Telecommunication Union), an agency of the United Nation responsible for informations and communications. For several years, the ITU-R (radiocommunication component of the ITU) has been working to determine the functional aspects that 5G must satisfy. Figure~\ref{fig:5gperf} from~\cite{dahlman20185g} illustrates some of those functional aspects, that ITU-R has formally referenced in IMT-2020 (the requirments of 4G are referenced as IMT-advanced): a bitrate up to 20Gbps ($\times 20$ compared to 4G), low end to end latencies down to 1ms ($10$ times lower than in 4G, we are focusing on this aspect in this thesis).
 Also, 5G aims to offer an higher connection density (up to 1 million device$/km^2$), with an higher traffic capacity (from $0,1 Mbit/s/m^2$ in 4G to $10 Mbit/s/m^2$ in 5G) due to a larger uses of the spectrum. Others aspects as a better energy efficiency ($100$ times better in 5G than in 4G) or a better mobility are required. 
 
   \begin{figure}[h]
@@ -20,7 +20,8 @@ Also, 5G aims to offer an higher connection density (up to 1 million device$/km^
       \end{figure}
 
 All these aspects lead us to various application cases. Figure~\ref{fig:usecases} taken from~\cite{5GACIA} establishes a non-exhaustive list of them, according to their different technical constraints. Indeed, low latency is required for applications like motion control that work in real time since one of the goals of 5G is to obtain dynamic programmable networks, for greater flexibility of use.
-On the other hand, an higher bandwidth is usefull for applications like video streaming, augmented reality or ensuring the connectivity of a large number of terminals. By relaxing latency and bandwidth constraints, it is possible to expand further the number of devices (up to 1 million) for applications like sensors networks.
+\todo{Yann: la phrase précédente est bancale: quel rapport entre flexibility et low latency}
+On the other hand, a higher bandwidth is usefull for applications like video streaming, augmented reality or ensuring the connectivity of a large number of terminals. By relaxing latency and bandwidth constraints, it is possible to expand further the number of devices (up to 1 million) for applications like sensors networks.
 
   \begin{figure}[h] 
       \begin{center}
@@ -31,10 +32,10 @@ On the other hand, an higher bandwidth is usefull for applications like video st
 
 
 
-\subsection{Which aspect on 5G do we focus on ?}
+\subsection{Which aspect of 5G do we focus on ?}
 
 
-To meet these 5G functional specifications, the network equipments must follow some technical standards. The 3GPP (3rd Generation Partnership Project) is an union between several standard organizations which defines the technical specifications for 5G. 3GPP regulary publishes releases, that regroup new specifications. The first release focused on 5G was Release 15 (R15), released in 2018~\cite{RELEASENOKIA}.  
+To meet these 5G functional specifications, the network equipments must follow technical standards. The 3GPP (3rd Generation Partnership Project) is an union between several standard organizations which defines the technical specifications for 5G. 3GPP regulary publishes releases, that regroup new specifications. The first release focused on 5G was Release 15 (R15), released in 2018~\cite{RELEASENOKIA}.  
 
   \begin{figure}[h]
       \begin{center}
@@ -44,25 +45,26 @@ To meet these 5G functional specifications, the network equipments must follow s
       \end{figure}
   
 
-Release 15 focused on increasing throughput and interworking between 4G and 5G, and introduced the notion of URLLC (Ultra-Reliable Low-Latency Communication). URLLC consists in ensuring low packet loss and low latency communications. Indeed, several use cases (smart factories, control operations, \dots) needs some highly reliable communications in which the latency must be guaranteed. 
-The objective of this thesis is to compute schemes for low latency communications. To do so, the network equipments must be able to manage the traffic by discriminating kinds of flows and following the computed schemes to manage them. Even if current network are not able to ensure such constraints, releases 16 an 17 have deepened the notion of URLLC and this topic is widely studied. 
+Release 15 focused on increasing throughput and interworking between 4G and 5G, and introduced the notion of URLLC (Ultra-Reliable Low-Latency Communication). URLLC consists in ensuring low packet loss and low latency communications. Indeed, several use cases (smart factories, control operations, \dots) needs highly reliable communications in which the latency must be guaranteed. 
+The objective of this thesis is to compute schemes for low latency communications. To do so, the network equipments must be able to manage the traffic by discriminating different kinds of flows and following the computed schemes to manage them. Even if current network does not yet have such capabilities, releases 16 an 17 have deepened the notion of URLLC and this topic is widely studied. 
 
 \subsection{Current way to manage networks : Statistical Multiplexing}
 
 
-The expressed constraints expressed for low latency architectures and 5G standard are hard to met in current networks. In IP or even Ethernet networks, the traffic usually suffers of delay due to buffering. 
+The constraints expressed for low latency architectures and 5G standard are hard to met in current networks. In IP or even Ethernet networks, the traffic usually suffers of delay due to buffering. 
 
-As we just mentioned, the current network nodes (routers for IP networks, switches for Ethernet networks) are not able to schedule packets. The only function of the nodes is to forward the packets to the right output port. If several flows have to use the same output port, then some packets can be put in a \textbf{buffer}, in order to wait the availability of the port. 
-The maximal bitrates of the links is thus dimentioned according to the use case. The bitrate is then calculated according to the average bitrate of the flows on the network and the cost of the links. The objective is to offer a good average quality of service for a minimal price. When a single input flow uses an ouput port, there is no issues. However, when several packets comming from several flows uses the same output port, we talk about \textbf{contention}, and the buffering induces additional latency for some packets of the flows. When there is too much packets in the buffer, the oldest packets of the buffer are \textbf{lost}. 
+As we just mentioned, the current network nodes (routers for IP networks, switches for Ethernet networks) are not able to schedule packets. The only function of the nodes is to forward the packets to the right output port. If several flows have to use the same output port, then some packets can be put in a \textbf{buffer}, in order to wait the availability of the port. The maximal bitrates of the links is thus dimensioned according to the use case. The bitrate is then calculated according to the average bitrate of the flows on the network and the cost of the links. 
+\todo{les deux dernières phrases un peu zarb}
+The objective is to offer a good average quality of service for a minimal price. When a single input flow uses an ouput port, there is no issue. However, when several packets comming from several flows uses the same output port, we talk about \textbf{contention}, and the buffering induces additional latency for some packets of the flows. When there is too much packets in the buffer, the oldest packets of the buffer are \textbf{lost}. 
 
-Such a technology ensures an easy deployment and managment of the networks and most of the time a good quality of service for a minimal cost for network providers, but it can induce some packet loss and high latencies. Hence, we talk about statistical multiplexing~\cite{krishnamurthy2003latency,venkatramani1994supporting}.
+Such a technology ensures an easy deployment and managment of the networks and most of the time a good quality of service for a minimal cost for network providers, but it mayn induce packet losses and high latencies. Hence, we talk about statistical multiplexing~\cite{krishnamurthy2003latency,venkatramani1994supporting}. \todo{pourquoi hence, plutot dire ce qu'on vient de décrire est appelé statistical multplexing}
 
 URLLC aims to ensure good end to end latency communications. To achieve such a goal, each component of the communication must satisfy a low latency: the radio communications, and the core network. This thesis focus on the core networks. 
 
 \subsection{\textbf{R}adio \textbf{A}ccess \textbf{N}etwork}
-To understand on which part of the network this thesis focuses on, we might describe how a radio access network works.
+To understand the network this thesis focuses on, we now describe how a radio access network works.
 
-Current mobile network (aka cellular network) architecture consists in a distributed radio access networks: the mobile terminals connect to base stations (BTS for Base Transceiver Station as a generic name, eNB for evolved Node B in 3GPP LTE “4G” standard or gNB for 5G) that encompasses all the sub-systems needed to realize mobile communication~\cite{bouguen2012lte}. It mainly comprises the radio part, that furnishes the connection between the mobile terminal and the BTS, and the network part that provides control and management functions like mobility support (the main functionality being the support of handover from one BTS to another, i.e. the ability to pursue a communication when moving from range of an antenna to another).
+Current mobile network (aka cellular network) architecture consists in a distributed radio access networks: the mobile terminals connect to base stations (BTS for Base Transceiver Station as a generic name, eNB for evolved Node B in 3GPP LTE “4G” standard or gNB for 5G) that encompasses all the sub-systems needed to realize mobile communication~\cite{bouguen2012lte}. It mainly comprises the radio part, that furnishes the connection between the mobile terminal and the BTS, and the network part that provides control and management functions like mobility support (the main functionality being the support of handover from one BTS to another, i.e. the ability to pursue a communication when moving from the range of an antenna to another).
 The BTS are connected together by the Aggregation Network of the operator, itslef connected to the core network, in order to ensure communications with other operators RANs. Figure~\ref{fig:RAN} illustrates a communication between two mobiles using a different operator.
 
 \begin{figure}
@@ -185,8 +187,9 @@ The BTS are connected together by the Aggregation Network of the operator, itsle
 
 
 \subsubsection{Cloud RAN}
-The evolutions proposed in next generations aim at evolving toward centralized radio network architectures (C-RAN, for Cloud Radio Access Network) to reduce consumption costs and power at the base stations~\cite{mobile2011c}. These C-RAN architectures include simplified base stations on the field. Depending on the architecture choice  
-, it can be restricted to the radio part and the digital to analog conversion only. This can be identified by different names depending on the reference documents, including RU for Remote Unit or Remote Radio Heads (RRH). The later will be used the rest of the thesis. The other component of the C-RAN is composed of the processing units. One can distinguish tow levels of processing units: the DUs, for Distributed Units that are able to ensure a part of the computation tasks, and the CUs for Centralized Units that computes the most centralized tasks. In this thesis, we consider only CUs, that are also called BaseBand Units (BBU), we will use this term in the rest of the thesis. Those BBUs are located in the cloud. 
+
+One possible direction for next generation networks is to become centralized radio network architectures (C-RAN, for Cloud Radio Access Network) to reduce consumption costs and power at the base stations~\cite{mobile2011c}. These C-RAN architectures include simplified base stations on the field. Depending on the architecture choice  
+, it can be restricted to the radio part and the digital to analog conversion only. This can be identified by different names depending on the reference documents, including \textbf{RU} for Remote Unit or \textbf{RRH} for Remote Radio Heads. The latter will be used in the thesis. The other components of the C-RAN  are the processing units. One can distinguish two levels of processing units: the \textbf{DUs}, for Distributed Units that are able to ensure a part of the computation tasks, and the \textbf{CUs} for Centralized Units that computes the most centralized tasks. In this thesis, we consider only CUs, that are also called \textbf{BBUs} for BaseBand Units, and we use this term in the thesis. Those BBUs are located in the cloud. 
 
  \begin{figure}[h]
       \begin{center}
@@ -195,7 +198,8 @@ The evolutions proposed in next generations aim at evolving toward centralized r
       \caption{Latency requirments depending of the communications between RRH (RU) and BBU (DU or CU) }\label{fig:5gran}
       \end{figure}
 
-By cloud we define in the capability of instantiating executable programs in data centers that are transparently connected to the systems requiring the results of the program execution. The execution may be indifferently performed on virtualized machines, or bare metal one, or any other combinations. The network between RRH and BBU is called “Fronthaul Network”, or “Fronthaul” for short. Figure~\ref{fig:fronthaul} illustrates an example of fronthaul in which several BBU are gathered in a same datacenter. 
+By cloud we define in the capability of instantiating executable programs in data centers that are transparently connected to the systems requiring the results of the program execution.
+\todo{la phrase écédente a un gros probleme} The execution may be indifferently performed on virtualized machines, or bare metal, or any combination of the two. The network between RRH and BBU is called “Fronthaul Network”, or “Fronthaul” for short. Figure~\ref{fig:fronthaul} illustrates an example of fronthaul in which several BBU are gathered in the same datacenter. 
 
   \begin{figure}[h]
       \begin{center}
@@ -206,8 +210,10 @@ By cloud we define in the capability of instantiating executable programs in dat
       
       \subsubsection{Split}
 
-      As mentioned above, in C-RAN, most of the computation tasks of the BTS must be centralized on the BBU. There are several components that can be centralized, but the more we centralize the ressources, the higher are the latency constraints.
-      Figure~\ref{fig:CRANsplit} illustrates the two different ways proposed to split the BTS. The first one, called ``Full centralization'' leaves only the radio functions to the RRH, while the second one, called ``partial centralization'', keeps the baseband processing function into the RRH. The works presented in this thesis allow to send an high amount of data in the network while minimizing latency. Such a model matches with the first split, this is why we talk about BaseBand Units (BBU) here.
+      As mentioned above, in C-RAN, most of the computation tasks of the BTS must be centralized in the BBU. There are several components that can be centralized, but the more we centralize the ressources, the higher the latency constraints.
+      Figure~\ref{fig:CRANsplit} illustrates two different ways proposed to split the BTS. The first one, called ``Full centralization'' leaves only the radio functions to the RRH, while the second one, called ``partial centralization'', keeps the baseband processing function into the RRH. The works presented in this thesis allow to send an high amount of data in the network while minimizing latency. Such a model matches with the first split, this is why we talk about BaseBand Units (BBU) here. 
+      \todo{est ce qu'il ne faut pas dire qu'avec un split moins exigeant notre travail reste pertinent, mais c'est juste moins critique}
+
       
    \begin{figure}[h]
       \begin{center}
@@ -222,18 +228,18 @@ By cloud we define in the capability of instantiating executable programs in dat
       \caption{The more centralized is the RAN, the hardest is the transport and the lowest is the cost of coordination for the antennas}\label{fig:flexibility}
       \end{figure}
        
-This kind of architecture faces the challenge of mastering the latency in the transfer process between the RRHs on the field and BBUs in the cloud. Low latency is already critical for the deployment of C-RAN approach in LTE “4G” networks. The standard requires hard time constraints for functions like HARQ (Hybrid Automatic Repeat reQuest) that needs to be processed in less than $3ms$ \cite{bouguen2012lte}. Considering processing time into the BBU, the time budget over the network can be as low as $400\mu s$ for a round trip. One specificity in this C-RAN context is not only the latency constraint, but also the periodicity of the data transfer between RRH and BBU (this HARQ constraint must be enforced for each frame emitted every millisecond). Looking beyond current mobile network generation, one must have in mind that ongoing 5G standards will require to reach end-to-end expected latency as low as $1ms$ (depending on targeted services)~\cite{boccardi2014five}. New scheduling and new technologies have to be considered to guarantee delay constrained periodic data transfers. 
+This kind of architecture must address the problem of the latency in the transfer process between the RRHs on the field and BBUs in the cloud. Low latency is already critical for the deployment of C-RAN approach in LTE “4G” networks. The standard requires hard time constraints for functions like HARQ (Hybrid Automatic Repeat reQuest) that needs to be processed in less than $3ms$ \cite{bouguen2012lte}. Considering processing time into the BBU, the time budget over the network can be as low as $400\mu s$ for a round trip. One specificity in this C-RAN context is not only the latency constraint, but also the periodicity of the data transfer between RRH and BBU (this HARQ constraint must be enforced for each frame emitted every millisecond). Looking beyond current mobile network generation, one must have in mind that ongoing 5G standards will require to reach end-to-end expected latency as low as $1ms$ (depending on targeted services)~\cite{boccardi2014five}. New scheduling and new technologies have to be considered to guarantee delay constrained periodic data transfers. 
 
 
 \subsection{Technical solution for low latency}
-Statistical multiplexing was the trend packet based netwoks in the last $40$ years, but it is not adapted to our context since they can not provide latency constraints \cite{khaunte2003technique}. If they can be used to prioritize some packets over the others (e.g. Express Forwarding against Best Effort), they fail to ensure delivery of a given packet in a given time delay when several packets compete for the same resource. 
+Statistical multiplexing is the most common mechanism for packet based networks in the last $40$ years, but it is not adapted to our context since it can not honor latency constraints \cite{khaunte2003technique}. While they can be used to prioritize some packets over the others (e.g. Express Forwarding against Best Effort), they fail to guarantee the delivery of a given packet in a given time delay when several packets compete for the same resource. 
 
-The best current solution is to rely on an almost full optical approach, where each end-points (RRH on one side, BBU on the other side) are connected through direct fiber or full optical switches~\cite{pizzinat2015things,tayq2017real}. This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about $10,000$ base stations. This number will increase by a factor of $2$ to $20$ with the emergence of “small cells” that allow increasing base station density and to reach higher throughput \cite{leclerc2016transmission}\cite{leclerc2016signaling}. It is then needed to find a solution to offer low latency over commoditized packet based networks. 
+The best current solution is to rely on an almost full optical approach, where each end-points (RRH on one side, BBU on the other side) are connected through direct fiber or full optical switches~\cite{pizzinat2015things,tayq2017real}. This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about $10,000$ base stations. This number will increase by a factor of $2$ to $20$ with the emergence of “small cells” which increases base station density to reach higher throughput \cite{leclerc2016transmission,leclerc2016signaling}. It is thus needed to find a solution to offer low latency over commoditized packet based networks. 
 
-Although 3GPP standards for 5G are not completely frozen yet, the core networks should use ethernet technology. Time Sensitive Networking (TSN) is a task group of IEEE that develop some standards in ethernet. The standard we focus here is 802.1Qbv \cite{ieee802}  
+Although 3GPP standards for 5G are not completely frozen yet, the core network should use ethernet technology. Time Sensitive Networking (TSN) is a task group of IEEE that develop some standards in ethernet. The standard we focus on here is 802.1Qbv \cite{ieee802}  
   
-802.1Qbv allows us to manage the flows in the nodes by a gate mechanism. Knowing the routing over the network, it is possible to schedule on each node the time at which a flow must be sent by the node on each link in order to prioritize the most critical flows. The scheduler sends a  GCL (Gate Control List) to the node. 
-Figure~\ref{fig:tsnqbv} found in \cite{durr2016no} shows the mechanism of a switch with the 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch select at each times ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure 6, at time $T_1$, all gates exept the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
+802.1Qbv allows us to manage flows in the nodes by a gate mechanism. Knowing the routing over the network, it is possible to schedule on each node the time at which a flow must be sent by the node on each link in order to prioritize the most critical flows. The scheduler sends a  GCL (Gate Control List) to the node. 
+Figure~\ref{fig:tsnqbv} found in \cite{durr2016no} shows the mechanism of a switch using 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch selects at each time ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure 6, at time $T_1$, all gates except the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
   \begin{figure}[h]
       \begin{center}
       \includegraphics[width=0.8\textwidth]{Chapitre1/tsnqbv.png}
@@ -241,10 +247,12 @@ Figure~\ref{fig:tsnqbv} found in \cite{durr2016no} shows the mechanism of a swit
       \caption{IEEE 802.1Qbv mechanism}\label{fig:tsnqbv}
       \end{figure}
       
-Such a mechanism leads us to determine the GCL in order to let the C-RAN flows cross the nodes at the exact time they arrive. Furthermore, it is essential to schedule the different C-RAN flows so that two flows never use the same resource at the same time.
+Such a mechanism leads us to determine the GCL in order to let the C-RAN flows cross the nodes at the exact time they arrive. \todo{phrase précédente pas claire}
+Furthermore, it is essential to schedule the different C-RAN flows so that two flows never use the same resource at the same time.
    
 \subsection{Conclusion}
-One of the trend of 5G and networks in general is to be able to ensure end to end communication with a low latency. To do so, it is important to control the traffic in each part of the network. In this thesis, we focus on the ethernet network. Untill now, several technical solutions are in development, that allows network equipments to manage each trafic following a scheme. Such a technology helps us to control the trafic more precisely than statistical multiplexing, but needs a scheme to be able to manage traffic. Here, we study this problem of computing a scheme. Knowing the network topology of the network, and the different flows on it, our objective is to compute the scheduling of the traffic for every node of the network, by minimizing the latency of the longest flow. Note that the periodic apsect of C-RAN makes the problem difficult. Indeed, since the trafic is periodic and very loaded, we must care about the traffic of next periods while computing the scheme.
+One of the trend of 5G and networks in general is to be able to ensure end to end communication with a low latency. To do so, it is important to precisely control the traffic in each part of the network. In this thesis, we focus on the ethernet network. Several technical solutions are currently in development, to allow network equipments to manage each flow following a scheme. Such a technology help to control the trafic more precisely than statistical multiplexing, but requires a scheme to be able to manage traffic. \todo{les phrases précdentes sont un peu vague et redondantes. Scheme est vraiment vague ...}
+Here, we study this problem of computing a scheme. Knowing the network topology of the network, and the different flows it supports, our objective is to compute the scheduling of the traffic for every node of the network, by minimizing the latency of the longest flow. Note that the periodic aspect of C-RAN makes the problem difficult. Indeed, since the traffic is periodic and the network highly loaded, we must deal with contentions coming from usccessive periods while computing the scheme.
 
 
 \section{Algorithmic related works}
