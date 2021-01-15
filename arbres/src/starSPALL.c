@@ -6,7 +6,6 @@
 #include <limits.h>
 #include "treatment.h"
 #include "starSPALL.h"
-#include "random_inters.h"
 
 void print_tab(element_sjt * tab, int taille)
 {
