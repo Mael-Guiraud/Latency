@@ -1228,7 +1228,7 @@ void simultiplexing(int seed)
 void simulrecuit(int seed)
 {
 	srand(seed);
-	int nb_algos =1 ;
+	int nb_algos =3 ;
 	char * noms[] = {"100","500","1000","2000"};
 	
 	
@@ -1292,19 +1292,19 @@ void simulrecuit(int seed)
 		
 			switch(algo){
 				case 0:
-					a = recuit( &g, P, message_size,20,&nb);
+					a = recuit( &g, P, message_size,100,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
 				case 1:
-					a = recuit( &g, P, message_size,50,&nb);
+					a = recuit( &g, P, message_size,1000,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
 				case 2:
-					a = recuit( &g, P, message_size,1000,&nb);
+					a = recuit( &g, P, message_size,2000,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
