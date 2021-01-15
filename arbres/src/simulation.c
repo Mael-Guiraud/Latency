@@ -332,9 +332,9 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =8 ;
+	int nb_algos =8;
 	//"Hybrid Greedy Deadline","Greedy Packed",
-	char * noms[] = { "Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
+	char * noms[] = {"Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 
 	
 	
@@ -397,20 +397,20 @@ void simuldistrib(int seed)
 				gettimeofday (&tv1, NULL);	
 		
 			switch(algo){
-				case 0:
+				/*case 0:
 					a =  greedy_deadline_assignment( &g, P, message_size);
 
-				break;/*
+				break;
 				case 1:
 					a =  greedy_deadline_assignment2( &g, P, message_size);
 					
 
-				break;
-				case 2:
+				break;*/
+				case 0:
 					a =  greedy_deadline_assignment3( &g, P, message_size);
 					
 				break;
-				*/
+				
 				case 1:
 					time[algo] = borneInf2( &g, message_size)-l;	
 				break;

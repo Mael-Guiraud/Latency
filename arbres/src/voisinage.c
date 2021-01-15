@@ -102,11 +102,9 @@ int fin_vois2(int * tab, int* bool_p,int size)
 	return 1;
 
 }
-void next2(int * tab,int * bool_p, int id, int val_fin)
+void next2(int * tab,int * bool_p, int id)
 {
-
-
-	if(tab[id] == val_fin)
+	if(tab[id] == 1)
 	{
 
 		if(fin_vois(bool_p,id+1))
@@ -191,31 +189,31 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 
 
 
-	//for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
-		//{
+	for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
+		{
 
 			if(kind == FORWARD)
 			{
 				
-				if(g->contention[v.route][x]->routes_order_f[idtmp] <0)
-					g->contention[v.route][x]->routes_order_f[idtmp] = -g->contention[v.route][x]->routes_order_f[idtmp];
-				if(g->contention[v.route][x]->routes_order_f[idtmp] == INT_MAX)
-					g->contention[v.route][x]->routes_order_f[idtmp] = 0;
+				if(g->contention[v.route][x]->routes_order_f[i] <0)
+					g->contention[v.route][x]->routes_order_f[i] = -g->contention[v.route][x]->routes_order_f[i];
+				if(g->contention[v.route][x]->routes_order_f[i] == INT_MAX)
+					g->contention[v.route][x]->routes_order_f[i] = 0;
 			}
 			else
 			{
 				
-				if(g->contention[v.route][x]->routes_order_b[idtmp] <0)
-					g->contention[v.route][x]->routes_order_b[idtmp] = -g->contention[v.route][x]->routes_order_b[idtmp];
-				if(g->contention[v.route][x]->routes_order_b[idtmp] == INT_MAX)
-					g->contention[v.route][x]->routes_order_b[idtmp] = 0;
+				if(g->contention[v.route][x]->routes_order_b[i] <0)
+					g->contention[v.route][x]->routes_order_b[i] = -g->contention[v.route][x]->routes_order_b[i];
+				if(g->contention[v.route][x]->routes_order_b[i] == INT_MAX)
+					g->contention[v.route][x]->routes_order_b[i] = 0;
 			}
 			
-		//}
+		}
 	
 		
 		//On cherche l'indice de au quel v.route est placée dans l'arc
-		/*idtmp = -1;
+		idtmp = -1;
 		for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
 		{
 			if(kind == FORWARD)
@@ -239,7 +237,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		if(idtmp ==-1)
 		{
 			printf("Error, indice not found.\n");exit(35);
-		}*/
+		}
 
 
 		if(v.pos[level] == 2)//permutation a gauche(car c'était droite avant)
@@ -311,7 +309,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		}
 		else
 		{
-			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1,1);
+			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1);
 		}
 	}
 
@@ -488,12 +486,11 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 			}
 		}
 
-		v.idtmp = idtmp;
+		
 	}
 	
 	return v;
 }
-
 void random_ordre(int * tab, int size)
 {
 	int random,tmp;
@@ -2475,7 +2472,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 				
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					printf("accepté %d %d %f\n",b,time_actuel,temperature);
+					//printf("accepté %d %d %f\n",b,time_actuel,temperature);
 					//if(time_actuel != b)
 						
 					time_actuel = b;
@@ -2511,10 +2508,10 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		}
 		nb_amelio++;
 		acceptance_rate = (float)nb_moves/nb_paliers;
-		printf("rate %f step %d \n",acceptance_rate,nb_step);
+		//printf("rate %f step %d \n",acceptance_rate,nb_step);
 		if(acceptance_rate < seuil_incr_cmpt)
 		{
-			printf("trop bas                \n\n\n\n\n \n");
+			//printf("trop bas                \n\n\n\n\n \n");
 			cmpt++;
 		}
 
@@ -2522,12 +2519,12 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	//	printf("%10f \n",temperature);
 		if(temperature < 0.0000009)
 		{
-			printf("BREAk \n");
+			//printf("BREAk \n");
 			break;
 		}
 		//fprintf(f2,"%f \n",temperature);
 	}
-	printf("Temperature %f, nb_step %d \n",temperature,nb_step);
+	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
 
 	//On prend la meilleure solution vue
