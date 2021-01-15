@@ -332,7 +332,7 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =8;
+	int nb_algos =1;
 	//"Hybrid Greedy Deadline","Greedy Packed",
 	char * noms[] = {"Hybrid Greedy Normalized","BorneInfSort","BorneInfSimons","Descente","DescenteX","Taboo","Recuit","FPT"};
 
@@ -444,7 +444,7 @@ void simuldistrib(int seed)
 				
 				
 				case 6:
-					a = recuit( &g, P, message_size,1000,&nb);
+					a = recuit( &g, P, message_size,100,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;
@@ -767,7 +767,8 @@ void simuldescente(int seed)
 {
 	srand(seed);
 	int nb_algos =4 ;
-	char * noms[] = {"Init HGN","Init 1 random","Init 10 randoms","Init 100 randoms"};
+	char * noms[] = {"Init HGN","Hybrid 1","Hybrid 10","Hybrid 100"};
+	//char * noms[] = {"Init HGN","Init 1 random","Init 10 randoms","Init 100 randoms"};
 	
 	
 	
@@ -933,7 +934,7 @@ void simuldescente(int seed)
 	
 	sprintf(buf,"descentes_%d_%d_%d",NB_BBU,NB_COLLISIONS,MAX_LENGTH);
 	char * ylabels2[] = {"Number of instances"};
-	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Additional latency (tics)", ylabels2);
+	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the margin", "Margin (tics)", ylabels2);
 	
 	
 }
@@ -942,8 +943,8 @@ void simuldescente(int seed)
 void simultaboo(int seed)
 {
 	srand(seed);
-	int nb_algos =4 ;
-	char * noms[] = {"N = 100","N = 500","N = 1000","N = 2000"};
+	int nb_algos =5 ;
+	char * noms[] = {"M = 10","M = 100","M = 200","M = 500"};
 	
 	
 	
@@ -1228,7 +1229,7 @@ void simultiplexing(int seed)
 void simulrecuit(int seed)
 {
 	srand(seed);
-	int nb_algos =3 ;
+	int nb_algos =1 ;
 	char * noms[] = {"100","500","1000","2000"};
 	
 	

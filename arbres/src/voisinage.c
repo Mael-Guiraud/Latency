@@ -1611,7 +1611,7 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 		}
 		
 	}
-	/*a = descente(g,P,message_size,0,nb_pas);
+	a = descente(g,P,message_size,0,nb_pas);
 		if(a)
 		{
 			
@@ -1623,7 +1623,7 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 					cpy_orders(best,g,1);
 				}			
 				
-		}*/
+		}
 	*nb_pas = pas;
 	if(prev != INT_MAX)
 	{
@@ -2310,7 +2310,7 @@ int CritMetropolis(int delta, float t)
 	{
 		return 0;
 	}
-	if(delta <= 0)
+	if(delta < 0)
 	{
 		return 1;
 	}
@@ -2318,7 +2318,7 @@ int CritMetropolis(int delta, float t)
 	{
 
 		float proba = (float)delta/t;
-
+		//printf("%f %d %f\n",proba,delta, t);
 		float random = (float)rand() / (float)RAND_MAX;
 	
 		if(random <= expf(-proba))
@@ -2352,12 +2352,12 @@ float calcul_tmp(Graph *g,int P,int message_size,double coeff)
 		{
 			v = Voisin_alea(g);
 			
-			//aff_orders(orders,g);
+			
 			if(VOISINAGE)
-				a= assignment_with_orders_vois1(g,P,message_size,0);
+				b= assignment_with_orders_vois1(g,P,message_size,0);
 			else
-				a = assignment_with_orders(g,P,message_size,0);
-			if(a)
+				b = assignment_with_orders(g,P,message_size,0);
+			if(b)
 			{
 				nb_step++;
 			
@@ -2401,7 +2401,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	float coeff= 0.99;
 	int b;
 	int seuil_arret = 2;
-	float seuil_incr_cmpt = 0.001;
+	float seuil_incr_cmpt = 0.01;
 
 	int a=0;
 	
@@ -2411,8 +2411,11 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	
 	/*	if(!greedy_deadline(g, P, message_size,0))
 		{
-			printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-			return a;
+			reset_periods( g, P); 
+				reinit_delays(g);
+				greedy_deadline(g, P, message_size,1);
+			//printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
+			//return a;
 		}
 		if(VOISINAGE)
 			a= assignment_with_orders_vois1(g,P,message_size,0);
@@ -2428,8 +2431,8 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		printf("Dans le crecuit on n'a pas su retrouver le greedy avec assingment with oder \n");
 		exit(35);
 		return 0;
-	}
-	 	*/
+	}*/
+	 	
 	int min = b;
 	int time_actuel = min;
 	reinit_delays(g);
@@ -2468,6 +2471,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 				a = assignment_with_orders(g,P,message_size,0);
 			if(a)
 			{
+				b = travel_time_max_buffers(g);
 				nb_step++;
 				
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
@@ -2523,6 +2527,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			break;
 		}
 		//fprintf(f2,"%f \n",temperature);
+		//printf("fin palier temp %f cmpt %d %f \n",temperature,cmpt,acceptance_rate);
 	}
 	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
