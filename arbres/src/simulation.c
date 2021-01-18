@@ -1007,29 +1007,36 @@ void simultaboo(int seed)
 		
 			switch(algo){
 				case 0:
-					a = taboo( &g, P, message_size,100,100,&nb);
+					a = taboo( &g, P, message_size,1000,100,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
 				case 1:
-					a = taboo( &g, P, message_size,500,500,&nb);
+					a = taboo( &g, P, message_size,1000,200,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
 				case 2:
-					a = taboo( &g, P, message_size,1000,1000,&nb);
+					a = taboo( &g, P, message_size,1000,500,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
 				case 3:
-					a = taboo( &g, P, message_size,2000,2000,&nb);
+					a = taboo( &g, P, message_size,1000,700,&nb);
 					
 					#pragma omp critical
 						nb_pas[algo] += nb;
 				break;
+				case 4:
+					a = taboo( &g, P, message_size,1000,1000,&nb);
+					
+					#pragma omp critical
+						nb_pas[algo] += nb;
+				break;
+				
 				
 				
 				
