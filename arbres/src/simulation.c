@@ -943,8 +943,8 @@ void simuldescente(int seed)
 void simultaboo(int seed)
 {
 	srand(seed);
-	int nb_algos =5 ;
-	char * noms[] = {"M = 100","M = 200","M = 500","M = 700","M = 1000"};
+	int nb_algos =4 ;
+	char * noms[] = {"N = 100","N = 500","N = 1000","N = 2000","M = 1000"};
 	
 	
 	
@@ -971,10 +971,15 @@ void simultaboo(int seed)
 	int time[nb_algos];
 	int res[nb_algos][NB_SIMULS];
 	float nb_pas[nb_algos];
+	float nb_pasmoy[nb_algos];
 	float running_time[nb_algos];
 	  struct timeval tv1, tv2;
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
-	for(int i=0;i<nb_algos;i++)nb_pas[i] = 0;
+	for(int i=0;i<nb_algos;i++)
+		{
+			nb_pas[i] = 0;
+			nb_pasmoy[i] = 0;
+		}
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
@@ -1007,34 +1012,55 @@ void simultaboo(int seed)
 		
 			switch(algo){
 				case 0:
-					a = taboo( &g, P, message_size,1000,100,&nb);
-					
+					a = taboo( &g, P, message_size,100,100,&nb);
 					#pragma omp critical
-						nb_pas[algo] += nb;
+						nb_pasmoy[algo] += nb;
+					if(nb>nb_pas[algo])
+					{
+						#pragma omp critical
+							nb_pas[algo] = nb;
+					}
+					
 				break;
 				case 1:
-					a = taboo( &g, P, message_size,1000,200,&nb);
-					
+					a = taboo( &g, P, message_size,500,500,&nb);
 					#pragma omp critical
-						nb_pas[algo] += nb;
+						nb_pasmoy[algo] += nb;
+					if(nb>nb_pas[algo])
+					{
+						#pragma omp critical
+							nb_pas[algo] = nb;
+					}
 				break;
 				case 2:
-					a = taboo( &g, P, message_size,1000,500,&nb);
-					
+					a = taboo( &g, P, message_size,1000,1000,&nb);
 					#pragma omp critical
-						nb_pas[algo] += nb;
+						nb_pasmoy[algo] += nb;
+					if(nb>nb_pas[algo])
+					{
+						#pragma omp critical
+							nb_pas[algo] = nb;
+					}
 				break;
 				case 3:
-					a = taboo( &g, P, message_size,1000,700,&nb);
-					
+					a = taboo( &g, P, message_size,2000,2000,&nb);
 					#pragma omp critical
-						nb_pas[algo] += nb;
+						nb_pasmoy[algo] += nb;
+					if(nb>nb_pas[algo])
+					{
+						#pragma omp critical
+							nb_pas[algo] = nb;
+					}
 				break;
 				case 4:
 					a = taboo( &g, P, message_size,1000,1000,&nb);
-					
 					#pragma omp critical
-						nb_pas[algo] += nb;
+						nb_pasmoy[algo] += nb;
+					if(nb>nb_pas[algo])
+					{
+						#pragma omp critical
+							nb_pas[algo] = nb;
+					}
 				break;
 				
 				
@@ -1088,7 +1114,7 @@ void simultaboo(int seed)
 		cmpt = 0;
 		moy = 0;
 	
-		printf("%s : %f ms , nb_pas = %f\n",noms[i],running_time[i]/NB_SIMULS,nb_pas[i]/NB_SIMULS);
+		printf("%s : %f ms , nb_pasmoy = %f, nb_pasmax = %f\n",noms[i],running_time[i]/NB_SIMULS,nb_pasmoy[i]/NB_SIMULS,nb_pas[i]);
 		for(int j=0;j<NB_SIMULS;j++)
 		{
 			if(res[i][j]!=INT_MAX)

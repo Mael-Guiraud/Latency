@@ -4,66 +4,22 @@
 \label{chap:BE}
 \minitoc
 
-\section{Two kind of flow in a same network}
-Rappeler qu'il est possible avec TSN de mixer deux types de flux en gérant le traffic et donc en priorisant les flux CRAN. Le but de cette section est de montrer l'impact sur le best effort.
+In previous chapters, we presented algorithms that solves the problems of scheduling deterministic traffic in the network. In practice, networks are shared between determinsitc and statistical traffics. This is possible with TSN technologie, that allows to manage traffics independantly. The objective of this chapter is to study the impact of proposed algorirthms that minimize the latency of deterministic traffic on statistical traffic. We also show how to change the computation of the proposed scheduling to improve the latency of all traffics of the network.
 
-Paragraphe sur la generation des réseaux
+\section{Periodic Assignment and Random Traffic on Star Routed Networks}\label{sec:comparison}
 
-\section{Deterministic Assignments vs Statistical Multiplexing}\label{sec:comparison}
+    The algorithms proposed in this thesis are designed to manage deterministic periodic flows in dedicated networks. In this section, the objective is to determine the effect of adding in the network non-deterministic flows (internet traffic, best effort) managed by statistical multiplexing.
 
-     \subsection{Performance of Statistical Multiplexing}
-
-    
-  %    \subsubsection{Description of statistical multiplexing}
-      Now that we have designed and tuned \PMLS to solve \pall efficiently, we compare its performances against the actual way to manage the messages in a network:  \emph{statistical multiplexing}, with a \FIFO buffer in each node of the network to resolve collisions. For statistical multiplexing, the time at which the datagrams are sent in the network is not managed by the user as in our approach, thus we assume the offsets of each route is fixed to some random value, and they stay the same over time.
-      We consider a second policy to manage buffers called \critdead. In a buffer with several datagrams, this policy sends the one with the smallest remaining margin, which is the time it can wait before missing its deadline.
-
-
-  	We have implemented a statistical multiplexing simulator, to evaluate the performance of these two policies and to compare them to finding assignments with small margin by solving \pall. 
-  	For statistical multiplexing, both contention points have a buffer. The process is not periodic:
-  	even if the offset of a route is the same each period, it is possible that some datagram do not arrive at the same time in a contention point in two consecutive periods because of buffering. Therefore we must measure the process time of each route over several periods if we want to compute the maximum latency of the network. We choose to simulate it for $1,000$ periods but we have observed that the process time usually stabilizes in less than $10$ periods. The \textbf{margin}, for statistical multiplexing, is defined as the maximum process time, computed as explained, minus the size of the longest route of the star routed network. 
-	
-%In the network we study here, two kinds of traffic are present: the Cloud Ran traffic, the one we studied in this paper, and another traffic, less critical, for which there is no needed guarantee, the Best Effort (BE) traffic. We propose three policies to manage the traffics in the nodes.
-
-      %Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. 
-	    
-     In Figure~\ref{fig:sto}, we represent the probability of success of statistical multiplexing and \PMLS for different margins. The success rates are computed from $10,000$ star routed networks for each margin. On the left part of Figure~\ref{fig:sto}, the arcs of the network are uniformly drawn in $[P]$, while on the right part, the arcs of the network are uniformly drawn in $[1600]$ (the hard case of the previous section). The others parameters of the experiences are the same as previously. We represent the distribution under high and light load for statistical multiplexing and under high load only for PMLS since under light load the margin is always $0$. 
-     
-    \begin{figure}
-    
-   
-
-       \begin{center}
-      \includegraphics[width = 0.47\textwidth]{Chapitre6/stochasticdistrib.pdf}
-      \includegraphics[width = 0.47\textwidth]{Chapitre6/stochastic.pdf}
-     
-       \end{center}
-  \caption{Probability of success of statistical multiplexing and \PMLS for several margins on random topologies when the size of the routes are distributed either on $P$ (left) or on a small range of values (right).}
-      \label{fig:sto} 
-      \end{figure}
-      
-     
-    The experiment clearly shows that statistical multiplexing does not ensure a minimal latency. 
-    For random topologies, the latency is extremely high when the load is high, with a margin of about $10,000$ for the worst $10\%$ which corresponds to half the period, that is $0.5$ms. Even when the network is lightly loaded, $20\%$ of the instances have a margin of more than $2,000$ while PMLS finds an assignment with margin $0$ in a highly loaded network $99\%$ of the time! 
-    
-    For hard topologies, statistical multiplexing is slightly worst for small margins and  the same for high margins. The settings are stressful for PMLS, we find an assignment in only $78\%$ of the instances with margin $0$, and it needs a margin of $2,000$ to be sure to find an assignment. However, PMLS still vastly outperforms the statistical multiplexing both for the average margin and for the worst margin. 
-    
-    For each $1,000$ tics of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.    
-     
-    \subsection{Periodic Assignment and Random Traffic}
-    
-    The algorithms proposed in this paper are designed to manage deterministic periodic flows in dedicated networks. In this section, the objective is to determine the effect of adding in the network non-deterministic flows (internet traffic, best effort) managed by statistical multiplexing.
-
-    The algorithms solving \pazl are not designed to take into account best effort traffic. In particular, they often build very compact assignments, with all messages following one another in a contention vertex, which is bad for the latency of best efforts packets trying to go through the same contention point. Thus, we propose an adaptation of any algorithm solving \pazl, to find assignments where the unused tics are as evenly spaced as possible to minimize the maximal latency of any random packet trying to go through the contention point. A similar approach, to decrease the latency of best effort packets while scheduling CRAN messages on an optical ring can be found in~\cite{DBLP:conf/ondm/BarthGS19}.
+    The algorithms solving \pall are not designed to take into account best effort traffic. In particular, they often build very compact assignments, with all messages following one another in a contention vertex, which is bad for the latency of best efforts packets trying to go through the same contention point. Thus, we propose an adaptation of any algorithm solving \pall, to find assignments where the unused tics are as evenly spaced as possible to minimize the maximal latency of any random packet trying to go through the contention point. 
     
     
-    \subsubsection{Spaced Assignments}
+    \subsection{Spaced Assignments}
 
-    Most algorithms for \pazl, when determining the waiting times, send datagrams as early as possible
-    and thus create long sequences of datagrams in $c_2$, without free tics between them. We propose to modify any algorithm solving \pazl on an instance with datagram size $\tau$ as follows: compute a $(P,\tau')$ assignment using the algorithm, for the largest possible $\tau' \geq \tau$. 
+    Most algorithms for \pall, when determining the waiting times, send datagrams as early as possible
+    and thus create long sequences of datagrams in $c_2$, without free tics between them. We propose to modify any algorithm solving \pall on an instance with datagram size $\tau$ as follows: compute a $(P,\tau')$ assignment using the algorithm, for the largest possible $\tau' \geq \tau$. 
 
     \begin{lemma}\label{lemma:smaller_tau}
-    Let $I' = (N,P,\tau',d)$ be an instance of \pazl, for which there is an assignment, and let 
+    Let $I' = (N,P,\tau',d)$ be an instance of \pall, for which there is an assignment, and let 
     $\tau \leq \tau'$, then there is also an assignment for $I = (N,P,\tau,d)$.
     \end{lemma}  
     \begin{proof}
@@ -99,11 +55,11 @@ Paragraphe sur la generation des réseaux
 	For more than $80\%$ of the instances, there is an assignment for the maximal size of a message $\tau' = \frac{P}{n} = 4166$. This means that \SPMLS perfectly balances the free tics in the period. In the worst case, a solution with $\tau' = 3925$ is found, which still yields $3925 - 2500 = 1425$ unused tics between datagrams. Hence, we expect \SPMLS to work well in conjunction with random traffic.
 	The excellent performances of \PMLS when the load is high explains this result and justifies the work we have done to solve \pall efficiently under high load rather than just requiring a mild load in applications. 
 
-    \subsubsection{Performance Evaluation}
+    \subsection{Performance Evaluation}
     
     Let us evaluate different ways to manage both statistical and deterministic traffics together in the same network.
  
-    \paragraph{Best effort datagrams generation}
+    \subsubsection{Best effort datagrams generation}
     
     Let us denote best effort by BE. The BE traffic is generated as follows. The size of a BE datagram is small in practice, and set to $50$ tics in our experiments. We generate $20\%$ of average load of BE traffic in our experiment, to obtain a total load of $80\%$. The BE datagrams do not make a round trip
     in the network as the C-RAN datagrams, they go through a single contention point. 
@@ -113,7 +69,7 @@ Paragraphe sur la generation des réseaux
     On each contention point, the generation is split in two exponential distributions. The first one models 
     background traffic, it has an average load of $15\%$ by generating one BE datagram every $333$ tics on average. The second models a burst of BE datagrams with an average load of $15\%$, that is, a generation of $10$ datagrams, but every $10,000$ tics on average. 
    
-   	\paragraph{Statistical multiplexing policy}
+   	\subsubsection{Statistical multiplexing policy}
 
    	We test several policies to deal with all traffic using statistical multiplexing.
    	The BE traffic is always managed using \FIFO, and we propose two policies to deal with C-RAN. First, all datagrams, BE or C-RAN, are stored in the same buffer and dealt with the \FIFO policy regardless of their type. We call this policy \FIFO.
@@ -148,18 +104,15 @@ Paragraphe sur la generation des réseaux
    
 
 
-\section{An Industrial product}
-Parler pour introduire du prototype de dominique C
-Expliquer en quoi la technologie fait qu'il est trivial d'organiser les flux C-RAN entre eux pour qu'il n'y ait pas de contention. 
-Dire que du coup on essaye de les organiser pour impacter au moins le best effort. Résultat, le best effort est même avantagé.
+\section{Both Traffics On Optical Ring : An Industrial product}
 
 
-In this section, we study a C-RAN application based on the N-GREEN optical ring described in~\cite{ngreenarchitecture,uscumlic2018scalable}.
-In contrast with the previous sections, finding emission timings so that different periodic sources do not use the same resource is easy in the context of the N-GREEN optical ring with a single data-center. However, we deal with two additional difficulties arising from practice: the messages from RRHs are scattered because of the electronic to optic interface and there are other traffics whose latency must be preserved. It turns out that the deterministic management of CRAN traffic we propose reduces the latency of CRAN traffic to the physical delay of the routes, while reducing the latency of the other traffics by smoothing the load of the ring over the period. To achieve such a good latency, our solution needs to reserve resources in advance, which slightly decreases the maximal load the N-GREEN optical ring can handle. Such an approach of reservation of the network for an application (CRAN in our context) relates to network slicing~\cite{jiang2016network} or virtual-circuit-switched connections in optical networks~\cite{cadere2010virtual,szymanski2016ultra}.
+In this section, we study a C-RAN application based on an optical ring. We work on an industrial product which was developed in the ANR project N-GREEN described in~\cite{ngreenarchitecture,uscumlic2018scalable}.
+In contrast with the previous chapters, finding emission timings so that different periodic sources do not use the same resource is easy in the context of the N-GREEN optical ring with a single data-center. However, we deal with two additional difficulties arising from practice: the messages from RRHs are scattered because of the electronic to optic interface and there are other traffics whose latency must be preserved. It turns out that the deterministic management of CRAN traffic we propose reduces the latency of CRAN traffic to the physical delay of the routes, while reducing the latency of the other traffics by smoothing the load of the ring over the period. To achieve such a good latency, our solution needs to reserve resources in advance, which slightly decreases the maximal load the N-GREEN optical ring can handle. Such an approach of reservation of the network for an application (CRAN in our context) relates to network slicing~\cite{jiang2016network} or virtual-circuit-switched connections in optical networks~\cite{cadere2010virtual,szymanski2016ultra}.
 
 In Sec.~\ref{sec:modelngreen}, we model the optical ring and the traffic flow. In Sec.~\ref{sec:oportmethods}, we experimentally evaluate the latency when using stochastic multiplexing to manage packets insertion on the ring, with or without priority for C-RAN packets. In Sec.~\ref{sec:deterministicalgorithms}, we propose a deterministic way to manage C-RAN packets without buffers, which guarantees to have zero latency from buffering. We propose several refinements of this deterministic sending scheme to spread the load over time, which improves the latency of best effort packet, or in Sec.~\ref{sec:maxant}, to allow the ring to support a maximal number of antennas at the cost of a very small latency for the C-RAN traffic. 
 
-\section{Model of C-RAN traffic over an optical ring}
+\subsection{Model of C-RAN traffic over an optical ring}
 \label{sec:modelngreen}
     
   \paragraph{N-GREEN Optical ring}
@@ -197,7 +150,7 @@ In Sec.~\ref{sec:modelngreen}, we model the optical ring and the traffic flow. I
   In each period $P$, an RRH emits data during a time called \textbf{emission time} or $ET$. Hence the RRH emits $ET / F$ packets, i.e. requires a container of size $C$ each $F$ units of time during the emission time, as shown in Fig.~\ref{fig:interface}.
    %Each period $P$, an RRH emits $ET / F$ packets, i.e. a packet of size $C$ each $F$ units of time during a time $ET$ (emission time),
    
-   At each period, the data of the RRH $i$ begins to arrive in the insertion buffer at a time $m_i$  called {\bf offset}. The offsets can be determined by the designer of the system and can be different for each RRH but must remain the same over all periods. We assume that all BBUs are contained in the same data-center attached to the node $v$. The data from $u$ is routed to its BBU at node $v$ through the ring and arrives at time $m_i + \omega(u,v)$ if it has been inserted in the ring upon arrival. Then after some computation time, which w.l.o.g. is supposed to be zero, an answer is sent back from the BBU to the RRH. The same quantity of data is emitted by each BBU or RRH during any period.
+   At each period, the data of the RRH $i$ begins to arrive in the insertion buffer at a time $o_i$  called {\bf offset}. The offsets can be determined by the designer of the system and can be different for each RRH but must remain the same over all periods. We assume that all BBUs are contained in the same data-center attached to the node $v$. The data from $u$ is routed to its BBU at node $v$ through the ring and arrives at time $o_i + \omega(u,v)$ if it has been inserted in the ring upon arrival. Then after some computation time, which w.l.o.g. is supposed to be zero, an answer is sent back from the BBU to the RRH. The same quantity of data is emitted by each BBU or RRH during any period.
    
    The {\bf latency} of a data packet is defined as the time it waits in an insertion buffer.
    Indeed, because of the ring topology, the routes between RRHs and BBUs are fixed, thus we cannot reduce the physical transmission delay of a data which depends only on the size of the arcs used. Moreover, there is only one buffering point in the N-GREEN optical ring, the insertion buffer of the node at which the data arrives. Hence, in this context, to minimize the end-to-end delay, we need to minimize the (logical) latency.
@@ -215,7 +168,7 @@ In Sec.~\ref{sec:modelngreen}, we model the optical ring and the traffic flow. I
 The optical ring supports other traffics, corresponding to the internet flow. We call this traffic \textbf{Best Effort} (BE). We want it to have the best possible distribution of latency, but since BE traffic is less critical than C-RAN traffic, we impose no hard constraint on its latency. At each node of the ring, a {\bf contention buffer} is filled by a batch arrival process of BE data. 
 This batch arrival process consists in generating, at each unit of time, a quantity of data drawn from a bimodal distribution to modelize the fact that internet traffic is bursty. Then, according to the fill rate of the contention buffer and the maximum waiting time of the data, a packet of size at most $C$ may be created by aggregating data in the contention buffer. This packet is then put in the insertion buffer of the node. Hence, the arrival of BE messages can be modeled by a temporal law that gives the distribution of times between two arrivals of a BE packet in the insertion buffer. The computation of this distribution for the parameters of the contention buffer used in the N-GREEN optical ring is described in~\cite{Cast1810:Performance}. We use this distribution in our experiments to modelize BE packet arrival in the insertion buffer.
 
-   \section{Evaluation of the latency on the N-GREEN optical ring}
+   \subsection{Evaluation of the latency on the N-GREEN optical ring}
    \label{sec:oportmethods}
    
    
@@ -292,23 +245,23 @@ Unsurprisingly, the latency of the C-RAN traffic is better when we prioritize th
 
 Remark that, due to the broadcast and select mode, a message coming from any node induces the same load for all the nodes of the ring. Hence the latency of the traffics coming from any RRHs or from the BBUs are the same, which may seem couterintuitive knowing that all BBUs share the same node on the ring. This is why in Fig.~\ref{fig:params} we do not ditinguish between uplink C-RAN traffic (RRH to BBU) and downlink  C-RAN traffic (BBU to RRH).
 
-\section{Deterministic approach for zero latency} \label{sec:deterministicalgorithms}
-\subsection{Reservation}
+\subsection{Deterministic approach for zero latency} \label{sec:deterministicalgorithms}
+\subsubsection{Reservation}
 Finding good offsets for the C-RAN traffic is a hard problem even for simple topologies and without BE traffic. In this section, we give a simple solution to this problem in the N-GREEN optical ring, and we adapt it to minimize the latency of the BE traffic.
 
-Let $u$ be the node to which is attached the RRH $i$. To ensure zero latency for the C-RAN traffic, then the container which arrives at $u$ at time $m_i$ must be free so that the data from the RRH can be sent immediately on the optical ring. 
+Let $u$ be the node to which is attached the RRH $i$. To ensure zero latency for the C-RAN traffic, then the container which arrives at $u$ at time $o_i$ must be free so that the data from the RRH can be sent immediately on the optical ring. 
 
 To avoid latency between the arrival of the data from the RRH and its insertion on the optical ring, 
 we allow nodes to \textbf{reserve} a container one round before using it. A container which is reserved cannot be filled by any node except the one which has reserved it (but it may not be free when it is reserved). 
-If $u$ reserves a container at time $m_i - RS$, then it is guaranteed that $u$ can fill a free container at time $m_i$ with the data of the RRH $i$.
-In the method we now describe, the C-RAN packets never wait in the node: The message sent by the RRH $i$ arrives at its BBU at node $v$ at time $m_i + \omega(u,v)$ and the answer is sent from the BBU at time $m_i + \omega(u,v) +1$.
+If $u$ reserves a container at time $o_i - RS$, then it is guaranteed that $u$ can fill a free container at time $o_i$ with the data of the RRH $i$.
+In the method we now describe, the C-RAN packets never wait in the node: The message sent by the RRH $i$ arrives at its BBU at node $v$ at time $o_i + \omega(u,v)$ and the answer is sent from the BBU at time $o_i + \omega(u,v) +1$.
 
 Recall that an RRH fills a container every $F$ units of time, during a time $ET$. 
-Thus if we divide the period $P$ into \textbf{slots} of $F$ consecutive units of time, an RRH needs to fill at most one container each slot. If an RRH emits at time $m_i$, then we say it is at \textbf{position} $m_i + \omega(u,v)\pmod F$.
+Thus if we divide the period $P$ into \textbf{slots} of $F$ consecutive units of time, an RRH needs to fill at most one container each slot. If an RRH emits at time $o_i$, then we say it is at \textbf{position} $o_i + \omega(u,v)\pmod F$.
 The position of an RRH corresponds to the position in a slot of the container it has emitted, when it arrives at $v$, the node of the BBU. 
 If an RRH is at position $p$, then by construction, the corresponding $BBU$ is at position $p+1\pmod F$. For now, we do not allow waiting times for C-RAN traffic, hence each RRH uses a container at \emph{the same position during all the emission time}. 
 
-Given a ring, a set of RRH's, a period and an acceleration factor $F$, the problem we solve here is to find an \textbf{assignment} of values of the offsets $m_i$'s which is \textbf{valid}: two RRHs must never use the same container in a period. Moreover we want to preserve the latency of the BE traffic. It means that the time a BE packet waits in the insertion buffer must be minimized. To do so, we must minimize the time a node waits for a free container at any point in the period, by spreading the C-RAN traffic as uniformly as possible over the period. % in order to give the nodes an available container in a minimal average time. 
+Given a ring, a set of RRH's, a period and an acceleration factor $F$, the problem we solve here is to find an \textbf{assignment} of values of the offsets $o_i$'s which is \textbf{valid}: two RRHs must never use the same container in a period. Moreover we want to preserve the latency of the BE traffic. It means that the time a BE packet waits in the insertion buffer must be minimized. To do so, we must minimize the time a node waits for a free container at any point in the period, by spreading the C-RAN traffic as uniformly as possible over the period. % in order to give the nodes an available container in a minimal average time. 
 
 Fig.~\ref{fig:assignmentngreen} represents an assignment of two couples of RRH and BBU by showing the containers going through the node of the BBU during a period. Each slot has a duration of $F$ unit of times, and, since an RRH/BBU emits a packet each $F$ UoT during $ET$ UoT, if we take the granularity of a slot to represent the time, the emission of a BBU/RRH is continuous in our representation, during $ET/F$ slots. A date $t$ in the period corresponds in Fig.~\ref{fig:assignmentngreen} to the slot $t/F$ and is at position $t \mod F$.
 
@@ -323,16 +276,16 @@ Fig.~\ref{fig:assignmentngreen} represents an assignment of two couples of RRH a
   \end{figure}
      \vspace{-0.75cm}
 
- \subsection{Building valid assignment with zero C-RAN latency}\label{sec:zerolatency}
+ \subsubsection{Building valid assignment with zero C-RAN latency}\label{sec:zerolatency}
 Remark that two RRHs which are not at the same position never use the same containers. Moreover, if we fix the offsets of the RRHs to even positions so that they do not reserve the same containers, then, because the answers of the BBU are sent without delay in our model, it will fix the offsets of the BBUs to odd positions which do not reserve the same containers. Hence, we need to deal with the RRHs only.
 The next proposition gives a simple method to find an assignment.
 
 \begin{proposition}
 \label{prop:assign}
-There is a valid assignment of the offsets $m_1, \dots, m_k$ on the same position if  $k ET + RS \leq P$.
+There is a valid assignment of the offsets $o_1, \dots, o_k$ on the same position if  $k ET + RS \leq P$.
 \end{proposition}
 \begin{proof}
- W.l.o.g we fix $m_1$ to $0$ and all the other offsets will then be chosen at position $0$.  Let $u_1,\dots,u_k$ be the nodes attached to the RRHs $1,\dots,k$. We assume that $u_1,\dots,u_k$ are in the order of the oriented cycle. The last message emitted by the RRH $1$ arrives at $u_2$ at time $ET - 1 + \omega(u_1,u_2)$. Therefore we can fix $m_2 =  ET  + \omega(u_1,u_2)$. In general we can set $m_i = (i-1) \times ET + \omega(u_1,u_i)$ and all RRHs will use different containers at position $0$ during a period. Since $k \times ET + \omega(u_1,u_1) \leq P$ by hypothesis,
+ W.l.o.g we fix $o_1$ to $0$ and all the other offsets will then be chosen at position $0$.  Let $u_1,\dots,u_k$ be the nodes attached to the RRHs $1,\dots,k$. We assume that $u_1,\dots,u_k$ are in the order of the oriented cycle. The last message emitted by the RRH $1$ arrives at $u_2$ at time $ET - 1 + \omega(u_1,u_2)$. Therefore we can fix $o_2 =  ET  + \omega(u_1,u_2)$. In general we can set $o_i = (i-1) \times ET + \omega(u_1,u_i)$ and all RRHs will use different containers at position $0$ during a period. Since $k \times ET + \omega(u_1,u_1) \leq P$ by hypothesis,
  the containers filled by the $k$th RRH are freed before $P$. Hence when the RRH $1$ must emit something at the first unit of time of the second period, there is a free container.
 \end{proof}
 
@@ -437,7 +390,7 @@ In Fig.~\ref{fig:optimres}, we compare the cumulative distribution of the latenc
   \end{figure}
       
      
-\subsection{Building valid assignment with some C-RAN latency}
+\subsubsection{Building valid assignment with some C-RAN latency}
 \label{sec:maxant}
 
 The previous approach limits the number of antennas supported by the ring when $P-RS \mod ET \neq 0$, which is the case with N-GREEN parameters. The method we present in this section enables us to support more antennas and improves the latency of BE traffic (it reserves less free containers) by \emph{allowing the data from an RRH to use two positions}.
@@ -450,7 +403,7 @@ In order to support as much antennas as possible on the ring, we use \emph{all} 
 \end{proposition}
 \begin{proof}
  We consider the RRHs in the order of the ring.
- Let $l = \lfloor \frac{P- RS}{ET}\rfloor$, then we set the offsets of the first $l$ RRHs as in Prop.~\ref{prop:assign}. These RRHs are at position zero and the $(l+1)$th RRH first emits at position zero, with offset $m_{l+1} = l*ET + \omega(u_0,u_{l+1})$. 
+ Let $l = \lfloor \frac{P- RS}{ET}\rfloor$, then we set the offsets of the first $l$ RRHs as in Prop.~\ref{prop:assign}. These RRHs are at position zero and the $(l+1)$th RRH first emits at position zero, with offset $o_{l+1} = l*ET + \omega(u_0,u_{l+1})$. 
  
  The $(l+1)$th RRH emits up to time $P - \omega(u_{l+1},u_{0})$ at position zero, so that there is no conflict with RRH $0$ during the next period.
  Hence, it has used the position zero during $x = P - \omega(u_{l+1},u_{0}) - l*ET - \omega(u_0,u_{l+1}) = P - l*ET - RS$. From time $P - \omega(u_{l+1},u_{0}) + 2$, the $(l+1)$th RRH emits at position $2$ and during a time $ET - x$. Then the next RRH in the order is assigned to position $2$, and begins to emit at time $P - \omega(u_{l+1},u_{0}) + ET -x$ instead of zero. The rest of the assignment is built in the same way filling completely all first positions, until there are no more RRH.  
