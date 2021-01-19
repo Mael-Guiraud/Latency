@@ -39,7 +39,7 @@
 //For star simulation
 #define NB_ROUTES 8
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel
