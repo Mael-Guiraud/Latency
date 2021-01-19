@@ -711,13 +711,13 @@ which is of the same size for any compact assignment, hence the computation time
 We now study the choice of the parameter $M$. Note that increasing may not necessarily decrease the margin
 of the solution found by Tabu search. Indeed, a large value for $M$ could restrict the Tabu Search to some component of the transposition graph while a small value of $M$ may allow loops.
 
-We fix $N = 50$ and we compute Tabu Search with $M$ equals $10$,$50$,$100$,$200$ or $500$.
+We fix $N = 500$ and we compute Tabu Search with $M$ equals $10$, $50$, $100$, $200$ or $500$.
 Figure~\ref{fig:tabudistrib} shows the cumulative distribution of the margin needed by Tabu Search with different values for $M$. 
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.3]{Chapitre5/taboo_distrib}
-\caption{ Difference between the Tabu Search whith a memory of $10$,$50$,$100$,$200$ or $500$ solutions}
+\caption{ Difference between the Tabu Search whith a memory of $10$, $50$, $100$, $200$ or $500$ solutions}
 \label{fig:tabudistrib}
 \end{figure}
 
@@ -726,23 +726,20 @@ Figure~\ref{fig:tabudistrib} shows the cumulative distribution of the margin nee
 \hline
     M & $10$&$50$& $100$& $200$& $500$\\
     \hline
-    Average number of step & $2.54$ & $4.97$& $7.42$& $11.38$ & $11.38$\\
+    Average number of steps & $2.54$ & $4.97$& $7.42$& $11.38$ & $11.38$\\
     \hline
     Number of step max & $26$ & $67$& $165$& $165$ & $165$\\
-
     \hline
-
      Average margin & $3064$ & $2810$& $2722$& $2510$ & $2510$\\
-
     \hline
  \end{tabular}
-  \captionof{figure}{Average number of step needed by Tabu Search to reach a local optimum and average value of the margin of this local optimum. \label{tab:tabumemory}}
+  \captionof{figure}{Average number of steps needed by Tabu Search to reach a local optimum and average value of the margin of this local optimum. \label{tab:tabumemory}}
 \end{center}
 
-It seems that the more steps Tabu Search remember, the better the assignment.
-In order to understand what happen during the Tabu Search, we investigate the distribution of the step at which the Tabu Search finds its best solution.
+It seems that the more steps Tabu Search remembers, the smaller is the margin of the assignment.
+In order to understand what happen during Tabu Search, we investigate the distribution of the steps at which the Tabu Search finds its best solution.
 With a memory of the last $10$ solutions, Tabu Search finds the best assignment in $2.5$ steps on average, with a memory of $50$ steps, the average step that gives the best assignment is $4.97$, for $100$ solutions, Tabu Search needs in average $7.42$ steps to find the best solution. We observe that, for a memory of $200$ and $500$ solutions, the experimental results are the same, Tabu Search needs $11.38$ steps to find the best solution and the distribution is the same. This is explained by the few number of computation made here.
-Also, it appears that, in most of $60\%$ of the cases, Tabu Search finds it's best assignment before $10$ steps, but some computation with $M > 200$ finds a better assignment up to the $150^{th}$ step. This means that running the Tabu Search longer could improve the quality of the result. 
+Also, it appears that, in more than $60\%$ of the cases, Tabu Search finds it's best assignment before $10$ steps, but some computation with $M > 200$ finds a better assignment up to the $150^{th}$ step. This means that running the Tabu Search longer could improve the quality of the result. 
 %Nevertheless, since the computation is really expensive, using Simulated Annealing is more relevant.
 %-> j'ai commenté car tu n'as pas encore présenté simulated annealing et que c'est plutot pour la conclusion quand tu
 %comparera directement les méthodes
@@ -750,14 +747,14 @@ Also, it appears that, in most of $60\%$ of the cases, Tabu Search finds it's be
 
 \subsection{Simulated Annealing}\label{sec:recuit}
 
-Simulated Annealing works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn uniformly at random in the neighborhood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. This algorithm is an answer to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
+In this section, we use the Simulated Annealing method which works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn uniformly at random in the neighborhood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. This algorithm is an answer to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
 
- When using Simulated Annealing, we need to fix the following parameters: initial temperature, number of steps before decreasing the temperature, factor by which the temperature is decreased, the number of steps without improvement before ending the process.
+ When using Simulated Annealing, we need to fix the following parameters: initial solution, initial temperature, number of steps before decreasing the temperature, factor by which the temperature is decreased, number of steps without improvement before ending the process.
+
+ The temperature must be high enough to accept to worsen the solution at the beginning of the execution, and it must decrease slowly. When the temperature is low, Simulated Annealing almost always rejects compact representations which are worse than the current one. Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the exection of the Simulated Annealing. The value $\Delta$ represent the difference $TR(Real(CA'))-TR(Real(CA))$ where $CA'$ is a compact assignment in the neighboorhood of $CA$. $CA'$ is accepted or rejected with probability $e^{-\frac{\Delta}{t}} $, where $t$ is the temperature. This means that $\frac{\Delta}{t}$ must be close to $0$ at the beginning, and must go to infinity along the execution. 
+\todo{Yann: ce paragraphe répète un peu les mêmes choses plusieurs, fois. Soit plus clair et précis}
 
 
- The temperature must be fixed in order to accept to worsen the solution at the begining of the execution, must decrease slowly. When the temperature is low, the Simulated Annealing rejects bad compact representations.
- Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the exection of the Simulated Annealing. The value $\Delta$ represent the difference $TR(Real(CA'))-TR(Real(CA))$ where $CA'$ is a compact assignment in the neighboorhood of $CA$. $CA'$ is accepted or rejected with probability $e^{-\frac{\Delta}{t}} $, where $t$ is the temperature.
- This means that $\frac{\Delta}{t}$ must be close to $0$ at the beginning, and must go to infinity along the execution. 
  
  In order to fix the initial temperature $t_0$, we follow~\cite{osman1997meta}:
  \begin{enumerate}
@@ -790,9 +787,9 @@ Simulated Annealing works as follow. An initial {\emph temperature} is set and a
  \captionof{figure}{Comparison of two intial temperatures, considering the quality of the initial configuration}
      \label{tab:poorgood}
  \end{center}
- We assume that the initial solution given by Hill Climbing can be considered as ``good''. Indeed, increasing the initial temperature does not affect the quality of the solution, but increase the computation time.
+ We assume that the initial solution given by Hill Climbing can be considered as ``good''. Indeed, increasing the initial temperature does not improve the quality of the solution, but it increases the computation time.
  
- In Simulated Annealing, the temperature should decrease slowly. At each \textbf{level}, $N$ compact representations are drawn. At the end of a level, the temperature is decreased of $10\%$. The algorithm stops if less than $1\%$ of the compact representations darwn are accepted during two consecutive steps. Hence, drawing too few compact representations per level decreases the temperature too fast and reduces the efficiency of Simulated Annealing. However, drawing too much compact representations during a level increases the computation time of the algorithm, hence there is tradeoff between time an quality and lenth of a level should be set carefully.
+ In Simulated Annealing, the temperature should decrease slowly. At each \textbf{level}, $N$ compact representations are drawn. At the end of a level, the temperature is decreased by $10\%$. The algorithm stops if less than $1\%$ of the compact representations drawn are accepted during two consecutive steps. Hence, drawing too few compact representations per level decreases the temperature too fast and reduces the efficiency of Simulated Annealing. However, drawing too much compact representations during a level increases the computation time of the algorithm, hence there is tradeoff between time an quality and lenth of a level should be set carefully.
   
 Figure~\ref{fig:stepsrecuit} shows the margin needed by Simulated Annealing with different values for $N$. Those results are computed on $1,000$ random instances, in which the initial temperature is set to $2200$ and the load is $0.8$
  
