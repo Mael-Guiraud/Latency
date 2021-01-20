@@ -712,7 +712,7 @@ We now study the choice of the parameter $M$. Note that increasing may not neces
 of the solution found by Tabu search. Indeed, a large value for $M$ could restrict the Tabu Search to some component of the transposition graph while a small value of $M$ may allow loops.
 
 We fix $N = 50$ and we compute Tabu Search with $M$ equals $10$,$50$,$100$,$200$ or $500$.
-Figure~\ref{fig:tabumemory} shows the cumulative distribution of the margin needed by Tabu Search with different values for $M$. 
+Figure~\ref{tab:tabumemory} shows the cumulative distribution of the margin needed by Tabu Search with different values for $M$. 
 
 %\begin{figure}[h]
 %	\centering
@@ -769,6 +769,7 @@ Simulated Annealing works as follow. An initial {\emph temperature} is set and a
 \item Deduce $t_0$ from the relation: $e^{-\frac{\bar{\Delta}}{t_0}} = \tau_0$ 
  \end{enumerate}
  
+ \begin{comment}
  Tabular~\ref{tab:poorgood} shows the average margin of the solutions produced by Simulated Annealing when intialized with temperatures computed from the previous routine. The initial solution used by Simulated Annealing is the solution given by hill climbing initialized by \hybridgreedynormalized. The experiment is made on $100$ random instances.
 
 
@@ -789,7 +790,8 @@ Simulated Annealing works as follow. An initial {\emph temperature} is set and a
  \captionof{figure}{Comparison of two intial temperatures, considering the quality of the initial configuration}
      \label{tab:poorgood}
  \end{center}
- We assume that the initial solution given by Hill Climbing can be considered as ``good''. As observed, increasing the initial temperature does not significantly improve the quality of the solution, but increase the computation time.
+ \end{comment}
+ We assume that the initial solution given by Hill Climbing can be considered as ``good''. We experimentally observed that increasing the initial temperature does not significantly improve the quality of the solution, but increase the computation time.
  
  In Simulated Annealing, the temperature must decrease slowly. At each \textbf{level}, $N$ compact assignments are drawn. At the end of a level, the temperature is decreased of $1\%$ and algorithm stops if less than $1\%$ of the compact assignments darwn are accepted during two consecutive steps. Hence, drawing too few compact assignments by level decreases the temperature too fast and reduces the efficiency of Simulated Annealing. However, drawing too much compact assignments during a level increases the computation time of the algorithm, there is tradeoff between time an quality and lenth of a level should be set carefully.
 
@@ -797,7 +799,7 @@ Simulated Annealing works as follow. An initial {\emph temperature} is set and a
  When $N$ is low (more precisely when $N=10$ or $N = 20$), the probability of drawing no compact assignment that will be accepted is high and thus Simulated annealing stops too fast. To fix this issue, we force Simulated Annealing to continue during $10$ consecutive levels for which less than $1\%$ of the compact assignment are accepted. This increase the computation time in the case of higher values for $N$ , on which the Simulated Annealing would works longer under low temperatures. Nevertheless, because the neighborhood of a solution is composed of a large number of solutions of the same value, the acceptance rate is greater than $1\%$ even under low temperatures. This is why we set a minimal temperature under which simulated annealing stops.
 
   
-Figure~\ref{fig:recuitmargin} shows the margin needed by Simulated Annealing with different values for $N$. Those results are computed on $1,000$ random instances, in which the initial temperature is set by the routine of~\cite{osman1997meta} presented ahead and the load is $0.8$
+Figure~\ref{tab:recuitmargin} shows the margin needed by Simulated Annealing with different values for $N$. Those results are computed on $1,000$ random instances, in which the initial temperature is set by the routine of~\cite{osman1997meta} presented ahead and the load is $0.8$
 
 
 \begin{comment}
@@ -1051,10 +1053,53 @@ While all possible subset $S_c$ are enumerated, for a given datagram $i$, the al
 
 The last cut we propose is based on the definition of a cannonical assignment. Remember that all assignments given by $Real(CA)$ are cannonicals. Furthermore, in a cannonical assignment, there is a datagram which is not delayed at all. In such a situation, assume w.l.o.g. that it is the datagram with the lowest id. Thus, if we find a partial assignment for which $A_{c}(i,c) = 0$ computed from $Real(CA_c)$ in which $j$ is the first datagram of the order, if $i$ has a lowest id than $j$, then we cut because this case is also explored in another subtree with a different choice of order $O_c$.
 
+\subsection{Scalability with the number of routes}
+
+The Branch and Bound algorithm complexity depends of both the contention depth of the routed network and the number of routes. We focus on networks of contention depth $3$, which is realistic in our context, and we want to investigate how much the computation time increase when the number of routes grows. The complexity of this algorithm depends strongly of the number of routes in a same contention point. Untill now, the number of routes in a same contention point was $4$, in contention points of depth two. We increase this value to $6$ by adding another contention point of depth one (and three, since the routed network is symmetrical), extending the topology of Figure~\ref{fig:randomnetworks}.
+
+Tabular 
 
 
 \section{Experimental Evaluation}
 
+In this section, we want to compare the performance of all algorithms presented in this chapter.
+
+ First, we study the case described in section~\ref{sec:generationrouted}. There is $8$ routes in the routed network, the length of the arcs are drawn between $0$ and $P$, and load is $0.8$.
+The algorithm compared here are:
+\begin{itemize}
+  \item \hybridgreedynormalized.
+  \item Hill climbing initialized by \hgn.
+  \item Hybrid Hill climbing, initialized by $100$ random compact assignments (or \hgn if the $100$ compact assignments are not realizable).
+  \item Tabu Search, with infinite memory and a computation of $500$ steps.
+  \item Simulated Annealing with $100$ steps by level.
+  \item Branch and Bound
+\end{itemize}
+
+Figure~\ref{fig:all8routes} shows the cumulative distribution of the margin required by the best solution of each algorithms. Tabular~\ref{tab:time8routes} shows the average computation times and margin of the algorithms during the same experiment. The experiment is made on $1000$ instances.
+
+\begin{center}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.4]{Chapitre5/all8routes}
+\caption{ Cumulative distribution of the margin for $8$ routes drawn betwenn $0$ and $P$.}
+\label{fig:all8routes}
+\end{figure}
+
+
+\begin{tabular}{ |c|c|c|c|c|c|c| }
+\hline
+    Algorithm & $\hgn$& $Hill Climbing$& $Hybrid Hill Climbing$ &$Tabu Search$&$Simulated Annealing$& $Branch and Bound$\\
+    \hline
+    Average Margin & $5968$& $3666$& $372$ &$2240$ & $294$& $284$ \\
+    \hline
+    Computation time (s)& $0.005$& $0.035$& $1.39$ &$10.76$ & $2.28$& $0.22$\\
+
+
+    \hline
+ \end{tabular}
+  \captionof{figure}{ Average computation time of each algorithm.\label{tab:time8routes}}
+\end{center}
 
 
 \label{sec:evalperfspall}

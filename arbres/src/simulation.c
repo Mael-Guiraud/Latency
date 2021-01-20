@@ -334,7 +334,7 @@ void simuldistrib(int seed)
 	srand(seed);
 	int nb_algos =7;
 	//"Hybrid Greedy Deadline","Greedy Packed",
-	char * noms[] = {"Hybrind Greedy Normalized","Lower Bound","Hill Climbing Init HGN","Hybrid Hill Climbing 100","Tabu Search","Simulated Annealing","Branch and Bound"};
+	char * noms[] = {"Hybrid Greedy Normalized","Lower Bound","Hill Climbing Init HGN","Hybrid Hill Climbing 100","Tabu Search","Simulated Annealing","Branch and Bound"};
 
 	
 	
@@ -366,7 +366,7 @@ void simuldistrib(int seed)
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
 	for(int i=0;i<4;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
-	for(int i=0;i<NB_SIMULS;i++)
+	for(int i=6;i<NB_SIMULS;i++)
 	{
 
 	
@@ -1415,12 +1415,13 @@ void simulrecuit(int seed)
 		fclose(f[i]);
 	}
 	
-	sprintf(buf,"taboo");
+	sprintf(buf,"recuit");
 	char * ylabels2[] = {"Number of instances"};
 	print_gnuplot_distrib(buf,noms, nb_algos, "Cumulative distribution of the Latency", "Additional latency (tics)", ylabels2);
 	
 		
 }
+
 
 /*
 void simulrecuit(int seed)
