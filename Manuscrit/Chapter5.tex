@@ -498,7 +498,7 @@ local search algorithms with a first assignment of sufficient quality.
 
 \section{Local Search Heuristics}
 
-The number of compact representations grows extremely quickly with $n$. Hence, to find one which minimizes $TR(A)$, we propose several classical local search algorithm: Hill Climbing, Tabu Search and Simulated Annealing. These methods work as long as a relevant notion of neighborhood of a solution is proposed. The neighborhood relation must satisfy two properties: it must be quick to compute (hence not too large) and the implicit graph of solutions defined
+The number of compact assignments $CA$ grows extremely quickly with $n$. Hence, to find one which minimizes $TR(Real(CA))$, we propose several classical local search algorithm: Hill Climbing, Tabu Search and Simulated Annealing. These methods work as long as a relevant notion of neighborhood of a solution is proposed. The neighborhood relation must satisfy two properties: it must be quick to compute (hence not too large) and the implicit graph of solutions defined
 by the neighborhood relation should be connected. We now propose a simple neighborhood relation over compact assignments.
 
 Let $u$ be a contention point of a network, and let $CA$ be a compact assignment for this network, 
@@ -509,14 +509,14 @@ Let $u$ be a contention point of a network, and let $CA$ be a compact assignment
  \item $O = (r_1,\dots,r_{i-2},r_{i},r_{i-1},\dots,r_{l})$ and $S_u = S$ or $S \triangle \{r_i\}$ or  $S \triangle \{r_{i-1}\}$ or $S \triangle \{r_i,r_{i-1}\}$ 
  \end{enumerate}
 
-Informally, a compact representation is in the $r$-neighborhood of another one if it can be obtained by 
+Informally, a compact assignment is in the $r$-neighborhood of another one if it can be obtained by 
 moving down $r$ once (or not changing it) in the order and adding or removing $r$ and the previous route from the set. 
 Remark that the $r$-neighborhood of any pair $(O_u,S_u)$ has at most $6$ members (it can be $4$ when the route $r$ is in first position and cannot be exchanged with the previous one). 
 
 The \emph{$r$-neighborhood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborhood of $(O_u,S_u)$. Finally, the \emph{neighborhood} of an assignment $CA$ is the union for all $r \in {\cal R}$ of the $r$-neighborhoods of $CA$.
 
  Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
- a routed network. Then, a compact representation has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborhood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborhood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
+ a routed network. Then, a compact assignment has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborhood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborhood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
   All algorithms presented in this section will do a walk in the transposition graph, trying to find a vertex with optimal
   transmission time. 
 
@@ -562,13 +562,13 @@ The \emph{$r$-neighborhood} of a compact assignment $CA$ is the set of all compa
 \end{figure}
 
 \begin{lemma}\label{lemma:path}
-There is a path from a realizable compact representation CR, with $CR(u) = (O_u,S_u)$ to $CR'$, such that 
-$CR'$ is equal to $CR$ except on $u$ where it is equal to $(O_u,S_u \cup E)$.  
+There is a path from a realizable compact assignment CA, with $CA(u) = (O_u,S_u)$ to $CA'$, such that 
+$CA'$ is equal to $CA$ except on $u$ where it is equal to $(O_u,S_u \cup E)$.  
 \end{lemma}
 \begin{proof}
 The path is by adding elements in $E$ one by one. 
- To prove the existence of the path, it is enough to prove that for  $E = \{v\}$. By definition, $(O_u,S_u \cup{v})$ is in the neighborhood of $(O_u,S_u)$. However, one should also prove that $CR'$ is realizable.
-  Since the order in which the buffers are fixed by the algorithm of $Real$ is the same for $(O_u,S_u)$ and $(O_u,S_u \cup{v})$, it is easy to prove by induction that the normalized sending times of $(O_u,S_u \cup{v})$ are less than the normalized sending times of $(O_u,S_u)$. Thus, $CR$ realizable implies $CR'$ realizable. Indeed, 
+ To prove the existence of the path, it is enough to prove that for  $E = \{v\}$. By definition, $(O_u,S_u \cup{v})$ is in the neighborhood of $(O_u,S_u)$. However, one should also prove that $CA'$ is realizable.
+  Since the order in which the buffers are fixed by the algorithm of $Real$ is the same for $(O_u,S_u)$ and $(O_u,S_u \cup{v})$, it is easy to prove by induction that the normalized sending times of $(O_u,S_u \cup{v})$ are less than the normalized sending times of $(O_u,S_u)$. Thus, $CA$ realizable implies $CA'$ realizable. Indeed, 
 a compact assignment is realizable if and only if the last normalized sending time is less than $P - \tau$.
 \end{proof}
 
@@ -597,17 +597,17 @@ The most simple local search heuristic is Hill Climbing. This algorithm starts f
 
 The quality of Hill Climbing depends on the the initial compact assignment. A first choice is to consider the compact representation $CR(A)$ of the assignment $A$ given by \hybridgreedynormalized (\hgn). We can also choose a random compact assignment. Since a compact assignment does not always give a valid assignment nor a good one, we should draw many random compact assignments and return the best assignment found by Hill Climbing using these initial solutions.
 
-Figure~\ref{fig:descente07} shows the difference between initalizing Hill Climbing with \hybridgreedynormalized, or with one or several random compact representation. Those results are computed from $1000$ random instances, with load of $0.8$.
+Figure~\ref{fig:descente07} shows the difference between initalizing Hill Climbing with \hybridgreedynormalized, or with one or several random compact assignments. Those results are computed from $1000$ random instances, with load of $0.8$.
 \begin{figure}[h] 
 	\centering
 	\includegraphics[scale=0.3]{Chapitre5/descente07}
-\caption{ Margin needed to find a solution for Hill Climbing, intialized with \hgn, 1,10 or 100 random compact representation.}
+\caption{ Margin needed to find a solution for Hill Climbing, intialized with \hgn, $1$, $10$ or $100$ random compact assignments.}
 \label{fig:descente07}
 \end{figure}
 
-Initializing Hill Climbing with $100$ random compact representations seems to give better results. However, 
-choosing $100$ random compact representations can still fail to produce one valid assignment. We investigate this issue
-in experiments presented in Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes}. We represent the probability of drawing at least one compact representation that gives a valid assignment, when drawing $1$, $10$ or $100$ random compact representations. In Figure~\ref{tab:descenteload}, we fix the number of routes to $8$, and we change the load from $0.8$ to $1$. In Figure~\ref{tab:descentenbroutes}, we fix the load to $0.8$ and the number of routes goes from $8$ to $12$ in the routed network. Each value is computed from $1000$ random instances.
+Initializing Hill Climbing with $100$ random compact assignments seems to give better results. However, 
+choosing $100$ random compact assignments can still fail to produce one valid assignment. We investigate this issue
+in experiments presented in Figures~\ref{tab:descenteload} and \ref{tab:descentenbroutes}. We represent the probability of drawing at least one compact assignment that gives a valid assignment, when drawing $1$, $10$ or $100$ random compact assignments. In Figure~\ref{tab:descenteload}, we fix the number of routes to $8$, and we change the load from $0.8$ to $1$. In Figure~\ref{tab:descentenbroutes}, we fix the load to $0.8$ and the number of routes goes from $8$ to $12$ in the routed network. Each value is computed from $1000$ random instances.
 
 \begin{minipage}[c]{.45\linewidth}
 \vspace{-0.2cm}
@@ -643,9 +643,9 @@ in experiments presented in Figures~\ref{tab:descenteload} and \ref{tab:descente
 \vfill
 \end{minipage}
 
-Those experiences show that Hill Climbing computed on $100$ random instances performs well when the number of routes and the load are low. However, this is not sufficient when the load or the number of routes increases. Indeed, higher loads makes valid solutions harder to find, and increasing the number of routes also increase the size of the neighboorhood, and thus, the number of non valid compact representations. Furthermore, the computation time required by executing Hill Climbing on many random compact representations instead of one (using \hgn) makes it less effective.
+Those experiences show that Hill Climbing computed on $100$ random instances performs well when the number of routes and the load are low. However, this is not sufficient when the load or the number of routes increases. Indeed, higher loads makes valid solutions harder to find, and increasing the number of routes also increase the size of the neighboorhood, and thus, the number of non valid compact assignments. Furthermore, the computation time required by executing Hill Climbing on many random compact assignments instead of one (using \hgn) makes it less effective.
 
-We thus propose an hybrid initialization scheme for Hill Climbing: Between the assigments given by initializing the Hill Climbing either with \hgn, or with $k$ random compact representation, return the one that minimize $TR(A)$. We call this initialization hybrid $k$. Figure~\ref{fig:hybridhill} shows the margin needed by the best solution given by Hill Climbing, with different initialisations. The results are computed on $1000$ random instances.
+We thus propose an hybrid initialization scheme for Hill Climbing: Between the assigments given by initializing the Hill Climbing either with \hgn, or with $k$ random compact assignments, return the one that minimize $TR(A)$. We call this initialization hybrid $k$. Figure~\ref{fig:hybridhill} shows the margin needed by the best solution given by Hill Climbing, with different initialisations. The results are computed on $1000$ random instances.
 
 \begin{figure}[h]
 	\centering
@@ -668,9 +668,9 @@ We now focus on how many steps Hill Climbing does before ending in a local optim
   \captionof{figure}{Average number of steps needed by Hill Climbing to reach a local optimum. \label{tab:nbstepdescente}}
 \end{center}
 
- The more steps Hill Climbing does, the more the initial solution is improved. When Hill Climbing starts from the result of \hybridgreedynormalized, it does not improve much the solution. When drawing a large number of random compact representation, the probability of drawing one that can be improved a lot is better and it turns out that compact representations improved many times are often the one with the best margin.
+ The more steps Hill Climbing does, the more the initial solution is improved. When Hill Climbing starts from the result of \hybridgreedynormalized, it does not improve much the solution. When drawing a large number of random compact assignments, the probability of drawing one that can be improved a lot is better and it turns out that compact assignments improved many times are often the one with the best margin.
  
- The idea of drawing a large number of random compact representations to initialize Hill Climbing is a naive version of Simulated Annealing. The next two presented meta-heuristics are designed to explore the compact representations, even if a local optimum is reached. Tabu Search remembers the explored solutions, in order to avoid them, and Simulated Annealing browses the compact representations with a stochastic approach.
+ The idea of drawing a large number of random compact assignments to initialize Hill Climbing is a naive version of Simulated Annealing. The next two presented meta-heuristics are designed to explore the compact assignments, even if a local optimum is reached. Tabu Search remembers the explored solutions, in order to avoid them, and Simulated Annealing browses the compact assignments with a stochastic approach.
 
 \subsection{Tabu Search}
 
@@ -749,13 +749,11 @@ It appears that, in most of $60\%$ of the cases, Tabu Search finds it's best ass
 
 \subsection{Simulated Annealing}\label{sec:recuit}
 
-Simulated Annealing works as follow. An initial {\emph temperature} is set and an initial compact representation is chosen. At each step, we try to replace the current valid compact representation $CA$, by $CA'$ drawn uniformly at random in the neighborhood of $CA$. Then, using the temperature, $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. This algorithm is an answer to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
-
- When using Simulated Annealing, we need to fix the following parameters: initial temperature, number of steps before decreasing the temperature, factor by which the temperature is decreased, the number of steps without improvement before ending the process.
+Simulated Annealing works as follow. An initial {\emph temperature} is set and an initial compact valid assignment $CA$ is computed. At each step, we try to replace the current valid compact assignment $CA$, by $CA'$ drawn uniformly at random in the neighborhood of $CA$. Then, in function of the temperature and the difference between $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. This algorithm is an answer to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
 
 
- The temperature must be fixed in order to accept to worsen the solution at the begining of the execution, must decrease slowly. When the temperature is low, the Simulated Annealing rejects bad compact representations.
- Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the exection of the Simulated Annealing. The value $\Delta$ represent the difference $TR(Real(CA'))-TR(Real(CA))$ where $CA'$ is a compact assignment in the neighboorhood of $CA$. $CA'$ is accepted or rejected with probability $e^{-\frac{\Delta}{t}} $, where $t$ is the temperature.
+ The temperature must be fixed in order to accept to worsen the solution at the begining of the execution, and must decrease slowly. When the temperature is low, the Simulated Annealing rejects bad compact assignments.
+ Accepting or rejecting a solution is a stochastic process. Consider $CA$, the best compact assignment found during the execution of the Simulated Annealing. The value $\Delta$ represent the difference $TR(Real(CA'))-TR(Real(CA))$ where $CA'$ is a compact assignment in the neighboorhood of $CA$. $CA'$ is accepted or rejected with probability $e^{-\frac{\Delta}{t}} $, where $t$ is the temperature.
  This means that $\frac{\Delta}{t}$ must be close to $0$ at the beginning, and must go to infinity along the execution. 
  
  In order to fix the initial temperature $t_0$, we follow~\cite{osman1997meta}:
@@ -793,10 +791,10 @@ Simulated Annealing works as follow. An initial {\emph temperature} is set and a
  \end{center}
  We assume that the initial solution given by Hill Climbing can be considered as ``good''. As observed, increasing the initial temperature does not significantly improve the quality of the solution, but increase the computation time.
  
- In Simulated Annealing, the temperature should decrease slowly. At each \textbf{level}, $N$ compact representations are drawn. At the end of a level, the temperature is decreased of $1\%$ and algorithm stops if less than $1\%$ of the compact representations darwn are accepted during two consecutive steps. Hence, drawing too few compact representations per level decreases the temperature too fast and reduces the efficiency of Simulated Annealing. However, drawing too much compact representations during a level increases the computation time of the algorithm, there is tradeoff between time an quality and lenth of a level should be set carefully.
+ In Simulated Annealing, the temperature must decrease slowly. At each \textbf{level}, $N$ compact assignments are drawn. At the end of a level, the temperature is decreased of $1\%$ and algorithm stops if less than $1\%$ of the compact assignments darwn are accepted during two consecutive steps. Hence, drawing too few compact assignments by level decreases the temperature too fast and reduces the efficiency of Simulated Annealing. However, drawing too much compact assignments during a level increases the computation time of the algorithm, there is tradeoff between time an quality and lenth of a level should be set carefully.
 
 
- When $N$ is low (more precisely when $N=10$ or $N = 20$), the probability of drawing no compact assignment that will be accepted is high and thus Simulated annealing stops too fast. To fix this issue, we force Simulated Annealing to continue during $10$ consecutive level for which less than $1\%$ of the compact assignment are accepted. This increase the computation time whith higher values for $N$, on which the Simulated Annealing would works longer under low temperatures. Nevertheless, because the neighborhood of a solution is composed of a large number of solutions of the same value, the acceptance rate is greater than $1\%$ even under low temperatures. This is why we set a minimal temperature under which simulated annealing stops.
+ When $N$ is low (more precisely when $N=10$ or $N = 20$), the probability of drawing no compact assignment that will be accepted is high and thus Simulated annealing stops too fast. To fix this issue, we force Simulated Annealing to continue during $10$ consecutive levels for which less than $1\%$ of the compact assignment are accepted. This increase the computation time in the case of higher values for $N$ , on which the Simulated Annealing would works longer under low temperatures. Nevertheless, because the neighborhood of a solution is composed of a large number of solutions of the same value, the acceptance rate is greater than $1\%$ even under low temperatures. This is why we set a minimal temperature under which simulated annealing stops.
 
   
 Figure~\ref{fig:recuitmargin} shows the margin needed by Simulated Annealing with different values for $N$. Those results are computed on $1,000$ random instances, in which the initial temperature is set by the routine of~\cite{osman1997meta} presented ahead and the load is $0.8$
@@ -823,12 +821,11 @@ Figure~\ref{fig:recuitmargin} shows the margin needed by Simulated Annealing wit
 
     \hline
  \end{tabular}
-  \captionof{figure}{ Average Margin of best solution fonnd by Simulated annealing, with a different number of compact representation drawn at each level.\label{tab:recuitmargin}}
+  \captionof{figure}{ Average Margin of best solution fonnd by Simulated annealing, with a different number of compact assignments drawn at each level.\label{tab:recuitmargin}}
 \end{center}
 
-As expected, the computation time is linear with the number of steps $N$. 
-
-It appears that drawing more than $100$ compact representation at each level does not significantly improove the quality of the solution. 
+As expected, the computation time is linear with the number of steps $N$. The higher $N$ is, the better is the average margin of the best solution found.
+It appears that drawing more than $100$ compact assignments at each level does not significantly improve the solution related to the additional computation time. 
 
  
 
@@ -1057,6 +1054,9 @@ The last cut we propose is based on the definition of a cannonical assignment. R
 
 
 \section{Experimental Evaluation}
+
+
+
 \label{sec:evalperfspall}
 Comparer les temps de calcul et la qualité des solutions trouvées. 
 Le faire pour plusieurs régimes:
