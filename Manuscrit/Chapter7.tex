@@ -3,15 +3,20 @@
 \chapter{Proof of feasibility}
 \label{chap:TSN}
 \minitoc
+The main objective of this thesis is to achieve the lowest possible latency. To do so, it is necessary that packets are not delayed in the network. Delay causes are various, but the main one if the buffering time. In store-and-forward concept~\cite{tindell1992store}, packets are stored at reception of a node before to be forwarded. However, solution like cut-through~\cite{kermani1979virtual} allow to reduce storage size and corresponding delay to the header size only. But this is effective if the egress port is available to forward the packet at the same time only. If not, the packet is buffered until the port get free. This situation needs to be avoided.
 
+This chapter present in Section~\ref{sec:TSNqbv} the IEEE standards for Time Sensitive Networking (TSN) and more precisely 802.1 Qbv, that allows a better network managment based on scheduled packets. 
+
+The platform presented in Section~\ref{sec:platform} goes beyond TSN, by delivering packet at exact expected dates, achieving what we call “Hyper TSN”. In Hyper TSN, the latency is as close as possible with physical limitations.
 
 
 \section{Link between the model and TSN}
+\label{sec:TSNqbv}
+ TSN is a set of profiles and standards aiming at providing packet forwarding bounded latency. This means that packet latency is within a known interval. This is called « Deterministic Service ». This is rather different from traditional service where no guarantee on latency is given: a packet can be delivered after a very long period of time, depending of the size of the buffers within the network.
 
- TSN QBV
  TSN QCC
 \section{An experimental prototype}
-
+\label{sec:platform}
 - On sait faire des noeuds qui respectent l'organisation
 
 - On sait comment ne pas buffuriser du tout les messages: PALL PAZL
@@ -19,3 +24,14 @@
 -Voir comment gérer le problème de Dsynch
 
 -parler des reseaux sans aucun buffers intermediaires evoqués dans les chapitres PAZL et PALL
+\subsection{Hyper-TSN switch}
+
+An Hyper-TSN switch has been developped. It is composed of a deterministic scheduler, two 10 Gbps ethernet ingress and two 10 Gbps ethernet egress ports. The deterministic scheduler is configured with a timing table. This table is similar to a 802,1 Qbv Gate Control List (GCL). It defines the periodicity of the scheduling and, for each port, the planed date of arrival of the datagrams. At each of these dates the deterministic scheduler sets the switch to transmit data incoming on a specified ingress port.
+
+To perform experiments a generator of deterministic flows has been developed on a Xilinx FPGA board,Zynq-7000 SoC zc706. This generator offsets the dates it sends the frames according to the controls received from the monitoring circuitry.
+
+To perform the experiment the generator is configured to send frames on both egress ports according to the period defined in the timing table. The size of the frames is set to fully load the ethernet links (ie $100\%$ load).
+
+When starting, the monitoring circuitry detects that frames do not arrive at the planed date and sends control commands to the generator. These first frames are lost. Once the generator has rightly offset the dates it sends the frames, nor more offset has been performed during the running 2 hours experiment.
+
+Then $100\%$ of the frames are correctly switched without being corrupted or lost. The switching of each frame from the ingress port to the planed egress port is performed introducing only one clock cycle delay (here 3,87 ns).

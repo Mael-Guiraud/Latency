@@ -2316,7 +2316,6 @@ int CritMetropolis(int delta, float t)
 	}
 	else
 	{
-
 		float proba = (float)delta/t;
 		//printf("%f %d %f\n",proba,delta, t);
 		float random = (float)rand() / (float)RAND_MAX;
@@ -2400,7 +2399,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 
 	float coeff= 0.99;
 	int b;
-	int seuil_arret = 2;
+	int seuil_arret = 10;
 	float seuil_incr_cmpt = 0.01;
 
 	int a=0;
@@ -2521,7 +2520,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 
 		temperature *=  0.99;
 	//	printf("%10f \n",temperature);
-		if(temperature < 0.0000009)
+		if(temperature < 0.000009)
 		{
 			//printf("BREAk \n");
 			break;
@@ -2561,5 +2560,66 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 
 
 	return b;
+
+}
+
+
+int  parcours_voisinage_test(Graph * g,int P, int message_size,Voisin v, int mintime)
+{
+
+	int a = 0;
+	 int b;
+	int begin = mintime;
+	int nb_equal = 0;
+	while(v.route != -1)
+	{
+
+		if(VOISINAGE)
+			a= assignment_with_orders_vois1(g,P,message_size,0);
+		else
+			a = assignment_with_orders(g,P,message_size,0);
+	
+		if(a)
+		{
+			b = travel_time_max_buffers(g);
+			if(b < mintime)
+			{
+				mintime = b;
+				nb_equal == 0;
+			}
+			if(b == mintime)
+			{
+				nb_equal ++;
+			}
+		}
+
+		v= nouveau_voisin(v,g);
+
+	
+		reinit_delays(g);
+
+
+	}
+	
+	return nb_equal;
+}
+int test_nb_vois_egal(Graph * g, int P, int message_size)
+{
+	Voisin v=init_voisinage_greedy(v,g,P,message_size);
+
+	if(v.route == -1)
+	{
+		return 0;
+	}
+	reinit_delays(g);
+	int val = parcours_voisinage_test(g,P,message_size,v,INT_MAX);
+	reinit_delays(g);
+		
+
+	reinit_delays(g);
+	reset_periods(g,P);
+	
+
+	return val;
 
 }
