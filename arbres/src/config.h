@@ -39,7 +39,7 @@
 //For star simulation
 #define NB_ROUTES 8
 
-#define NB_SIMULS 1000
+#define NB_SIMULS 100
 
 
 //openMP parallel
@@ -57,4 +57,4 @@
 #define DATA_CENTER_ROUTES 0
 
 #define SIZE_BE_MESSAGE 50
-#define TABOO_KIND 1
+#define TABOO_KIND 0
