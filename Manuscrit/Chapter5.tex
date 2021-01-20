@@ -803,36 +803,29 @@ As expected, the computation time is roughly linear in the number of steps $N$. 
 
 \section{Branch and Bound}
 
-\subsection{Partial Compact Assignment and Relaxation}
-\begin{comment}
-D'abord introduire la notion de solution partielle avec seulement les temps d'attente fixée
-sur seulement une partie des sommets de contention (dans l'ordre des niveaux de contention).
+\subsection{Lower Bounding the Transmission Time}
 
-Puis définir le graphe associé à une solution partielle, en enlevant les sommets déjà traités 
-et en mettant à jour les délais. Un exemple serait le bienvenu.
+\paragraph{Partial Compact Assignment and Restricted Routed Network}
 
-Donner la relaxation du problème général au problème sur un point de contention, 
-c'est à dire remplacer tous les chemins vers et depuis le sommet par un arc de la même longueur.
-Expliquer que la solution optimale pour le problème relaxé est meilleure (borne supérieure) de
-ce qu'on cherche. On définit ensuite une borne supérieure meilleure en faisant le max des 
-relaxations pour tous les points de contention. Expliquer que cette borne se calcule facilement
-en pratique (algo Simmons FPT vs algo Branch and Bound simplifié).
-\end{comment}
-\subsubsection{Partial Compact Assignment and restricted routed Network}
+From now on, we denote the contention points by ${\cal C} = \{c_1,\dots, c_m\}$,
+and we assume they are indexed by contention depth, that is  if $i < j \leq m$ then  $cd(c_i) \leq cd(c_j)$. 
+A \textbf{Partial Compact Assignment} $CA$ is a compact assignment defined on a subset ${\cal C}_i = \{c_1,\ldots,c_i\}$ of ${\cal C}$. 
+For a compact assignment $CA$, we denote by $CA_i$ the restriction of $CA$ to ${\cal C}_i$.
+Let $CA$ be a partial compact assignment defined on ${\cal C}_{i-1}$, then $CA[(O_{c_{i}},S_{c_{i}})]$ is an extension of $CA$ to $S \cup \{i\}$, defined by $CA[(O_{c_{i}},S_{c_{i}})](c_i) = (O_{c_{i}},S_{c_{i}})$.
+ In this section, we build a compact assignment $CA$ by extending partial compact assignments on the 
+ contention points from $c_1$ to $c_m$.
 
-Let us consider the contention points ordered from $1$ to $|{\cal C}|$ by contention depth, and an arbitrary order is set in a same contention depth. This means that if $i < j | i,j\in{\cal C}$, then  $cd(c_i) \leq cd(c_j)$. 
+Once a partial compact assignment is set, one can discard the nodes of the routed network on which its is defined
+and work with a simpler routed network, called a \textbf{restricted routed Network}. Let $N$ be a routed network
+and $CA$ a partial compact assignment defined over $\{c_1\}$, we define the restricted routed network $N(A)$ as follows: 
 
-
-Let us denote $CA_i$ the \textbf{partial Compact Assignment} function. This is the restriction $CA_{|\{c_1,\ldots,c_i\}}$  of the domain of definition of $CA$ from ${\cal C}$ to $[\{c_1,\ldots,c_i\}$. This means that a couple $(O_{c_j},S_{c_j})$ has been set only for $j \leq i$.
-An extension of $CA_i$ to $CA_{i+1}$ is a choice of a couple $(O_{c_{i+1}},S_{c_{i+1}})$ for the next contention point.
-
-A \textbf{restricted routed Network} is defined by $N_i = (CA_i,{\cal R}',{\cal C}',\omega')$. It is a routed network $N = ({\cal R},{\cal C},\omega)$ modified by a partial compact assignment $CA_i$.
-Let us explain how to build $N_i$ from $N$ and $CA_i$.
-Consider that $CA$ is defined only on the first contention point $c_1$ on a routed network $N$.
 A route $r = (s,c_1,c_2,\ldots,t)$ in ${\cal R}$ becomes $(s,c_2,\ldots,t)$ in ${\cal R}'$ and $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$. $A(r,c_1)$ is given by the function $Real(CA_1)$, as explianed on Section~\ref{sec:real} and this function can be independently computed on each contention points $c_j,j<i$ of a same level while $CA_i$ is defined and $Real(CA_{j-1}$ is computed. So, we compute $Real(CA_1)$ for each $r \in {\cal R}_{c_1}$. Then, $c_1$ is not considered anymore in $N_i$, that is ${\cal R}' = {\cal C} \backslash {c_1}$.\\
 Because the contention points are ordered by increasing contention depth, it is possible to repeat this transformation on each contention points $j$ with $j\leq i$.
 
-\subsubsection{Relaxation on a single contention point and computing a lower bound on $TR(A)$}
+
+\todo{Yann: il serait bon de donner un exemple de cette transformation}
+
+\paragraph{Relaxation of \spall}
 
 
 
@@ -867,6 +860,8 @@ Once we have built an instance $I'$ of \wta for each those contention points, us
 \end{proof}
 
 
+
+\todo{Yann: on pourrait donner un exemple de ce calcul sur un réseau simple}
 
 
 \subsection{The Branch and Bound Algorithm}\label{sec:branchBound}
@@ -1033,13 +1028,13 @@ The Branch and Bound algorithm complexity depends of both the contention depth o
 
 In this section, we compare the performance of all algorithms presented in this chapter.
 
- First, we study the case described in section~\ref{sec:generationrouted}. There is $8$ routes in the routed network, the length of the arcs are drawn between $0$ and $P$, and the load is $0.8$.
-The algorithm compared here are:
-\begin{itemize}
+ First, we study the case described in section~\ref{sec:generationrouted}. There is $8$ routes in the routed network, the length of the arcs are drawn in $[P]$, and the load is $0.8$.
+ The algorithm compared here are:
+ \begin{itemize}
   \item \hybridgreedynormalized.
   \item Hill climbing initialized by \hgn.
   \item Hybrid Hill climbing, initialized by $100$ random compact assignments (or \hgn if the $100$ compact assignments are not realizable).
-  \item Tabu Search, with infinite memory and a computation of $500$ steps.
+  \item Tabu Search, with infinite memory and $500$ steps.
   \item Simulated Annealing with $100$ steps by level.
   \item Branch and Bound
 \end{itemize}
@@ -1050,7 +1045,7 @@ Figure~\ref{fig:all8routes} shows the cumulative distribution of the margin of t
 
 \begin{figure}[h]
   \centering
- % \includegraphics[scale=0.4]{Chapitre5/all8routes}
+\includegraphics[scale=0.4]{Chapitre5/all8routes}
 \caption{ Cumulative distribution of the margin for $8$ routes drawn betwenn $0$ and $P$.}
 \label{fig:all8routes}
 \end{figure}
