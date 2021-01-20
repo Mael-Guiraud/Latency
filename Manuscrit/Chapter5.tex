@@ -12,7 +12,7 @@ We modify the model in order to take into account the buffers, and we define the
 \section{Model changes}
 \subsection{A synchronized version of \pall}
 
-The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is ommited. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention vertices, that is buffering is allowed in all vertices. 
+The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is ommited. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention points, that is buffering is allowed in all vertices. 
 
 In Chapter~\ref{chap:PAZL} and~\ref{chap:PALL}, the routed network is assumed to be a star routed network, a restriction that we now lift.
 We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_0,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention depth} $i$ for the route $r$, and we denote it by $cd(c_i,r) = i$. The contention depth of a contention point $c$ is the maximum of its contention depth over all routes going through $c$: $cd(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cd(c,r)$. 
@@ -51,7 +51,7 @@ Problem \spall can be independently solved on each connected component of the ne
 
 \paragraph*{Star routed network}
 
-The simplest case of contention depth $2$ is a routed network with two contention vertices. 
+The simplest case of contention depth $2$ is a routed network with two contention points. 
 This is enough to modelize our process of sending a datagram from an RRH to a BBU and back when
 there is a single contention point (a shared link between the RRHs and the data centers). 
 This topology is the star routed network on which we have solved \pazl in Chapter~\ref{chap:PAZL} and \pall in Chapter~\ref{chap:PALL}.
@@ -86,7 +86,6 @@ to the arc representing the BBU and then from the arc representing the BBU to th
 \paragraph*{Contention depth larger than one}
 
 \todo{Yann: compléter les deux points de ce paragraphe}
-Networks of contention depth one are trivial to solve for \spall: sending the datagrams by decreasing length of the routes gives the optimal solution.
 In this chapter, we deal with more general routed networks than star routed networks. The algorithms proposed here solves \spall on every routed network which are directed acyclic graphs. We focus our study on symmetric fronthaul networks; networks in which the routes between the RRH and the BBU use the same links same in both ways, but this property do not need to be enforced. Say that a routed network modeling symmetric fronthaul network is a symmetric routed network.
 
 This is the case of star routed networks, studied for \pazl and \pall in previous chapters. Star routed networks are symmetric around the central arc $(c_1,c_2)$. More generally, if a symmetric fronthaul networks has at most $2$ contention point on a route, this induces that all routes of a contention point of depth one belong to the same contention point of depth two. Thus, every symmetric fronthaul network of depth $2$ can be represented by several routed networks.
@@ -109,7 +108,7 @@ Let $(G, \mathcal{R})$ be a routed network. A compact assignment $CA$ is a funct
 
 \subsection{From a Valid Assignment to its Compact Representation}
 
-Let us define a function which maps a valid assignment $A$ to a compact assignment, called the compact representation of $A$, denoted by $CR(A)$. We assume that for all contention vertices $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r,u) = 0$. The routes in $\mathcal{R}$ are indexed by the integers in $[n]$. Say w.l.o.g. that $r_0$ is the route of smallest index such that $A(r_0,u) = 0$. The datagram of $r_0$ arrives, and goes to the next contention point, at time $t(r_0,u)$. Let us define the \textbf{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \textbf{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
+Let us define a function which maps a valid assignment $A$ to a compact assignment, called the compact representation of $A$, denoted by $CR(A)$. We assume that for all contention points $u$, there is a route $r \in \mathcal{R}_u$ such that $A(r,u) = 0$. The routes in $\mathcal{R}$ are indexed by the integers in $[n]$. Say w.l.o.g. that $r_0$ is the route of smallest index such that $A(r_0,u) = 0$. The datagram of $r_0$ arrives, and goes to the next contention point, at time $t(r_0,u)$. Let us define the \textbf{normalized arrival time} of $r$ at $u$: for all $r \in \mathcal{R}_u$, $nt(r_0,r,u) = (t(r,u) - t(r_0,u)) \mod P$. It is the time at which the datagram of $r$ arrives at $u$, in a period normalized so that the datagram of $r_0$ goes through $u$ at time $0$. Similarly, we define the \textbf{normalized sending time} as $ns(r_0,r,u) = (s(r,u) - t(r_0,u)) \mod P$.
 
 We define $O_u$ as the order on the routes of $\mathcal{R}_u$ induced by the values $ns(r,u)$. The set $S_u$ is defined as the set of routes going through $u$ such that $ns(r_0,r,u) < nt(r_0,r,u)$. Intuitively, the time being seen as cut into periods $[t(r_0,u) + iP,t(r_0,u) + (i+1)P [$ with $i \in \mathbb{N}$, then $S_u$ represents the set of routes with a datagram going through $u$ in the period \emph{after} the one it has been available in. 
 
@@ -206,7 +205,7 @@ the induction hypothesis, we have $Real(CR(A))(r_{i+1},u) \leq A(r_{i+1},u)$. Th
 \subsection{Greedy Deadline}
 
 We first present a simple algorithm, which is the natural approach in a context witout \emph{periodicity}.
-The contention vertices are sorted by contention depth, and the contention depths are dealt with in ascending order. The assignment, on contention vertices of the same contention depth, is computed independently. The \greedydeadline algorithm consists in selecting among the routes of arrival time less than the current time the one with the longest transmission time. If no route are available at the current time, select the one with the smallest arrival time.
+The contention points are sorted by contention depth, and the contention depths are dealt with in ascending order. The assignment, on contention points of the same contention depth, is computed independently. The \greedydeadline algorithm consists in selecting among the routes of arrival time less than the current time the one with the longest transmission time. If no route are available at the current time, select the one with the smallest arrival time.
 
 More precisely, \greedydeadline works as follow. For a vertex $u$, select the route $r$ such that the arrival time $t(r,u)$ is minimal and fix $A(r,u) = 0$. Assume that some datagrams have now been scheduled, the last one on the route $r$ at time $s(r,u)$, we explain here how to schedule the next route.  If there are several routes $r'$ for which $t(r',u) < s(r,u) + \tau $, we need to select one of those. For each $r'$ with the previous property, we compute the value $\lambda(r,u) - t(r',u)$ and select the one which minimizes this value. Then, the selected datagram $r'$ is sent with a delay $A(r',u) = t(r,u) + \tau - t(r',u)$. If no route satifies $t(r',u) < s(r,u) + \tau$, the route with the lowest $t(r,u)$ is sent without delay ($A(r',u) = 0$). 
 Due to the periodicity, once the route $r'$ has been selected and $s(r',u)$ computed, it is possible that there is a collision. If so, $s(r',u)$ is increased to the first time such that there is no collision. If there is no such time, the algorithm fails.
@@ -270,7 +269,7 @@ Both \greedydeadline and \greedynormalized may fail to find a valid assignment f
 
 
 A compact assignment is needed to initialize the local search algorithms presented in the next section. Hence, we propose the \greedypacked algorithm that is guaranteed to find an assignment, even if the transmission time may be worse on average than what is found by the two previous greedy algorithms.
-The contention vertices are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(r,u) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(r,u) - t(r,u) - nt(r_0,r,u)$, choose it, and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
+The contention points are still managed level by level. For a vertex $u$, we explain how to build the pair $(O_u,S_u)$. First, the route with the lowest arrival time is selected, say $r_0$ and we say that $0$ is the first element of $O_u$ and $0 \notin S_u$. From now on, $r_0$ is used to define the normalized arrival times of the other routes. Assume that $(r_0,\dots,r_i)$, the first $i$ routes of $O_u$ are chosen, let us explain how to choose the $i+1$th route. If there are routes with a normalized arrival time lower or equal to $ns(r_0,r_i,u)+\tau$, the route $r$ with the smallest value of $\lambda(r,u) - t(r,u)$ is chosen (as in \greedynormalized). If no route satisfy this property, then let $r$ be the route which minimizes $\lambda(r,u) - t(r,u) - nt(r_0,r,u)$, choose it, and $S_u = S_u \cup \{r\}$. In other words, select the route with the smallest transmission time if scheduled without creating gap in the period.
 
 
 \subsection{Random generation of routed network}
@@ -515,7 +514,7 @@ Remark that the $r$-neighborhood of any pair $(O_u,S_u)$ has at most $6$ members
 
 The \emph{$r$-neighborhood} of a compact assignment $CA$ is the set of all compact assignments $CA'=(O'_u,S'_u)_{u \in V(G)}$, such that  $(O'_u,S'_u)$ is in the $r$-neighborhood of $(O_u,S_u)$. Finally, the \emph{neighborhood} of an assignment $CA$ is the union for all $r \in {\cal R}$ of the $r$-neighborhoods of $CA$.
 
- Let us denote by $k_1,\ldots,k_n$ the number of contention vertices on the $n$ routes of 
+ Let us denote by $k_1,\ldots,k_n$ the number of contention points on the $n$ routes of 
  a routed network. Then, a compact assignment has at most $\sum_{i=1}^n 6^{k_i}$ neighbors. Since the networks we consider are of bounded contention depth ($2$ or $3$ in practice), the size of a neighborhood is linear in the number of routes.  We further restrict the notion of neighborhood to realizable compact assignments. Indeed, the unrealizable compact assignments do not yield a real assignment, their transmission time is not defined and we cannot use them in our local search algorithms. We call the graph defined by the neighborhood relation over realizable compact assignments of a routed network the \textbf{transposition graph} of the routed network. 
   All algorithms presented in this section will do a walk in the transposition graph, trying to find a vertex with optimal
   transmission time. 
@@ -1046,7 +1045,7 @@ Figure~\ref{fig:all8routes} shows the cumulative distribution of the margin of t
 \begin{figure}[h]
   \centering
 \includegraphics[scale=0.4]{Chapitre5/all8routes}
-\caption{ Cumulative distribution of the margin for $8$ routes drawn betwenn $0$ and $P$.}
+\caption{ Cumulative distribution of the margin for $8$ routes drawn in $[P]$.}
 \label{fig:all8routes}
 \end{figure}
 
