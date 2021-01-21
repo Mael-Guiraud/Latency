@@ -332,7 +332,7 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =7;
+	int nb_algos =6;
 	//"Hybrid Greedy Deadline","Greedy Packed",
 	char * noms[] = {"Hybrid Greedy Normalized","Lower Bound","Hill Climbing Init HGN","Hybrid Hill Climbing 100","Tabu Search","Simulated Annealing","Branch and Bound"};
 
