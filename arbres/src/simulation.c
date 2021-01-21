@@ -366,7 +366,7 @@ void simuldistrib(int seed)
 	  for(int i=0;i<nb_algos;i++)running_time[i]=0.0;
 	for(int i=0;i<4;i++)nb_pas[i] = 0;
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
-	for(int i=6;i<NB_SIMULS;i++)
+	for(int i=0;i<NB_SIMULS;i++)
 	{
 
 	
@@ -441,7 +441,8 @@ void simuldistrib(int seed)
 				
 				
 				case 5:
-					a = recuit( &g, P, message_size,100,&nb);
+				 nb = 20;
+					a = recuit( &g, P, message_size,1000,&nb);
 					//a = branchbound( &g, P, message_size,coupes,coupes_m,1);
 					#pragma omp critical
 						nb_pas[3] += nb;

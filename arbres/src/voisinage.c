@@ -2393,10 +2393,10 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	//Parametres du recuit
 
 
-	float temperature = calcul_tmp(g,P,message_size,(double)20/100);
+	float temperature = calcul_tmp(g,P,message_size,(double)*nb_pas/100);
 	//printf("temperature %f coeff %d \n",temperature,param);
 	int nb_paliers = param;
-
+	*nb_pas = 0;
 	float coeff= 0.99;
 	int b;
 	int seuil_arret = 10;
