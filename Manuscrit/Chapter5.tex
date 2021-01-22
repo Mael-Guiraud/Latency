@@ -814,19 +814,18 @@ Let $CA$ be a partial compact assignment defined on ${\cal C}_{i-1}$, then $CA[(
 
 Once a partial compact assignment is set, one can discard the nodes of the routed network on which it is defined
 and work with a simpler routed network, called a \textbf{Restricted Routed Network}. Let $N$ be a routed network
-and $CA$ a partial compact assignment defined over $\{c_1\}$, we define the restricted routed network $N(A)$ by defining a new set of routes $ $ and a new weigth function $ $ as follows. 
+and $CA$ a partial compact assignment defined over $\{c_1\}$, we define the restricted routed network $N(CA)$ by defining a new set of routes ${\cal R}'$ and a new weigth function $\omega'$ as follows. 
 
 A route $r \in {\cal R}$ going through $c_1$, that is equal to $(s,c_1,c_j,\ldots,t)$,  is replaced by the route $(s,c_j,\ldots,t)$ in ${\cal R}'$ while the routes not going throug $c_1$ stay the same in ${\cal R}'$. We define $\omega'(r,s) = \omega(r,s)+\omega(r,c_1) + A(r,c_1)$ where $A(r,c_1)$ is computed from the function $Real(CA_1)$ over the contention point $c_1$, as explained in Section~\ref{sec:real}. To define a restricted routed network obtained from a partial compact assignment defined over ${\cal C}_i$ and a network $N$,  we call $CA^j$ the assignment $CA$ restricted to $\{c_j\}$ and 
-we define recursively $N_j$ as the restricted routed network obtained from $N_{j-1}$ and $CA^{j}$ as defined before, with $N_0 = N$.
+we define recursively $N_j$ as $N_{j-1}(CA^{j})$, with $N_0 = N$.
 
 \todo{donner une représentation de cette transformation comme example}
 
 %phrase d'explication
 
 \begin{lemma}
-Let $N$ be a routed network, $CA$ a partial compact assignment of $N$,
-and $N'$ the restricted routed network computed from $N$ and $CA$, and $\mathcal{CA}$
-the set of extensions of $CA$ then $TR(N') = \max_{ A \in \mathcal{CA}} TR(Real(A))$.
+Let $N$ be a routed network, $CA$ a partial compact assignment of $N$, and $\mathcal{CA}$
+the set of extensions of $CA$ then $TR(N(CA)) = \max_{ A \in \mathcal{CA}} TR(Real(A))$.
 \end{lemma}
 \begin{proof}
 TODO
@@ -880,7 +879,6 @@ Once we have built an instance $I'$ of \wta for each those contention points, us
 
 \subsection{The Branch and Bound Algorithm}\label{sec:branchBound}
 
-%Définir l'arbre de recherche exhaustif sur les solutions partielles et expliquer les coupes qu'on peut faire grâce à la borne sup qu'on vient de définir (en gardant la valeur de la meilleur solution et en initialisant cette valeur par un algo de bonne qualité, genre hill clibming ou carrément recuit simulé).
 
 Solving \spall, means finding an assignment for which $TR(A)$ is minimal. 
 Given an instance of \spall, the local search algorithm presented explore a part of the compact assignments $CA$ and returns the one which minimize $TR(Real(CA))$. Here, we describe a Branch and Bound algorithm that enumerates all compact assignments for a given instance.
@@ -889,8 +887,7 @@ Given an instance of \spall, the local search algorithm presented explore a part
 For routed networks of fixed contention depth $d$, the problem \spall parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
 \end{theorem}
 \begin{proof}
-The algorithm to solve \spall is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time
-$O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
+The algorithm to solve \spall is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time $O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
 to compute the minimum of $TR(Real(CA))$.
 
  Now, we need to evaluate the number of compact assignments. 
@@ -982,7 +979,7 @@ We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A p
 Such a partial tree is then built for the second contention point $c_2$, and each leaves of $c_1$ are a root of the partial tree of $c_2$, that makes $s_1!2^{s_1} \times s_2!2^{s_2}$ leaves to the tree. If we repeat this operation for every contention point of a same level, we then get, as explained in Theorem~\ref{theorem:FPT} $n!2^n$ leaves on the exploration tree, that makes $ (n!2^{n})^{d}$ leaves on the final tree if there is $d$ contention depth.
 
 Note that for the vertices of the last contention depth, compact assignments can be considered independently, since
-they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ is two or three and the $s_i$'s are pretty balanced.
+they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ three and the $s_i$'s are pretty balanced.
 
 
 In order to avoid to explore subtrees that will not give the optimal solution, we want to evaluate as often as possible the quality of the solution which is built.
