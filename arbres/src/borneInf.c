@@ -60,8 +60,6 @@ int  load_links_CL(Graph * g,int CL)
 
 int coreBorneInf(Graph * g, int P, int message_size,int budget,int arc_id,Period_kind kind)
 {
-	
-
 
 	// On a l'arc le plus chargé
 	//int arc_id = load_links_CL(g,0);

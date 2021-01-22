@@ -588,7 +588,7 @@ Finally, using Lemma~\ref{lemma:path} once again prove there is a path between $
 
 
 
-\subsection{Hill Climbing}
+\subsection{Hill Climbing}\label{sec:hillclimb}
 
 The most simple local search heuristic is Hill Climbing. This algorithm starts from a compact assignment $CA$, explore the entire neighborhood of $CA$, and selects the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then, the algorithm stops and returns $Real(CA)$ which is a local minimum. 
 
@@ -1183,6 +1183,8 @@ First, remark that \hybridgreedynormalized is far for the optimal solution. Hill
 Branch and Bound is far better than the other algorithms: not only it finds the optimal solution, but it computes it $10$ times faster than Simulated Annealing computes its local optimum.
 
 We now want to compare the performance of those algorithms when the routes are drawn in a same range of value. Thus, we set the length of the routes to be drawn in $[0.9.P:P]$, and we compute the same experiment than previously.
+From now on, simulated annealing computes $1000$ compact assignment at each level. As we observed in section~\ref{sec:recuit}, increasing the number of compact assignment drawn increases the quality of the solution. While drawing $100$ compacact assignment was enough for routed network of the previous experiment, the two following experiment shows considerable better results by drawing $1000$ random compact assignments at each level, without increasing the computation time higher than the tabu search.
+
 Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margin of the algorithms, while Tabular~\ref{tab:8routessamerange} shows the average margin and the computation time of each algorithms on $1000$ random instances.
 \begin{center}
 
@@ -1211,41 +1213,36 @@ Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margi
   We observe that the relative performance of the algorithm does not change. Instance where the length of the routes are drawn in the same range of value needs more margin to be solved. We already made this observation in Chapters~\ref{chap:PAZL,chap:PALL}.
 
 
-Comparer les temps de calcul et la qualité des solutions trouvées. 
-Le faire pour plusieurs régimes:
--8 routes vs bcp de routes (Branch and Bound impossible)
--charge 40 80 et 100 pour cent
--routes dont les arcs sont tous petits (tirés dans [tau] ou moins) ou grands (tirés dans [P]).
--plus de 2 data centers, 3 ou 4 ?
+The following experiment shows the performance of the algorithms when increasing the number of routes. In the instance generated, there are $24$ routes. To do so, to each path of the routed network of figure~\ref{fig:randomnetworks} is assiciated $3$ routes. 
 
-Enfin comparer aux méthodes de multiplexage statistique avec FIFO et Greedy Deadline.
-Expliquer les rapports/différences de ces méthodes avec les algos greedys.
-
-
-
-\section{Autres trucs à raconter ?}
-Once all those synthetic datas are set, we focus on the length of the arcs in the grap. We look at three ways to draw some values for the length of the arcs: uniformly between $0$ and $\tau/3$ (with $\tau$ the size of a datagram), uniformly between $0$ and $P$ (the size of the period), and uniformly between $P-0.1\times P$ and $P$.
-\todo{expliquer pourquoi ces valeurs}
-
-Figure~\ref{tab:instances} shows the average margin needed by the Branch and Bound and the greedy algorithm that we call \hgn presented in next section (used to intialize the local search algorithms) for the different ways to draw the length of the arcs. Those values are draw for $100$ instances of each kind.
-
+This number of routes is too large to compute Branch and Bound here. Thus, we draw the lower bound computed by Corollary~\ref{th:lowerbound} of Lemma~\ref{lemma:reduce}.
+Figure~\ref{fig:24routes} and Tabular~\ref{tab:24routes} show respectively the cumulative distribution of the margin of the algorithms and the average margin and computation times of the same experiment. The results are computed on $1000$ instance on which the length of the links are drawn in $[P]$.
 \begin{center}
-\begin{figure}
-\centering
-\begin{tabular}{ |c|c|c|c|c| }
+
+\begin{figure}[h]
+  \centering
+\includegraphics[scale=0.4]{Chapitre5/24routes}
+\caption{ Cumulative distribution of the margin for $24$ routes drawn in $[P]$.}
+\label{fig:24routes}
+\end{figure}
+
+
+\begin{tabular}{ |c|c|c|c|c|c|c| }
 \hline
-    Range & $0$ and $\tau/3$ & $0$ and $P$& $P-0.1\times P$ and $P$\\
+    \tiny{Algorithm} & \tiny{\hgn}& \tiny{Hill Climbing}& \tiny{Hybrid Hill Climbing }&\tiny{Tabu Search}&\tiny{Simulated Annealing}\\
     \hline
-    Branch and Bound & $4273$ & $222$& $2704$ \\
- 
-    \hgn & $12177$ & $10628$& $9648$\\
-   
+    \tiny{Average Margin} & $10572$& $7402$& $7402$ &$6311$ & $3725$ \\
     \hline
-  
- \end{tabular} 
- \caption{Difference between the optimal solution of the greedy algorithms, for different kind of instances generated.}
- \label{tab:instances}
- \end{figure}
- \end{center}
- The objective is to find the instances in which a solution given can be the most improoved by the local search heuristics. As observed, when drawing the size of the arcs betwenn $0$ and $P$, the lower bound (found by the Branch and Bound algorithm) is clearly lower than with the other kinds of instances while the margin needed by \hgn remains in the same order of magnitude.
- 
+   \tiny{Computation time (s)}& $0.014$& $0.425$& $3.89$ &$55.67$ & $46.32$\\
+
+
+    \hline
+ \end{tabular}
+  \captionof{figure}{ Average margnin and computation time of each algorithm for $24$ routes drawn in $[P]$.\label{tab:24routes}}
+\end{center}
+
+
+First, remark that Hill Climbing nevers finds a better solution when it is initialized by $100$ random compact assignments than when it is initialized by \hgn. As explained in Section~\ref{sec:hillclimb}, the chances to draw a valid compact assignment is low when the number of routres increases, and it would need to draw a lot of random compact assignment to improove the performances of Hill Climbing, which is not reasonable because this stochastic aspect is managed by Simulated Annealing. This latter performs the most in this regime, and finds solution with a lower margin than Tabu Search in less computation time.
+
+
+\todo{VS stochastic}

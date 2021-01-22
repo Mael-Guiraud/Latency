@@ -332,7 +332,7 @@ void test(unsigned int seed)
 void simuldistrib(int seed)
 {
 	srand(seed);
-	int nb_algos =6;
+	int nb_algos =4;
 	//"Hybrid Greedy Deadline","Greedy Packed",
 	char * noms[] = {"Hybrid Greedy Normalized","Lower Bound","Hill Climbing Init HGN","Hybrid Hill Climbing 100","Tabu Search","Simulated Annealing","Branch and Bound"};
 
@@ -368,7 +368,7 @@ void simuldistrib(int seed)
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
-
+		if(i==1)i+=3;
 	
 		a = 0;
 		
@@ -425,7 +425,7 @@ void simuldistrib(int seed)
 				case 3:
 				
 					
-					a = best_of_x( &g, P, message_size,100,&nb);
+					a = best_of_x( &g, P, message_size,300,&nb);
 					#pragma omp critical
 						nb_pas[1] += nb;
 					
