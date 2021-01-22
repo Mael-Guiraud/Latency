@@ -953,40 +953,31 @@ The idea is to transform any routed network into a network with a single content
 with a lower transmission time (but as large as possible). The problem \spall over a single contention point is the problem \wta, that we have solved in Chapter~\ref{chap:PALL}, and that we can compute efficiently.
 
 Let $N$ be any network and le $c_j$ be a contention point, we define $N^j$ a routed network with the
-single contention point $c_j$, a set of routes $\matcal{R}'$ and a wiegth function $\omega'$ as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \matcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ assuming there are no constraints before $c_j$ and after $c_j$.   
+single contention point $c_j$, a set of routes $\matcal{R}'$ and a wiegth function $\omega'$ as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \matcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ and assuming further there are no constraint before $c_j$ and after $c_j$.   
 
 \begin{lemma}\label{lemma:lowerbound}
 Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
 \end{lemma}
 \begin{proof}
-To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$ and we consider there is no other contention points than $c_1$ in the rest of the network. The instance $I'$ of \wta built is a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
- Then, for all $r \in {\cal R}_{c_1}$, $d'(r) = d(r) - t(r,c_1) $
+We associate to any valid assignment $A$ of $N$, the assignment $f(A)$ of $N^j$
+which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction the transmission time of a route $r$ using $A$ in $N$ is larger than 
+the transmission time of the route $r$ using $f(A)$ in $N$, since all the waiting times are the same up to 
+$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all $A$ assignments of $N$,
+$TR(A) \leq TR(f(A))$ which proves the lemma.
 \end{proof}
 
 
 \todo{Yann: faire une figure ici pour illustrer la construction du réseau simplifié (et la solution simplifiée ?)}
 
-\begin{corollary}\label{th:lowerbound}
-Given a routed network $N = ({\cal R},{\cal C},\omega)$, one can compute a lower bound on $TR(A)$ in time $2^kk^3log(k)$, with $k$ the contention width of the network.
-\end{corollary}
-\begin{proof}
-Consider $N$, we compute a lower bound on $TR(A)$, the optimal solution for \spall. To do so, apply the reduction of Lemma~\ref{lemma:reduce} on every contention points. This means we solve $|{\cal C}|$ instance of \wta denoted $(A_{c_1},\ldots,A_{|{\cal C}|})$ independently on each contention point with \ASPMLS in time $2^kk^3log(k), k = |{\cal R}_{c_1}|$. Then take $\max_{i=1}^{|{\cal C}|} TR(A_i)$. Since \ASPMLS gives an optimal solution for \wta, we obtain a lower bound for the instance $A$.
-\end{proof}
-
-
-\begin{corollary}\label{th:restrictedlower}
-One can compute a lower bound for \spall on a restricted routed network $N_i = (CA_i,{\cal R}',{\cal C}',\omega')$ using theorem~\ref{th:lowerbound}.
-\end{corollary}
-\begin{proof}
-We apply the same reduction as in Lemma~\ref{lemma:reduce}. While creating an instance of \wta for $c_1$, remember that for all $r \in {\cal R}_{c_1}$,  $d'(r) = d(r) - t(r,c_1)$. In the contention points of contention depth $1$, $t(r,c_1) = \lambda(r,c_1)$, but while extending this reduction on the next contention depth, $t(r,c_i)$ can be impacted by buffering times.
-
-This reduction is done on every contention point $c_i$ if $CA_k$ is defined such that $cd(c_k) < cd(c_i)$. This means that all contention points of the level preceding $cd(c_i)$ have a chosen compact assignment. Indeed, the arrival time $t(r,c_i)$ and the deadline $d'(r)$ are computed for each route, taking into account the buffers defined by $Real(CA)$.
-Once we have built an instance $I'$ of \wta for each those contention points, use \ASPMLS to find an optimal assignment $A'$ that solve $I'$. By taking the maximum between all $TR(A')$, we obtain the upper bound of the solution that can be built by extending $CA_i$.
-\end{proof}
+Let $SCP(N)$, for Single Contention Point, be the function which associates to $N$ the integer 
+$\max_{j} TR(N^j)$. By Lemma~\ref{lemma:lowerbound}, we have $TR(N) \geq TR(N^j)$, hence $SCP(N) \leq (N^j)$.
+We can compute $SCP(N)$ in time $m2^kk^3log(k)$ where $k$ is the contention width of the network and $m$ the number 
+of contention nodes. Indeed, for each $j$, solving \spall on $N^j$ is equivalent to solving \wta, which can be done
+in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$, that is the contention width of $c_j$.
 
 
 
-\todo{Yann: on pourrait donner un exemple de ce calcul sur un réseau simple}
+\todo{Yann: un exemple du calcul de SCP sur l'exemple précédent}
 
 
 \subsection{The Branch and Bound Algorithm}\label{sec:branchBound}
