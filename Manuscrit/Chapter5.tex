@@ -12,7 +12,7 @@ We modify the model in order to take into account the buffers, and we define the
 \section{Model changes}
 \subsection{A synchronized version of \pall}
 
-The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is ommited. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention points, that is buffering is allowed in all vertices. 
+The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is omitted. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention points, that is buffering is allowed in all vertices. 
 
 In Chapter~\ref{chap:PAZL} and~\ref{chap:PALL}, the routed network is assumed to be a star routed network, a restriction that we now lift.
 We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_0,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention depth} $i$ for the route $r$, and we denote it by $cd(c_i,r) = i$. The contention depth of a contention point $c$ is the maximum of its contention depth over all routes going through $c$: $cd(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cd(c,r)$. 
@@ -672,7 +672,7 @@ We now focus on how many steps Hill Climbing does before ending in a local optim
 \subsection{Tabu Search}
 
 Tabu Search is a variation on Hill Climbing using memory. We start from a compacta ssignment $CA$ given by \hybridgreedynormalized. Then, at each step, from the current compact assignment $CA$, we select the compact assignment $CA'$ which minimizes $TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid looping around a local minimum, we keep in memory the last $M$ solutions explored and we forbid to visit them again. This algorithm can still loop on a solution cycle larger than $M$, hence we must fix some integer $N$ and stop the algorithm after $N$ steps.
-The parameters $N$ and $M$ must be chosen appropriately to minimize the computation time of the Tabu Search, while maximising the quality of the solutions found. 
+The parameters $N$ and $M$ must be chosen appropriately to minimize the computation time of Tabu Search, while maximising the quality of the solutions found. 
 
 We first investigate on Figure~\ref{tab:tabumn} the impact of $N$ alone. To do so, we fixe $N = M$ (infinite memory) and we compute  Tabu Search on an instance, with $N = 100$, $500$, $1000$ and $2000$. Those simulations have been made with $8$ routes and a load $0.8$, and results are similar for $20$ routes. It appears that with $N=M$, the more steps Tabu Search computes, the better is the solution. For most instance, Tabu Search finds the optimal solutions in the first steps, however for some instances the solution is improved after a large number of steps, which impacts strongly the average margin. At each step, Tabu Search explores the entire neighborhood of the current compact assignment,
 which is of the same size for any compact assignment, hence the computation time is linear in $N$. For $N > 500$, the computation time may not be worth the improvement of the solution, as shown in Figure~\ref{tab:tabumn}.
@@ -693,7 +693,7 @@ which is of the same size for any compact assignment, hence the computation time
      Average margin & $2318$ & $2297$& $2297$& $2295$\\
 
     \hline
-    Computation (s) & $2.0$ & $10.9$& $27.8$& $81.7$\\
+    Computation time (s) & $2.0$ & $10.9$& $27.8$& $81.7$\\
 
     \hline
  \end{tabular}
@@ -807,7 +807,7 @@ As expected, the computation time is roughly linear in the number of steps $N$. 
 From now on, we denote the contention points by ${\cal C} = \{c_1,\dots, c_m\}$,
 and we assume they are indexed by contention depth, that is  if $i < j \leq m$ then  $cd(c_i) \leq cd(c_j)$. 
 A \textbf{Partial Compact Assignment} $CA$ is a compact assignment defined on a subset ${\cal C}_i = \{c_1,\ldots,c_i\}$ of ${\cal C}$. For a compact assignment $CA$, we denote by $CA_i$ the restriction of $CA$ to ${\cal C}_i$.
-Let $CA$ be a partial compact assignment defined on ${\cal C}_{i-1}$, then $CA[(O_{c_{i}},S_{c_{i}})]$ is an extension of $CA$ to $S \cup \{i\}$, defined by $CA[(O_{c_{i}},S_{c_{i}})](c_i) = (O_{c_{i}},S_{c_{i}})$.
+Let $CA$ be a partial compact assignment defined on ${\cal C}_{i-1}$, then $CA[(O_{c_{i}},S_{c_{i}})]$ is an extension of $CA$ to ${\cal C}_{i}$, defined by $CA[(O_{c_{i}},S_{c_{i}})](c_i) = (O_{c_{i}},S_{c_{i}})$.
  In this section, we build a compact assignment $CA$ by extending partial compact assignments from $c_1$ to $c_m$.
 
 Once a partial compact assignment is set, one can discard the nodes of the routed network on which it is defined
@@ -882,7 +882,7 @@ $\downarrow$
  
 
 
-\node (k1) at (15,2.25) {\huge$N_1$};
+\node (k1) at (15,2.25) {\huge$N(CA)$};
 
 \node (k4) at (12,4.5) {$t_4$};
 \node (k3) at (12,3) {$t_3$};
@@ -920,35 +920,41 @@ $\downarrow$
 \end{tikzpicture}
 }
 
- \caption{A restricted routed network $N_1$ obtained from $N$ and the partial compact assignment $CA_1$ for which $A(1,c_1) = \textcolor{red}{0}$ and $A(2,c_1) = \textcolor{red}{1}$.}
+ \caption{A restricted routed network $N(CA)$ obtained from $N$ and the partial compact assignment $CA$, defined over $\{c_1\}$, whith $A(1,c_1) = \textcolor{red}{0}$ and $A(2,c_1) = \textcolor{red}{1}$.}
 
 \label{fig:randomnetworks}
 \end{center}
 \end{figure}
-%phrase d'explication
 
-\begin{lemma}
+The restricted routed network represent the problem which is left to solve 
+when fixing a partial compact assignment and it allows to do a simple bruteforce search
+of all compact assignments.
+
+\begin{lemma}\label{lemma:restriction}
 Let $N$ be a routed network, $CA$ a partial compact assignment of $N$, and $\mathcal{CA}$
-the set of extensions of $CA$ then $TR(N(CA)) = \max_{ A \in \mathcal{CA}} TR(Real(A))$.
+the set of extensions of $CA$ then $TR(N(CA)) = \min_{ A \in \mathcal{CA}} TR(Real(A))$.
 \end{lemma}
 \begin{proof}
-TODO
+Let $\mathcal{C}_i$ be the domain of $CA$, by definition of $\mathcal{CA}$, 
+for all $A \in \mathcal{CA}$, $A_i = CA$. Let us define the function $Ext$ from the
+compact assignments of $N(CA)$ to $\mathcal{CA}$. The assignment $Ext(CA')$ is 
+defined as equal to $CA$ over $\mathcal{C}_i$ and equal to $CA'$ over the other contention points.
+The function $Ext$ is a bijection and $TR(CA') = TR(Ext(CA))$, by construction of the restricted routed network
+$N(CA)$, which proves the lemma.
 \end{proof}
 
 \paragraph{Relaxation of \spall}
 
+We present a method to lower bound the value of $TR(N)$, so that we can do a branch and 
+bound algorithm rather than just a bruteforce exploration of all compact assignments.
+The idea is to transform any routed network into a network with a single contention point, 
+with a lower transmission time (but as large as possible). The problem \spall over a single contention point is the problem \wta, that we have solved in Chapter~\ref{chap:PALL}, and that we can compute efficiently.
 
+Let $N$ be any network and le $c_j$ be a contention point, we define $N^j$ a routed network with the
+single contention point $c_j$, a set of routes $\matcal{R}'$ and a wiegth function $\omega'$ as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \matcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ assuming there are no constraints before $c_j$ and after $c_j$.   
 
-\paragraph{Reducing \spall to \wta}
-
-We show how to transform an instance of \spall with many contention points, into an instance
-of \spall with a single contention point and a transmission time less or equal to the one of the original instance.
-The problem \spall over a single contention point is the problem \wta, that we have solved in Chapter~\ref{chap:PALL}.
-
-\begin{lemma}\label{lemma:reduce}
-Given an instance $I$ of \spall and a contention point $c_j$, there is an instance $I^j$ of 
- \spall with a single contention point such that the best transmission time for $I^j$ is less than 
- the best transmission time for $I$. 
+\begin{lemma}\label{lemma:lowerbound}
+Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
 \end{lemma}
 \begin{proof}
 To reduce $I$ into $I'$, we focus on one contention point (let us take $c_1$, the first one) of the routed network $N$ and we consider there is no other contention points than $c_1$ in the rest of the network. The instance $I'$ of \wta built is a size of messages $\tau$, which is the same as in $I$, a set of routes wich is here ${\cal R}_{c_1}$, a release function for each route $r \in {\cal R}_{c_1}$, which is here the arrival time $t(r,c_1)$ and a deadline function $d'$. 
