@@ -8,7 +8,7 @@
 #define NB_BBU 2
 #define NB_COLLISIONS 4
 
-#define NB_ROUTES_PER_FLOW 3
+#define NB_ROUTES_PER_FLOW 1
 #define PROBA 1
 #define DISTRIBUTED 1
 
@@ -43,7 +43,7 @@
 
 
 //openMP parallel
-#define PARALLEL 1
+#define PARALLEL 0
 
 //for logs 
 #define SHOW_EVERY 100

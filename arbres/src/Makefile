@@ -70,6 +70,9 @@ recuit: dirs compil
 simultiplexing: dirs compil 
 	./compil simultiplexing
 
+stofpt: dirs compil 
+	./compil simulfptvssto
+
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*
 	./compil simulNoWaiting

@@ -4,22 +4,27 @@
 \label{chap:TSN}
 \minitoc
 
-We showed on this thesis algorithms that minimize contention in several kinds of networks, either by removing buffers or computing mnimal buffering time. As we explained, it is necessary that packets are not delayed in the network. Delay causes are various, but the main one if the buffering time. 
+In this thesis, we proposed algorithms that minimize contention in several kinds of networks, either by removing buffers or computing mnimal buffering time. As we explained, it is necessary that packets are not or as little as possible delayed in the network. Delay causes are various, but the main one is the buffering time. 
 
+Our approach of the network consists in managing the message in each node in order to keep the buffuring under control. This is related to the concept of Deterministic Networking. A working group from IETF called DetNet~\cite{finn-detnet-architecture-08} works in collaboration with TSN (Time Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking. While DetNet works on Layer 3, TSN devlop solutions for Layer 2. Since our model is based on ethernet we focus on TSN standards.
 
-Our approach of the network is related to the concept of Deterministic Networking. A working group from IETF called DetNet~\cite{finn-detnet-architecture-08} works in collaboration with TSN (Time Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking. While DetNet works on Layer 3, TSN devlop solutions for Layer 2. Since our model is based on ethernet we focus on TSN standards.
-
-This chapter present in Section~\ref{sec:TSNqbv} the IEEE standards for TSN that allows a better network managment based on scheduled packets and on which our model is based. TSN standards are designed to manage stochastic flows in network. Nevertheless, we show that managing deterministic traffic allows us to remove some technical constraint, and leads us to new technology, that we call Hyper-TSN. Section~\ref{sec:platform} present a prototype of a switch that goes beyond TSN, by delivering packet at exact expected dates without any additional latency or synchronization constraint. In Hyper TSN, the latency is as close as possible with physical limitations.
+This chapter introduce in Section~\ref{sec:TSNqbv} the IEEE standards for TSN that allows a better network managment based on scheduled packets and on which our model is based. TSN standards are designed to manage stochastic flows in network. Nevertheless, we show that managing deterministic traffic allows us to remove some technical constraint, and leads us to new technology, that we call Hyper-TSN. Section~\ref{sec:platform} present a prototype of a switch that goes beyond TSN, by delivering packet at exact expected dates without any additional latency or synchronization constraint. In Hyper TSN, the latency is as close as possible with physical limitations.
 
 
 \section{A Customized Managment of the Network}
 \label{sec:TSNqbv}
 
 \subsection{Overview of TSN standards}
-The model we present in Chapter~\ref{chap:model} is based on several assumption. We explain in this chapter how the recent standards developed by TSN task group brings us to such a model. A detailled survey of all TSN standards can be found in~\cite{8458130}. 
+The model we present in Chapter~\ref{chap:model} is based on several assumption:
+\begin{itemize}
+\item The aglorithms we developped are based on a central knowledge of the network and suppose all nodes are able to follow instructions. There must be an entity that centralizes and manages the nodes.
+\item We suppose that all nodes are perfectly synchronized on the same clock.
+\item We suppose the nodes are able to distinguish and manage differently each flows.
+\end{itemize}
+We explain in this chapter how the recent standards developed by TSN task group connect to such a model. A detailled survey of all TSN standards can be found in~\cite{8458130}. 
 
 
-The stadard IEEE 802.1Qat SRP~\cite{article} (Stream Rerservation Protocol) provides a central managment framework that allow a centralized entity to collect datas about the flows. It has been improved by IEEE 802.1Qcc~\cite{6755436}. Those standards allows us to centralize all required information needed by users about the network (the routing, the periodicity and the size of the datagrams) in a centralized entity that we call \textbf{controller}. This controller propose an user interface that allows users to collect all network informations in order to compute the configuration of the network. Figure~\ref{fig:networkcontroller} shows a network managed by a controller, communicating via its user interface with algorithms, and able to send requirement to the nodes. Such an approach is related to Softward Defined Network (SDN)~\cite{li2015software}. We can find in~\cite{7356556} an example of SDN for TSN.
+The stadard IEEE 802.1Qat SRP~\cite{article} (Stream Rerservation Protocol) provides a central managment framework that allow a centralized entity to collect datas about the flows. It has been improved by IEEE 802.1Qcc~\cite{6755436}. Those standards a centralized entity, that we call \textbf{controller}, to collect all required informations needed by users about the network (the routing, the periodicity and the size of the datagrams). This controller proposes an user interface that allows users to collect all network informations in order to compute the configuration of the network. Figure~\ref{fig:networkcontroller} shows a network managed by a controller, communicating via its user interface with algorithms, and able to send requirement to the nodes. Such an approach is related to Softward Defined Network (SDN)~\cite{li2015software}. We can find in~\cite{7356556} an example of SDN for TSN.
 
 
 \begin{figure}
@@ -74,7 +79,7 @@ The stadard IEEE 802.1Qat SRP~\cite{article} (Stream Rerservation Protocol) prov
 \end{figure}
 
 
-802.1Qbv~\cite{8613095} allows us to manage flows in the nodes by a gate mechanism. The switch follows a routine that order to every node the date at which a flow must be sent on each output port. To do so, the switch needs a Gate Control List (GCL). This GCL is computed by the user, and sent to each switch of the network by the controller. It is a list of dates, and for every date of the list are specified the output ports (gates) of the switch which are open or close.
+Standard 802.1Qbv~\cite{8613095} allows us to manage differently flows in the nodes by a gate mechanism. The switch follows a routine that order to every node the date at which a flow must be sent on each output port. To do so, the switch needs a Gate Control List (GCL). This GCL is computed by the user, and sent to each switch of the network by the controller. It is a list of dates, and for every date of the list are specified the output ports (gates) of the switch which are open or close.
 
 
 Figure~\ref{fig:tsnqbv} found in~\cite{durr2016no} shows the mechanism of a switch using 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch selects at each time ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure 6, at time $T_1$, all gates except the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
