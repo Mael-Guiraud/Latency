@@ -1,8 +1,8 @@
 
 CC=gcc-7
-CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs  -std=c99
+CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs  -std=c99 
 #-ftest-coverage
-LFLAGS = -fopenmp
+LFLAGS = -fopenmp -lm
 
 DIRbin = bin/
 DIRgnu = ../gnuplot/
@@ -69,6 +69,9 @@ recuit: dirs compil
 
 simultiplexing: dirs compil 
 	./compil simultiplexing
+
+stofpt: dirs compil 
+	./compil simulfptvssto
 
 nowaiting: dirs compil 
 	rm -f $(DIRgnu)*

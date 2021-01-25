@@ -41,13 +41,13 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	 
  	\subsection{Dynamic of Datagrams Transmissions}
 	    
- 		In this thesis, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. We are developing a prototype of this work based on ethernet base-X~\cite{ieee_8023}, detailled in chapter~\ref{chap:TSN} using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
+ 		In this thesis, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. We are developing a prototype of this work based on ethernet base-X~\cite{ieee_8023}, see chapter~\ref{chap:TSN}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
 
         In the process we study, a message, called a {\bf datagram}, is sent on each route from the source node. The \textbf{size} of a datagram is an integer, denoted by $\tau$, it is the number of tics needed by a node to emit the full datagram through a link.  In this thesis, we assume that $\tau$ is the same for all routes. It is justified by our application to C-RAN, where all source nodes are RRHs sending the same type of message. There is no fragmentation: Once a datagram has been emitted, it cannot be fragmented during its travel in the network. 
 
         Let $r=(s,\dots,t)$ be a route. In order to avoid contention, it is possible to buffer datagrams in the contention points in $\cal{B}$. An \textbf{assignment} $A$ of a routed network $N = (\cal{R},\,\cal{B},\,\omega)$ is a function which associates to each route $r \in \cal{R}$, the pair of integers $A(r) = (o_r,w_r)$.
         The value $o_r$ is the \textbf{offset}, the time at which the datagram is available in the first vertex of $r$. The value $w_r$ is the \textbf{waiting time}: the datagram is buffered 
-        for $w_r$ tics in $c \in \cal{B} \cap r$, the vertex representing the BBU.
+        for $w_r$ tics in $c \in {\cal B} \cap r$, the vertex representing the BBU.
     		The \textbf{arrival time} of a datagram in the vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(r,u_i) + o_r $ if 
  		    $i < j$ and $t(r,u_i) = \lambda(r,u_i) + o_r + w_r$ otherwise.
 
@@ -67,7 +67,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 
  	\subsection{Periodic Emission of Datagrams}
-
+\todo{RQ olivier: insister sur pourquoi c'est periodique ici ou chap 2}
 	In the previous section, we have explained how \emph{one} datagram follows its route.
 	However, the process we model in this thesis is \emph{periodic}: for each period of $P$ tics, a datagram is sent, from each source node in the network, at its offset. The process is assumed to be infinite, since it must work for an arbitrary number of periods. For a given route, we use the same offset and waiting time in all periods, for simplicity of implementation in real networks and to make our problem more tractable from a theoretical perspective. Hence, at the same time of two different periods, all messages are at the same position in the network: the assignments built are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
  	Using a different offset for each route corresponds to sending their datagram at a different time in the period. This matches our hypothesis that the emissions of the RRHs need not to be synchronized but they share a common global time, useful for coordination of their emission.
@@ -78,7 +78,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
     Let us consider two routes $r_1$ and $r_2$, they have a {\bf collision} at the contention point $u$ if and only if $[r_1,u]_{P,\tau} \cap [r_2,u]_{P,\tau} \neq \emptyset$.
     The assignment $A$ is said to be \textbf{valid} if, for all contention points $u$ and routes $r_1$ and $r_2$ containing $u$, \emph{$r_1$ and $r_2$ have no collision} at $u$. 
     The validity of an assignment depends on $P$ the period and $\tau$ the size of the messages,
-    thus we say that $A$ is a valid \textbf{$(P,\tau)$-assignment}. When $P$ and $\tau$ clear from the context, 
+    thus we say that $A$ is a valid \textbf{$(P,\tau)$-assignment}. When $P$ and $\tau$ are clear from the context, 
     we denote $[r,u]_{P,\tau}$ by $[r,u]$ and say that $A$ is a valid assignment. 
 
      The following Figure~\ref{fig:example} illustrates a two valid periodic assignment for different values of $P$ and $\tau$, and the criticity of waiting time in latency reduction. The three routes are depicted by three different colors. If we let $P = 2$ and $\tau = 1$, then there is a $(2,1)$-periodic valid assignment with waiting times zero by taking $0$ as offset for each route. However, for the same routed network but $P=5$ and $\tau = 2$, there is no solution to the problem with waiting times zero. If we allow $1$ tic of waiting time for one route, we can build the valid assignment $((0,0),(2,1),(0,0))$.
@@ -159,7 +159,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	  In the next section, this problem is proved to be $\NP$-hard. In Chapter~\ref{chap:PALL}, we propose heuristics solving the search version of \pall (computing a valid assignment), also denoted by \pall for simplicity. In the definition of \pall, we have chosen to bound the transmission time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. 
 
 	 We say that an assignment is \textbf{bufferless} when the waiting time of all routes are zero.
-	 The assignment can then be seen as a function from the routes to the integers (the waiting time is omited). We consider a restricted version of \pall, requiring to find a bufferless assignment and studied in Chapter~\ref{chap:PAZL}. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.
+	 The assignment can then be seen as a function from the routes to the integers (the waiting time is omited). We consider a restricted version of \pall, requiring to find a bufferless assignment and studied in Chapter~\ref{chap:PAZL}. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is simpler to implement in real telecommunication networks, since we do not need to deal with any buffering at all.\todo{pas plus simple, plus efficace: travaux brice}
 
       An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
@@ -247,7 +247,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 \begin{figure}
 \begin{center}
-\scalebox{0.4}{
+\scalebox{0.5}{
 
 \begin{tikzpicture}
   \SetGraphUnit{5}
@@ -350,7 +350,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
             \end{center}
            \end{figure}
            
-  When solving \pall or \pazl on a star routed network, a period, a datagram size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Figure~\ref{fig:canonical} for an example of the canonical star routed network of Figure~\ref{fig:star}.  
+  When solving \pall or \pazl on a star routed network, a period, a datagram size and a deadline function are also given. When the period is fixed, if we can modify the deadline function, we can do several assumptions on the parameters of the star routed network without loss of generality. We say that a star routed network is \textbf{canonical}, for a period $P$, if the weights of the arcs between $c_1$ and $c_2$ are in $[P]$ \todo{(because the values are computed modulo $P$)} and the others are equal to zero. Hence, $\lambda(r_i)$, the length of a route is equal to the length of its arc $(c_1,c_2)$. Moreover, $\lambda(r_0) = 0$. See Figure~\ref{fig:canonical} for an example of the canonical star routed network of Figure~\ref{fig:star}.  
   
 \begin{figure}
 \begin{center}
@@ -522,7 +522,7 @@ $\downarrow$
  
 \end{center}
 
-\caption{Transformation of the star routed network of Figure~\ref{fig:star} to its canonical form, initially with $\tau = 1$, $P=5$, $d_1 = 30$, $d_2 = 34$, $d_3 = 32$.}
+\caption{Transformation by the proof of proposition~\ref{prop:canonical} of the star routed network of Figure~\ref{fig:star} to its canonical form, initially with $\tau = 1$, $P=5$, $d_1 = 30$, $d_2 = 34$, $d_3 = 32$.}
 \label{fig:canonical}
 \end{figure}
 
@@ -561,7 +561,7 @@ $\downarrow$
 	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness for a restricted version: \pazl with $\tau = 1$. We give two proofs that \pazl is $\NP$-complete.
 	The first proof works even for contention depth two, but not for star routed networks.
 	 For contention depth one, the problem is trivial: either the load is less than one and there is a valid assignment with zero waiting time or there is no valid assignment. 
-	 The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. Since solving \pall is trivial on trees, it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, a common property of real networks~\cite{de2011treewidth}.
+	 The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. Since solving \pall is trivial on trees \todo{expliquer que trees = conflict depth 1}, it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, a common property of real networks~\cite{de2011treewidth}.
  
 
  \begin{theorem}\label{th:hardness_contention_depth}

@@ -752,7 +752,7 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	else
 		liste_evt = init_computed(g,liste_evt,period,nb_periods);
 
-	liste_evt = init_BE(g,liste_evt,period,nb_periods);
+	//liste_evt = init_BE(g,liste_evt,period,nb_periods);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
 	

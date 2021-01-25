@@ -76,7 +76,11 @@ int main (int argc, char *argv[])
 	{
 		simulrecuit(seed);
 	}
-
+	if(!strcmp(argv[1],"simulfptvssto") )
+	{
+		simulfptvssto(seed);
+	}
+		
 
 
 

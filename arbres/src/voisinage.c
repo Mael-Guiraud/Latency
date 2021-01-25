@@ -102,11 +102,9 @@ int fin_vois2(int * tab, int* bool_p,int size)
 	return 1;
 
 }
-void next2(int * tab,int * bool_p, int id, int val_fin)
+void next2(int * tab,int * bool_p, int id)
 {
-
-
-	if(tab[id] == val_fin)
+	if(tab[id] == 1)
 	{
 
 		if(fin_vois(bool_p,id+1))
@@ -191,31 +189,31 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 
 
 
-	//for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
-		//{
+	for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
+		{
 
 			if(kind == FORWARD)
 			{
 				
-				if(g->contention[v.route][x]->routes_order_f[idtmp] <0)
-					g->contention[v.route][x]->routes_order_f[idtmp] = -g->contention[v.route][x]->routes_order_f[idtmp];
-				if(g->contention[v.route][x]->routes_order_f[idtmp] == INT_MAX)
-					g->contention[v.route][x]->routes_order_f[idtmp] = 0;
+				if(g->contention[v.route][x]->routes_order_f[i] <0)
+					g->contention[v.route][x]->routes_order_f[i] = -g->contention[v.route][x]->routes_order_f[i];
+				if(g->contention[v.route][x]->routes_order_f[i] == INT_MAX)
+					g->contention[v.route][x]->routes_order_f[i] = 0;
 			}
 			else
 			{
 				
-				if(g->contention[v.route][x]->routes_order_b[idtmp] <0)
-					g->contention[v.route][x]->routes_order_b[idtmp] = -g->contention[v.route][x]->routes_order_b[idtmp];
-				if(g->contention[v.route][x]->routes_order_b[idtmp] == INT_MAX)
-					g->contention[v.route][x]->routes_order_b[idtmp] = 0;
+				if(g->contention[v.route][x]->routes_order_b[i] <0)
+					g->contention[v.route][x]->routes_order_b[i] = -g->contention[v.route][x]->routes_order_b[i];
+				if(g->contention[v.route][x]->routes_order_b[i] == INT_MAX)
+					g->contention[v.route][x]->routes_order_b[i] = 0;
 			}
 			
-		//}
+		}
 	
 		
 		//On cherche l'indice de au quel v.route est placée dans l'arc
-		/*idtmp = -1;
+		idtmp = -1;
 		for(int i=0;i<g->contention[v.route][x]->nb_routes;i++)
 		{
 			if(kind == FORWARD)
@@ -239,7 +237,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		if(idtmp ==-1)
 		{
 			printf("Error, indice not found.\n");exit(35);
-		}*/
+		}
 
 
 		if(v.pos[level] == 2)//permutation a gauche(car c'était droite avant)
@@ -311,7 +309,7 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 		}
 		else
 		{
-			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1,1);
+			next2(v.pos,v.bool_p,g->nb_levels[v.route]-1);
 		}
 	}
 
@@ -488,12 +486,11 @@ Voisin nouveau_voisin(Voisin v,Graph * g)
 			}
 		}
 
-		v.idtmp = idtmp;
+		
 	}
 	
 	return v;
 }
-
 void random_ordre(int * tab, int size)
 {
 	int random,tmp;
@@ -1614,7 +1611,7 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 		}
 		
 	}
-	/*a = descente(g,P,message_size,0,nb_pas);
+	a = descente(g,P,message_size,0,nb_pas);
 		if(a)
 		{
 			
@@ -1626,7 +1623,7 @@ int best_of_x(Graph * g, int P, int message_size,int tmax,float * nb_pas)
 					cpy_orders(best,g,1);
 				}			
 				
-		}*/
+		}
 	*nb_pas = pas;
 	if(prev != INT_MAX)
 	{
@@ -2313,15 +2310,14 @@ int CritMetropolis(int delta, float t)
 	{
 		return 0;
 	}
-	if(delta <= 0)
+	if(delta < 0)
 	{
 		return 1;
 	}
 	else
 	{
-
 		float proba = (float)delta/t;
-
+		//printf("%f %d %f\n",proba,delta, t);
 		float random = (float)rand() / (float)RAND_MAX;
 	
 		if(random <= expf(-proba))
@@ -2332,26 +2328,93 @@ int CritMetropolis(int delta, float t)
 	}
 	return 0;
 }
+float calcul_tmp(Graph *g,int P,int message_size,double coeff)
+{
+
+		float b;
+
+		int a=0;
+		int nb_pas;
+		b=descente( g,  P, message_size, 0, &nb_pas);
+
+		int time_actuel =b;
+		reinit_delays(g);
+	
+		int nb_step;
+	
+		Voisin v;
+		
+		nb_step = 0;
+		int av=0;
+		//printf("Tour\n");
+		for(int i=0;i<1000;i++)
+		{
+			v = Voisin_alea(g);
+			
+			
+			if(VOISINAGE)
+				b= assignment_with_orders_vois1(g,P,message_size,0);
+			else
+				b = assignment_with_orders(g,P,message_size,0);
+			if(b)
+			{
+				nb_step++;
+			
+					b = travel_time_max_buffers(g);
+					av+= abs(b-time_actuel);
+					if(nb_step == 100)
+					{
+						//printf("average %d retour %d \n",av,av/nb_step);
+						reinit_delays(g);
+						reset_periods(g,P);
+						return av/nb_step;
+					}
+			
+					remet_voisin(g,v);
+				
+			}//On a pas reussi a construire une solution, on remet le voisin d'avant
+			else
+			{
+				remet_voisin(g,v);
+			}
+			reinit_delays(g);
+
+		}
+	
+	reinit_delays(g);
+	reset_periods(g,P);
+
+
+		return -b/log(coeff);
+}
 int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 {
-	static int instance = 0;
+	
 	//Parametres du recuit
+
+
+	float temperature = calcul_tmp(g,P,message_size,(double)*nb_pas/100);
+	//printf("temperature %f coeff %d \n",temperature,param);
 	int nb_paliers = param;
-	float temperature = 2200.0;
-	float coeff= 0.90;
+	*nb_pas = 0;
+	float coeff= 0.99;
 	int b;
-	int seuil_arret = 2;
+	int seuil_arret = 10;
 	float seuil_incr_cmpt = 0.01;
 
 	int a=0;
+	
 	b=descente( g,  P, message_size, 0, nb_pas);
 
 	//b = best_of_x( g, P, message_size,100,nb_pas);
 	
 	/*	if(!greedy_deadline(g, P, message_size,0))
 		{
-			printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
-			return a;
+			reset_periods( g, P); 
+				reinit_delays(g);
+				greedy_deadline(g, P, message_size,1);
+			//printf("Error, greedystatdeadline didnt find an order(voisinage.c)\n");
+			//return a;
 		}
 		if(VOISINAGE)
 			a= assignment_with_orders_vois1(g,P,message_size,0);
@@ -2367,8 +2430,8 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		printf("Dans le crecuit on n'a pas su retrouver le greedy avec assingment with oder \n");
 		exit(35);
 		return 0;
-	}
-	 	*/
+	}*/
+	 	
 	int min = b;
 	int time_actuel = min;
 	reinit_delays(g);
@@ -2390,9 +2453,7 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 	int nb_amelio = 0;
 	char nom[64];
 	int av = 0;
-	sprintf(nom,"../recuittrace/plotrecuit%d",instance);
-	instance++;
-	FILE * f = fopen(nom,"w");
+
 	while(cmpt < seuil_arret) //Condition d'arret à définir
 	{
 		nb_moves = 0;
@@ -2409,14 +2470,12 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 				a = assignment_with_orders(g,P,message_size,0);
 			if(a)
 			{
-				nb_step++;
 				b = travel_time_max_buffers(g);
-				/*av+= b-time_actuel;
-				printf("%d %d %d \n",nb_step,b-time_actuel,av/nb_step);
-				if(nb_step == 100)exit(12);*/
+				nb_step++;
+				
 				if(CritMetropolis(b - time_actuel,temperature))//On swap sur le nouveau voisin.
 				{
-					
+					//printf("accepté %d %d %f\n",b,time_actuel,temperature);
 					//if(time_actuel != b)
 						
 					time_actuel = b;
@@ -2450,24 +2509,24 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 			//free_assignment(a);
 
 		}
-		fprintf(f,"%d %d %f %d\n",nb_amelio,time_actuel,temperature,min);
 		nb_amelio++;
 		acceptance_rate = (float)nb_moves/nb_paliers;
-		//printf("rate %f \n",acceptance_rate);
+		//printf("rate %f step %d \n",acceptance_rate,nb_step);
 		if(acceptance_rate < seuil_incr_cmpt)
 		{
-			//printf("trop bas \n");
+			//printf("trop bas                \n\n\n\n\n \n");
 			cmpt++;
 		}
-		//printf("Cmpt = %d \n",cmpt);
-		if((temperature < 7000) && (temperature>4000))
-			temperature *=  0.99;
-		else
-			temperature *=  0.99;
+
+		temperature *=  0.99;
 	//	printf("%10f \n",temperature);
-		if(temperature < 0.0000009)
+		if(temperature < 0.000009)
+		{
+			//printf("BREAk \n");
 			break;
+		}
 		//fprintf(f2,"%f \n",temperature);
+		//printf("fin palier temp %f cmpt %d %f \n",temperature,cmpt,acceptance_rate);
 	}
 	//printf("Temperature %f, nb_step %d \n",temperature,nb_step);
 
@@ -2498,8 +2557,69 @@ int recuit(Graph * g, int P, int message_size, int param,float * nb_pas)
 		exit(83);
 	}
 	*nb_pas = (float)nb_step;
-	fclose(f);
+
 
 	return b;
+
+}
+
+
+int  parcours_voisinage_test(Graph * g,int P, int message_size,Voisin v, int mintime)
+{
+
+	int a = 0;
+	 int b;
+	int begin = mintime;
+	int nb_equal = 0;
+	while(v.route != -1)
+	{
+
+		if(VOISINAGE)
+			a= assignment_with_orders_vois1(g,P,message_size,0);
+		else
+			a = assignment_with_orders(g,P,message_size,0);
+	
+		if(a)
+		{
+			b = travel_time_max_buffers(g);
+			if(b < mintime)
+			{
+				mintime = b;
+				nb_equal == 0;
+			}
+			if(b == mintime)
+			{
+				nb_equal ++;
+			}
+		}
+
+		v= nouveau_voisin(v,g);
+
+	
+		reinit_delays(g);
+
+
+	}
+	
+	return nb_equal;
+}
+int test_nb_vois_egal(Graph * g, int P, int message_size)
+{
+	Voisin v=init_voisinage_greedy(v,g,P,message_size);
+
+	if(v.route == -1)
+	{
+		return 0;
+	}
+	reinit_delays(g);
+	int val = parcours_voisinage_test(g,P,message_size,v,INT_MAX);
+	reinit_delays(g);
+		
+
+	reinit_delays(g);
+	reset_periods(g,P);
+	
+
+	return val;
 
 }
