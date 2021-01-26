@@ -368,7 +368,7 @@ void simuldistrib(int seed)
 	#pragma omp parallel for private(g,P,a,time,nb,tv1,tv2)  if(PARALLEL)
 	for(int i=0;i<NB_SIMULS;i++)
 	{
-		if(i==1)i+=3;
+		if(i==1)i++;
 	
 		a = 0;
 		
@@ -425,7 +425,7 @@ void simuldistrib(int seed)
 				case 3:
 				
 					
-					a = best_of_x( &g, P, message_size,300,&nb);
+					a = best_of_x( &g, P, message_size,1000,&nb);
 					#pragma omp critical
 						nb_pas[1] += nb;
 					

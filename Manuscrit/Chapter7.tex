@@ -91,9 +91,9 @@ Figure~\ref{fig:tsnqbv} found in~\cite{durr2016no} shows the mechanism of a swit
   \caption{IEEE 802.1Qbv mechanism}\label{fig:tsnqbv}
   \end{figure}
       
-With such a mechanism, it is possible to organize the flows in order to control the latency. The CGL are computed upstream considering the traffic (size of the datagrams, periodicity, or average dataflow of each flow for non deterministic traffic). Several works on Time Aware Shaping have been developed on this topic: \cite{al2017modeling} introduce how to manage one deterministic flow and one best effort flow (non periodic generation of data, stochastic model). This paper shows that by correctly setting the GCL of the nodes, it is possible to ensure no contention for one deterministic flow. Nevertheless, works about managing several determinstic flows together are mainly based on linear programing, which has an high complexity and does not scale well with number of routes and contention depth of the networks. \todo{ref autrichiens allemands}
+With such a mechanism, it is possible to organize the flows in order to control the latency. The CGL are computed upstream considering the traffic (size of the datagrams, periodicity, or average dataflow of each flow for non deterministic traffic). Several works on Time Aware Shaping have been developed on this topic: \cite{al2017modeling} introduce how to manage one deterministic flow and one best effort flow (non periodic generation of data, stochastic model). This paper shows that by correctly setting the GCL of the nodes, it is possible to ensure no contention for one deterministic flow. Nevertheless, works about managing several determinstic flows together are mainly based on linear programing~\cite{steiner2018traffic,silviu2017,nayak2017incremental,naresh2016}, which has an high complexity and does not scale well with number of routes and contention depth of the networks.
 
-To be efficient, the components of the network must completely synchronized. Such an hypothesis seems unrealistic, standards likes IEEE 802.1AS~\cite{5741898}, or IEEE 1588~\cite{4579760} propose good solutions for clock synchronization, but this problem is still difficult to solve. Indeed, even if those protocols propose good solution to re-synchronize clocks, there is still some offset between the clocks of the switch since it is impossible to ensure the length of a link between two components. This value can be deduced of the travel time of packets between two switches but this value highly depends of several factors, like the temperature of the link for example. Network designers use \textemph{Guard Time} to prevent this problem. The GCL are computed such that a gate is open before and after the theoretical arrival of packets. Such a mechanism induce artifical additional use of bandwidth, because a gate is open more than it should be.
+To be efficient, the components of the network must completely synchronized. Such an hypothesis seems unrealistic, standards likes IEEE 802.1AS~\cite{5741898}, or IEEE 1588~\cite{4579760} propose good solutions for clock synchronization, but this problem is still difficult to solve. Indeed, even if those protocols propose good solution to re-synchronize clocks, there is still some offset between the clocks of the switch since it is impossible to ensure the length of a link between two components. This value can be deduced of the travel time of packets between two switches but this value highly depends of several factors, like the temperature of the link for example. Network designers use {\em Guard Time} to prevent this problem. The GCL are computed such that a gate is open before and after the theoretical arrival of packets. Such a mechanism induce artifical additional use of bandwidth, because a gate is open more than it should be.
 
 \subsection{Limits of TSN when managing Deterministic flows}
 
@@ -108,28 +108,43 @@ Next section present a new kind of switch, that we call "Hyper TSN" switch, and 
 \section{Deterministic managment for a deterministic latency}
 \label{sec:platform}
 
-\todo{dire que bcp de gens se disent "determinisite" alors qu'ils ne font que de la latence bornée.}
 
 Most of the works developped around Deterministic Networking are still based on stochastic laws. Indeed, deterministic networking aims to ensure a maximal bounded latency. Here, we propose to reduce the latency at its minimum, and to remove jitters in network, which is a deeper aspect of deterministic.
 Here, because of our desire to manage deterministic flows, multiple standards of TSN are not usfeull yet. Indeed, since the exact date of arrival of all packets are computed, we can get rid of several tools designed to manage the traffic on a statistical manner. 
 
 We present in this section an Hyper-TSN switch that solves all the problematic of TSN when managing deterministic traffic.
-This technology is under an advanced phase of research, and a prototype has been experimented in Nokia Bell Labs\todo{paper to be published}
-
+This technology is under an advanced phase of research, and a prototype has been experimented in Nokia Bell Labs~\cite{guiraudleclercmarce2021}
 
 \subsection{Hyper-TSN switch}
 
 
-The main idea of Hyper-TSN is to take the flow as a reference. The synchronisation problem is thus solved by the monitoring of the flows. Consider two Hyper-TSN switches, since the flows are programed.  
+A 2x2 Hyper-TSN switch has been developped. It is composed of a switching matrix connected to a deterministic scheduler and two 10 Gbps ethernet 2 ways transceivers. The switching matrix includes also a monitoring circuitry. The deterministic scheduler controls the switching matrix and is configured with a timing table. This table is similar to a 802,1 Qbv Gate Control List (GCL). It defines the periodicity of the scheduling and, for each egress ports, the planed date of arrival of the frames which are part of deterministic flows. At each of these dates the deterministic scheduler sets the switching matrix to transmit data incoming on a specified ingress port. Figure~\ref{fig:schedulehtsn} shows an example of scheduling for deterministic and stochastic traffic.
+ In such a switch, the buffers are totally removed: when a datagram arrive in the switch, it is instantly switched to the egress port, and the is no treatment operation. This process allows us to reduce the physical delay to its lowest for scheduled traffic, while it is still possible to buffer the Best Effort traffic, which has not critical latency constraints.
+\begin{center}
 
-A 2x2 Hyper-TSN switch has been developped on a Xilinx FPGA board,Zynq UltraScale MPSoC zcu102. It is composed of a switching matrix connected to a deterministic scheduler and two 10 Gbps ethernet 2 ways transceivers. The switching matrix includes also a monitoring circuitry. The deterministic scheduler controls the switching matrix and is configured with a timing table. This table is similar to a 802,1 Qbv Gate Control List (GCL). It defines the periodicity of the scheduling and, for each egress ports, the planed date of arrival of the frames which are part of deterministic flows. At each of these dates the deterministic scheduler sets the switching matrix to transmit data incoming on a specified ingress port.
+\begin{figure}[h]
+  \centering
+\includegraphics[scale=0.4]{Chapitre7/schedulerhypertsn.png}
+\caption{ The scheduling of a 2x2 switch on which both deterministic and stochastic traffics arrives. The deterministic traffic is forwarded without contention.}
+\label{fig:schedulehtsn}
+\end{figure}
+\end{center}
 
-The monitoring circuitry checks the actual date of arrival of the frames which are part of a deterministic flow. The sender is warned in case this date does not match the planed date of arrival to adapt its own scheduling. The board includes also a frame analyzer that enables to check that the switched frames are not corrupted and none is missing.
+Hyper-TSN consider the flow as a reference~\cite{leclerc2020optical}. Since the exact arrival time of a datagram is known, if this latter arrives before or after the expected date, this means the physical delay between the sender of the datagram and the switch is miss evaluated. The monitoring circuitry of the switch detects this issue and an alert signal is sent, for example, to a controller that is able to reschedule correctly the GCL.
+This vision solves the synchronization problem between the nodes, and is possible because the switches are developped on components with very precise clocks (Xilinx FPGA boards : Zynq UltraScale MPSoC zcu102,Zynq-7000 SoC zc706). 
+The switch also includes a frame analyzer that enables to check that the switched frames are not corrupted and none is missing.
 
-To perform experiments a generator of deterministic flows has been developed on a Xilinx FPGA board,Zynq-7000 SoC zc706. This generator offsets the dates it sends the frames according to the controls received from the monitoring circuitry.
+\subsection{Implementation and reliability tests}
 
-To perform the experiment the generator is configured to send frames on both egress ports according to the period defined in the timing table. The size of the frames is set to fully load the ethernet links (ie 100% load).
+To perform experiments, a generator of deterministic flows has been developed. This generator offsets the dates it sends the frames according to the controls received from the monitoring circuitry. The period are defined in the timing table. The size of the frames is set to fully load the ethernet links (ie $100\%$ load).
+When starting, the monitoring circuitry detects that frames do not arrive at the planed date and sends control commands to the generator. These first frames are lost. Once the generator has rightly offset the dates it sends the frames, no more shifting has been performed during the running 2 hours experiment. $100\%$ of the frames are correctly switched without being corrupted or lost. The switching of each frame from the ingress port to the planed egress port is performed introducing only one clock cycle delay (here 3,87 ns).
+Figure~\ref{fig:hypertsnswitch} shows the Hyper TSN 2x2 switch developped and on which experiments was made.
+\begin{center}
 
-When starting, the monitoring circuitry detects that frames do not arrive at the planed date and sends control commands to the generator. These first frames are lost. Once the generator has rightly offset the dates it sends the frames, nor more offset has been performed during the running 2 hours experiment.
-
-Then 100% of the frames are correctly switched without being corrupted or lost. The switching of each frame from the ingress port to the planed egress port is performed introducing only one clock cycle delay (here 3,87 ns).
+\begin{figure}[h]
+  \centering
+\includegraphics[scale=0.4]{Chapitre7/switchhypertsn.png}
+\caption{ An Hyper-TSN switch with a 2x2 switching matrix.}
+\label{fig:hypertsnswitch}
+\end{figure}
+\end{center}
