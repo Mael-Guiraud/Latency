@@ -809,7 +809,7 @@ As expected, the computation time is roughly linear in the number of steps $N$. 
 From now on, we denote the contention points by ${\cal C} = \{c_1,\dots, c_m\}$,
 and we assume they are indexed by contention depth, that is  if $i < j \leq m$ then  $cd(c_i) \leq cd(c_j)$. 
 A \textbf{Partial Compact Assignment} $CA$ is a compact assignment defined on a subset ${\cal C}_i = \{c_1,\ldots,c_i\}$ of ${\cal C}$. For a compact assignment $CA$, we denote by $CA_i$ the restriction of $CA$ to ${\cal C}_i$.
-Let $CA$ be a partial compact assignment defined on ${\cal C}_{i-1}$, then $CA[(O_{c_{i}},S_{c_{i}})]$ is an extension of $CA$ to ${\cal C}_{i}$, defined by $CA[(O_{c_{i}},S_{c_{i}})](c_i) = (O_{c_{i}},S_{c_{i}})$.
+Let $CA$ be a partial compact assignment defined on ${\cal C}_{i-1}$, then $CA[(O,S)]$ is an extension of $CA$ to ${\cal C}_{i}$, defined by $CA[(O,S)](c_i) = (O,S)$.
  In this section, we build a compact assignment $CA$ by extending partial compact assignments from $c_1$ to $c_m$.
 
 Once a partial compact assignment is set, one can discard the nodes of the routed network on which it is defined
@@ -984,7 +984,8 @@ in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$ wh
 
 
 Solving \spall, means finding an assignment for which $TR(A)$ is minimal. 
-Given an instance of \spall, the local search algorithm presented explore a part of the compact assignments $CA$ and returns the one which minimize $TR(Real(CA))$. Here, we describe a Branch and Bound algorithm that enumerates all compact assignments for a given instance.
+Given an instance of \spall, the local search algorithms presented in the previous sections explore a few compact assignments $CA$ and returns the one which minimize $TR(Real(CA))$.  We begin by providing 
+a bruteforce algorithm testing all compact assignments, then we show how we can avoid a large number of the compact assignments using a Branch and Bound algorithm, which allows to solve \spall optimally for small number of routes.
 
 \begin{theorem}\label{theorem:FPT}
 For routed networks of fixed contention depth $d$, the problem \spall parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
@@ -999,7 +1000,15 @@ On a given contention depth consisting in the vertices $\{c_1,\dots,c_l\}$, with
 $\prod_{1 \leq i\leq l} s_i!2^{s_i}$ compact assignments. On a given contention depth, all routes use at most $1$ vertex, hence $\sum_{1 \leq i\leq l} s_i \leq n$. Since $\prod_{1 \leq i\leq l} s_i! \leq (\sum_{1 \leq i\leq l} s_i)!$, we have $\prod_{1 \leq i\leq l} s_i!2^{s_i} \leq n!2^n$. There are $d$ contention depths, thus we have at most $ (n!2^{n})^{d}$ compact assignments which proves the theorem.
 \end{proof}
 
-We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A partial tree is a subtree in which the leaves represent all possibles choice of couple $(O_{c},S_c)$ for a contention point $c$. As an example, for the first contention point $c_1$, define $s_1 = |\mathcal{R}_{c_1}|$, There is $s_1!$ nodes at the first level of the partial tree (corresponding to a choice of order $O_{c_1}$, with each one $2^{s_1}$ leaves (corresponding to a choice of subset $S_{c_1}$), that makes $s_1!2^{s_1}$ leaves on the tree. Figure~\ref{fig:partialtree} illustrates the building of the tree for $1$ contention point with $3$ routes.
+The bruteforce algorithm of Theorem~\ref{theorem:FPT} can be seen as going through a tree of partial compact assignments,
+whose leaves are the compact assignment. We call this tree the \textbf{compact assignment tree}. Each vertex $v$ is labeled by a couple $l(v) = (O,S)$ except the root. There is a bijection between a vertex of the tree and a partial compact assignment, such that a vertex at depth $i$ is a partial assignment defined over $\mathcal{C}_i$.
+We define the bijecion recursively: let $v$ be a vertex and $u$ its parent, then if $u$ is mapped to $CA$,
+and $v$ is at depth $i$, then $v$ is mapped to $CA[l(v)]$.
+
+For the first contention point $c_1$, we let $s_1 = |\mathcal{R}_{c_1}|$,then there are $s_1!2^{s_1}$ children
+to the root of the compact assignment tree, representing all partial compact assignments over $\{c_1\}$.
+In the algorithm, these children are built incrementally, first by enumerating all $s_1!$ orders $O$, then 
+by building incrementally the set $S$, as shown in Figure~\ref{fig:partialtree}.
 
 \begin{figure}
 \begin{center}
@@ -1073,19 +1082,29 @@ We describe the tree explored in the algorithm of Theorem~\ref{theorem:FPT}. A p
 }
 
 
- \caption{A partial tree build for the first contention point by the Branch and Bound algorithm for a contention point with $3$ routes.}
+ \caption{The first level of the compact assignment tree, with $c_1$ of width $3$.}
 
 \label{fig:partialtree}
 \end{center}
 \end{figure}
 
-Such a partial tree is then built for the second contention point $c_2$, and each leaves of $c_1$ are a root of the partial tree of $c_2$, that makes $s_1!2^{s_1} \times s_2!2^{s_2}$ leaves to the tree. If we repeat this operation for every contention point of a same level, we then get, as explained in Theorem~\ref{theorem:FPT} $n!2^n$ leaves on the exploration tree, that makes $ (n!2^{n})^{d}$ leaves on the final tree if there is $d$ contention depth.
+%Such a partial tree is then built for the second contention point $c_2$, and each leaves of $c_1$ are a root of the partial tree of $c_2$, that makes $s_1!2^{s_1} \times s_2!2^{s_2}$ leaves to the tree. If we repeat this operation for every contention point of a same level, we then get, as explained in Theorem~\ref{theorem:FPT} $n!2^n$ leaves on the exploration tree, that makes $ (n!2^{n})^{d}$ leaves on the final tree if there is $d$ contention depth.x
 
-Note that for the vertices of the last contention depth, compact assignments can be considered independently, since
-they do not interact. Hence, if the last level contains the vertices $\{u_1,\dots,u_l\}$, we only need to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ three and the $s_i$'s are pretty balanced.
+Note that for the vertices of the largest contention depth, compact assignments can be considered independently, since
+they do not interact. Let $\{u_1,\dots,u_l\}$ be the vertices of maximal contention depth, and let $s_1,\dots,s_l$
+be their width, then we need only to consider $(n!2^{n})^{d-1}(\sum_{1 \leq i\leq l} s_{i}!2^{s_i})$ compact assignments. This makes a large difference in our target application and the experiments presented in this chapter, since in this context $d$ equals three and the $s_i$'s are pretty balanced.
+
+We now explain how to cut the compact representation tree while exploring it by two different means:
+the computation of a lower bound of the transmission time over a subtree, to cut the whole subtree and 
+several simple rules which eliminates solutions which are dominated by others or which do not yield a valid assignment.
 
 
-In order to avoid to explore subtrees that will not give the optimal solution, we want to evaluate as often as possible the quality of the solution which is built.
+\paragraph{Lower Bound}
+
+
+
+\paragraph{Minimal Solutions for Contention Depth $1$}
+
 
 First, an upper bound of the optimal solution is computed using Simulated Annealing described in Section~\ref{sec:recuit}. The assignment $A$ given by Simulated Annealing gives $X =TR(A)$ the first upper bound on the optimal solution.
 When the algorithm arrives to a leaf of the tree, this means that $CA$ is defined for all contention points of the network. Thus, it can compute $TR(Real(CA))$. If $TR(Real(CA)) < X$ then we found an assignment that have better performance that the previous one, and the upper bound is thus updated.
@@ -1094,20 +1113,6 @@ This bound helps us to cut the exploration of the tree as soon as possible. Each
 
 
 
-
-
-
-
-\subsection{Locally minimal representation}
-\begin{comment}
-On voudrait énumérer uniquement les solutions qui sont minimales pour 
-$\prec$ pour un sommet donné et canoniques, ce qu'on appelle des solutions locally minimal.
-
-On propose un ensemble de coupes faciles à calculer qui permettent d'éliminer la plupart des solutions 
-non minimales. Proposer une caractérisation des solutions localement minimales (à vérifier).
-
-Montrer avec des expériences (nombre de représentation générées et pourcentage de minimales en fonction du nombre de routes) que ces coupes sont très efficace, elles permettent de générer uniquement des représentations compactes canoniques valides, et presque aucunes dont la réalisation n'est pas minimale.
-\end{comment}
 The Branch and Bound algorithm presented enumerates a large number of solutions. As explained ahead, the algorithm is able to evaluate the quality of the solution at each leaf of a partial tree. Nevertheless, the partial trees are still long to build. We propose here several cuts that improove the computation time of the algorithm.
 
 For a given contention point $c$, we want to generate only compact assignments $CA_c$ such that $Real(CA_c)$ is minimal for $\prec$. We thus propose several cuts that can be either computed at the end of during the building of a partial tree. There is no cut for the first level of the partial tree, that is, the choice of and order $O_c$. All the cuts are implemented while choosing to add or not a route in $S_c$. \textit{Placing} the datagram $i$ on a contention point $c$ means choosing if $i\in S_c$ or $i\notin S_c$. Also, we consider that $i-1$ datagrams have been placed before.
