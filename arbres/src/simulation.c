@@ -1580,9 +1580,9 @@ void simulrecuit(int seed)
 void simulfptvssto(int seed)
 {
 	srand(seed);
-	int nb_algos =3;
+	int nb_algos =6;
 	//"Hybrid Greedy Deadline","Greedy Packed",
-	char * noms[] = {"Branch and Bound","Statistical Multiplexing - FIFO ","Statistical Multiplexing - Critical Deadline"};
+	char * noms[] = {"Simulated Annealing Init Good 1000 steps level","Statistical Multiplexing - FIFO ","Statistical Multiplexing - Critical Deadline","Simulated Annealing Init Poor 1000 steps level","Simulated Annealing Init Poor 2000 steps level","Simulated Annealing Init Good 2000 steps level"};
 
 	
 	
@@ -1608,6 +1608,7 @@ void simulfptvssto(int seed)
 	
 	int time[nb_algos];
 	int res[nb_algos][NB_SIMULS];
+	for(int i=0;i<nb_algos;i++)for(int j =0;j<NB_SIMULS;j++)res[i][j]=0;
 	float nb_pas[4];
 	float running_time[nb_algos];
 	  struct timeval tv1, tv2;
@@ -1653,10 +1654,22 @@ void simulfptvssto(int seed)
 					break;
 
 				case 1:
-					a = multiplexing(&g, P, message_size, 10, FIFO,0,&timebefifo,NULL,1,&moyfifo,0) ;
+					a = multiplexing(&g, P, message_size, 100, FIFO,0,&timebefifo,NULL,1,&moyfifo,0) ;
 					break;
 				case 2:
-					a = multiplexing(&g, P, message_size, 10, DEADLINE,0,&timebefifo,NULL,1,&moyfifo,0) ;
+					a = multiplexing(&g, P, message_size, 100, DEADLINE,0,&timebefifo,NULL,1,&moyfifo,0) ;
+					break;	
+				case 3:
+					 nb = 50;
+					a = recuit( &g, P, message_size,1000,&nb);
+					break;	
+				case 4:
+					 nb = 50;
+					a = recuit( &g, P, message_size,2000,&nb);
+					break;	
+					case 5:
+					 nb = 20;
+					a = recuit( &g, P, message_size,2000,&nb);
 					break;	
 				
 				}
@@ -1696,6 +1709,7 @@ void simulfptvssto(int seed)
 		free_graph(&g);
 		fprintf(stdout,"\r%d/%d",i+1,NB_SIMULS);
 		fflush(stdout);
+
 	}	
 
 	//int max=0;

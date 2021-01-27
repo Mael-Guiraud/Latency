@@ -2,6 +2,7 @@
 #include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
 #include <math.h>
 FILE * logs;
@@ -739,7 +740,9 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	}
 	PER = period;
 	f = fichier;
-	logs = fopen("logs_multiplexing.txt","w");
+	char* name[64];
+	sprintf(name,"logs_mult%d",omp_get_thread_num());
+	logs = fopen(name,"w");
 	computed_assignment = computed;
 	//logs = stdout;
 
@@ -755,9 +758,20 @@ int multiplexing(Graph * g, int period, int message_size, int nb_periods,Policy 
 	//liste_evt = init_BE(g,liste_evt,period,nb_periods);
 	init_arcs_state(g);
 	int longest_time_elapsed = 0;
-	
+	/*int indicator = 0;
+	int last = 0;*/
 	while(liste_evt)
 	{
+		/*if(liste_evt->date > indicator*period)
+		{
+			if(last < longest_time_elapsed )
+			{
+				if(indicator > 10)
+					printf("Period %d longest time %d \n",indicator,longest_time_elapsed);
+				last = longest_time_elapsed;
+			}
+			indicator++;
+		}*/
 		current = liste_evt;
 		//printf(" Date %d\n ",liste_evt->date);
 		if(liste_evt->kind == MESSAGE)
