@@ -1580,9 +1580,9 @@ void simulrecuit(int seed)
 void simulfptvssto(int seed)
 {
 	srand(seed);
-	int nb_algos =6;
+	int nb_algos =4;
 	//"Hybrid Greedy Deadline","Greedy Packed",
-	char * noms[] = {"Simulated Annealing Init Good 1000 steps level","Statistical Multiplexing - FIFO ","Statistical Multiplexing - Critical Deadline","Simulated Annealing Init Poor 1000 steps level","Simulated Annealing Init Poor 2000 steps level","Simulated Annealing Init Good 2000 steps level"};
+	char * noms[] = {"Simulated Annealing 2000","Statistical Multiplexing - FIFO ","Statistical Multiplexing - Critical Deadline","Simulated Annealing 5000","Simulated Annealing Init Poor 2000 steps level","Simulated Annealing Init Good 2000 steps level"};
 
 	
 	
@@ -1649,7 +1649,7 @@ void simulfptvssto(int seed)
 			switch(algo){
 				case 0:
 					 nb = 20;
-					a = recuit( &g, P, message_size,1000,&nb);
+					a = recuit( &g, P, message_size,2000,&nb);
 					//a = branchbound( &g, P, message_size,NULL,NULL,1);
 					break;
 
@@ -1660,8 +1660,8 @@ void simulfptvssto(int seed)
 					a = multiplexing(&g, P, message_size, 100, DEADLINE,0,&timebefifo,NULL,1,&moyfifo,0) ;
 					break;	
 				case 3:
-					 nb = 50;
-					a = recuit( &g, P, message_size,1000,&nb);
+					 nb = 20;
+					a = recuit( &g, P, message_size,5000,&nb);
 					break;	
 				case 4:
 					 nb = 50;
