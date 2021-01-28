@@ -841,86 +841,6 @@ whose leaves are the compact assignments. We call this tree the \textbf{compact 
 We define the bijecion recursively: let $v$ be a vertex and $u$ its parent, then if $u$ is mapped to $CA$,
 and $v$ is at depth $i$, then $v$ is mapped to $CA[l(v)]$.
 
-To allow for more cuts while going through the tree, we will expand each vertex into a tree as shown in 
-Figure~\ref{fig:partialtree}. First, all orders on the routes of the contention node are children of the node, then a complete binary tree for each of these orders represent all possible subsets of routes.
-
-\begin{figure}
-\begin{center}
-\scalebox{0.4}{
-
-\begin{tikzpicture}
-  \SetGraphUnit{5}
-    \tikzset{
-  EdgeStyle/.append style = {->} }
-   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
- 
-  \Vertex[x=14,y=14, L = {Root}]{r};
-  \Vertex[x=10,y=11, L = {\Large $O_{c_1}=(123)$}]{o1};
-  \Vertex[x=18,y=11, L = {\Large $O_{c_1}=(132)$}]{o2};
-  \Vertex[x=21,y=11, L = {\Large $O_{c_1}=(213)$}]{o3};
-  \Vertex[x=24,y=11, L = {\Large $O_{c_1}=(231)$}]{o4};
-  \Vertex[x=27,y=11, L = {\Large $O_{c_1}=(321)$}]{o5};
-  \Vertex[x=30,y=11, L = {\Large $O_{c_1}=(312)$}]{o6};
-
-\SetVertexNoLabel
-%level 1
-  \Vertex[x=5,y=7 ]{s1};
-    \node[left] at (s1.south west) {\Large $S_{C_1} = \{\emptyset\}$};
-  \Vertex[x=15,y=7]{s2};
-  \node[left] at (s2.south west) {\Large $S_{C_1} = \{1\}$};
-%level2
-  \Vertex[x=2.5,y=4 ]{s3};
-    \node[left] at (s3.south west) {\Large $S_{C_1} = \{\emptyset\}$};
-  \Vertex[x=7.5,y=4]{s4};
-  \node[left] at (s4.south west) {\Large $S_{C_1} = \{2\}$};
-
-  \Vertex[x=12.5,y=4 ]{s5};
-    \node[left] at (s5.south west) {\Large $S_{C_1} = \{1\}$};
-  \Vertex[x=17.6,y=4]{s6};
-  \node[left] at (s6.south west) {\Large $S_{C_1} = \{1,2\}$};
-%level 3
-  \Vertex[x=0,y=1 ]{s7};
-    \node[left] at (s7.south west) {\Large $S_{C_1} = \{\emptyset\}$};
-  
-  \Vertex[x=20,y=1]{s8};
-  \node[left] at (s8.south west) {\Large $S_{C_1} = \{1,2,3\}$};
-
-  \path (s7) edge[dashed] (s8);
-  \path (20,7) edge[dashed] (28,7);
-  \path (22,4) edge[dashed] (28,4);
-  \path (24,1) edge[dashed] (28,1);
-  \tikzset{myptr/.style={decoration={markings,mark=at position 1 with %
-    {\arrow[scale=3,>=stealth]{>}}},postaction={decorate}}}
-
-    \draw [myptr] (r) -- (o1.north);
-    \draw [myptr] (r) -- (o2.north);
-    \draw [myptr] (r) -- (o3.north);
-    \draw [myptr] (r) -- (o4.north);
-    \draw [myptr] (r) -- (o5.north);
-    \draw [myptr] (r) -- (o6.north);
-
-    \draw [myptr] (o1) -- (s1);
-    \draw [myptr] (o1) -- (s2);
-    \draw [myptr] (s1) -- (s3);
-    \draw [myptr] (s1) -- (s4);
-    \draw [myptr] (s2) -- (s5);
-    \draw [myptr] (s2) -- (s6);
-    \draw [myptr] (s3) -- (s7);
-    \draw [myptr] (s6) -- (s8);
- 
-%\path (s1) edge [->] node[anchor=south,inner sep = 0.2cm]{$5$} (c1);
-
-
-
-\end{tikzpicture}
-}
-
-
- \caption{The first level of a compact assignment tree, with $c_1$ of width $3$.}
-
-\label{fig:partialtree}
-\end{center}
-\end{figure}
 
 
 \subsection{The Branch and Bound Algorithm}
@@ -1055,7 +975,7 @@ when fixing a partial compact assignment.
 
 \begin{lemma}\label{lemma:restriction}
 Let $N$ be a routed network, $CA$ a partial compact assignment of $N$, and $\mathcal{CA}$
-the set of extensions of $CA$ then $TR(N(CA)) = \min_{ A \in \mathcal{CA}} TR(Real(A))$.
+the set of compact assignments which are extensions of $CA$. Then, $TR(N(CA)) = \min_{ A \in \mathcal{CA}} TR(Real(A))$.
 \end{lemma}
 \begin{proof}
 Let $\mathcal{C}_i$ be the domain of $CA$, by definition of $\mathcal{CA}$, 
@@ -1068,25 +988,25 @@ $N(CA)$, which proves the lemma.
 
 Let $v$ be a vertex of the compact representation tree representing the partial compact assignment $CA$.
 If we want to ignore the subtree rooted at $v$ while exploring the partial compact assignment tree,
-we must know a lower bound on the transmission time of the compact assignment in this subtree.
-Lemma~\ref{lemma:restriction} shows that, it is given by the transmission time of the restricted routed network
-$N(CA)$, that is solving \spall on a simpler network. Since this value is still too expensive to compute, we provide a relaxation of the problem, which is practical to solve.
+we must know a lower bound on the transmission time of the compact assignments in this subtree.
+Lemma~\ref{lemma:restriction} shows that it is given by the transmission time of the restricted routed network
+$N(CA)$, that is solving \spall on a simpler network. Since this value is still too expensive to compute, we provide a relaxation of the problem of solving \spall over $N(CA)$, which is practical to solve.
 
 \paragraph{Relaxation of \spall}
 
 To lower bound the value of $TR(N)$, we propose to transform a routed network into a network with a single contention point, with a lower transmission time (but as large as possible). The problem \spall over a single contention point is the problem \wta, that we have solved in Chapter~\ref{chap:PALL}, and that we can compute efficiently.
 
-Let $N$ be any network and le $c_j$ be a contention point, we define $N^j$ a routed network with the
-single contention point $c_j$, a set of routes $\mathcal{R}'$ and a weight function $\omega'$ as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \mathcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ and assuming further there are no constraint before $c_j$ and after $c_j$.   
+Let $N$ be any network and let $c_j$ be a contention point. Let $N^j$ be the routed network with the
+single contention point $c_j$, a set of routes $\mathcal{R}'$ and a weight function $\omega'$ defined as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \mathcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ and assuming further there are no constraint before $c_j$ and after $c_j$.   
 
 \begin{lemma}\label{lemma:lowerbound}
 Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
 \end{lemma}
 \begin{proof}
 We associate to any valid assignment $A$ of $N$, the assignment $f(A)$ of $N^j$
-which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction the transmission time of a route $r$ using $A$ in $N$ is larger than 
-the transmission time of the route $r$ using $f(A)$ in $N$, since all the waiting times are the same up to 
-$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all $A$ assignments of $N$,
+which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction of $N$, the transmission time of a route $r$ using $A$ in $N$ is larger than 
+the transmission time of the route $r$ using $f(A)$ in $N^j$, since all the waiting times are the same up to 
+$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all assignments $A$ of $N$,
 $TR(A) \geq TR(f(A))$ which proves the lemma. 
 \end{proof}
 
@@ -1224,29 +1144,27 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
 \end{figure}
 \todo{me dire si la figure est bien, trop lourde?}
 
-Figure~\ref{fig:relaxednetwork} shows a routed network $N$ an an assignment $A$ for which $TR(N) = TR(A) =14$ and on which, $TR(N^1) = 11$, $TR(N^2) = 13$, $TR(N^3) = 11$ and $TR(N^4) = 14$ .
+Figure~\ref{fig:relaxednetwork} shows a routed network $N$ and an assignment $A$ for which $TR(N) = TR(A) =14$ and on which, $TR(N^1) = 11$, $TR(N^2) = 13$, $TR(N^3) = 11$ and $TR(N^4) = 14$.
 
 
-Let $SCB(N)$, for Single Contention Bound, be the function which associates to $N$ the integer 
-$\max_{j} TR(N^j)$. By Lemma~\ref{lemma:lowerbound}, we have $TR(N) \geq TR(N^j)$, hence $SCB(N)\leq TR(N)$.
+Let $SCB(N)$, for \emph{Single Contention Bound}, be the function which associates to $N$ the integer 
+$\max_{j} TR(N^j)$. By Lemma~\ref{lemma:lowerbound}, we have for all $j$, $TR(N) \geq TR(N^j)$, hence $SCB(N)\leq TR(N)$.
 We can compute $SCB(N)$ in time $m2^kk^3log(k)$ where $k$ is the contention width of the network and $m$ the number 
 of contention nodes. Indeed, for each $j$, solving \spall on $N^j$ is equivalent to solving \wta, which can be done
-in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$ which is bounded by the contention width of $c_j$.
+in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$ which is equal to the contention width of $c_j$ in $N$.
 
 \todo{utiliser la figure du dessus comme exemple ?}
 
 \paragraph{Description of the Branch and Bound Algorithm}
 
 We now describe precisely how the proposed branch and bound algorithm works.
-It starts by computing a solution using Simulated Annealing described in Section~\ref{sec:recuit},
+It starts by computing a solution using Simulated Annealing, as described in Section~\ref{sec:recuit},
 to initialize an upper bound on the transmission time.
 Then, it does a depth first traversal of the compact assignment tree. 
 When it enters a node $v$, which represents a partial compact assignment $CA$, it computes $SCB(N(CA))$ and
 if it is larger or equal to the upper bound, it backtracks, that is it goes back to the parent of $v$ without visiting
-the subtree rooted in $v$. 
-When the algorithm reaches a leaf representing $CA$, it computes $TR(Real(CA))$ and update the upper bound. 
-Lemmas~\ref{lemma:restriction} and~\ref{lemma:lowerbound} proves that the leaves which have not been explored corresponds
-to compact assignments with higher transmission time than the one found by our algoirthm, proving that it solves \spall.
+the subtree rooted at $v$. 
+When the algorithm reaches a leaf representing some compact assignment $CA$, it computes $TR(Real(CA))$ and updates the upper bound. Lemmas~\ref{lemma:restriction} and~\ref{lemma:lowerbound} proves that the leaves which have not been explored correspond to compact assignments with higher transmission time than the one found by the branch and bound algorithm, proving that it solves \spall.
 
 
 \paragraph{Additional Cuts}
@@ -1254,12 +1172,113 @@ to compact assignments with higher transmission time than the one found by our a
 Even with the cuts due to the evaluation of $SCB(N(CA))$, the compact assignment tree  is still too long to traverse. We propose here several additional cuts that improve the computation time of the algorithm. 
 
 Assume we are at vertex $v$ in the compact assignment tree, representing the partial compact assignment $CA$
-over $\mathcal{C}_i$. Going down the tree corresponds to visiting vertices representing $CA[(O,S)]$, an extension of $CA$ to $\mathcal{C}_{i+1}$. Then, $(O,S)$ is a compact assignment for $c_{i+1}$ in $N(CA)$ and we would like it to be \emph{valid} and \emph{minimal} for $\prec$. Indeed, if $(O,S)$ is not valid for $c_{i+1}$, then none of the extensions of $CA[(O,S)]$ will be valid and we can discard the subtree rooted at $CA[(O,S)]$.
- If $(O,S)$ is not minimal, then there is $(O',S')$ which is smaller. Thus, the transmission time of the extensions of $CA[(O,S)]$ will always be larger than the transmission time of the extensions of $CA[(O',S')]$ and again we can discard the subtree rooted at $CA[(O,S)]$.
+over $\mathcal{C}_i$. Let $u$ be a child of $v$, it represents $CA[(O,S)]$, some extension of $CA$ to $\mathcal{C}_{i+1}$. Then, $(O,S)$ is a compact assignment for $c_{i+1}$ in $N(CA)$ and we would like it to be \emph{valid}, \emph{canonical} and \emph{minimal} for $\prec$. Indeed, if $(O,S)$ is not valid for $c_{i+1}$, then none of the extensions of $CA[(O,S)]$ will be valid and we can discard the subtree rooted at $u$.
+If $(O,S)$ is not a canonical compact assignment, then by Lemma~\ref{lemma:prec}, there is a a compact assignment $(O',S')$ which is smaller for $\prec$. In the same way, if $(O,S)$ is not minimal for $\prec$, then there is a compact assignment $(O',S')$ which is smaller. In both cases, the transmission time of the extensions of $CA[(O,S)]$ will always be larger than the transmission time of the extensions of $CA[(O',S')]$ and again we can discard the subtree rooted at $u$.
 
 
 The cut consisting in verifying whether $(O,S)$ is a compact assignment for $c_{i+1}$ in $N(CA)$ is simple to
-implement in linear time by computing $Real((O,S))$. On the other hand, we are yet not able to decide whether a compact assignment is minimal in polynomial time. We now propose several easy to compute heuristics to detect when a compact assignment is not minimal.
+implement in linear time by computing $Real((O,S))$. On the other hand, we are not yet able to decide whether a compact assignment is minimal in polynomial time. We now propose several easy to compute heuristics to detect when a compact assignment is not minimal.
+
+To guarantee that we only consider canonical compact assignments, we must guarantee that the 
+buffering of the first route is zero. It is the same as requiring for a compact assignment $(O,S)$, that $r_{O_1}$, the first route in $O$, is not in $S$.
+
+
+The first heuristic is to consider the assignment $(O,S)$ of $N(CA)$ and for each route
+$r_i \in S$, we consider $Real((O,S))$ where $r_i$ has been removed. Then, the normalized sending time of all the other routes are considered, to check whether $r_i$ could be scheduled 
+
+ to verify whether $(O,S\setminus \{r_i\})$ is a valid assignment. This can be done in linear time for each $r_i \in S$. If there is a valid assignment 
+
+
+
+For the next cuts, we need to consider that the set $S$ is built incrementally as shown in 
+Figure~\ref{fig:partialtree}. We expand a vertex of the compact assignment tree, so that all orders on routes of the contention node are children of the node, then a complete binary tree for each of these orders represents all possible subsets of routes.
+
+\begin{figure}
+\begin{center}
+\scalebox{0.4}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 50pt]
+ 
+  \Vertex[x=14,y=14, L = {Root}]{r};
+  \Vertex[x=10,y=11, L = {\Large $O_{c_1}=(123)$}]{o1};
+  \Vertex[x=18,y=11, L = {\Large $O_{c_1}=(132)$}]{o2};
+  \Vertex[x=21,y=11, L = {\Large $O_{c_1}=(213)$}]{o3};
+  \Vertex[x=24,y=11, L = {\Large $O_{c_1}=(231)$}]{o4};
+  \Vertex[x=27,y=11, L = {\Large $O_{c_1}=(321)$}]{o5};
+  \Vertex[x=30,y=11, L = {\Large $O_{c_1}=(312)$}]{o6};
+
+\SetVertexNoLabel
+%level 1
+  \Vertex[x=5,y=7 ]{s1};
+    \node[left] at (s1.south west) {\Large $S_{C_1} = \{\emptyset\}$};
+  \Vertex[x=15,y=7]{s2};
+  \node[left] at (s2.south west) {\Large $S_{C_1} = \{1\}$};
+%level2
+  \Vertex[x=2.5,y=4 ]{s3};
+    \node[left] at (s3.south west) {\Large $S_{C_1} = \{\emptyset\}$};
+  \Vertex[x=7.5,y=4]{s4};
+  \node[left] at (s4.south west) {\Large $S_{C_1} = \{2\}$};
+
+  \Vertex[x=12.5,y=4 ]{s5};
+    \node[left] at (s5.south west) {\Large $S_{C_1} = \{1\}$};
+  \Vertex[x=17.6,y=4]{s6};
+  \node[left] at (s6.south west) {\Large $S_{C_1} = \{1,2\}$};
+%level 3
+  \Vertex[x=0,y=1 ]{s7};
+    \node[left] at (s7.south west) {\Large $S_{C_1} = \{\emptyset\}$};
+  
+  \Vertex[x=20,y=1]{s8};
+  \node[left] at (s8.south west) {\Large $S_{C_1} = \{1,2,3\}$};
+
+  \path (s7) edge[dashed] (s8);
+  \path (20,7) edge[dashed] (28,7);
+  \path (22,4) edge[dashed] (28,4);
+  \path (24,1) edge[dashed] (28,1);
+  \tikzset{myptr/.style={decoration={markings,mark=at position 1 with %
+    {\arrow[scale=3,>=stealth]{>}}},postaction={decorate}}}
+
+    \draw [myptr] (r) -- (o1.north);
+    \draw [myptr] (r) -- (o2.north);
+    \draw [myptr] (r) -- (o3.north);
+    \draw [myptr] (r) -- (o4.north);
+    \draw [myptr] (r) -- (o5.north);
+    \draw [myptr] (r) -- (o6.north);
+
+    \draw [myptr] (o1) -- (s1);
+    \draw [myptr] (o1) -- (s2);
+    \draw [myptr] (s1) -- (s3);
+    \draw [myptr] (s1) -- (s4);
+    \draw [myptr] (s2) -- (s5);
+    \draw [myptr] (s2) -- (s6);
+    \draw [myptr] (s3) -- (s7);
+    \draw [myptr] (s6) -- (s8);
+ 
+%\path (s1) edge [->] node[anchor=south,inner sep = 0.2cm]{$5$} (c1);
+
+
+
+\end{tikzpicture}
+}
+\caption{Expansion of a vertex of the compact assignment tree, corresponding to a contention vertex of width $3$.}
+
+\label{fig:partialtree}
+\end{center}
+\end{figure}
+
+\begin{itemize}
+  \item %An element should be in $S$ only if it improves the sending time
+
+  \item %gap ou on peut mettre un gars 
+
+  \item %Canonical compact assignment
+
+The last cut we propose is based on the definition of a canonical assignment. Remember that all assignments given by $Real(CA)$ are cannonicals. Furthermore, in a canonical assignment, there is a datagram which is not delayed at all. In such a situation, assume w.l.o.g. that it is the datagram with the lowest id. Thus, if we find a partial assignment for which $A_{c}(i,c) = 0$ computed from $Real(CA_c)$ in which $j$ is the first datagram of the order, if $i$ has a lowest id than $j$, then we cut because this case is also explored in another subtree with a different choice of order $O_c$.
+
+\end{itemize}
 
 
 If it is, we check for each datagrams on a route $i$ that has been set in $S_{c}$, we define $CA'_c = (O_c,S_c\backslash\{i\})$. If $CA'_c$ is realizable, cut the branch. Indeed, by setting $i$ in $S_c$, the solution is necessarily degraded and $CA'_c$ will be explored in another branch of the tree.
@@ -1271,41 +1290,50 @@ While all possible subset $S_c$ are enumerated, for a given datagram $i$, the al
 \begin{itemize}
  \item If $t(i-1,c) + A_{c}(i-1,c) + \tau = t(i,c) + A_{c}(i,c)$, we do not browse the subtree with $i \in S_c$. This means that the datagram $i$ is compact with the datagram $i-1$. In such a case, there is no point to set $i$ in the second period because there is no loss by setting $i$ in the first period.
 
+
 \item If $A_{c}(i,c) = 0$, then the datagram $i$ is not buffered at all. For each datagram $j>i$, if $t(j,c) + \tau < t(i,c)$, then it is possible to schedule $j$ before $i$ and such a case will be explored in another subtree with a different choice of order $O_c$.
 
 \end{itemize}
 
+\todo{yann: faire une figure qui montre ces trois coupes là (en représentant les paquets sur la période)}
 
-The last cut we propose is based on the definition of a canonical assignment. Remember that all assignments given by $Real(CA)$ are cannonicals. Furthermore, in a canonical assignment, there is a datagram which is not delayed at all. In such a situation, assume w.l.o.g. that it is the datagram with the lowest id. Thus, if we find a partial assignment for which $A_{c}(i,c) = 0$ computed from $Real(CA_c)$ in which $j$ is the first datagram of the order, if $i$ has a lowest id than $j$, then we cut because this case is also explored in another subtree with a different choice of order $O_c$.
+
+
 
 \subsection{Scalability with the number of routes}
 
-The Branch and Bound algorithm complexity depends of both the contention depth of the routed network and the number of routes. We focus on networks of contention depth $3$, which is realistic in our context, and we want to investigate how much the computation time increase when the number of routes grows. The complexity of this algorithm depends strongly of the number of routes in a same contention point. Until now, the number of routes in a same contention point was $4$, in contention points of depth two. We increase this value to $5$ by adding another contention point of depth one (and three, since the routed network is symmetrical), extending the topology of Figure~\ref{fig:randomnetworks}. Computing an instance for $8$ routes on the network and $4$ routes on a same contention point takes in average $2,2$s, while it takes $22$s in average for $10$ routes and $5$ on a single contention point. Whith $12$ routes and $6$ on a single contention point the computation time increases to $47$ minutes for an instance, on average. Those results are computed on $100$ random instance, with load $0.8$.
+The complexity of the Branch and Bound algorithm depends on both the contention depth of the routed network and the number of routes. We focus on networks of contention depth $3$, which is realistic in our C-RAN context, and we want to investigate how much the computation time increases in practice when the number of routes grows. Note that the running time
+of the algorithm is also very sensitive the width of the network: for the same number of routes, if the routes are well spread out over the contention nodes, there are less compact assignment than if they are concentrated on some contention vertices. In previous experiments, the maximal width is $4$ in the vertices of depth $2$, as shown in Figure~\ref{fig:randomnetworks}. We generalize the topology of Figure~\ref{fig:randomnetworks} by considering any number of 
+contention vertex at depth $1$ instead of $4$. Each of theses vertex is of width $2$ and the $2$ routes going through a vertex of depth $1$ are distinct from the other routes and goes to the two different vertices of depth $2$. 
+
+\todo{Yann: mettre un tableau pour dire ce qui vient après et conclure que sans amélioration sur les coupes et l'implémentation on ne peut pas faire $14$ routes (je dirai qu'avec une bonne implèm avec mes coupes plus strictes ou carrément les solutions minimales on devrait atteindre $16$ routes, mais pas mieux)}
+
+Computing an instance with $8$ routes on the network and contention width $4$ takes in average $2,2$s, while it takes $22$s in average for $10$ routes and contention width $5$. Whith $12$ routes and contention width $6$, the computation time increases to $47$ minutes for an instance, on average. Those results are computed on $100$ random instance, with load $0.8$.
 
 
 \section{Experimental Evaluation}
 \label{sec:evalperfspall}
 In this section, we compare the performance of all algorithms presented in this chapter.
 
- First, we study the case described in section~\ref{sec:generationrouted}. There is $8$ routes in the routed network, the length of the arcs are drawn in $[P]$, and the load is $0.8$.
+ We use the settings described in Section~\ref{sec:generationrouted}: There are $8$ routes in the routed network, the length of the arcs are drawn uniformly in $[P]$, and the load is $0.8$.
  The algorithm compared here are:
  \begin{itemize}
   \item \hybridgreedynormalized.
   \item Hill climbing initialized by \hgn.
-  \item Hybrid Hill climbing, initialized by $100$ random compact assignments (or \hgn if the $100$ compact assignments are not realizable).
+  \item Hybrid Hill climbing, initialized by $100$ random compact assignments and \hgn.
   \item Tabu Search, with infinite memory and $500$ steps.
-  \item Simulated Annealing with $100$ steps by level.
+  \item Simulated Annealing using $100$ steps by level.
   \item Branch and Bound
 \end{itemize}
 
-Figure~\ref{fig:all8routes} shows the cumulative distribution of the margin of the solution found by each algorithm. Tabular~\ref{tab:time8routes} shows the average computation times and margin of the algorithms during the same experiment. The experiment is made on $1000$ instances.
+Figure~\ref{fig:all8routes} shows the cumulative distribution of the margin of the solution found by each algorithm. Tabular~\ref{tab:time8routes} shows the average computation times and margin of the algorithms for the same experiment. The experiment is made on $1000$ instances.
 
 \begin{center}
 
 \begin{figure}[h]
   \centering
 \includegraphics[scale=0.4]{Chapitre5/all8routes}
-\caption{ Cumulative distribution of the margin for $8$ routes drawn in $[P]$.}
+\caption{ Cumulative distribution of the margin for $8$ routes, length of arcs drawn in $[P]$.}
 \label{fig:all8routes}
 \end{figure}
 
@@ -1314,21 +1342,25 @@ Figure~\ref{fig:all8routes} shows the cumulative distribution of the margin of t
 \hline
     \tiny{Algorithm} & \tiny{\hgn}& \tiny{Hill Climbing}& \tiny{Hybrid Hill Climbing }&\tiny{Tabu Search}&\tiny{Simulated Annealing}& \tiny{Branch and Bound}\\
     \hline
-    \tiny{Average Margin} & $5968$& $3666$& $372$ &$2240$ & $294$& $284$ \\
+    \tiny{Margin (tics)} & $5968$& $3666$& $372$ &$2240$ & $294$& $284$ \\
     \hline
    \tiny{Computation time (s)}& $0.005$& $0.035$& $1.39$ &$10.76$ & $2.28$& $0.22$\\
 
 
     \hline
  \end{tabular}
-  \captionof{figure}{ Average margin and computation time of each algorithm for $8$ routes drawn in $[P]$.\label{tab:time8routes}}
+  \captionof{figure}{Average margin and average computation time of each algorithm for $8$ routes, length of arcs drawn in $[P]$.\label{tab:time8routes}}
 \end{center}
 
-First, remark that \hybridgreedynormalized is far for the optimal solution. Hill Climbing, when initialized by \hgn is logically far from the optimal solution. Nevertheless, initializing Hybrid Hill Climbing with $100$ random instances brings it much closer to the optimal solution than Tabu Search. The latter computes slowly and does not improve hill climbing a lot in this regime. Simulated Annealing is able to compute a good solution in the fifth of the time needed by Tabu Search. Branch and Bound is far better than the other algorithms: not only it finds the optimal solution, but it computes it $10$ times faster than Simulated Annealing, which only find a good local optimum.
+First, remark that \hybridgreedynormalized is far from finding an optimal solution, even when it is followed 
+by a Hill Climbing algorithm even though the improvement is important. 
+However, computing Hybrid Hill Climbing from $100$ random compact assignments yields solutions which are very close to
+the optimal. In these simple settings, it seems to be enough almost explore the whole compact assignment space.
+As expected, Tabu Search is better than Hill Climbing computed from the solution of \hybridgreedynormalized, but since it is extremely slow to compute a solution, it is not possible to use it on $100$ different random compact assignments. 
+Simulated Annealing is able to compute a good solution, very close to the optimal in the fifth of the time needed by Tabu Search. Branch and Bound is far better than the other algorithms: not only it finds the optimal solution, but it computation time, in this networks with few routes and a small contention width is it $10$ times smaller than Simulated Annealing, while it finds the global optimum.
 
-We now want to compare the performance of those algorithms when the routes are drawn in a small range of values. Thus, we set the length of the routes to be drawn in $[0.9.P,P]$, and we compute the same experiment as previously.
-From now on, simulated annealing computes $1000$ compact assignment at each level. As we observed in section~\ref{sec:recuit}, increasing the number of compact assignment considered at each level increases the quality of the solution. While drawing $100$ compact assignments was enough for the small routed network of the previous experiment,
-drawing $1000$ random compact assignments at each level in the two following experiments improve dramatically the results of simulated annealing, with a computation time still lower than tabu search.
+We now want to compare the performance of those algorithms when the routes are drawn in a small range of values. Thus, we set the length of the routes to be drawn in $[0.9P,P]$. We do the same experiment as previously, but from now on, simulated annealing computes $1000$ compact assignment at each level. As we observed in section~\ref{sec:recuit}, increasing the number of compact assignment considered at each level increases the quality of the solution. While drawing $100$ compact assignments was enough for the simple routed network of the previous experiment,
+drawing $1000$ random compact assignments at each level in the two following experiments improves dramatically the performances of Simulated Annealing, with a lower computation time than tabu search.
 
 Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margin of the algorithms, while Tabular~\ref{tab:8routessamerange} shows the average margin and the computation time of each algorithms on $1000$ random instances.
 \begin{center}
@@ -1336,7 +1368,7 @@ Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margi
 \begin{figure}[h]
   \centering
 \includegraphics[scale=0.4]{Chapitre5/8routessamerange}
-\caption{ Cumulative distribution of the margin for $8$ routes drawn in $[0.9.P:P]$.}
+\caption{ Cumulative distribution of the margin for $8$ routes, length of arcs drawn in $[0.9P,P]$.}
 \label{fig:8routessamerange}
 \end{figure}
 
@@ -1345,29 +1377,28 @@ Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margi
 \hline
     \tiny{Algorithm} & \tiny{\hgn}& \tiny{Hill Climbing}& \tiny{Hybrid Hill Climbing }&\tiny{Tabu Search}&\tiny{Simulated Annealing}& \tiny{Branch and Bound}\\
     \hline
-    \tiny{Average Margin} & $6700$& $5636$& $4933$ &$4914$ & $4789$& $4703$ \\
+    \tiny{Margin (tics)} & $6700$& $5636$& $4933$ &$4914$ & $4789$& $4703$ \\
     \hline
    \tiny{Computation time (s)}& $0.004$& $0.048$& $0.965$ &$10.71$ & $6.60$& $0.104$\\
 
 
     \hline
  \end{tabular}
-  \captionof{figure}{ Average margnin and computation time of each algorithm for $8$ routes drawn in $[0.9.P:P]$.\label{tab:time8routessamerange}}
+  \captionof{figure}{ Average margin and average computation time of each algorithm for $8$ routes drawn in $[0.9.P,P]$.\label{tab:time8routessamerange}}
 \end{center}
 
-  We observe that the relative performance of the algorithm does not change. Instance where the length of the routes are drawn in the same range of value needs more margin to be solved. We already made this observation in Chapters~\ref{chap:PAZL,chap:PALL}.
+  We observe that the relative performance of the algorithm does not change. Instances where the length of the routes are drawn in the same range of value needs more margin to be solved. We made the same observation in Chapters~\ref{chap:PAZL,chap:PALL} for different networks and constraints on the assignments.
 
 
-The following experiment shows the performance of the algorithms when increasing the number of routes. In the instance generated, there are $24$ routes. To do so, to each path of the routed network of figure~\ref{fig:randomnetworks} is assiciated $3$ routes. 
+The following experiment shows the performance of the algorithms when increasing the number of routes. In the instance generated, there are $24$ routes. To do so, we replace each route of the routed network of Figure~\ref{fig:randomnetworks} by three distinct routes. 
 
-This number of routes is too large to compute Branch and Bound here. Thus, we draw the lower bound computed by Corollary~\ref{lemma:lowerbound} of Lemma~\ref{lemma:reduce}.
-Figure~\ref{fig:24routes} and Tabular~\ref{tab:24routes} show respectively the cumulative distribution of the margin of the algorithms and the average margin and computation times of the same experiment. The results are computed on $1000$ instance on which the length of the links are drawn in $[P]$.
+This number of routes is too large to compute Branch and Bound. Thus, we also represent $SCB$ in the graph, the lower bound on $TR(N)$ introduced to design the branch and bound algorithm. Figure~\ref{fig:24routes} and Tabular~\ref{tab:24routes} show respectively the cumulative distribution of the margin of the algorithms and the average margin and computation times for the same experiment. The results are computed on $1000$ instance, in which the length of the arcs are drawn in $[P]$.
 \begin{center}
 
 \begin{figure}[h]
   \centering
 \includegraphics[scale=0.4]{Chapitre5/24routes}
-\caption{ Cumulative distribution of the margin for $24$ routes drawn in $[P]$.}
+\caption{ Cumulative distribution of the margin for $24$ routes, length of the arcs drawn in $[P]$.}
 \label{fig:24routes}
 \end{figure}
 
@@ -1376,25 +1407,29 @@ Figure~\ref{fig:24routes} and Tabular~\ref{tab:24routes} show respectively the c
 \hline
     \tiny{Algorithm} & \tiny{\hgn}& \tiny{Hill Climbing}& \tiny{Hybrid Hill Climbing }&\tiny{Tabu Search}&\tiny{Simulated Annealing}\\
     \hline
-    \tiny{Average Margin} & $10572$& $7402$& $7402$ &$6311$ & $3725$ \\
+    \tiny{Margin (tics)} & $10572$& $7402$& $7402$ &$6311$ & $3725$ \\
     \hline
    \tiny{Computation time (s)}& $0.014$& $0.425$& $3.89$ &$55.67$ & $46.32$\\
 
 
     \hline
  \end{tabular}
-  \captionof{figure}{ Average margnin and computation time of each algorithm for $24$ routes drawn in $[P]$.\label{tab:24routes}}
+  \captionof{figure}{ Average margin and average computation time of each algorithm for $24$ routes, length of the arcs drawn in $[P]$.\label{tab:24routes}}
 \end{center}
 
 
-First, remark that Hill Climbing nevers finds a better solution when it is initialized by $100$ random compact assignments than when it is initialized by \hgn. As explained in Section~\ref{sec:hillclimb}, the chances to draw a valid compact assignment is low when the number of routres increases, and it would need to draw a lot of random compact assignment to improove the performances of Hill Climbing, which is not reasonable because this stochastic aspect is managed by Simulated Annealing. This latter performs the most in this regime, and finds solution with a lower margin than Tabu Search in less computation time.
+First, remark that Hill Climbing has the same performance when it is initialized with $100$ random compact assignments
+and the solution given by \hgn or only the solution given by \hgn. As explained in Section~\ref{sec:hillclimb}, the chances to draw a realizable compact assignment is low when the number of routes is large, and we should draw much more random compact assignment to find one which is realizable. It is not reasonable to do so, since we already have 
+Simulated Annealing, which does a random search in the space of all compact assigments in a much smarter way.
+While the average margin is higher for $24$ routes, than for $8$ routes, Simulated Annealing is still twice better than Tabu Search, its closest competitor, while requiring less computation time.
 
 
 \subsection{Performance against Statistical Multiplexing}
 
-We want to compare the performance of our best algorithm with the actual way to manage networks : Statistical Multiplexing. We use the same simulator than in Section~\ref{sec:statisticalpall}. As a reminder, we propose two regime of statistical multiplexing. The first one \FIFO, sends the messages following the First In First Out policy. The second one, \critdead computes the message which has been emmited the longest, and send it first.
+We now to compare the performance of our best algorithm with the current way to manage networks: Statistical Multiplexing. We use the same simulator as in Section~\ref{sec:statisticalpall}. As a reminder, we propose two policies to deal with buffer in statistical multiplexing. The first one \FIFO, sends the messages in a buffer following the First In First Out policy. The second one, \critdead computes the transmission time of the message in the buffer, if we assume there will not
+be buffered anymore, and send the message with the largest transmission time.
 
-We first compare the performances of our best algorithm on $8$ routes: Branch and Bound to statistical multiplexing. Figure~\ref{fig:fptbandb} shows the cumulative distribution of the margin needed by Branch and Bound, and statistical multiplexing in \FIFO or \critdead mode. The experiment has been made on $1000$ instances of load $0.8$
+We first compare the performances of our best algorithm on $8$ routes: Branch and Bound to statistical multiplexing. Figure~\ref{fig:fptbandb} shows the cumulative distribution of the margin needed by Branch and Bound, and statistical multiplexing using \FIFO or \critdead policy. The experiment has been made on $1000$ instances of load $0.8$, with the lenth of the arcs dranw in $[P]$.
 
 \begin{center}
 
@@ -1406,10 +1441,12 @@ We first compare the performances of our best algorithm on $8$ routes: Branch an
 \end{figure}
 \end{center}
 
-While Branch and Bound find a solution with $0$ margin up to $80\%$ of the time, statistical multiplexing in its more efficient regime needs at least $2000$ tics of margin to reach such a performance. 
+Statistical multiplexing using the \critdead policy has a better margin than using \FIFO,
+which is expected and similar to Chapter~\ref{chap:PALL}. However, it needs at least $2000$ tics of margin 
+to deal with the $80\%$ best instances, while Branch and Bound finds a solution with margin $0$ for its best $80\%$ of the instances.  
 
 We now want to investigate the performance of Simulated Annealing compared to statistical multiplexing when the number of route is too big to execute Branch and Bound.
-On Figure~\ref{fig:fptbandb} are represented the cumulative distribution of the margin needed by Simulated Annealing, and statistical multiplexing in \FIFO or \critdead mode to find. The experiment has been made on $100$ instances of load $0.8$. Here, simulated annealing has been set to $5000$ generation of random compact assignment at each level, because it consederably increase the quality of the results.
+On Figure~\ref{fig:fptbandb} are represented the cumulative distribution of the margin needed by Simulated Annealing, and statistical multiplexing using \FIFO or \critdead policy. The experiment has been made on $100$ instances of load $0.8$. Here, simulated annealing has been allowed to do $5000$ generation of random compact assignment at each level, because it  increases the quality of the results, with a reasonnable computation time (a few minutes for each instance).
 
 
 \begin{center}
@@ -1422,4 +1459,9 @@ On Figure~\ref{fig:fptbandb} are represented the cumulative distribution of the 
 \end{figure}
 \end{center}
 
-Here, the number of instance for which there is an assignment with $0$ margin is lower than in previous experiment, because the instance are harder to solve. Nevertheless, we observe that Simulated Annealing considerably increase the quality of the solution: it needs in average more than half of the margin needed by statistical multiplexing ($3329$ for Simulated Annealing, $7516$ for \critdead and $9744$ for \FIFO).
+Here, the number of instance for which there is an assignment with $0$ margin is lower than in previous experiment, because the instance are harder to solve. Nevertheless, we observe that Simulated Annealing needs about half the margin
+of statistical multiplexing using \critdead policy. The average margin is $3329$ for Simulated Annealing, $7516$ for \critdead and $9744$ for \FIFO.
+
+
+
+\section{Conclusion}
