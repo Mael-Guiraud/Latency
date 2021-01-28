@@ -1177,18 +1177,19 @@ If $(O,S)$ is not a canonical compact assignment, then by Lemma~\ref{lemma:prec}
 
 
 The cut consisting in verifying whether $(O,S)$ is a compact assignment for $c_{i+1}$ in $N(CA)$ is simple to
-implement in linear time by computing $Real((O,S))$. On the other hand, we are not yet able to decide whether a compact assignment is minimal in polynomial time. We now propose several easy to compute heuristics to detect when a compact assignment is not minimal.
+implement in linear time by computing $Real((O,S))$. 
 
 To guarantee that we only consider canonical compact assignments, we must guarantee that the 
-buffering of the first route is zero. It is the same as requiring for a compact assignment $(O,S)$, that $r_{O_1}$, the first route in $O$, is not in $S$.
+buffering of the first route is zero. It is the same as requiring for a compact assignment $(O,S)$, that $r_{O_1}$, the first route in $O$, is not in $S$. Hence, the cut consist just on discarding assignments with $r_{O_1} \in S$.
+This allows to compute normalized sending times for all routes, with $r_{O_1}$ as a reference.
 
-
-The first heuristic is to consider the assignment $(O,S)$ of $N(CA)$ and for each route
-$r_i \in S$, we consider $Real((O,S))$ where $r_i$ has been removed. Then, the normalized sending time of all the other routes are considered, to check whether $r_i$ could be scheduled 
-
- to verify whether $(O,S\setminus \{r_i\})$ is a valid assignment. This can be done in linear time for each $r_i \in S$. If there is a valid assignment 
-
-
+We would like to cut any subtree rooted at a non minimal assignment, but we are not yet able to decide whether a compact assignment is minimal in polynomial time. Hence, we propose several easy to compute heuristics to detect when a compact assignment is not minimal. 
+The first one is to consider the assignment $(O,S)$ of $N(CA)$ and for each route
+$r_i \in S$, we consider $Real((O,S))$ where $r_i$ has been removed. Then, we try to add back $r_i$, without 
+satisfying the constraint on its position in the order but with $r_i \notin S$. If we manage to do so, we have found 
+a compact assignment $(O',S\setminus \{r_i\}) \prec (O,S)$. Indeed, routes in $S$ have by definition their sending time
+larger than when they are not in $S$ given a fixed first element in the order.
+%on pourrait être beaucoup plus précis
 
 For the next cuts, we need to consider that the set $S$ is built incrementally as shown in 
 Figure~\ref{fig:partialtree}. We expand a vertex of the compact assignment tree, so that all orders on routes of the contention node are children of the node, then a complete binary tree for each of these orders represents all possible subsets of routes.
@@ -1270,32 +1271,29 @@ Figure~\ref{fig:partialtree}. We expand a vertex of the compact assignment tree,
 \end{figure}
 
 \begin{itemize}
-  \item %An element should be in $S$ only if it improves the sending time
+  \item 
+  Assume we are traversing the expansion of a vertex corresponding to the contention vertex $c$.
+  In the binary tree, a vertex has two children of depth $i$ representing the fact
+  that $r_{O_i} \notin S$ and $r_{O_i} \in S$. We build the partial assignment over $r_{O_1},\dots,r_{O_i}$
+  and its realization for $r_{O_i} \notin S$. If $ns(r_{O_1},r_{O_{i-1},c} + \tau = ns(r_{O_1},r_{O_{i},c}$, then
+  the two datagrams of the routes $r_{O_{i-1}}$ and $r_{O_{i}}$ follow one another without gap in the period.
+  Hence, if we fix $r_{O_i} \in S$, it will not change $ns(r_{O_1},r_{O_{i},c}$ and any extension of this compact assignment will dominated by the extenion of the same compact assignment with $r_{O_i} \notin S$.
+  Thus, we cut the branch $r_{O_i} \in S$.
 
-  \item %gap ou on peut mettre un gars 
+  \item When considering a route $r_{O_i}$ (with $r_{O_i} \notin S$ or $r_{O_i} \in S$), we consider
+  the realization of the partial assignments over the elements $r_{O_1},\dots,r_{O_{i-1}}$. If it is possible
+  to fix the normalized sending time of $r_{O_i}$ before the normalized sending time of $r_{O_{i-1}}$, without collision,
+  then there is a compact assigment $(O',S) \prec (O,S)$ (with $O_i$ at a new, smaller position in O'). It corresponds to
+  a compact assignment, with a gap in the period which can be used by some route which should be placed after the gap because of the order. This cut can be computed in linear time, by comparison of the normalized sending times.
 
-  \item %Canonical compact assignment
-
-The last cut we propose is based on the definition of a canonical assignment. Remember that all assignments given by $Real(CA)$ are cannonicals. Furthermore, in a canonical assignment, there is a datagram which is not delayed at all. In such a situation, assume w.l.o.g. that it is the datagram with the lowest id. Thus, if we find a partial assignment for which $A_{c}(i,c) = 0$ computed from $Real(CA_c)$ in which $j$ is the first datagram of the order, if $i$ has a lowest id than $j$, then we cut because this case is also explored in another subtree with a different choice of order $O_c$.
-
+  \item To ensure that we go through only canonical assignment, we force the first route $r_{O_1}$ to 
+  have zero buffering time, by setting $r_{O_1} \notin S$. But there can be several datagrams with zero 
+  buffering time and we refine the notion of canonicity by requiring that the one of smallest id is the
+  first in the order. Hence, when we consider $O_i$ with $O_i \notin S$ and that in $Real((O,S))$, 
+  $O_i$ as no buffering, then $O_i > O_1$ otherwise we cut the subtree from $O_i \notin S$.
 \end{itemize}
 
-
-If it is, we check for each datagrams on a route $i$ that has been set in $S_{c}$, we define $CA'_c = (O_c,S_c\backslash\{i\})$. If $CA'_c$ is realizable, cut the branch. Indeed, by setting $i$ in $S_c$, the solution is necessarily degraded and $CA'_c$ will be explored in another branch of the tree.
-
-
-We now propose two cuts that are computed while building the partial tree of a contention point. To do so, we compute the partial assignment while building the tree: Each time a datagram $i$ has been set or not in $S_c$, one can compute $A_{c}(i,c)$, that is the value of the buffer given by the choice.
-
-While all possible subset $S_c$ are enumerated, for a given datagram $i$, the algorithm first chose to not set $i$ in $S_c$. Then:
-\begin{itemize}
- \item If $t(i-1,c) + A_{c}(i-1,c) + \tau = t(i,c) + A_{c}(i,c)$, we do not browse the subtree with $i \in S_c$. This means that the datagram $i$ is compact with the datagram $i-1$. In such a case, there is no point to set $i$ in the second period because there is no loss by setting $i$ in the first period.
-
-
-\item If $A_{c}(i,c) = 0$, then the datagram $i$ is not buffered at all. For each datagram $j>i$, if $t(j,c) + \tau < t(i,c)$, then it is possible to schedule $j$ before $i$ and such a case will be explored in another subtree with a different choice of order $O_c$.
-
-\end{itemize}
-
-\todo{yann: faire une figure qui montre ces trois coupes là (en représentant les paquets sur la période)}
+\todo{yann: faire une figure qui montre ces trois coupes là (en représentant les paquets avec leur normalized sending time  sur la période)}
 
 
 
