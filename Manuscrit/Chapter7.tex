@@ -4,14 +4,14 @@
 \label{chap:TSN}
 \minitoc
 
-In this thesis, we propose algorithms that minimize contention in several kinds of networks, either by removing buffers or computing minimal buffering time. The objective is to delay packets as little as possible in the network. Delay causes are various, but the main one is the buffering time that we deal with. 
+In this thesis, we propose algorithms that minimize contention in several kinds of networks, either by removing buffers or computing minimal buffering time. The objective is to delay packets as little as possible in the network. Delay causes are various, but the main one is the buffering time due to contention that we deal with. 
 
-Our approach of the network consists in managing the message in each node in order to keep buffering under control. This is related to the concept of Deterministic Networking. A working group from IETF called DetNet~\cite{finn-detnet-architecture-08} works in collaboration with TSN (Time Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking. While DetNet works on Layer 3, TSN develops solutions for Layer 2. Since our model is based on ethernet we focus on TSN standards.
+Our approach of the network consists in managing the message in each node in order to keep buffering under control. This is related to the concept of Deterministic Networking. A working group from IETF called DetNet~\cite{finn-detnet-architecture-08} works in collaboration with TSN (Time Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking. While DetNet works on Layer 3, TSN develops solutions for Layer 2. Since our model is based on Ethernet we focus on TSN standards.
 
-In Section~\ref{sec:TSNqbv}, we introduce the IEEE standards for TSN that allows for a better network managment based on scheduled packets, on which our model is based. TSN standards are designed to manage stochastic flows in network. Nevertheless, we show that managing deterministic traffic enable us to remove some technical constraint, and leads us to a new technology, that we call Hyper-TSN. Section~\ref{sec:platform} presents a prototype of a switch that goes beyond TSN, by delivering packet at exact expected dates without any additional latency or synchronization constraint. In Hyper TSN, the latency is as close as possible to the physical limitations.
+In Section~\ref{sec:TSNqbv}, we introduce the IEEE standards for TSN that allows for a better network managment based on scheduled packets, on which our model is based. TSN standards are designed to manage stochastic flows in network. Nevertheless, we show that managing deterministic traffic enable us to remove some technical constraint, and leads us to a new technology, that we call Hyper-TSN. Section~\ref{sec:platform} presents a prototype of a switch that goes beyond TSN, by delivering packet at exact expected dates without any additional latency or synchronization constraint. In Hyper-TSN, the latency is as close as possible to the physical limitations.
 
 
-\section{Customized Managment of the Network}
+\section{Customized Management of the Network}
 \label{sec:TSNqbv}
 
 \subsection{Overview of TSN Standards}
@@ -26,7 +26,7 @@ The model we present in Chapter~\ref{chap:model} is based on several assumptions
 We explain in this chapter how the recent standards developed by TSN task group is related to such a model. A detailled survey of all TSN standards can be found in~\cite{8458130}. 
 
 
-The standard IEEE 802.1Qat SRP~\cite{article} (Stream Reservation Protocol) provides a central managment framework that allow a centralized entity to collect data about the flows. It has been improved by IEEE 802.1Qcc~\cite{6755436}. In these standards, a centralized entity called the \textbf{controller}, collect all required informations needed by users about the network (the routing, the periodicity and the size of the datagrams). This controller proposes a user interface that enable any user to collect all network informations in order to compute the configuration of the network. Figure~\ref{fig:networkcontroller} shows a network managed by a controller, communicating via its user interface with algorithms, and able to send requirement to the nodes. Such an approach is related to Softward Defined Network (SDN)~\cite{li2015software}. We can find in~\cite{7356556} an example of an SDN for TSN.
+The standard IEEE 802.1Qat SRP~\cite{article} (Stream Reservation Protocol) provides a central managment framework that allows a centralized entity to collect data about the flows. It has been improved by IEEE 802.1Qcc~\cite{6755436}. In these standards, a centralized entity called the \textbf{controller}, collect all required informations needed by users about the network (the routing, the periodicity and the size of the datagrams). This controller proposes a user interface that enable any user to collect all network informations in order to compute the configuration of the network. Figure~\ref{fig:networkcontroller} shows a network managed by a controller, communicating via its user interface with algorithms, and able to send requirement to the nodes. Such an approach is related to Softward Defined Network (SDN)~\cite{li2015software}. We can find in~\cite{7356556} an example of an SDN for TSN.
 
 
 \begin{figure}
@@ -81,10 +81,10 @@ The standard IEEE 802.1Qat SRP~\cite{article} (Stream Reservation Protocol) prov
 \end{figure}
 
 
-Standard 802.1Qbv~\cite{8613095} allows us to manage different flows in the nodes by a gate mechanism. The switch follows a routine that order to every node the date at which a flow must be sent on each output port. To do so, the switch needs a Gate Control List (GCL). This GCL is computed by the user, and sent to each switch of the network by the controller. It is a list of dates, and for every date of the list are specified the output ports (gates) of the switch which are open or close.
+Standard 802.1Qbv~\cite{8613095} allows us to manage different flows in the nodes by a gate mechanism. The switch follows a routine that order to every node which ingress port must be switched on which output port at every tics of time. To do so, the switch needs a Gate Control List (GCL). This GCL is computed by the user, and sent to each switch of the network by the controller. It is a list of dates, and for every date of the list are specified the input ports (gates) of the switch which are open or close.
 
 
-Figure~\ref{fig:tsnqbv} found in~\cite{durr2016no} shows the mechanism of a switch using 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch selects at each time ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure 6, at time $T_1$, all gates except the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
+Figure~\ref{fig:tsnqbv} from~\cite{durr2016no} shows the mechanism of a switch using 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch selects at each time ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure 6, at time $T_1$, all gates except the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
 
   \begin{figure}
   \begin{center}
@@ -100,20 +100,20 @@ To be efficient, the components of the network must be completely synchronized. 
 
 \subsection{Limits of TSN when managing Deterministic flows}
 
-All those standards are designed for a statistical managment of the flows. In this thesis, we work on deterministic flows: our models and algorithmw are not designed for a statistical approach like current traffic shaping, but a deterministical approach. We compute the exact date at wich each flow is able to reach each node, without loss of bandwidth due to guard time. Furthermore, not controlling the contention and the exact forwarding time of the networks induce that a datagram sent periodically will not take the same time to travel into the network. The variation of the latency is called \textbf{jitter}. The jitter is an indicator of the reliability of the network. The higher the jitter, the higher the value of the ensured the latency is.
+All those standards are designed for a statistical managment of the flows. In this thesis, we work on deterministic flows: our models and algorithms are not designed for a statistical approach like current traffic shaping, but a deterministical approach. We compute the exact date at wich each flow is able to reach each node, without loss of bandwidth due to guard time. Furthermore, a statistical approach does not allow to control the contention and the exact forwarding time of the datagram in the network. This induce that a datagram sent periodically will not take the same time to travel into the network. The variation of the latency is called \textbf{jitter}. The jitter is an indicator of the stability of the network. The higher the jitter, the higher the maximal value of the latency is.
 
 Such an approach requires to rethink about our vision of the network managment. We need the nodes to be perfectly synchronized otherwise it could be counter productive. Indeed, if a packet of a flow arrives in a node before or after the planned date, the gate is close and the packet is buffered, that induces additional latency.
 
-Also, switches operation on the physical layer of the network induce an additional latency. In store-and-forward concept~\cite{tindell1992store}, packets are stored at reception of a node before being forwarded. However, solution like cut-through~\cite{kermani1979virtual} allow to reduce storage size and corresponding delay to the header size only. But this is effective if the egress port is available to forward the packet at the same time only. If not, the packet is buffered until the port get free. Even if it is possible to adapt our model to take into consideration the physical delay cost, it still induce additional latency, which is not desirable.
+Also, switches operation on the physical layer of the network induce an additional latency. In store-and-forward concept~\cite{tindell1992store}, packets are stored at reception of a node before being forwarded. However, solution like cut-through~\cite{kermani1979virtual} allow to reduce storage size and corresponding delay to the header size only. But this is effective if the egress port is available to forward the packet at the same time only. If not, the packet is buffered until the port is free. Even if it is possible to adapt our model to take into consideration the physical delay cost, it still induce additional latency, which is not desirable.
 
-Next section present a new kind of switch, that we call "Hyper TSN" switch, and that allows to override all the above limits.
+Next section present a new kind of switch, called Hyper-TSN switch, and that allows to override all the above limits.
 
 \section{Deterministic managment for a deterministic latency}
 \label{sec:platform}
 
 
 Most of the works developped around Deterministic Networking are still based on stochastic laws. Indeed, deterministic networking aims to ensure a maximal bounded latency. Here, we propose to reduce the latency at its minimum, and to remove jitters in network, which is a deeper aspect of deterministic.
-Here, because of our desire to manage deterministic flows, multiple standards of TSN are not usfeull yet. Indeed, since the exact date of arrival of all packets are computed, we can get rid of several tools designed to manage the traffic on a statistical manner. 
+Here, because of our desire to manage deterministic flows, multiple standards of TSN are not usefull yet. Indeed, since the exact date of arrival of all packets are computed, we can get rid of several tools designed to manage the traffic on a statistical manner. 
 
 We present in this section an Hyper-TSN switch that solves all the problematic of TSN when managing deterministic traffic.
 This technology is under an advanced phase of research, and a prototype has been experimented in Nokia Bell Labs~\cite{guiraudleclercmarce2021}
@@ -121,8 +121,8 @@ This technology is under an advanced phase of research, and a prototype has been
 \subsection{Hyper-TSN switch}
 
 
-A 2x2 Hyper-TSN switch has been developped. It is composed of a switching matrix connected to a deterministic scheduler and two 10 Gbps ethernet 2 ways transceivers. The switching matrix includes also a monitoring circuitry. The deterministic scheduler controls the switching matrix and is configured with a timing table. This table is similar to a 802,1 Qbv Gate Control List (GCL). It defines the periodicity of the scheduling and, for each egress ports, the planed date of arrival of the frames which are part of deterministic flows. At each of these dates the deterministic scheduler sets the switching matrix to transmit data incoming on a specified ingress port. Figure~\ref{fig:schedulehtsn} shows an example of scheduling for deterministic and stochastic traffic.
- In such a switch, the buffers are totally removed: when a datagram arrive in the switch, it is instantly switched to the egress port, and the is no treatment operation. This process allows us to reduce the physical delay to its lowest for scheduled traffic, while it is still possible to buffer the Best Effort traffic, which has not critical latency constraints.
+A 2x2 Hyper-TSN switch has been developped. It is composed of a switching matrix connected to a deterministic scheduler and two 10 Gbps ethernet 2 ways transceivers. The switching matrix includes also a monitoring circuitry. The deterministic scheduler controls the switching matrix and is configured with a timing table. This table is similar to a 802.1 Qbv Gate Control List (GCL). It defines the periodicity of the scheduling and, for each egress ports, the planed date of arrival of the frames which are part of deterministic flows. At each of these dates the deterministic scheduler sets the switching matrix to transmit data incoming on a specified ingress port. Figure~\ref{fig:schedulehtsn} shows an example of scheduling for deterministic and stochastic traffic.
+ In such a switch, the buffers are totally removed: when a datagram arrives in the switch, it is instantly switched to the egress port, and there is no processing operation. This process allows us to reduce the physical delay to its lowest for scheduled traffic, while it is still possible to buffer the Best Effort traffic, which has not critical latency constraints.
 \begin{center}
 
 \begin{figure}[h]
@@ -133,15 +133,15 @@ A 2x2 Hyper-TSN switch has been developped. It is composed of a switching matrix
 \end{figure}
 \end{center}
 
-Hyper-TSN consider the flow as a reference~\cite{leclerc2020optical}. Since the exact arrival time of a datagram is known, if this latter arrives before or after the expected date, this means the physical delay between the sender of the datagram and the switch is miss evaluated. The monitoring circuitry of the switch detects this issue and an alert signal is sent, for example, to a controller that is able to reschedule correctly the GCL.
+Hyper-TSN considers the flow as a reference~\cite{leclerc2020optical}. Since the exact arrival time of a datagram is known, if this latter arrives before or after the expected date, this means the physical delay between the sender of the datagram and the switch known by the controller is false. The monitoring circuitry of the switch detects this issue and an alert signal is sent to the controller that is able to reschedule correctly the GCL.
 This vision solves the synchronization problem between the nodes, and is possible because the switches are developped on components with very precise clocks (Xilinx FPGA boards : Zynq UltraScale MPSoC zcu102,Zynq-7000 SoC zc706). 
 The switch also includes a frame analyzer that enables to check that the switched frames are not corrupted and none is missing.
 
 \subsection{Implementation and reliability tests}
 
-To perform experiments, a generator of deterministic flows has been developed. This generator offsets the dates it sends the frames according to the controls received from the monitoring circuitry. The period are defined in the timing table. The size of the frames is set to fully load the ethernet links (ie $100\%$ load).
+To perform experiments, a generator of deterministic flows has been developed. This generator set the dates it sends the frames according to the controls received from the monitoring circuitry. The period are defined in the timing table. The size of the frames is set to fully load the ethernet links (ie $100\%$ load).
 When starting, the monitoring circuitry detects that frames do not arrive at the planed date and sends control commands to the generator. These first frames are lost. Once the generator has rightly offset the dates it sends the frames, no more shifting has been performed during the running 2 hours experiment. $100\%$ of the frames are correctly switched without being corrupted or lost. The switching of each frame from the ingress port to the planed egress port is performed introducing only one clock cycle delay (here 3,87 ns).
-Figure~\ref{fig:hypertsnswitch} shows the Hyper TSN 2x2 switch developped and on which experiments was made.
+Figure~\ref{fig:hypertsnswitch} shows the Hyper-TSN 2x2 switch developped and on which experiments was made.
 \begin{center}
 
 \begin{figure}[h]
