@@ -998,18 +998,7 @@ To lower bound the value of $TR(N)$, we propose to transform a routed network in
 
 Let $N$ be any network and let $c_j$ be a contention point. Let $N^j$ be the routed network with the
 single contention point $c_j$, a set of routes $\mathcal{R}'$ and a weight function $\omega'$ defined as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \mathcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ and assuming further there are no constraint before $c_j$ and after $c_j$.   
-
-\begin{lemma}\label{lemma:lowerbound}
-Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
-\end{lemma}
-\begin{proof}
-We associate to any valid assignment $A$ of $N$, the assignment $f(A)$ of $N^j$
-which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction of $N$, the transmission time of a route $r$ using $A$ in $N$ is larger than 
-the transmission time of the route $r$ using $f(A)$ in $N^j$, since all the waiting times are the same up to 
-$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all assignments $A$ of $N$,
-$TR(A) \geq TR(f(A))$ which proves the lemma. 
-\end{proof}
-
+Figure~\ref{fig:relaxednetwork} shows a routed network $N$ relaxed to $N^1$ on $c_1$.
 
 \begin{figure}
 \begin{center}
@@ -1061,9 +1050,66 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
 
 \end{tikzpicture}
 
+}
+\vspace{1cm}
+
+\scalebox{0.6}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+
+\node (k1) at (14,6.75) {\huge{$N^1$}};
+\node (t4) at (12,7.5) {$t_2$};
+\node (t2) at (12,6) {$t_1$};
+\node (s4) at (4,7.5) {$s_2$};
+\node (s2) at (4,6) {$s_1$};
+\node (c4) at (8,6.75) {$c_1$};
+\path (s2) edge [->] node[anchor=north]{$2$}  (c4);
+\path (s4) edge [->] node[anchor=north]{$7$}  (c4);
+\path (c4) edge [->] node[anchor=north]{$1+2$}  (t4);
+\path (c4) edge [->] node[anchor=north]{$2+3$}  (t2);
+
+
+
+
+\end{tikzpicture}
+}
+ \caption{Problem \spall relaxed to one contention point.}
+
+\label{fig:relaxednetwork}
+\end{center}
+\end{figure}
+
+
+\begin{lemma}\label{lemma:lowerbound}
+Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
+\end{lemma}
+\begin{proof}
+We associate to any valid assignment $A$ of $N$, the assignment $f(A)$ of $N^j$
+which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction of $N$, the transmission time of a route $r$ using $A$ in $N$ is larger than 
+the transmission time of the route $r$ using $f(A)$ in $N^j$, since all the waiting times are the same up to 
+$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all assignments $A$ of $N$,
+$TR(A) \geq TR(f(A))$ which proves the lemma. 
+\end{proof}
+
+
+Figure~\ref{fig:relaxednetworkwithass} illustrates Lemma~\ref{lemma:lowervound}. From the routed network $N$ of Figure~\ref{fig:relaxednetwork}, we compute the optimal transmission time of $N^4$. Thus, $A(4,c_4) =$ \textcolor{blue}{$2$} and $TR(N^4) = 13$.
+We give in the tabular $A$ the optimal solution for $N$. By considering $A$ and thus $f(A)$, $TR(N^4) = 14$, which is higher than the optimal solution for $N^4$ when solved alone. Remark that, on $N^3$ both solutions are equivalent.
+
+
+
+
+\begin{figure}
+\begin{center}
+
+  
+
 \begin{tabular}{ |c|c|c|c|c| }
 
-    \multicolumn{2}{c}{$A(i,c_j)$}\\
+    \multicolumn{5}{c}{$A(i,c_j)$}\\
     \hline
      $i$ & $c_1$ & $c_2$ & $c_3$ & $c_4$ \\
       \cline{1-5}
@@ -1078,8 +1124,7 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
 
     \hline
  \end{tabular}
- 
-}
+
 \vspace{1cm}
 
 \scalebox{0.6}{
@@ -1090,61 +1135,40 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
   EdgeStyle/.append style = {->} }
    \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
  
-\node (k1) at (14,3.75) {\huge{$N^3$}};
-\node (t4) at (12,4.5) {$t_3$};
-\node (t2) at (12,3) {$t_1$};
-\node (s4) at (4,4.5) {$s_3$};
-\node (s2) at (4,3) {$s_1$};
-\node (c4) at (8,3.75) {$c_3$};
-\path (s2) edge [->] node[anchor=north]{$2$+\textcolor{green}{$0$}+2+\textcolor{green}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$2$+\textcolor{orange}{$0$}+8+\textcolor{orange}{$0$}}  (c4);
-\path (c4) edge [->] node[anchor=north]{$1$}  (t4);
-\path (c4) edge [->] node[anchor=north]{$3$}  (t2);
 
-\node (k1) at (28,3.75) {\huge{$N^4$}};
+\node (k1) at (28,3.75) {Solution with $f(A)$ on \huge{$N^4$}};
 \node (t4) at (24,4.5) {$t_4$};
 \node (t2) at (24,3) {$t_2$};
 \node (s4) at (16,4.5) {$s_4$};
 \node (s2) at (16,3) {$s_2$};
 \node (c4) at (20,3.75) {$c_4$};
-\path (s2) edge [->] node[anchor=north]{$7$+\textcolor{red}{$1$}+1+\textcolor{red}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$5$+\textcolor{blue}{$2$}+6+\textcolor{blue}{$1$}}  (c4);
+\path (s2) edge [->] node[anchor=north]{$7$+$1$+\textcolor{red}{$1+0$}}  (c4);
+\path (s4) edge [->] node[anchor=north]{$5$+$6$+\textcolor{blue}{$2+1$}}  (c4);
 \path (c4) edge [->] node[anchor=north]{$0$}  (t4);
 \path (c4) edge [->] node[anchor=north]{$2$}  (t2);
 
-\node (k1) at (14,6.75) {\huge{$N^1$}};
-\node (t4) at (12,7.5) {$t_2$};
-\node (t2) at (12,6) {$t_1$};
-\node (s4) at (4,7.5) {$s_2$};
-\node (s2) at (4,6) {$s_1$};
-\node (c4) at (8,6.75) {$c_1$};
-\path (s2) edge [->] node[anchor=north]{$2$+\textcolor{green}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$7$+\textcolor{red}{$1$}}  (c4);
-\path (c4) edge [->] node[anchor=north]{$1+2$}  (t4);
-\path (c4) edge [->] node[anchor=north]{$2+3$}  (t2);
 
-\node (k1) at (28,6.75) {\huge{$N^2$}};
+\node (k1) at (28,6.75) {Optimal solution for \huge{$N^4$}};
 \node (t4) at (24,7.5) {$t_4$};
-\node (t2) at (24,6) {$t_3$};
+\node (t2) at (24,6) {$t_2$};
 \node (s4) at (16,7.5) {$s_4$};
-\node (s2) at (16,6) {$s_3$};
-\node (c4) at (20,6.75) {$c_2$};
-\path (s2) edge [->] node[anchor=north]{$2$+\textcolor{orange}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$5$+\textcolor{blue}{$2$}}  (c4);
-\path (c4) edge [->] node[anchor=north]{$6+0$}  (t4);
-\path (c4) edge [->] node[anchor=north]{$8+1$}  (t2);
+\node (s2) at (16,6) {$s_2$};
+\node (c4) at (20,6.75) {$c_4$};
+\path (s2) edge [->] node[anchor=north]{$7$+$1$}  (c4);
+\path (s4) edge [->] node[anchor=north]{$5$+$6$+\textcolor{blue}{$2$}}  (c4);
+\path (c4) edge [->] node[anchor=north]{$0$}  (t4);
+\path (c4) edge [->] node[anchor=north]{$2$}  (t2);
+
 
 
 \end{tikzpicture}
 }
- \caption{Problem \spall over every single contention point $c_j$ with $\tau = 5$. }
+ \caption{A single contention node $N^4$ on which the optimal assignment is better when solved alone than when solved with the optimal assignment $A$ of $N$, the routed network of Figure~\ref{fig:relaxednetwork}} 
 
-\label{fig:relaxednetwork}
+\label{fig:relaxednetworkwithass}
 \end{center}
 \end{figure}
-\todo{me dire si la figure est bien, trop lourde?}
 
-Figure~\ref{fig:relaxednetwork} shows a routed network $N$ and an assignment $A$ for which $TR(N) = TR(A) =14$ and on which, $TR(N^1) = 11$, $TR(N^2) = 13$, $TR(N^3) = 11$ and $TR(N^4) = 14$.
 
 
 Let $SCB(N)$, for \emph{Single Contention Bound}, be the function which associates to $N$ the integer 
@@ -1177,18 +1201,19 @@ If $(O,S)$ is not a canonical compact assignment, then by Lemma~\ref{lemma:prec}
 
 
 The cut consisting in verifying whether $(O,S)$ is a compact assignment for $c_{i+1}$ in $N(CA)$ is simple to
-implement in linear time by computing $Real((O,S))$. On the other hand, we are not yet able to decide whether a compact assignment is minimal in polynomial time. We now propose several easy to compute heuristics to detect when a compact assignment is not minimal.
+implement in linear time by computing $Real((O,S))$. 
 
 To guarantee that we only consider canonical compact assignments, we must guarantee that the 
-buffering of the first route is zero. It is the same as requiring for a compact assignment $(O,S)$, that $r_{O_1}$, the first route in $O$, is not in $S$.
+buffering of the first route is zero. It is the same as requiring for a compact assignment $(O,S)$, that $r_{O_1}$, the first route in $O$, is not in $S$. Hence, the cut consist just on discarding assignments with $r_{O_1} \in S$.
+This allows to compute normalized sending times for all routes, with $r_{O_1}$ as a reference.
 
-
-The first heuristic is to consider the assignment $(O,S)$ of $N(CA)$ and for each route
-$r_i \in S$, we consider $Real((O,S))$ where $r_i$ has been removed. Then, the normalized sending time of all the other routes are considered, to check whether $r_i$ could be scheduled 
-
- to verify whether $(O,S\setminus \{r_i\})$ is a valid assignment. This can be done in linear time for each $r_i \in S$. If there is a valid assignment 
-
-
+We would like to cut any subtree rooted at a non minimal assignment, but we are not yet able to decide whether a compact assignment is minimal in polynomial time. Hence, we propose several easy to compute heuristics to detect when a compact assignment is not minimal. 
+The first one is to consider the assignment $(O,S)$ of $N(CA)$ and for each route
+$r_i \in S$, we consider $Real((O,S))$ where $r_i$ has been removed. Then, we try to add back $r_i$, without 
+satisfying the constraint on its position in the order but with $r_i \notin S$. If we manage to do so, we have found 
+a compact assignment $(O',S\setminus \{r_i\}) \prec (O,S)$. Indeed, routes in $S$ have by definition their sending time
+larger than when they are not in $S$ given a fixed first element in the order.
+%on pourrait être beaucoup plus précis
 
 For the next cuts, we need to consider that the set $S$ is built incrementally as shown in 
 Figure~\ref{fig:partialtree}. We expand a vertex of the compact assignment tree, so that all orders on routes of the contention node are children of the node, then a complete binary tree for each of these orders represents all possible subsets of routes.
@@ -1270,32 +1295,29 @@ Figure~\ref{fig:partialtree}. We expand a vertex of the compact assignment tree,
 \end{figure}
 
 \begin{itemize}
-  \item %An element should be in $S$ only if it improves the sending time
+  \item 
+  Assume we are traversing the expansion of a vertex corresponding to the contention vertex $c$.
+  In the binary tree, a vertex has two children of depth $i$ representing the fact
+  that $r_{O_i} \notin S$ and $r_{O_i} \in S$. We build the partial assignment over $r_{O_1},\dots,r_{O_i}$
+  and its realization for $r_{O_i} \notin S$. If $ns(r_{O_1},r_{O_{i-1},c} + \tau = ns(r_{O_1},r_{O_{i},c}$, then
+  the two datagrams of the routes $r_{O_{i-1}}$ and $r_{O_{i}}$ follow one another without gap in the period.
+  Hence, if we fix $r_{O_i} \in S$, it will not change $ns(r_{O_1},r_{O_{i},c}$ and any extension of this compact assignment will dominated by the extenion of the same compact assignment with $r_{O_i} \notin S$.
+  Thus, we cut the branch $r_{O_i} \in S$.
 
-  \item %gap ou on peut mettre un gars 
+  \item When considering a route $r_{O_i}$ (with $r_{O_i} \notin S$ or $r_{O_i} \in S$), we consider
+  the realization of the partial assignments over the elements $r_{O_1},\dots,r_{O_{i-1}}$. If it is possible
+  to fix the normalized sending time of $r_{O_i}$ before the normalized sending time of $r_{O_{i-1}}$, without collision,
+  then there is a compact assigment $(O',S) \prec (O,S)$ (with $O_i$ at a new, smaller position in O'). It corresponds to
+  a compact assignment, with a gap in the period which can be used by some route which should be placed after the gap because of the order. This cut can be computed in linear time, by comparison of the normalized sending times.
 
-  \item %Canonical compact assignment
-
-The last cut we propose is based on the definition of a canonical assignment. Remember that all assignments given by $Real(CA)$ are cannonicals. Furthermore, in a canonical assignment, there is a datagram which is not delayed at all. In such a situation, assume w.l.o.g. that it is the datagram with the lowest id. Thus, if we find a partial assignment for which $A_{c}(i,c) = 0$ computed from $Real(CA_c)$ in which $j$ is the first datagram of the order, if $i$ has a lowest id than $j$, then we cut because this case is also explored in another subtree with a different choice of order $O_c$.
-
+  \item To ensure that we go through only canonical assignment, we force the first route $r_{O_1}$ to 
+  have zero buffering time, by setting $r_{O_1} \notin S$. But there can be several datagrams with zero 
+  buffering time and we refine the notion of canonicity by requiring that the one of smallest id is the
+  first in the order. Hence, when we consider $O_i$ with $O_i \notin S$ and that in $Real((O,S))$, 
+  $O_i$ as no buffering, then $O_i > O_1$ otherwise we cut the subtree from $O_i \notin S$.
 \end{itemize}
 
-
-If it is, we check for each datagrams on a route $i$ that has been set in $S_{c}$, we define $CA'_c = (O_c,S_c\backslash\{i\})$. If $CA'_c$ is realizable, cut the branch. Indeed, by setting $i$ in $S_c$, the solution is necessarily degraded and $CA'_c$ will be explored in another branch of the tree.
-
-
-We now propose two cuts that are computed while building the partial tree of a contention point. To do so, we compute the partial assignment while building the tree: Each time a datagram $i$ has been set or not in $S_c$, one can compute $A_{c}(i,c)$, that is the value of the buffer given by the choice.
-
-While all possible subset $S_c$ are enumerated, for a given datagram $i$, the algorithm first chose to not set $i$ in $S_c$. Then:
-\begin{itemize}
- \item If $t(i-1,c) + A_{c}(i-1,c) + \tau = t(i,c) + A_{c}(i,c)$, we do not browse the subtree with $i \in S_c$. This means that the datagram $i$ is compact with the datagram $i-1$. In such a case, there is no point to set $i$ in the second period because there is no loss by setting $i$ in the first period.
-
-
-\item If $A_{c}(i,c) = 0$, then the datagram $i$ is not buffered at all. For each datagram $j>i$, if $t(j,c) + \tau < t(i,c)$, then it is possible to schedule $j$ before $i$ and such a case will be explored in another subtree with a different choice of order $O_c$.
-
-\end{itemize}
-
-\todo{yann: faire une figure qui montre ces trois coupes là (en représentant les paquets sur la période)}
+\todo{yann: faire une figure qui montre ces trois coupes là (en représentant les paquets avec leur normalized sending time  sur la période)}
 
 
 
