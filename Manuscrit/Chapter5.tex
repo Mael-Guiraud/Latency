@@ -998,18 +998,7 @@ To lower bound the value of $TR(N)$, we propose to transform a routed network in
 
 Let $N$ be any network and let $c_j$ be a contention point. Let $N^j$ be the routed network with the
 single contention point $c_j$, a set of routes $\mathcal{R}'$ and a weight function $\omega'$ defined as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \mathcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ and assuming further there are no constraint before $c_j$ and after $c_j$.   
-
-\begin{lemma}\label{lemma:lowerbound}
-Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
-\end{lemma}
-\begin{proof}
-We associate to any valid assignment $A$ of $N$, the assignment $f(A)$ of $N^j$
-which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction of $N$, the transmission time of a route $r$ using $A$ in $N$ is larger than 
-the transmission time of the route $r$ using $f(A)$ in $N^j$, since all the waiting times are the same up to 
-$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all assignments $A$ of $N$,
-$TR(A) \geq TR(f(A))$ which proves the lemma. 
-\end{proof}
-
+Figure~\ref{fig:relaxednetwork} shows a routed network $N$ relaxed to $N^1$ on $c_1$.
 
 \begin{figure}
 \begin{center}
@@ -1061,9 +1050,66 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
 
 \end{tikzpicture}
 
+}
+\vspace{1cm}
+
+\scalebox{0.6}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+
+\node (k1) at (14,6.75) {\huge{$N^1$}};
+\node (t4) at (12,7.5) {$t_2$};
+\node (t2) at (12,6) {$t_1$};
+\node (s4) at (4,7.5) {$s_2$};
+\node (s2) at (4,6) {$s_1$};
+\node (c4) at (8,6.75) {$c_1$};
+\path (s2) edge [->] node[anchor=north]{$2$}  (c4);
+\path (s4) edge [->] node[anchor=north]{$7$}  (c4);
+\path (c4) edge [->] node[anchor=north]{$1+2$}  (t4);
+\path (c4) edge [->] node[anchor=north]{$2+3$}  (t2);
+
+
+
+
+\end{tikzpicture}
+}
+ \caption{Problem \spall relaxed to one contention point.}
+
+\label{fig:relaxednetwork}
+\end{center}
+\end{figure}
+
+
+\begin{lemma}\label{lemma:lowerbound}
+Let $N$ be a routed network and $c_j$ one of its contention point, then $TR(N) \geq TR(N^j)$.
+\end{lemma}
+\begin{proof}
+We associate to any valid assignment $A$ of $N$, the assignment $f(A)$ of $N^j$
+which is defined as $f(A)(r,c_j) = s(r,c_j) - \lambda(r,c_j)$, that is the sum of waiting times in $c_j$ and in contention nodes before $c_j$. By construction of $N$, the transmission time of a route $r$ using $A$ in $N$ is larger than 
+the transmission time of the route $r$ using $f(A)$ in $N^j$, since all the waiting times are the same up to 
+$c_j$ and they are $0$ for the contention nodes following $c_j$. Hence, we have for all assignments $A$ of $N$,
+$TR(A) \geq TR(f(A))$ which proves the lemma. 
+\end{proof}
+
+
+Figure~\ref{fig:relaxednetworkwithass} illustrates Lemma~\ref{lemma:lowervound}. From the routed network $N$ of Figure~\ref{fig:relaxednetwork}, we compute the optimal transmission time of $N^4$. Thus, $A(4,c_4) =$ \textcolor{blue}{$2$} and $TR(N^4) = 13$.
+We give in the tabular $A$ the optimal solution for $N$. By considering $A$ and thus $f(A)$, $TR(N^4) = 14$, which is higher than the optimal solution for $N^4$ when solved alone. Remark that, on $N^3$ both solutions are equivalent.
+
+
+
+
+\begin{figure}
+\begin{center}
+
+  
+
 \begin{tabular}{ |c|c|c|c|c| }
 
-    \multicolumn{2}{c}{$A(i,c_j)$}\\
+    \multicolumn{5}{c}{$A(i,c_j)$}\\
     \hline
      $i$ & $c_1$ & $c_2$ & $c_3$ & $c_4$ \\
       \cline{1-5}
@@ -1078,8 +1124,7 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
 
     \hline
  \end{tabular}
- 
-}
+
 \vspace{1cm}
 
 \scalebox{0.6}{
@@ -1090,61 +1135,40 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
   EdgeStyle/.append style = {->} }
    \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
  
-\node (k1) at (14,3.75) {\huge{$N^3$}};
-\node (t4) at (12,4.5) {$t_3$};
-\node (t2) at (12,3) {$t_1$};
-\node (s4) at (4,4.5) {$s_3$};
-\node (s2) at (4,3) {$s_1$};
-\node (c4) at (8,3.75) {$c_3$};
-\path (s2) edge [->] node[anchor=north]{$2$+\textcolor{green}{$0$}+2+\textcolor{green}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$2$+\textcolor{orange}{$0$}+8+\textcolor{orange}{$0$}}  (c4);
-\path (c4) edge [->] node[anchor=north]{$1$}  (t4);
-\path (c4) edge [->] node[anchor=north]{$3$}  (t2);
 
-\node (k1) at (28,3.75) {\huge{$N^4$}};
+\node (k1) at (28,3.75) {Solution with $f(A)$ on \huge{$N^4$}};
 \node (t4) at (24,4.5) {$t_4$};
 \node (t2) at (24,3) {$t_2$};
 \node (s4) at (16,4.5) {$s_4$};
 \node (s2) at (16,3) {$s_2$};
 \node (c4) at (20,3.75) {$c_4$};
-\path (s2) edge [->] node[anchor=north]{$7$+\textcolor{red}{$1$}+1+\textcolor{red}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$5$+\textcolor{blue}{$2$}+6+\textcolor{blue}{$1$}}  (c4);
+\path (s2) edge [->] node[anchor=north]{$7$+$1$+\textcolor{red}{$1+0$}}  (c4);
+\path (s4) edge [->] node[anchor=north]{$5$+$6$+\textcolor{blue}{$2+1$}}  (c4);
 \path (c4) edge [->] node[anchor=north]{$0$}  (t4);
 \path (c4) edge [->] node[anchor=north]{$2$}  (t2);
 
-\node (k1) at (14,6.75) {\huge{$N^1$}};
-\node (t4) at (12,7.5) {$t_2$};
-\node (t2) at (12,6) {$t_1$};
-\node (s4) at (4,7.5) {$s_2$};
-\node (s2) at (4,6) {$s_1$};
-\node (c4) at (8,6.75) {$c_1$};
-\path (s2) edge [->] node[anchor=north]{$2$+\textcolor{green}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$7$+\textcolor{red}{$1$}}  (c4);
-\path (c4) edge [->] node[anchor=north]{$1+2$}  (t4);
-\path (c4) edge [->] node[anchor=north]{$2+3$}  (t2);
 
-\node (k1) at (28,6.75) {\huge{$N^2$}};
+\node (k1) at (28,6.75) {Optimal solution for \huge{$N^4$}};
 \node (t4) at (24,7.5) {$t_4$};
-\node (t2) at (24,6) {$t_3$};
+\node (t2) at (24,6) {$t_2$};
 \node (s4) at (16,7.5) {$s_4$};
-\node (s2) at (16,6) {$s_3$};
-\node (c4) at (20,6.75) {$c_2$};
-\path (s2) edge [->] node[anchor=north]{$2$+\textcolor{orange}{$0$}}  (c4);
-\path (s4) edge [->] node[anchor=north]{$5$+\textcolor{blue}{$2$}}  (c4);
-\path (c4) edge [->] node[anchor=north]{$6+0$}  (t4);
-\path (c4) edge [->] node[anchor=north]{$8+1$}  (t2);
+\node (s2) at (16,6) {$s_2$};
+\node (c4) at (20,6.75) {$c_4$};
+\path (s2) edge [->] node[anchor=north]{$7$+$1$}  (c4);
+\path (s4) edge [->] node[anchor=north]{$5$+$6$+\textcolor{blue}{$2$}}  (c4);
+\path (c4) edge [->] node[anchor=north]{$0$}  (t4);
+\path (c4) edge [->] node[anchor=north]{$2$}  (t2);
+
 
 
 \end{tikzpicture}
 }
- \caption{Problem \spall over every single contention point $c_j$ with $\tau = 5$. }
+ \caption{A single contention node $N^4$ on which the optimal assignment is better when solved alone than when solved with the optimal assignment $A$ of $N$, the routed network of Figure~\ref{fig:relaxednetwork}} 
 
-\label{fig:relaxednetwork}
+\label{fig:relaxednetworkwithass}
 \end{center}
 \end{figure}
-\todo{me dire si la figure est bien, trop lourde?}
 
-Figure~\ref{fig:relaxednetwork} shows a routed network $N$ and an assignment $A$ for which $TR(N) = TR(A) =14$ and on which, $TR(N^1) = 11$, $TR(N^2) = 13$, $TR(N^3) = 11$ and $TR(N^4) = 14$.
 
 
 Let $SCB(N)$, for \emph{Single Contention Bound}, be the function which associates to $N$ the integer 
