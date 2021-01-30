@@ -15,7 +15,11 @@ In Section~\ref{sec:TSNqbv}, we introduce the IEEE standards for TSN that allows
 \section{Customized Management of the Network}
 \label{sec:TSNqbv}
 
+We explain in this chapter how the recent standards developed by TSN task group is related to such a model, and we present the limits of TSN for deterministic networking. A detailled survey of all TSN standards can be found in~\cite{8458130}. 
+
+
 \subsection{Overview of TSN Standards}
+
 
 The model we present in Chapter~\ref{chap:model} is based on several assumptions:
 \begin{itemize}
@@ -24,9 +28,8 @@ The model we present in Chapter~\ref{chap:model} is based on several assumptions
 \item We suppose the nodes are able to distinguish and manage different flows.
 \end{itemize}
 
-We explain in this chapter how the recent standards developed by TSN task group is related to such a model. A detailled survey of all TSN standards can be found in~\cite{8458130}. 
 
-
+\paragraph{Centralized vision of the network}
 The standard IEEE 802.1Qat SRP~\cite{article} (Stream Reservation Protocol) provides a central managment framework that allows a centralized entity to collect data about the flows. It has been improved by IEEE 802.1Qcc~\cite{6755436}. In these standards, a centralized entity called the \textbf{controller}, collect all required informations needed by users about the network (the routing, the periodicity and the size of the datagrams). This controller proposes a user interface that enable any user to collect all network informations in order to compute the configuration of the network. Figure~\ref{fig:networkcontroller} shows a network managed by a controller, communicating via its user interface with algorithms, and able to send requirement to the nodes. Such an approach is related to Softward Defined Network (SDN)~\cite{li2015software}. We can find in~\cite{7356556} an example of an SDN for TSN.
 
 
@@ -81,11 +84,12 @@ The standard IEEE 802.1Qat SRP~\cite{article} (Stream Reservation Protocol) prov
 \end{center}
 \end{figure}
 
+\paragraph{Individual management of flows}
 
-Standard 802.1Qbv~\cite{8613095} allows us to manage different flows in the nodes by a gate mechanism. The switch follows a routine that order to every node which ingress port must be switched on which output port at every tics of time. To do so, the switch needs a Gate Control List (GCL). This GCL is computed by the user, and sent to each switch of the network by the controller. It is a list of dates, and for every date of the list are specified the input ports (gates) of the switch which are open or close.
+Standard 802.1Qbv~\cite{8613095} allows us to manage different flows in the nodes by a gate mechanism. The switch follows a routine that organize the sending time of flows on each output ports. To do so, the switch needs a Gate Control List (GCL). This GCL is computed by the user, and sent to each switch of the network by the controller. It is a list of dates, and for every date of the list are specified the output ports (gates) of the switch which are open or close.
 
 
-Figure~\ref{fig:tsnqbv} from~\cite{durr2016no} shows the mechanism of a switch using 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch selects at each time ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure 6, at time $T_1$, all gates except the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
+Figure~\ref{fig:tsnqbv} from~\cite{durr2016no} shows the mechanism of a switch using 802.1Qbv technology. Considering a given period ($T_{cycle}$ in the figure), the switch selects at each time ($T_1 , T_2 , \ldots$ the queues that must be open to transmit packets. In figure~\ref{fig:tsnqbv}, at time $T_1$, all gates except the one for scheduled traffic are open, at time $T_2$, all gates are closed and at time $T_3$ only the gate for scheduled traffic is open.
 
   \begin{figure}
   \begin{center}
@@ -96,16 +100,16 @@ Figure~\ref{fig:tsnqbv} from~\cite{durr2016no} shows the mechanism of a switch u
       
 With such a mechanism, it is possible to organize the flows in order to control the latency. The CGL are computed upstream considering the traffic (size of the datagrams, periodicity, or average dataflow of each flow for non deterministic traffic). Several works on Time Aware Shaping have been developed on this topic: \cite{al2017modeling} introduce how to manage one deterministic flow and one best effort flow (non periodic generation of data, stochastic model). This paper shows that by correctly setting the GCL of the nodes, it is possible to ensure no contention for one deterministic flow. Nevertheless, works about managing several determinstic flows together are mainly based on linear programing~\cite{steiner2018traffic,silviu2017,nayak2017incremental,naresh2016}, which has an high complexity and does not scale well with number of routes and contention depth of the networks.
 
-
-To be efficient, the components of the network must be completely synchronized. Such an hypothesis seems unrealistic, standards likes IEEE 802.1AS~\cite{5741898}, or IEEE 1588~\cite{4579760} propose good solutions for clock synchronization, but this problem is still difficult to solve. Indeed, even if those protocols propose good solution to re-synchronize clocks, there is still some offset between the clocks of the switch since it is impossible to ensure the length of a link between two components. This value can be deduced of the travel time of packets between two switches but this value highly depends of several factors, like the temperature of the link for example. Network designers use {\em Guard Time} to prevent this problem. The GCL are computed such that a gate is open before and after the theoretical arrival of packets. Such a mechanism induce artifical additional use of bandwidth, because a gate is open more than it should be.
+\paragraph{Synchronization}
+To be efficient, the components of the network must be completely synchronized. Such an hypothesis seems unrealistic. Standards likes IEEE 802.1AS~\cite{5741898}, or IEEE 1588~\cite{4579760} propose good solutions for clock synchronization, but this problem is still difficult to solve. Indeed, even if those protocols propose good solution to re-synchronize clocks, there is still some offset between the clocks of the switch since it is impossible to ensure the length of a link between two components. This value can be deduced of the travel time of packets between two switches but this value highly depends of several factors, like the temperature of the link for example. Network designers use {\em Guard Time} to prevent this problem. The GCL are computed such that a gate is open before and after the theoretical arrival of packets. Such a mechanism induce artifical additional use of bandwidth, because a gate is open more than it should be.
 
 \subsection{Limits of TSN when managing Deterministic flows}
 
-All those standards are designed for a statistical managment of the flows. In this thesis, we work on deterministic flows: our models and algorithms are not designed for a statistical approach like current traffic shaping, but a deterministical approach. We compute the exact date at wich each flow is able to reach each node, without loss of bandwidth due to guard time. Furthermore, a statistical approach does not allow to control the contention and the exact forwarding time of the datagram in the network. This induce that a datagram sent periodically will not take the same time to travel into the network. The variation of the latency is called \textbf{jitter}. The jitter is an indicator of the stability of the network. The higher the jitter, the higher the maximal value of the latency is.
+All those standards are designed for a statistical managment of the flows. In this thesis, we work on deterministic flows: our models and algorithms are not designed for a statistical approach like current traffic shaping, but a deterministical approach. We compute the exact date at wich each flow is able to reach each node, without loss of bandwidth due to guard time. Furthermore, a statistical approach does not allow to control the contention and the exact forwarding time of the datagram in the network. This induce that a datagram sent periodically will not always have the same latency over a network. The variation of the latency is called \textbf{jitter}. The jitter is an indicator of the stability of the network. The higher the jitter, the higher the maximal value of the latency is.
 
 Such an approach requires to rethink about our vision of the network managment. We need the nodes to be perfectly synchronized otherwise it could be counter productive. Indeed, if a packet of a flow arrives in a node before or after the planned date, the gate is close and the packet is buffered, that induces additional latency.
 
-Also, switches operation on the physical layer of the network induce an additional latency. In store-and-forward concept~\cite{tindell1992store}, packets are stored at reception of a node before being forwarded. However, solution like cut-through~\cite{kermani1979virtual} allow to reduce storage size and corresponding delay to the header size only. But this is effective if the egress port is available to forward the packet at the same time only. If not, the packet is buffered until the port is free. Even if it is possible to adapt our model to take into consideration the physical delay cost, it still induce additional latency, which is not desirable.
+Also, switches operation on the physical layer of the network induce an additional latency due to physical buffering. In store-and-forward concept~\cite{tindell1992store}, packets are stored at reception of a node before being forwarded. However, solution like cut-through~\cite{kermani1979virtual} allow to reduce storage size and corresponding delay to the header size only. But this is effective if the egress port is available to forward the packet at the same time only. If not, the packet is buffered until the port is free. Even if it is possible to adapt our model to take into consideration the physical buffering cost, it still induce additional latency, which is not desirable.
 
 Next section present a new kind of switch, called Hyper-TSN switch, and that allows to override all the above limits.
 
@@ -113,7 +117,7 @@ Next section present a new kind of switch, called Hyper-TSN switch, and that all
 \label{sec:platform}
 
 
-Most of the works developped around Deterministic Networking are still based on stochastic laws. Indeed, deterministic networking aims to ensure a maximal bounded latency. Here, we propose to reduce the latency at its minimum, and to remove jitters in network, which is a deeper aspect of deterministic.
+Most of the works developped around Deterministic Networking are still based on stochastic laws. Indeed, deterministic networking aims to ensure an upper bound on latency. Here, we propose to reduce the additional latency due to contention buffers at its minimum, and to remove jitters in network, which is a deeper aspect of deterministic networking.
 Here, because of our desire to manage deterministic flows, multiple standards of TSN are not usefull yet. Indeed, since the exact date of arrival of all packets are computed, we can get rid of several tools designed to manage the traffic on a statistical manner. 
 
 We present in this section an Hyper-TSN switch that solves all the problematic of TSN when managing deterministic traffic.
