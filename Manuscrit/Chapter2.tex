@@ -246,9 +246,24 @@ Here, we study this problem of computing a scheme. Knowing the network topology 
 
 
 \section{Algorithmic related works}
-    
+ 
 
-The algorithmic problem we focus on may look like wormhole problems~\cite{cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
+ We shortly describe the algorithmic problem studied in this thesis. We consider a network in which the routing is fixed.
+ Several flows share the network, sending periodically a message from a source to a target. This message represents several packets in practice, but in our model we consider them contiguous. The messages can also be buffered in some nodes of the network in order to let another more critical message use a common ressource. The objective is to compute the buffering time of every message in the network, such that the global latency (i.e. the largest latency of a flow) is minimal.
+ We present in this section the works related to ours.
+
+\subsection{Coloring problems}
+\paragraph{Wormhole:}
+Because we consider contiguous messages, we first had a look at wormhole problems~\cite{ni1993survey,cole1996benefit}, in which the objective is to avoid deadlocks in networks used by long sequences of messages. Wormhole problems are solved by routing algorithms, while we consider the routing given. Furthermore, this problem differs from ours since we want to minimize the time lost in buffers and not just to avoid deadlocks. 
+
+\paragraph{Graph coloring for ressources allocation:}
+Our first approach consisted to represent the shared ressources of the network by a graph, and to solve it with graph coloring.
+Several graph colorings have been introduced to model similar problems. In~\cite{erlebach2001complexity} the objective is to minimize the number of wavelength in shared links for optical networks. Paper~\cite{borndorfer1998frequency}, introduces flows allocations problems for ressource allocation of the frequencies in radio networks. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. 
+
+\paragraph{Circular coloring:}
+The only coloring with periodicity is the circular coloring~\cite{ZHU2001371,zhou2013multiple}. As an example, circular coloring for a road intersection proposes a graph in which the vertex are the flows and there is and edge between two vertices if the flow must not overlap. Such an approach is close to our problem on a single point of the network. However, since the problem is $\NP$-hard and the model is too far from our general graphs, this approach did not catch our attention.
+
+\subsection{scheduling problems}
 The problem \pall on a star routed network is very close to a two flow-shop scheduling problem~\cite{yu2004minimizing} with the additional constraint of periodicity. To our knowledge, all studied periodic scheduling problems are different from \pall that we consider in this article. 
 Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem correspond to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
@@ -256,4 +271,22 @@ The train timetabling problem~\cite{lusby2011railway} and its restriction, the p
 
 
 
-Expliquer la litérature, et ce qui diffère de notre pb à nous
+Next generations of mobile network architectures evolve toward centralized radio network architectures called C-RAN for Cloud Radio Access Network, to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the receptions of the answer, computed by real-time virtualized network functions of a BaseBand Unit (BBU) in the cloud. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network. 
+
+ Statistical multiplexing even with a large bandwidth does not satisfies the latency requirements of C-RAN~\cite{dominique2018deterministic,barth2018deterministic}. The current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point, an RRH on one side and a BBU on the other side is connected through direct fiber or full optical switches. This eliminates all contentions since each message flow has its own link, but it is extremely expensive and do not scale in the case of a mobile network composed of about $10,000$ base stations. 
+
+
+
+
+
+The algorithmic problem studied in the present article, called Periodic Message Assignment or \pma, is the following.
+Given a period, a message size and delay between the two contention points different for each message, choose an offset (departure time in the period) for each message, so that it goes through the two contention points when they are free. It is  similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since messages from consecutive periods can interact. The objective is usually to minimize the makespan, or schedule length, but in our periodic variant it is infinite. Hence, we choose to look for any periodic schedule without buffering, which minimizes the trip time of each message. 
+
+
+ To our knowledge, all studied periodic scheduling problems are quite different from the one we present.
+Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic}, while our problem corresponds to a single processor and a constraint similar to makespan minimization. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem, since they take into account 
+a fixed period and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard), they usually allow for some delay and most of the work is devising good algorithms using branch and bound, mixed integer programming, genetic algorithms \dots~\cite{lusby2011railway}
+
+
+In previous articles of the authors, generalizations of \pma allowing buffers are studied on a single link~\cite{dominique2018deterministic} or on a cycle~\cite{Guir1905:Deterministic}. Heuristics (using scheduling algorithms) and FPT algorithms are used to find a sending scheme with \emph{minimal latency}, while here we only look for sending scheme without any additional latency. More complex problems of computing schedules for time sensitive networks has been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantes on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside a car or a plane, or logistic problems in production lines.
+
