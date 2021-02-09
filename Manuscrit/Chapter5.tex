@@ -1096,7 +1096,7 @@ $TR(A) \geq TR(f(A))$ which proves the lemma.
 \end{proof}
 
 
-Figure~\ref{fig:relaxednetworkwithass} illustrates Lemma~\ref{lemma:lowervound}. From the routed network $N$ of Figure~\ref{fig:relaxednetwork}, we compute the optimal transmission time of $N^4$. Thus, $A(4,c_4) =$ \textcolor{blue}{$2$} and $TR(N^4) = 13$.
+Figure~\ref{fig:relaxednetworkwithass} illustrates Lemma~\ref{lemma:lowerbound}. From the routed network $N$ of Figure~\ref{fig:relaxednetwork}, we compute the optimal assignment $A'$ for $N^4$. Thus, $A'(4,c_4) =$ \textcolor{blue}{$2$} and $TR(N^4) = 13$.
 We give in the tabular $A$ the optimal solution for $N$. By considering $A$ and thus $f(A)$, $TR(N^4) = 14$, which is higher than the optimal solution for $N^4$ when solved alone. Remark that, on $N^3$ both solutions are equivalent.
 
 
@@ -1175,10 +1175,7 @@ Let $SCB(N)$, for \emph{Single Contention Bound}, be the function which associat
 $\max_{j} TR(N^j)$. By Lemma~\ref{lemma:lowerbound}, we have for all $j$, $TR(N) \geq TR(N^j)$, hence $SCB(N)\leq TR(N)$.
 We can compute $SCB(N)$ in time $m2^kk^3log(k)$ where $k$ is the contention width of the network and $m$ the number 
 of contention nodes. Indeed, for each $j$, solving \spall on $N^j$ is equivalent to solving \wta, which can be done
-in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$ which is equal to the contention width of $c_j$ in $N$.
-
-\todo{utiliser la figure du dessus comme exemple ?}
-
+in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$ which is equal to the contention width of $c_j$ in $N$. By taking the example of Figures~\ref{fig:relaxednetwork} and~\ref{fig:relaxednetworkwithass}, $SCB(N) = 13$ while $TR(N) = 14$.
 \paragraph{Description of the Branch and Bound Algorithm}
 
 We now describe precisely how the proposed branch and bound algorithm works.
@@ -1299,38 +1296,72 @@ Figure~\ref{fig:partialtree}. We expand a vertex of the compact assignment tree,
   Assume we are traversing the expansion of a vertex corresponding to the contention vertex $c$.
   In the binary tree, a vertex has two children of depth $i$ representing the fact
   that $r_{O_i} \notin S$ and $r_{O_i} \in S$. We build the partial assignment over $r_{O_1},\dots,r_{O_i}$
-  and its realization for $r_{O_i} \notin S$. If $ns(r_{O_1},r_{O_{i-1},c} + \tau = ns(r_{O_1},r_{O_{i},c}$, then
+  and its realization for $r_{O_i} \notin S$. If $ns(r_{O_1},r_{O_{i-1},c}) + \tau = ns(r_{O_1},r_{O_{i},c})$, then
   the two datagrams of the routes $r_{O_{i-1}}$ and $r_{O_{i}}$ follow one another without gap in the period.
-  Hence, if we fix $r_{O_i} \in S$, it will not change $ns(r_{O_1},r_{O_{i},c}$ and any extension of this compact assignment will dominated by the extenion of the same compact assignment with $r_{O_i} \notin S$.
-  Thus, we cut the branch $r_{O_i} \in S$.
+  Hence, if we fix $r_{O_i} \in S$, it will not change $ns(r_{O_1},r_{O_{i},c})$ and any extension of this compact assignment are dominated by the extenion of the same compact assignment with $r_{O_i} \notin S$.
+  Thus, we cut the branch $r_{O_i} \in S$ as in Figure~\ref{fig:cut1}.
+  \begin{center}
 
+\begin{figure}[h]
+  \centering
+\includegraphics[scale=0.8]{Chapitre5/cut1}
+\caption{ If $ns(r_{O_1},r_{O_{i-1},c}) + \tau = ns(r_{O_1},r_{O_{i},c})$, every extension built by the branch $r_{O_i} \in S$ is dominated by the extention of the compact assignment of the branch $r_{O_i} \notin S$.}
+\label{fig:cut1}
+\end{figure}
+\end{center}
   \item When considering a route $r_{O_i}$ (with $r_{O_i} \notin S$ or $r_{O_i} \in S$), we consider
   the realization of the partial assignments over the elements $r_{O_1},\dots,r_{O_{i-1}}$. If it is possible
   to fix the normalized sending time of $r_{O_i}$ before the normalized sending time of $r_{O_{i-1}}$, without collision,
-  then there is a compact assigment $(O',S) \prec (O,S)$ (with $O_i$ at a new, smaller position in O'). It corresponds to
+  then there is a compact assigment $(O',S) \prec (O,S)$ (with $O_i$ at a new, smaller position in O', see Figure~\ref{fig:cut2}). It corresponds to
   a compact assignment, with a gap in the period which can be used by some route which should be placed after the gap because of the order. This cut can be computed in linear time, by comparison of the normalized sending times.
+  \begin{center}
 
+\begin{figure}[h]
+  \centering
+\includegraphics[scale=0.8]{Chapitre5/cut2}
+\caption{ An example of two orders $O$ and $O'$ for which $(O',S) \prec (O,S)$, with $S = \emptyset$.}
+\label{fig:cut2}
+\end{figure}
+\end{center}
   \item To ensure that we go through only canonical assignment, we force the first route $r_{O_1}$ to 
   have zero buffering time, by setting $r_{O_1} \notin S$. But there can be several datagrams with zero 
   buffering time and we refine the notion of canonicity by requiring that the one of smallest id is the
-  first in the order. Hence, when we consider $O_i$ with $O_i \notin S$ and that in $Real((O,S))$, 
+  first in the order as shown in Figure~\ref{fig:cut3}. Hence, when we consider $O_i$ with $O_i \notin S$ and that in $Real((O,S))$, 
   $O_i$ as no buffering, then $O_i > O_1$ otherwise we cut the subtree from $O_i \notin S$.
+  \begin{center}
+
+\begin{figure}[h]
+  \centering
+\includegraphics[scale=0.8]{Chapitre5/cut3}
+\caption{ An example of order in which $O_1$ and $O_3$ have no buffering and in which $O_1 = 2 > O_3 = 1$. The assignment with $O$ is thus non-canonical.}
+\label{fig:cut3}
+\end{figure}
+\end{center}
 \end{itemize}
-
-\todo{yann: faire une figure qui montre ces trois coupes là (en représentant les paquets avec leur normalized sending time  sur la période)}
-
 
 
 
 \subsection{Scalability with the number of routes}
 
 The complexity of the Branch and Bound algorithm depends on both the contention depth of the routed network and the number of routes. We focus on networks of contention depth $3$, which is realistic in our C-RAN context, and we want to investigate how much the computation time increases in practice when the number of routes grows. Note that the running time
-of the algorithm is also very sensitive the width of the network: for the same number of routes, if the routes are well spread out over the contention nodes, there are less compact assignment than if they are concentrated on some contention vertices. In previous experiments, the maximal width is $4$ in the vertices of depth $2$, as shown in Figure~\ref{fig:randomnetworks}. We generalize the topology of Figure~\ref{fig:randomnetworks} by considering any number of 
+of the algorithm is also very sensitive to the width of the network: for the same number of routes, if the routes are well spread out over the contention nodes, there are less compact assignment than if they are concentrated on some contention vertices. In previous experiments, the maximal width is $4$ in the vertices of depth $2$, as shown in Figure~\ref{fig:randomnetworks}. We generalize the topology of Figure~\ref{fig:randomnetworks} by considering any number of 
 contention vertex at depth $1$ instead of $4$. Each of theses vertex is of width $2$ and the $2$ routes going through a vertex of depth $1$ are distinct from the other routes and goes to the two different vertices of depth $2$. 
 
-\todo{Yann: mettre un tableau pour dire ce qui vient après et conclure que sans amélioration sur les coupes et l'implémentation on ne peut pas faire $14$ routes (je dirai qu'avec une bonne implèm avec mes coupes plus strictes ou carrément les solutions minimales on devrait atteindre $16$ routes, mais pas mieux)}
+Tabular~\ref{tab:fpttime} shows the average computation time of Branch and Bound on $8$, $10$, and $12$ routes. The results are computed on $100$ instances in which the length of the arcs have been drawn in $[P]$ and the load is $0.8$.
+\begin{center}
+\begin{tabular}{ |c|c|c|c| }
+\hline
+    Number of routes & $8$ & $10$ & $12$\\
+    \hline
+    Average computation time  & $2.2$s & $22$s & $47$m  \\
+    \hline
+ \end{tabular}
+  \captionof{figure}{Average computation time of Branch and Bound with different number of routes.\label{tab:fpttime}}
+\end{center}
 
-Computing an instance with $8$ routes on the network and contention width $4$ takes in average $2,2$s, while it takes $22$s in average for $10$ routes and contention width $5$. Whith $12$ routes and contention width $6$, the computation time increases to $47$ minutes for an instance, on average. Those results are computed on $100$ random instance, with load $0.8$.
+ When the number of routes is lower than $10$, we can find a solution in a reasonable time. For $12$ routes, the time needed to compute a solution is in the range of one hour. We can imagine that increasing the quality of the cuts or beeing able to generate only minimal compact assignments could allows us to compute up to $14$ routes, $16$ with a perfectly optimized implementation. Beyond this value, Branch and Bound complexity makes the computation time too long to compute a solution.
+
+
 
 
 \section{Experimental Evaluation}
@@ -1381,7 +1412,7 @@ the optimal. In these simple settings, it seems to be enough almost explore the 
 As expected, Tabu Search is better than Hill Climbing computed from the solution of \hybridgreedynormalized, but since it is extremely slow to compute a solution, it is not possible to use it on $100$ different random compact assignments. 
 Simulated Annealing is able to compute a good solution, very close to the optimal in the fifth of the time needed by Tabu Search. Branch and Bound is far better than the other algorithms: not only it finds the optimal solution, but it computation time, in this networks with few routes and a small contention width is it $10$ times smaller than Simulated Annealing, while it finds the global optimum.
 
-We now want to compare the performance of those algorithms when the routes are drawn in a small range of values. Thus, we set the length of the routes to be drawn in $[0.9P,P]$. We do the same experiment as previously, but from now on, simulated annealing computes $1000$ compact assignment at each level. As we observed in section~\ref{sec:recuit}, increasing the number of compact assignment considered at each level increases the quality of the solution. While drawing $100$ compact assignments was enough for the simple routed network of the previous experiment,
+We now want to compare the performance of those algorithms when the routes are drawn in a small range of values. Thus, we set the length of the arcs to be drawn in $[0.9P,P]$. We do the same experiment as previously, but from now on, simulated annealing computes $1000$ compact assignment at each level. As we observed in section~\ref{sec:recuit}, increasing the number of compact assignment considered at each level increases the quality of the solution. While drawing $100$ compact assignments was enough for the simple routed network of the previous experiment,
 drawing $1000$ random compact assignments at each level in the two following experiments improves dramatically the performances of Simulated Annealing, with a lower computation time than tabu search.
 
 Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margin of the algorithms, while Tabular~\ref{tab:8routessamerange} shows the average margin and the computation time of each algorithms on $1000$ random instances.
@@ -1409,7 +1440,7 @@ Figure~\ref{fig:8routessamerange} shows the cumulative distribution of the margi
   \captionof{figure}{ Average margin and average computation time of each algorithm for $8$ routes drawn in $[0.9.P,P]$.\label{tab:time8routessamerange}}
 \end{center}
 
-  We observe that the relative performance of the algorithm does not change. Instances where the length of the routes are drawn in the same range of value needs more margin to be solved. We made the same observation in Chapters~\ref{chap:PAZL,chap:PALL} for different networks and constraints on the assignments.
+  We observe that the relative performance of the algorithm does not change. Instances where the length of the arcs are drawn in the same range of value needs more margin to be solved. We made the same observation in Chapters~\ref{chap:PAZL,chap:PALL} for different networks and constraints on the assignments.
 
 
 The following experiment shows the performance of the algorithms when increasing the number of routes. In the instance generated, there are $24$ routes. To do so, we replace each route of the routed network of Figure~\ref{fig:randomnetworks} by three distinct routes. 
