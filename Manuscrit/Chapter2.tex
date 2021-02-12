@@ -55,9 +55,10 @@ The constraints expressed for low latency architectures and 5G standard are hard
 
 As we just mentioned, the current network nodes (routers for IP networks, switches for Ethernet networks) are not able to schedule packets. The only function of the nodes is to forward the packets to the right output port.
 The objective is to offer a good average quality of service for a minimal price. When a single input flow uses an ouput port, there is no issue.
- If several packets comming from several flows require the same output port at the same time, we talk about \textbf{contention}. Some packets are then put in a \textbf{contention buffer} until the port is available. The additional latency induced by contention buffers is one of the most important causes of delay. In order to reduce the contention, networks are dimensioned according to the average bitrate of the flows. As an example, consider that two flows sends continuously packets and use a common link. The bitrate of the link is chosen such that it supports the average traffic of the two flows. Nevertheless, if there is some burst of packets comming from one of the two flows, contention is unavoidable and some packets have to wait in a buffer. When there is too much packets in the buffer, the oldest packets of the buffer are \textbf{lost}. 
+ If several packets comming from several flows require the same output port at the same time, we talk about \textbf{contention}. Some packets are then put in a \textbf{contention buffer} until the port is available. The additional latency induced by contention buffers is one of the most important causes of delay. In order to avoid this situation, the bitrates of the links is dimensioned according to the use case. It is then calculated according to the average bitrate of the flows on the network. 
+ When there is too much packets in the buffer, the oldest packets of the buffer are \textbf{lost}. 
 
-Such a approach ensures an easy deployment and managment of the networks and most of the time a good quality of service for a minimal cost for network providers, but it may induce packet losses and high latencies. This approach is called \textbf{statistical multiplexing}~\cite{krishnamurthy2003latency,venkatramani1994supporting}. 
+Such a technology ensures an easy deployment and managment of the networks and most of the time a good quality of service for a minimal cost for network providers, but it may induce packet losses and high latencies. Hence, we talk about statistical multiplexing~\cite{krishnamurthy2003latency,venkatramani1994supporting}. \todo{pourquoi hence, plutot dire ce qu'on vient de décrire est appelé statistical multplexing}
 
 URLLC aims to ensure good end to end latency communications. To achieve such a goal, each component of the communication network must satisfy a low latency: the radio communications, and the core network. This thesis focus on the core network. 
 
@@ -66,7 +67,7 @@ URLLC aims to ensure good end to end latency communications. To achieve such a g
 To understand the network this thesis focuses on, we now describe how a radio access network works.
 
 Current mobile network (aka cellular network) architecture consists in a distributed radio access networks: the mobile terminals connect to a base station (BTS for Base Transceiver Station as a generic name, eNB for evolved Node B in 3GPP LTE “4G” standard or gNB for 5G) that encompasses all the sub-systems needed to realize mobile communication~\cite{bouguen2012lte}. It mainly comprises the radio part, that furnishes the connection between the mobile terminal and the BTS, and the network part that provides control and management functions like mobility support (the main functionality being the support of handover from one BTS to another, i.e. the ability to pursue a communication when moving from the range of an antenna to another).
-The BTS are connected together by the Aggregation Network of the operator, itslef connected to the core network, in order to ensure communications with other operators Radio Access Networks (RANs). Figure~\ref{fig:RAN} illustrates a communication between two mobiles using a different operator.
+The BTS are connected together by the Aggregation Network of the operator, itslef connected to the core network, in order to ensure communications with other operators RANs. Figure~\ref{fig:RAN} illustrates a communication between two mobiles using a different operator.
 
 \begin{figure}
 \begin{center}
@@ -198,7 +199,7 @@ One possible direction for next generation networks is to become centralized rad
       \caption{Latency requirments between different part of the network.}\label{fig:5gran}
       \end{figure}
 
-The cloud can be defined as the execution of a program in a data center (gathering the BBUs) ordered by another machine (RRHs) connected to the data center through a transparent network.
+By cloud we mean the capability of instantiating executable programs in data centers that are transparently connected to the systems requiring the results of the program execution.
  The execution may be indifferently performed on virtualized machines, or bare metal, or any combination of the two. The network between RRHs and BBUs is called “Fronthaul Network”, or “Fronthaul” for short. Figure~\ref{fig:fronthaul} illustrates an example of fronthaul in which several BBUs are gathered in the same datacenter. 
 
   \begin{figure}[h]
@@ -230,7 +231,9 @@ This kind of architecture must address the problem of the latency in the transfe
 
 
 \subsection{Technical solution for low latency}
-Statistical multiplexing is the most common mechanism for packet based networks in the last $40$ years. While IETF tools~\cite{metricsietf} ensure a latency lower than a given value for $95\%$ of the packets, such a guarantee it is not enough to our context since it can not satisfy latency constraints fo all packets. While some mechanisms can be used to prioritize some packets over the others (e.g. Express Forwarding~\cite{exprforw} against Best Effort), they fail to guarantee the delivery of a given packet in a given time delay when several packets compete for the same resource. 
+
+Statistical multiplexing is the most common mechanism used to manage packet based networks in the last $40$ years. While IETF tools~\cite{metricsietf} ensure a latency lower than a given value for $95\%$ of the packets, such a guarantee is not sufficient in our context in which all packets must satisfy latency constraints. While there are mechanisms which can be used to prioritize some packets over the others (e.g. Express Forwarding~\cite{exprforw} against Best Effort), they fail to guarantee the delivery of a given packet in a given time delay when several packets compete for the same resource. 
+
 
 The best current solution is to rely on an almost full optical approach, where each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches~\cite{pizzinat2015things,tayq2017real}. This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about $10,000$ base stations. This number will increase by a factor of $2$ to $20$ with the emergence of “small cells” which increases base station density to reach higher throughput \cite{leclerc2016transmission,leclerc2016signaling}. It is thus needed to find a solution to offer low latency over commoditized packet based networks. 
 
@@ -249,14 +252,14 @@ Although 3GPP standards for 5G are not completely frozen yet, the core network i
  usually fail to model our problem faithfully or which are too general to derive useful algorithms.
 
 
-\subsection{Graph theory approaches}
+\subsection{Algorithmic Approaches}
 
 \paragraph{Wormhole}
-Because we consider contiguous messages, we first focused on wormhole problems~\cite{ni1993survey,cole1996benefit}. This appoach aims to avoid deadlocks in networks used by long sequences of messages. Deadlocks are caused by long messages in networks. Considering two messages, if each wait for the other to release a ressource (a switch in the case of our networks), there is a deadlock. Such an problem can not occurs in the networks we model in which the routing are considered \textbf{coherent}\cite{Schwiebert1996ANA}. A routing is considered as coherent if two routes share only one path (i.e. a sequence of contiguous links) in the network.
+Because we consider contiguous messages, we first focused on wormhole problems~\cite{ni1993survey,cole1996benefit}. This appoach aims to avoid deadlocks in networks used by long sequences of messages. Deadlocks are caused by long messages in networks. Considering two messages, if each wait for the other to release a ressource (a switch in the case of our networks), there is a deadlock. Such a problem can not occurs in the networks we model in which the routing are considered \textbf{coherent}\cite{Schwiebert1996ANA}. A routing is considered as coherent if two routes share only one path (i.e. a sequence of contiguous links) in the network.
  Also, wormhole problems are solved by routing algorithms, while we consider the routing given. Furthermore, this problem differs from ours since we want to minimize the time lost in buffers and not just to avoid deadlocks. 
 
 \paragraph{Graph coloring for ressources allocation}
-One of our approach consisted in representing the shared ressources of the network by a conflict graph. The vertices of the graph represent the routes of the netorks and there is an edge between two vertices if their associated routes share the same ressource (i.e. an output port on a switch). The edges of the graph are labeled by the difference of the physical length of the links between the sources of the routes and the conflict point. A proper coloring of such a graph is a scheduling of the network without collisions between the messages. Several graph colorings have been introduced to model similar problems. In~\cite{erlebach2001complexity} the objective is to minimize the number of wavelength in shared links for optical networks. Paper~\cite{borndorfer1998frequency}, introduces flows allocations problems for ressource allocation of the frequencies in radio networks. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. 
+One of our approach consisted in representing the shared ressources of the network by a conflict graph. The vertices of the graph represent the routes of the networks and there is an edge between two vertices if their associated routes share the same ressource (i.e. an output port on a switch). The edges of the graph are labeled by the difference of the physical length of the links between the sources of the routes and the conflict point. A proper coloring of such a graph is a scheduling of the network without collisions between the messages. Several graph colorings have been introduced to model similar problems. In~\cite{erlebach2001complexity} the objective is to minimize the number of wavelength in shared links for optical networks. Paper~\cite{borndorfer1998frequency}, introduces flows allocations problems for ressource allocation of the frequencies in radio networks. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. 
 
 \paragraph{Circular Coloring}
 The only coloring taking into account periodicity is the circular coloring~\cite{ZHU2001371,zhou2013multiple}. As an example, circular coloring for a road intersection proposes a graph in which the vertex are the flows and there is and edge between two vertices if the flow must not overlap. Such an approach is close to our problem on a single point of the network. However, since the problem is $\NP$-hard and the model is too far from our general graphs, this approach did not catch our attention.
@@ -274,7 +277,9 @@ The train timetabling problem~\cite{lusby2011railway} and its restriction, the p
 
 \paragraph{Linear Programming for Latency Constrained Network}
 We define in this thesis a simple network topology called the {\em star shaped network}. In star shaped networks, all flows goe through the same link, and there is only two relevant contention points (one in the way to the BBUs, and one in the way back to the RRHs).
+
 Variation on the problem of scheduling periodic messages for Cloud-RAN have been investigated in~\cite{nayak2017incremental,steiner2018traffic,silviu2017,naresh2016}. In those papers authors study the practical problem of scheduling a few number of flows on star shaped networks. Given a network in which the routing is set, the objective is to schedule several flows whith a critical latency and several best-effort flows in the same networks. To do so, the authors use new technical standards (detailled in Chapter~\ref{chap:TSN}) that allow to prioritize flows, and linear programming in order to compute a schedule between the critical flows. In the same spirit, an SMT solver is proposed in~\cite{dos2019tsnsched}. Such an approach is still based on statistical models and just ensure that the packets have an end-to-end latency lower than a given value. In this thesis, we focus on minimizing the latency of critical flows, even when there is some best effort traffic as show in Chapter~\ref{chap:BE}. Furthermore, linear porgramming does not scale neither with the number of route nor the number of conflict point on each routes while we propose polynomial algorithms that give satisfying solution on every kind of topology.
+
 
 
 \paragraph{Processors Scheduling}
@@ -291,9 +296,11 @@ Scheduling on multiple processors does not seem related to our problems. In~\cit
 
 
 \paragraph{A polynomial algorithm for single processor scheduling}
+
 The approach we adopt in Chapter~\ref{chap:PALL} to solve our problem on a star routed network, is a two stage approach. The second stage,
-when forgetting about periodicity, is similar to a scheduling problem with a single processor with the goal of minimizing the competion time (makespan). The algorithm described in~\cite{simons1978fast}, solves this problem in polynomial time when all tasks have the same processing time. We use it as a building block of several of our algorithms in Chapter~\ref{chap:PALL} and
-Chapter~\ref{chap:SPALL}, where we adapt it to the case of periodic jobs. 
+when forgetting about periodicity, is similar to a scheduling problem with a single processor with the goal of minimizing the completion time (makespan). The algorithm described in~\cite{simons1978fast}, solves this problem in polynomial time when all tasks have the same processing time. We use it as a building block of several of our algorithms in Chapter~\ref{chap:PALL} and
+Chapter~\ref{chap:SPALL}, where we adapt it to the case of periodic jobs. When the jobs have different processing times, the problem
+is $\NP$-hard~\cite{lenstra1977complexity}.
 
 
 %Attention, tu parles déjà de la thèse
