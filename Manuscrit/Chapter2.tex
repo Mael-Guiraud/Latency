@@ -255,18 +255,17 @@ Although 3GPP standards for 5G are not completely frozen yet, the core network i
 \subsection{Algorithmic Approaches}
 
 \paragraph{Wormhole}
-Because we consider contiguous messages, we first focused on wormhole problems~\cite{ni1993survey,cole1996benefit}. This appoach aims to avoid deadlocks in networks used by long sequences of messages. Deadlocks are caused by long messages in networks. Considering two messages, if each wait for the other to release a ressource (a switch in the case of our networks), there is a deadlock. Such a problem can not occurs in the networks we model in which the routing are considered \textbf{coherent}\cite{Schwiebert1996ANA}. A routing is considered as coherent if two routes share only one path (i.e. a sequence of contiguous links) in the network.
- Also, wormhole problems are solved by routing algorithms, while we consider the routing given. Furthermore, this problem differs from ours since we want to minimize the time lost in buffers and not just to avoid deadlocks. 
+Because we consider contiguous messages, we first focused on wormhole problems~\cite{ni1993survey,cole1996benefit}. Wormhole problems consider graphs representing interconection networks, in which the vertices are the nodes of the network and the edeges are the physical links. Long messages are sent in the network, accaparing ressources during a long time. A \emph{deadlock} occurs when several messages are waiting each others to release a ressource. The main problem consists in avoiding deadlocks. The algorithmic solution proposed consists in multiplexing the physical channels in several virtual channels, and to develop routing algorithms to determine the virtual channel used by each message. In our model, we consider the routing given. Also, our messages require the entire capacity of the links. Furthermore, this problem differs from ours since deadlocks can not occurs in the networks we model in which the routing are considered \textbf{coherent}\cite{Schwiebert1996ANA}. A routing is considered as coherent if two routes share only one path (i.e. a sequence of contiguous links) in the network.
+
+On a technical aspect, whormole switches~\cite{cole1996benefit} are designed to read only the header of the messages before forwarding it instead of buffering the entire messages as in store-and-forward~\cite{tindell1992store}. This method have a huge impact on the latency, particulary on long messages, and we go further by removing every buffering in the switchs.
+
 
 \paragraph{Graph coloring for ressources allocation}
 One of our approach consisted in representing the shared ressources of the network by a conflict graph. The vertices of the graph represent the routes of the networks and there is an edge between two vertices if their associated routes share the same ressource (i.e. an output port on a switch). The edges of the graph are labeled by the difference of the physical length of the links between the sources of the routes and the conflict point. A proper coloring of such a graph is a scheduling of the network without collisions between the messages. Several graph colorings have been introduced to model similar problems. In~\cite{erlebach2001complexity} the objective is to minimize the number of wavelength in shared links for optical networks. Paper~\cite{borndorfer1998frequency}, introduces flows allocations problems for ressource allocation of the frequencies in radio networks. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. 
 
 \paragraph{Circular Coloring}
 The only coloring taking into account periodicity is the circular coloring~\cite{ZHU2001371,zhou2013multiple}. As an example, circular coloring for a road intersection proposes a graph in which the vertex are the flows and there is and edge between two vertices if the flow must not overlap. Such an approach is close to our problem on a single point of the network. However, since the problem is $\NP$-hard and the model is too far from our general graphs, this approach did not catch our attention.
-Circular arc coloring~\cite{10.2307/2100446} also deals with periodicity, but the problem has been shown $\NP$-hard~\cite{10.1007/BFb0053971} and the model is not related to ours.
-
-
- A survey about cyclic scheduling~\cite{levner2010complexity} explains that in cyclic scheduling problems, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
+Circular arc coloring~\cite{10.2307/2100446} also manages messages that can be related to periodic messages. The authors consider a clock and several arcs around this clock, representing the time needed by a job. The objective is to find the minimal number of men needed to complete the job. If two arcs overlap, the same man cannot be affected to both jobs. Nevertheless, this problem has been shown $\NP$-hard~\cite{10.1007/BFb0053971} and the model is really far from ours.
 
 \subsection{Scheduling approaches}
 
@@ -293,6 +292,9 @@ The problem we address in this thesis is similar to classical single pocessor sc
 be processed by the second one after a delay which depends on the job. This two-flow shop problem is $\NP$-hard~\cite{yu2004minimizing}, and while it can be reduced to the synchronized version of our problem, presented in~\ref{chap:SPALL}, the correspondence is less clear with the unsynchronized version of Chapter~\ref{chap:PAZL}. Moreover, our problem adds the constraint of periodicity which makes the model unsuitable.
 
 Scheduling on multiple processors does not seem related to our problems. In~\cite{korst1991periodic,hanen1993cyclic,aupy2017periodic}, several processors are available in parallel and the aim is to minimize the number of processors on which the periodic tasks are scheduled. To our knowledge, there is no problem of periodic scheduling on a networks of processors which can model our network. 
+
+
+ A survey about cyclic scheduling~\cite{levner2010complexity} explains that in cyclic scheduling problems, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
 
 \paragraph{A polynomial algorithm for single processor scheduling}
