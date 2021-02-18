@@ -7,11 +7,13 @@
 
 In this chapter, we consider a problem similar to \pall with an additional constraint: the sending of the messages in all the sources of the routes must be \textbf{synchronized}. We need to add buffering on the first contention point of each route, otherwise the synchronization constraint makes collisions unavoidable. Since it is much harder to find assignments with low latency in this context, we allow buffering in all contention points of the routed network (and not only in the ones corresponding to BBUs). Hopefully, this higher degree of freedeom to schedule the datagrams helps decrease the process time of the assigments.
 
-We modify the model in order to take into account the buffers, and we define the problem \textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency (\spall). The algorithms presented in this section solve \spall on the star routed network as in Chapters~\ref{chap:PAZL} and~\ref{chap:PALL}, but also on any directed acyclic multigraphs representing a routed network~\cite{de2011treewidth}. We first show that greedy algorithms similar to those used for star shaped networks are not efficient in routed network of higher contention depth. Then, we present several local search heuristics (Hill Climbing, Simulated Annealing, Tabu Search) that improve on the greedy algorithms and find low latency assignments. Finally, we present an $\FPT$ Branch and Bound algorithm that gives the optimal solution, which allows to assess the performances of previous algorithms on small networks.
+We modify the model in order to take into account the buffers, and we define the problem
+ %\textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency (\spall) 
+\minstra, the synchronized version of \mintra, studied in previous chapters. The algorithms presented in this section solve \minstra on the star routed network as in Chapters~\ref{chap:PAZL} and~\ref{chap:PALL}, but also on any directed acyclic multigraphs representing a routed network~\cite{de2011treewidth}. We first show that greedy algorithms similar to those used for star shaped networks are not efficient in routed network of higher contention depth. Then, we present several local search heuristics (Hill Climbing, Simulated Annealing, Tabu Search) that improve on the greedy algorithms and find low latency assignments. Finally, we present an $\FPT$ Branch and Bound algorithm that gives the optimal solution, which allows to assess the performances of previous algorithms on small networks.
 
 
 \section{Model changes}
-\subsection{A synchronized version of \pall}
+\subsection{A synchronized version of \minstra}
 
 The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is omitted. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention points, that is buffering is allowed in all vertices. 
 
@@ -30,26 +32,25 @@ As a reminder, the \textbf{contention depth} of a routed network $N = ({\cal R},
   Consider $t$ the last vertex of the route $r$, the transmission time of the datagram on 
   $r$ is denoted by $TR(r,A)$ as in Chapter~\ref{chap:PALL} and is equal to $t(r,t)$. Then, the \textbf{transmission time} of an assignment $A$ is defined as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(r,A) $. This is the time elapsed before the reception of the beginning of the last datagram. We denote by $TR(N)$ the best possible transmission time for the routed network $N$, that is the minimum of $TR(A)$ over all $A$ valid assignments.
 
-  As in Chapter~\ref{chap:PALL}, given a network $N$, the objective is to minimize $TR(A)$, we thus define \minstra, the problem of computing $A$ a $(P,\tau)$-periodic valid assignment such that $TR(A) = TR(N)$. We define the corresponding decision problem which is called \spall (\textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency) in which each route must respect a deadline $D$. We use the same deadline for all routes here, 
-  while for \pall a different deadline was considered for each, to allow for simpler transformations of the instances. 
+  As in Chapter~\ref{chap:PALL}, given a network $N$, the objective is to minimize $TR(A)$, we thus define \minstra, the problem of computing $A$ a $(P,\tau)$-periodic valid assignment such that $TR(A) = TR(N)$.% We define the corresponding decision problem which is called \spall (\textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency) in which each route must respect a deadline $D$. We use the same deadline for all routes here, while for \pall a different deadline was considered for each, to allow for simpler transformations of the instances. 
 
- \noindent {\bf Synchronized Periodic Assignment for Low Latency (\spall)} 
+ \noindent {\bf Minimizing Synchronized TRansmission time of Assignments (\minstra)} 
 
-      \noindent {\bf Input:}  A routed network $N = ({\cal R},\,\omega)$, a period $P$, a datagram size $\tau$ and a deadline $D$.%, a bound on the latency $T$.
+      \noindent {\bf Input:}  A routed network $N = ({\cal R},\,\omega)$, a period $P$, a datagram size $\tau$.%, a bound on the latency $T$.
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
-      \noindent {\bf Question:} Is $TR(N) \leq D$?
+      \noindent {\bf Problem:} Find $TR(A) = TR(N) $?
       \\
     
-    Several parameters are important for the study of \spall. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Surprisingly, the complexity of the presented algorithms do not depend on $P$, $\tau$ or the weights of the routed network, but only on $n$ the number of routes and $d$ the contention depth.
+    Several parameters are important for the study of \minstra. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Surprisingly, the complexity of the presented algorithms do not depend on $P$, $\tau$ or the weights of the routed network, but only on $n$ the number of routes and $d$ the contention depth.
 
 \subsection{Fronthaul networks modeling}\label{sec:fronthaul}
 
 \paragraph*{Contention Depth One}
 
 Each contention point of a routed network of contention depth one induces a connected component. 
-Problem \spall can be independently solved on each connected component of the network, hence the case with a single contention point is equivalent to contention depth one. Problem \spall over a routed network with a single contention point is equivalent to \wta, a problem already studied in Chapter~\ref{chap:PALL}. 
+Problem \minstra can be independently solved on each connected component of the network, hence the case with a single contention point is equivalent to contention depth one. Problem \minstra over a routed network with a single contention point is equivalent to \wta, a problem already studied in Chapter~\ref{chap:PALL}. 
 
 \paragraph*{Star routed network}
 
@@ -65,7 +66,7 @@ The problem $\minstra$ is $\NP$-hard when restricted to star routed networks.
 \begin{proof}
 The two flow shop problem studied in~\cite{yu2004minimizing} is shown to be $\NP$-hard. The problem is defined as follows: a set of $n$ jobs have to be processed in sequence on two machines. Each job must be processed on machine $1$ before beeing processed on machine $2$. All jobs can be processed from time $0$ on machine $1$, then for a job $i$, there is a delay $d_i$ between the end of the processing on machine $1$ and the time at which it can be processed machine $2$.  The time needed to process a job is the same for all jobs and both machines. The objective is to minimize the makespan, that is the time at which the last job is scheduled.
 
-We reduce an instance of the two flow shop problem to an instance of $\spall$ on a star routed network (cf Section~\ref{sec:star_routed_network}): A job is a route, the time to process a job is $\tau$ the size of a datagram and 
+We reduce an instance of the two flow shop problem to an instance of $\minstra$ on a star routed network (cf Section~\ref{sec:star_routed_network}): A job is a route, the time to process a job is $\tau$ the size of a datagram and 
  the delay of the job $i$ is the length of the arc $(c_1,c_2)$ in the route $r_i$. If all first datagrams of a route can 
  go through the routed network before the end of a period, then the periodicity of $\minstra$ does not come into play.
  In other word, we want to ensure that there is an assignment $A$ such that for all $r \in \mathcal{R}$, $TR(A,r) \leq P$.
@@ -87,7 +88,7 @@ to the arc representing the BBU and then from the arc representing the BBU to th
 
 \paragraph*{Contention depth larger than one}
 
-In this chapter, we deal with more general routed networks than star routed networks. The algorithms proposed here solves \spall on every routed network which are directed acyclic graphs. We focus our study on symmetric fronthaul networks; networks in which the routes between the RRH and the BBU use the same links same in both ways, but this property do not need to be enforced. Say that a routed network modeling symmetric fronthaul network is a symmetric routed network.
+In this chapter, we deal with more general routed networks than star routed networks. The algorithms proposed here solves \minstra on every routed network which are directed acyclic graphs. We focus our study on symmetric fronthaul networks; networks in which the routes between the RRH and the BBU use the same links same in both ways, but this property do not need to be enforced. Say that a routed network modeling symmetric fronthaul network is a symmetric routed network.
 
 This is the case of star routed networks, studied for \pazl and \pall in previous chapters. Star routed networks are symmetric around the central arc $(c_1,c_2)$. More generally, if a symmetric fronthaul networks has at most $2$ contention point on a route, this induces that all routes of a contention point of depth one belong to the same contention point of depth two. Thus, every symmetric fronthaul network of depth $2$ can be represented by several routed networks.
 
@@ -95,10 +96,10 @@ Symmetric routed networks of higher contention depth are taken into examples in 
 
 \section{Compact Representation of an Assignment}
 
- We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in {\cal R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments for $\prec$ to solve \spall.
+ We define $\prec$, the pointwise order on assignments: $A_1 \preceq A_2$ if for all $r\in {\cal R}$, $TR(A_1,r) \leq TR(A_2,r)$. Moreover, we say that $A_1 \prec A_2$ if $A_1 \preceq A_2$ and there is an $r \in \cal {R}$ such that  $TR(A_1,r) < TR(A_2,r)$. Remark that assignments which minimize $TR(A)$ are also minimal for $\prec$. Hence, it is enough to consider minimal assignments for $\prec$ to solve \minstra.
 
-We explain in this section how to represent most assignments in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without a compact representation when solving \spall. 
-It allows to design an $\FPT$ algorithm for \spall by going through all compact representations, but also to design good polynomial time heuristics using Tabu Search or Simulated Annealing, since one can easily define the neighborhood of a compact representation.
+We explain in this section how to represent most assignments in a compact way, forgetting about the precise buffering time by only considering informations about the order of the datagrams in each contention point. All minimimal assignments have a compact representation, which implies that we do not need to consider assignment without a compact representation when solving \minstra. 
+It allows to design an $\FPT$ algorithm for \minstra by going through all compact representations, but also to design good polynomial time heuristics using Tabu Search or Simulated Annealing, since one can easily define the neighborhood of a compact representation.
 
 
 \begin{definition}[Compact assignment]
@@ -122,7 +123,7 @@ Fig.~\ref{fig:normalizedassignment} illustrates how a compact representation is 
 \end{figure}
 
 
-Remark that for $CR(A)$ to be defined, we need that, on each contention point, at least one datagram is not buffered. We call such an assignment a \textbf{canonical assignment}. It turns out that any assignment $A$ can be made canonical without increasing $TR(A)$, hence we can only consider canonical assignments when solving \spall.
+Remark that for $CR(A)$ to be defined, we need that, on each contention point, at least one datagram is not buffered. We call such an assignment a \textbf{canonical assignment}. It turns out that any assignment $A$ can be made canonical without increasing $TR(A)$, hence we can only consider canonical assignments when solving \minstra.
 
 \begin{lemma}\label{lemma:canonical_min}
 Let $A$ be a valid assignment, then there is a valid canonical assignment $A'$ such that $A' \preceq A$.
@@ -806,15 +807,15 @@ As expected, the computation time is roughly linear in the number of steps $N$. 
 
 \subsection{Bruteforcing Compact Assignments}
 
-Solving \spall, means finding an assignment for which $TR(A)$ is minimal. 
-Given an instance of \spall, the local search algorithms presented in the previous sections explore a few compact assignments $CA$ and returns the one which minimize $TR(Real(CA))$.  We begin by providing 
-a bruteforce algorithm testing all compact assignments, then we show how we can avoid a large number of the compact assignments using a Branch and Bound algorithm, which allows to solve \spall optimally for small number of routes.
+Solving \minstra, means finding an assignment for which $TR(A)$ is minimal. 
+Given an instance of \minstra, the local search algorithms presented in the previous sections explore a few compact assignments $CA$ and returns the one which minimize $TR(Real(CA))$.  We begin by providing 
+a bruteforce algorithm testing all compact assignments, then we show how we can avoid a large number of the compact assignments using a Branch and Bound algorithm, which allows to solve \minstra optimally for small number of routes.
 
 \begin{theorem}\label{theorem:FPT}
-For routed networks of fixed contention depth $d$, the problem \spall parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
+For routed networks of fixed contention depth $d$, the problem \minstra parametrized by $n$ the number of routes is FPT: it can be solved in time $O(nd(n!2^{n})^{d})$.
 \end{theorem}
 \begin{proof}
-The algorithm to solve \spall is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time $O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
+The algorithm to solve \minstra is the following: all compact assignments $CA$ are generated, for each of them $TR(Real(CA))$ is computed in time $O(nd)$ by Lemma~\ref{lemma:canonical} and we keep the compact assignment for which this value is minimal.  Because of Lemma~\ref{lemma:prec}, to compute the minimum of $TR(A)$, it is enough 
 to compute the minimum of $TR(Real(CA))$.
 
  Now, we need to evaluate the number of compact assignments. 
@@ -990,11 +991,11 @@ Let $v$ be a vertex of the compact representation tree representing the partial 
 If we want to ignore the subtree rooted at $v$ while exploring the partial compact assignment tree,
 we must know a lower bound on the transmission time of the compact assignments in this subtree.
 Lemma~\ref{lemma:restriction} shows that it is given by the transmission time of the restricted routed network
-$N(CA)$, that is solving \spall on a simpler network. Since this value is still too expensive to compute, we provide a relaxation of the problem of solving \spall over $N(CA)$, which is practical to solve.
+$N(CA)$, that is solving \minstra on a simpler network. Since this value is still too expensive to compute, we provide a relaxation of the problem of solving \minstra over $N(CA)$, which is practical to solve.
 
-\paragraph{Relaxation of \spall}
+\paragraph{Relaxation of \minstra}
 
-To lower bound the value of $TR(N)$, we propose to transform a routed network into a network with a single contention point, with a lower transmission time (but as large as possible). The problem \spall over a single contention point is the problem \wta, that we have solved in Chapter~\ref{chap:PALL}, and that we can compute efficiently.
+To lower bound the value of $TR(N)$, we propose to transform a routed network into a network with a single contention point, with a lower transmission time (but as large as possible). The problem \minstra over a single contention point is the problem \wta, that we have solved in Chapter~\ref{chap:PALL}, and that we can compute efficiently.
 
 Let $N$ be any network and let $c_j$ be a contention point. Let $N^j$ be the routed network with the
 single contention point $c_j$, a set of routes $\mathcal{R}'$ and a weight function $\omega'$ defined as follows. For each route $r$ of $N$ which goes through $c_j$, there is a route $r' = (s_r,c_j,t_r) \in \mathcal{R}'$. We define $\omega'(s_r,c_j) = \lambda(r,c_j)$ and $\omega'(c_j,t_r) =  \lambda(r) - \lambda(r,c_j)$. The network $N^j$ represents all the routes going through $c_j$ and assuming further there are no constraint before $c_j$ and after $c_j$.   
@@ -1077,7 +1078,7 @@ Figure~\ref{fig:relaxednetwork} shows a routed network $N$ relaxed to $N^1$ on $
 
 \end{tikzpicture}
 }
- \caption{Problem \spall relaxed to one contention point.}
+ \caption{Problem \minstra relaxed to one contention point.}
 
 \label{fig:relaxednetwork}
 \end{center}
@@ -1174,7 +1175,7 @@ We give in the tabular $A$ the optimal solution for $N$. By considering $A$ and 
 Let $SCB(N)$, for \emph{Single Contention Bound}, be the function which associates to $N$ the integer 
 $\max_{j} TR(N^j)$. By Lemma~\ref{lemma:lowerbound}, we have for all $j$, $TR(N) \geq TR(N^j)$, hence $SCB(N)\leq TR(N)$.
 We can compute $SCB(N)$ in time $m2^kk^3log(k)$ where $k$ is the contention width of the network and $m$ the number 
-of contention nodes. Indeed, for each $j$, solving \spall on $N^j$ is equivalent to solving \wta, which can be done
+of contention nodes. Indeed, for each $j$, solving \minstra on $N^j$ is equivalent to solving \wta, which can be done
 in time $2^kk^3log(k)$ by \ASPMLS, where $k$ is the number of routes in $N^j$ which is equal to the contention width of $c_j$ in $N$. By taking the example of Figures~\ref{fig:relaxednetwork} and~\ref{fig:relaxednetworkwithass}, $SCB(N) = 13$ while $TR(N) = 14$.
 \paragraph{Description of the Branch and Bound Algorithm}
 
@@ -1185,7 +1186,7 @@ Then, it does a depth first traversal of the compact assignment tree.
 When it enters a node $v$, which represents a partial compact assignment $CA$, it computes $SCB(N(CA))$ and
 if it is larger or equal to the upper bound, it backtracks, that is it goes back to the parent of $v$ without visiting
 the subtree rooted at $v$. 
-When the algorithm reaches a leaf representing some compact assignment $CA$, it computes $TR(Real(CA))$ and updates the upper bound. Lemmas~\ref{lemma:restriction} and~\ref{lemma:lowerbound} proves that the leaves which have not been explored correspond to compact assignments with higher transmission time than the one found by the branch and bound algorithm, proving that it solves \spall.
+When the algorithm reaches a leaf representing some compact assignment $CA$, it computes $TR(Real(CA))$ and updates the upper bound. Lemmas~\ref{lemma:restriction} and~\ref{lemma:lowerbound} proves that the leaves which have not been explored correspond to compact assignments with higher transmission time than the one found by the branch and bound algorithm, proving that it solves \minstra.
 
 
 \paragraph{Additional Cuts}
