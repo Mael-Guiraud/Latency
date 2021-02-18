@@ -9,7 +9,7 @@ In this chapter, we consider a problem similar to \pall with an additional const
 
 We modify the model in order to take into account the buffers, and we define the problem
  %\textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency (\spall) 
-\minstra, the synchronized version of \mintra, studied in previous chapters. The algorithms presented in this section solve \minstra on the star routed network as in Chapters~\ref{chap:PAZL} and~\ref{chap:PALL}, but also on any directed acyclic multigraphs representing a routed network~\cite{de2011treewidth}. We first show that greedy algorithms similar to those used for star shaped networks are not efficient in routed network of higher contention depth. Then, we present several local search heuristics (Hill Climbing, Simulated Annealing, Tabu Search) that improve on the greedy algorithms and find low latency assignments. Finally, we present an $\FPT$ Branch and Bound algorithm that gives the optimal solution, which allows to assess the performances of previous algorithms on small networks.
+\minstra, the synchronized version of \mintra, studied in previous chapters. The algorithms presented in this section solve \minstra on the star routed network as in Chapters~\ref{chap:PAZL} and~\ref{chap:PALL}, but also on any directed acyclic multigraphs representing a routed network. We first show that greedy algorithms similar to those used for star shaped networks are not efficient in routed network of higher contention depth. Then, we present several local search heuristics (Hill Climbing, Simulated Annealing, Tabu Search) that improve on the greedy algorithms and find low latency assignments. Finally, we present an $\FPT$ Branch and Bound algorithm that gives the optimal solution, which allows to assess the performances of previous algorithms on small networks.
 
 
 \section{Model changes}
@@ -18,19 +18,18 @@ We modify the model in order to take into account the buffers, and we define the
 The fronthaul network is still represented in this chapter by a routed network $N = ({\cal R},\,\omega)$ but the set ${\cal B}$ of vertices with possible buffering is omitted. Indeed, in this chapter, ${\cal B}$ is equal to ${\cal C}$, the set of contention points, that is buffering is allowed in all vertices. 
 
 In Chapter~\ref{chap:PAZL} and~\ref{chap:PALL}, the routed network is assumed to be a star routed network, a restriction that we now lift.
-We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_0,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention depth} $i$ for the route $r$, and we denote it by $cd(c_i,r) = i$. The contention depth of a contention point $c$ is the maximum of its contention depth over all routes going through $c$: $cd(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cd(c,r)$. 
+We define by $\mathcal{R}_c$ the subset of routes in $\mathcal{R}$ containing $c$. Let $r \in {\cal R}$, with $r = (s,c_0,\dots,c_l,t)$, then we say that $c_i$ is of \textbf{contention depth} $i$ for the route $r$, and we denote it by $cd(r,c_i) = i$. The contention depth of a contention point $c$ is the maximum of its contention depth over all routes going through $c$: $cd(c) = \max\limits_{r\in{\cal R}_c \text{ and } c \in r} cd(r,c)$. 
 As a reminder, the \textbf{contention depth} of a routed network $N = ({\cal R},\,{\cal B},\,\omega)$ is the maximal number of contention points on a route in the routed network. 
 
 
    Let $r=(s,c_0,\dots,c_l,t)$ be a route. As mentioned above, all sources emit a datagram at the same date. This means that, w.l.o.g. $o_r = 0$. In order to avoid contention, it is possible to buffer datagrams in all contention points. An \textbf{assignment}, denoted by  $A$, is a function which associates a non negative integer value $A(r,c)$ to each couple $(r,c)$ with $r \in \mathcal{R}$ and $c$ a vertex of $r$. The values $A(r,c)$ represent the buffering times: a datagram of route $r$ waits $A(r,c)$ tics in the buffer of $c$.
           
-       
 
  The \textbf{arrival time} of a datagram in vertex $c_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $c_i$, and is defined by $t(r,c_i) = \lambda(r,c_i) + \sum_{k=0}^{i-1} A(r,c_k) $. The date at which a datagram reaches a vertex $u_i$ is decomposed into a \emph{physical delay} due to the time to go through the links before $u_i$ and a \emph{logical} delay caused by the use of buffers as determined by assignment $A$.
   The \textbf{sending time} of a datagram at vertex $c_i$ of $r$, is the first time at which the datagram is sent by $c_i$. It is defined by $s(r,c_i) = t(r,c_i) +  A(r,c_i) $. This is the arrival time of the datagram plus the buffering time given by $A$.
  
-  Consider $t$ the last vertex of the route $r$, the transmission time of the datagram on 
-  $r$ is denoted by $TR(r,A)$ as in Chapter~\ref{chap:PALL} and is equal to $t(r,t)$. Then, the \textbf{transmission time} of an assignment $A$ is defined as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(r,A) $. This is the time elapsed before the reception of the beginning of the last datagram. We denote by $TR(N)$ the best possible transmission time for the routed network $N$, that is the minimum of $TR(A)$ over all $A$ valid assignments.
+  Consider $v$ the last vertex of the route $r$, the transmission time of the datagram on 
+  $r$ is denoted by $TR(r,A)$ as in Chapter~\ref{chap:PALL} and is equal to $t(r,v)$. Then, the \textbf{transmission time} of an assignment $A$ is defined as $TR(A) = \displaystyle \max\limits_{r \in {\cal R}} TR(r,A) $. This is the time elapsed before the reception of the beginning of the last datagram. We denote by $TR(N)$ the best possible transmission time for the routed network $N$, that is the minimum of $TR(A)$ over all $A$ valid assignments.
 
   As in Chapter~\ref{chap:PALL}, given a network $N$, the objective is to minimize $TR(A)$, we thus define \minstra, the problem of computing $A$ a $(P,\tau)$-periodic valid assignment such that $TR(A) = TR(N)$.% We define the corresponding decision problem which is called \spall (\textbf{S}ynchronized \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency) in which each route must respect a deadline $D$. We use the same deadline for all routes here, while for \pall a different deadline was considered for each, to allow for simpler transformations of the instances. 
 
@@ -40,10 +39,10 @@ As a reminder, the \textbf{contention depth} of a routed network $N = ({\cal R},
       
       %\noindent {\bf Decision problem:} is there a valid assignment $A$ of $(G,{\cal R})$ such that $ TR(A) \leq T$ ?
 
-      \noindent {\bf Problem:} Find $TR(A) = TR(N) $?
+      \noindent {\bf Problem:} Find $A$ with $TR(A) = TR(N)$.
       \\
     
-    Several parameters are important for the study of \minstra. We evaluate the arithmetic complexity of our algorithms, that is arithmetic operations are considered to be in constant time. Surprisingly, the complexity of the presented algorithms do not depend on $P$, $\tau$ or the weights of the routed network, but only on $n$ the number of routes and $d$ the contention depth.
+     We evaluate the arithmetic complexity of our algorithms to solve \minstra, that is arithmetic operations are considered to be in constant time. Surprisingly, the complexity of the presented algorithms do not depend on $P$, $\tau$ or the weights of the routed network, but only on $n$ the number of routes and $d$ the contention depth.
 
 \subsection{Fronthaul networks modeling}\label{sec:fronthaul}
 
@@ -78,7 +77,7 @@ We reduce an instance of the two flow shop problem to an instance of $\minstra$ 
 
   
 The fronthaul networks we study have \textbf{coherent} routings, a classical 
-requirement in telecommunication networks (see e.g. ~\cite{Schwiebert1996ANA}). It means that
+requirement in telecommunication networks (see e.g.~\cite{Schwiebert1996ANA}). It means that
 if the routes $r$ and $r'$ go through two contention points $u$ and $v$, they have the same subpath
 between $u$ and $v$.
 This is true for the fronthaul networks we modelize. The coherent property is respected from the source 
@@ -88,11 +87,11 @@ to the arc representing the BBU and then from the arc representing the BBU to th
 
 \paragraph*{Contention depth larger than one}
 
-In this chapter, we deal with more general routed networks than star routed networks. The algorithms proposed here solves \minstra on every routed network which are directed acyclic graphs. We focus our study on symmetric fronthaul networks; networks in which the routes between the RRH and the BBU use the same links same in both ways, but this property do not need to be enforced. Say that a routed network modeling symmetric fronthaul network is a symmetric routed network.
+In this chapter, we deal with more general routed networks than star routed networks. The algorithms proposed here solves \minstra on every routed network which are directed acyclic graphs. We focus our study on symmetric fronthaul networks; networks in which the routes between the RRH and the BBU use the same links in both ways, but this property does not need to be enforced. We say that a routed network modeling a symmetric fronthaul network is a \textbf{symmetric routed network}.
 
-This is the case of star routed networks, studied for \pazl and \pall in previous chapters. Star routed networks are symmetric around the central arc $(c_1,c_2)$. More generally, if a symmetric fronthaul networks has at most $2$ contention point on a route, this induces that all routes of a contention point of depth one belong to the same contention point of depth two. Thus, every symmetric fronthaul network of depth $2$ can be represented by several routed networks.
+Star routed networks, considered when solving \pazl and \pall in previous chapters are symmetric routed network: they are symmetric around the central arc $(c_1,c_2)$. More generally, if a symmetric fronthaul network is of contention depth $2$, then all routes which contain the same contention point of depth one also contain same contention point of depth two. Thus, every symmetric fronthaul network of depth $2$ can be represented by several disjoint star routed networks.
 
-Symmetric routed networks of higher contention depth are taken into examples in this chapter. On higher contention depth, it is reasonable to consider that the length of the links in the datacenter are the same for all routes. Then, the output of the BBU does not induce contention anymore and, as explained in Section~\ref{sec:generationrouted}, the routed networks are thus symmetrical around the contention point preceding the BBU. 
+Symmetric routed networks of higher contention depth are specifically studied in this chapter. For higher contention depth, a reasonable simplifying assumption is to consider that the length of the links in the datacenter are the same for all routes. Then, there is no contention on the link going out of the BBU, as explained in Section~\ref{sec:generationrouted} and the routed networks are symmetrical around the contention point preceding the BBU. 
 
 \section{Compact Representation of an Assignment}
 
@@ -290,7 +289,7 @@ First, remark that, contrary to our choice for star routed networks, we consider
 \label{fig:bbuaggreg}
 \end{figure}
 
-We propose several experiments to assess the practical performance (in speed and quality) of the poposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in Figure~\ref{fig:randomnetworks}, in which each dotted arc represents the arcs of two routes. 
+We propose several experiments to assess the practical performance (in speed and quality) of the proposed algorithms. We present here the instances on which we test our algorithms, which are derived from our application to Cloud-RAN. We consider networks of contention depth three, as illustrated in Figure~\ref{fig:randomnetworks}, in which each dotted arc represents the arcs of two routes. 
 
 
 
@@ -437,16 +436,16 @@ We propose several experiments to assess the practical performance (in speed and
 %\label{fig:randomnetworks}
 %\end{figure}
 
-To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the impact of those parameters, in terms of computation time and quality, for each of the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the routed network to the one shown in Figure~\ref{fig:randomnetworks}. The difference between the performances of the presented algorithms are not significantly impacted if we change the number of contention points. 
+To generate random routed networks, several parameters must be chosen: The load of the network, the number of routes, the distribution of the length of the arcs, and the topology of the routed network. We would like to understand the impact of those parameters, in terms of computation time and quality of found assignment, for each of the algorithms studied. In order to reduce the number of experiences presented here, we fix the topology of the routed network to the one shown in Figure~\ref{fig:randomnetworks}. The difference between the performances of the presented algorithms are not significantly impacted if we change the number of contention points. 
 
  
  The impact of the \textbf{load} on the quality of the results has been investigated: When the load is increased, the relative quality of solutions found by the local search algorithms does not changes significantly. Hence, we choose to fix the load to $0.8$, which is an already high load. This means that $P = \frac{\tau \times n}{0.8}$, whith $n$ the maximal number of routes over a contention point. The size of the C-RAN traffic depends of the service requirement~\cite{mobile2011c}. Here, we fix $\tau = 2500$ tics.
   
-In a C-RAN context, the number of route is low. In the network we study, there is $n=8$ routes on the graph. This kind of graphs with few routes allows us to use the Branch and Bound algorithm to find the ptimal solution for evaluating the performances of the other algorithms. We study the impact of the number of routes in the graph in Section~\ref{sec:evalperfspall}. The length of the arcs is drawn uniformly between $0$ and $P$. This choice makes the periodicity of our problem impactful, and does not allow  us to reuse algorithms from a non periodic setting.
+In a C-RAN context, the number of route is low. In the network we study, there is $n=8$ routes on the graph. This kind of graphs with few routes allows us to use the Branch and Bound algorithm to find the optimal solution, which helps to interpret the performances of the other algorithms. We study the impact of the number of routes in the graph in Section~\ref{sec:evalperfspall}. The length of the arcs is drawn uniformly between $0$ and $P$. This choice makes the periodicity of our problem impactful, and does not allow us to reuse algorithms from a non periodic setting.
 
-Here, because we do not consider deadlines as in Chapter~\ref{chap:PALL}, we redefine the notion of \textbf{margin}.
-For a given routed network in which $r_n$ is the longest route (i.e. the route for which $\lambda(r)$ is the greatest), the margin of an assignment $A$ is equal to $TR(A) - \lambda(r)$, that is, the difference between the transmission time and the physical delay of the route. In other words, this represent the time used for logical delays, that are set by the assignment.
- When solving \minstra, we want to minimize $TR(A)$ up to $TR(N)$. By definition, the margin measure the additional latency given by an assignment and we will express the performance of our algorithms as the value of the margin of the assignment. 
+Since the notion of transmission time has changed in this chapter, compared to Chapter~\ref{chap:PALL},
+ the notion of \textbf{margin} is also slightly different. For a given routed network in which $r_n$ is the longest route (i.e. the route for which $\lambda(r)$ is the largest), the margin of an assignment $A$ is equal to $TR(A) - \lambda(r)$, that is, the difference between the transmission time and the physical delay of the route. In other words, this represent the time used for logical delays, that are set by the assignment.
+ When solving \minstra, we want to minimize $TR(A)$ down to $TR(N)$, which is equivalent to the minimization of the margin of $A$. By definition, the margin measures the additional latency given by an assignment and we will express the performance of our algorithms as the value of the margin of the assignment found. 
 
 
 \subsection{Success Rate and Performance of the Greedy Algorithms}
@@ -495,8 +494,7 @@ We propose an improved version of \greedydeadline and \greedynormalized that alw
 \label{fig:greedysuccess}
 \end{figure}
 
-Algorithm \hybridgreedynormalized seems much better than the other two. Hence, in the rest of the paper \hybridgreedynormalized will serve as a baseline of assignment quality since it can be obtained in very short time. It will also serve to initialize 
-local search algorithms with a first assignment of sufficient quality.
+Algorithm \hybridgreedynormalized seems much better than the other two. Hence, in the rest of the paper \hybridgreedynormalized serve as a baseline of assignment quality since it can be obtained in very short time. It is also used to initialize local search algorithms with a first assignment of sufficient quality.
 
 \section{Local Search Heuristics}
 
@@ -594,7 +592,7 @@ Finally, using Lemma~\ref{lemma:path} once again prove there is a path between $
 
 \subsection{Hill Climbing}\label{sec:hillclimb}
 
-The most simple local search heuristic is Hill Climbing. This algorithm starts from a compact assignment $CA$, explore the entire neighborhood of $CA$, and selects the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then, the algorithm stops and returns $Real(CA)$ which is a local minimum. 
+The most simple local search heuristic is Hill Climbing. This algorithm starts from a compact assignment $CA$, explores the entire neighborhood of $CA$, and selects the realizable compact assignment $CA'$ of minimal transmission time. Then, we set $CA = CA'$ and repeat this step until there are no $CA'$ such that $TR(CA') < TR(CA)$. Then, the algorithm stops and returns $Real(CA)$ which is a local minimum. 
 
 The quality of Hill Climbing depends on the the initial compact assignment. A first choice is to consider the compact representation $CR(A)$ of the assignment $A$ given by \hybridgreedynormalized (\hgn). We can also choose a random compact assignment. Since a compact assignment does not always give a valid assignment nor a good one, we should draw many random compact assignments and return the best assignment found by Hill Climbing using these initial solutions.
 
@@ -602,7 +600,7 @@ Figure~\ref{fig:descente07} shows the difference between initalizing Hill Climbi
 \begin{figure}[h] 
 	\centering
 	\includegraphics[scale=0.3]{Chapitre5/descente07}
-\caption{ Margin needed to find a solution for Hill Climbing, intialized with \hgn, $1$, $10$ or $100$ random compact assignments.}
+\caption{ Margin of solutions found by Hill Climbing, intialized with \hgn, $1$, $10$ or $100$ random compact assignments.}
 \label{fig:descente07}
 \end{figure}
 
@@ -644,7 +642,7 @@ in experiments presented in Figures~\ref{tab:descenteload} and \ref{tab:descente
 \vfill
 \end{minipage}
 
-Those experiences show that Hill Climbing computed on $100$ random instances performs well when the number of routes and the load are low. However, this is not sufficient when the load or the number of routes increases. Indeed, higher loads makes valid solutions harder to find, and increasing the number of routes also increase the size of the neighboorhood, and thus, the number of non valid compact assignments. Furthermore, the computation time required by executing Hill Climbing on many random compact assignments instead of one (using \hgn) makes it less effective.
+Those experiences show that Hill Climbing computed on $100$ random instances performs well when the number of routes and the load are low. However, this is not sufficient when the load or the number of routes increases. Indeed, higher loads makes valid solutions harder to find, and increasing the number of routes also increase the size of the neighboorhood, and thus, the number of compact assignments which are not valid. Furthermore, the computation time required by executing Hill Climbing on many random compact assignments instead of one (using \hgn) makes it less effective.
 
 We thus propose an hybrid initialization scheme for Hill Climbing: Between the assigments given by initializing the Hill Climbing either with \hgn, or with $k$ random compact assignments, return the one that minimize $TR(A)$. We call this initialization hybrid $k$. Figure~\ref{fig:hybridhill} shows the margin needed by the best solution given by Hill Climbing, with different initialisations. The results are computed on $1000$ random instances.
 
@@ -675,7 +673,7 @@ We now focus on how many steps Hill Climbing does before ending in a local optim
 
 \subsection{Tabu Search}
 
-Tabu Search is a variation on Hill Climbing using memory. We start from a compacta ssignment $CA$ given by \hybridgreedynormalized. Then, at each step, from the current compact assignment $CA$, we select the compact assignment $CA'$ which minimizes $TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid looping around a local minimum, we keep in memory the last $M$ solutions explored and we forbid to visit them again. This algorithm can still loop on a solution cycle larger than $M$, hence we must fix some integer $N$ and stop the algorithm after $N$ steps.
+Tabu Search is a variation on Hill Climbing using memory. We start from a compact assignment $CA$ given by \hybridgreedynormalized. Then, at each step, from the current compact assignment $CA$, we select the compact assignment $CA'$ which minimizes $TR(CA')$, even when $TR(CA') < TR(CA)$ is not satisfied. To avoid looping around a local minimum, we keep in memory the last $M$ solutions explored and we forbid to visit them again. This algorithm can still loop on a solution cycle larger than $M$, hence we must fix some integer $N$ and stop the algorithm after $N$ steps.
 The parameters $N$ and $M$ must be chosen appropriately to minimize the computation time of Tabu Search, while maximising the quality of the solutions found. 
 
 We first investigate on Figure~\ref{tab:tabumn} the impact of $N$ alone. To do so, we fixe $N = M$ (infinite memory) and we compute  Tabu Search on an instance, with $N = 100$, $500$, $1000$ and $2000$. Those simulations have been made with $8$ routes and a load $0.8$, and results are similar for $20$ routes. It appears that with $N=M$, the more steps Tabu Search computes, the better is the solution. For most instance, Tabu Search finds the optimal solutions in the first steps, however for some instances the solution is improved after a large number of steps, which impacts strongly the average margin. At each step, Tabu Search explores the entire neighborhood of the current compact assignment,
@@ -731,15 +729,14 @@ Figure~\ref{tab:tabumemory} shows the cumulative distribution of the margin need
 \end{center}
 
 It seems that the more steps Tabu Search remembers, the smaller is the margin of the assignment.
-In more of $60\%$ of the cases, Tabu Search finds its best assignment before $10$ steps. When increasing the memory, the average number of steps needed by Tabu Search to find the best solution increases. Nevertheless, remark that for $M > 100$,
-the maximal number of steps to find the best solution is $165$. It seems that the memory size has a very small effect on  hard instances.
+In more of $60\%$ of the cases, Tabu Search finds its best assignment before $10$ steps. When increasing the memory, the average number of steps needed by Tabu Search to find the best solution increases. Nevertheless, remark that for $M > 100$, the maximal number of steps to find the best solution is $165$. It seems that the memory size has a very small effect on  hard instances.
 
 
 \subsection{Simulated Annealing}\label{sec:recuit}
 
 
 
-In this section, we use the Simulated Annealing method which works as follow.  An initial {\emph temperature} is set and an initial compact valid assignment $CA$ is computed. At each step, we try to replace the current valid compact assignment $CA$, by $CA'$ drawn uniformly at random in the neighborhood of $CA$. Then, in function of the temperature $t$ and $\Delta$ the difference between $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. More precisely, 
+In this section, we study the Simulated Annealing method which works as follow.  An initial {\emph temperature} is set and an initial compact valid assignment $CA$ is computed. At each step, we try to replace the current valid compact assignment $CA$, by $CA'$ drawn uniformly at random in the neighborhood of $CA$. Then, in function of the temperature $t$ and $\Delta$ the difference between $TR(Real(CA))$ and $TR(Real(CA'))$, $CA'$ is either accepeted or rejected. More precisely, 
 $CA'$ is accepted with probability $e^{-\frac{\Delta}{t}}$. 
 After a given number of steps, the temperature is decreased by multiplying it by some constant less than one. The lower the temperature, the lower the chance to accept a compact assignment that worsen the solution. This algorithm is an answer to the exploration/exploitation paradox: in the beginning of the algorithm the whole solution space is explored but as the temperature decreases, the search becomes more and more local around a good solution.
 
