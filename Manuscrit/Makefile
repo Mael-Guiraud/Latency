@@ -1,10 +1,16 @@
+
+
 all:
 	pdflatex Manuscript.tex
 	bibtex Manuscript
 	pdflatex Manuscript.tex
 	pdflatex Manuscript.tex
 	evince Manuscript.pdf &
-
+ifeq ($(USER),mael)
+	echo $(USER)
+	cp Manuscript.pdf ../../Mael-Guiraud.github.io
+	cd ../../Mael-Guiraud.github.io  && git commit -am "autocommit"  && git push; 
+endif
 
 clean:
 	rm -f *.aux
