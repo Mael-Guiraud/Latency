@@ -5,12 +5,13 @@ all:
 	bibtex Manuscript
 	pdflatex Manuscript.tex
 	pdflatex Manuscript.tex
-	evince Manuscript.pdf &
+	pdftk couv.pdf Manuscript.pdf cat output Manuscrit.pdf
 ifeq ($(USER),mael)
 	echo $(USER)
-	cp Manuscript.pdf ../../Mael-Guiraud.github.io
+	cp Manuscrit.pdf ../../Mael-Guiraud.github.io
 	cd ../../Mael-Guiraud.github.io  && git commit -am "autocommit"  && git push; 
 endif
+	evince Manuscrit.pdf &
 
 clean:
 	rm -f *.aux
