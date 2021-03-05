@@ -4,15 +4,16 @@
 \chapter{Scheduling Unsynchronized Periodic Datagrams with a single Buffer }
 \label{chap:PALL}
 \minitoc
-
 This chapter is taken from a published paper~\cite{DBLP:conf/ict/BarthGLMS18} and its extended version~\cite{DBLP:journals/corr/abs-1801-07029}.
-      
-         \section{Solving \texttt{PALL} on Star Routed Networks}\label{sec:PALL}
-    
-    In this section, we consider the more general \pall problem on star routed networks. The datagrams are allowed to wait in the BBUs to yield more possible assignments. Hence, we allow the process time of a route to be greater than the length of the route, but it must be bounded by its deadline.
+ As explained in previous chapter, it is not always possible to solve \pazl in star routed networks.
+ In this chapter, we consider the more general \pall problem on star routed networks. The datagrams are allowed to wait in the BBUs to yield more possible assignments. Hence, we allow the process time of a route to be greater than the length of the route, but it must be bounded by its deadline.
+ An assignment is not anymore only a choice of offset for every datagram, but also a choice of waiting time in the contention vertex representing the BBU of the route.
 
+  We propose a two stage approach in which we first set the offsets of the datagrams such that there is no collision in the first contention point $c_1$, and we then define the problem \wta of finding the waiting time for each datagram. We propose several polynomial time algorithms and one FPT (when \wta is parametrized by the number of routes) algorithm for \wta based on scheduling algorithms adapted for periodicity. We also give an FPT (on the number of routes too) algorithm that solve \pall but for which the complexity is already too large to be computed.
 
-	\subsection{Simple Star Routed Networks}
+  We then show that our approach give excellent performances in terms of latency, far better than statistical multiplexing.
+
+	\section{Simple Star Routed Networks}
 		
 
 	Often in real networks, the length of the routes are not arbitrary and we may exploit that to solve \pall easily. For instance all the weights on the arcs $(c_1,c_2)$ are the same if all the BBUs are in the same data-center and all datagrams require the same time to be processed in the BBUs.
@@ -33,7 +34,7 @@ Finding an assignment in that case is trivial: send all datagrams so that they f
      \end{proof}
      
     
-     \subsection{Two Stages Approach}
+     \section{Two Stages Approach}
      
       We may decompose an algorithm solving \pall on a star routed network in two parts: first set all the offsets of routes so that there is no collision in $c_1$ and then knowing this information find waiting times so that there is no collision in $c_2$ while respecting the deadlines. 
       
@@ -55,7 +56,7 @@ Finding an assignment in that case is trivial: send all datagrams so that they f
 
    In the rest of the section we study different methods to solve \wta either by polynomial time heuristics or by an FPT algorithm. The methods to solve \wta are then combined with the heuristics proposed to fix the offsets of the routes to obtain an algorithm solving \pall.  
    
-   \subsection{Greedy Scheduling of Waiting Times}
+   \section{Greedy Scheduling of Waiting Times}
 
    We now solve the problem \wta, hence we are given as input a routed network, a deadline function and an offset for each route. The \textbf{release time} of a route is defined as the first time its datagram can go through $c_2$: for a route $r$ with offset $o_r$, it is $\lambda(r,c_2) + o_r$.
 
@@ -126,7 +127,7 @@ Finding an assignment in that case is trivial: send all datagrams so that they f
     The complexity of \greedydeadline is in $O(n\log(n))$, using the proper data structures. The set of routes $\cal{R}$ must be maintained in a binary heap to be able to find the one with smallest deadline in time $O(\log(n))$. To deal with the possible collisions, one maintains a list of the intervals
     of time during which a datagram can go through $c_2$. Each time the waiting time of a route is fixed, an interval is split into at most two intervals in constant time. During the whole algorithm, each element of this list is used at most twice either when doing an insertion or when looking for the next free interval. Hence, the time needed to maintain the list is in $O(n)$. 
   
-     \subsection{Earliest Deadline Scheduling}\label{sec:wtaheuristic}
+     \section{Earliest Deadline Scheduling}\label{sec:wtaheuristic}
      
      
      The problem \wta is the same as a classical earliest deadline scheduling problem, if we forget the periodicity. Given a set of jobs with \emph{release times} and \emph{deadlines}, schedule all jobs on a single processor, that is choose the time at which they are computed, so that no two jobs are scheduled at the same time. A job is always scheduled after its release time and it must be dealt with before its deadline. Let us call $n$ the number of jobs, the problem can be solved in time $O(n^2\log(n))$~\cite{simons1978fast} when all jobs have the same running time and it gives a solution which minimizes the time at which the last job is scheduled. On the other hand, if the running times are different the problem is $\NP$-complete~\cite{lenstra1977complexity}. 
@@ -174,7 +175,7 @@ Finding an assignment in that case is trivial: send all datagrams so that they f
 %     \end{algorithmic}
 %     \end{algorithm}
 
-\subsection{FPT algorithms for \texttt{WTA} and \texttt{PALL}}
+\section{FPT algorithms for \texttt{WTA} and \texttt{PALL}}
 
 As a warm-up, we give a simple FPT algorithm for \wta which is practical,
 and then we build on it to give a more complicated FPT algorithm for \pall. Unfortunately, the dependency on $n$ the number of routes in the second algorithm is yet too large to be useful in practice. 
@@ -235,7 +236,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 \end{proof}
 
 
-    \subsection{Experimental Evaluation}
+    \section{Experimental Evaluation}
     \label{sec:resultsPALL}
     \paragraph{Evaluating the Necessary Margin}
     
@@ -397,7 +398,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
       \end{minipage}\hfill
      \end{figure}
 
-  \subsection{Performance of Statistical Multiplexing}
+  \section{Performance of Statistical Multiplexing}
 \label{sec:statisticalpall}
     
   %    \subsubsection{Description of statistical multiplexing}
