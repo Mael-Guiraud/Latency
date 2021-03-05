@@ -13,7 +13,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 
 	\subsection{Routes and Contention Points}
 
-  	We study a communication network with pairs of source (s) target (t) nodes between which messages are sent periodically. The routing between each pair of such nodes is given: a \textbf{route} is a sequence of vertices $(s, c_1, \ldots, c_l, t)$. A vertex appears only once in a route. Each vertex $c_i$ corresponds to a contention point, that is the beginning of a link of the communication network shared by several routes. Hence, all vertex appears in several routes, except the first ($s$) and last ($t$) vertex of a route, which are exclusive to the route and represent the source and the target of the message. When modeling a C-RAN network, the first vertex represents the RRH sending of the message by the RRH and the last vertex represents the the same RRH that receives the answer. 
+  	We study a communication network constituted of pairs of vertices between which messages are sent periodically. The routing between each pair of such nodes is given: a \textbf{route} is a sequence of vertices $(s, c_1, \ldots, c_l, t)$. A vertex appears only once in a route, that is there is no loop in a route. Each vertex $c_i$ corresponds to a contention point, that is the beginning of a link of the communication network shared by several routes. Hence, all vertices appear in several routes, except $s$, the first vertex of the route, and $t$, the last vertex of the route, which are exclusive to the route and represent the source and the target of the message. When modeling a C-RAN network, the first vertex represents the sending of the message by the RRH and the last vertex represents the same RRH that receives the answer the BBU has sent back. 
 
   	The set of routes is denoted by ${\cal R}$. A route is interpreted as a directed path in a directed multigraph constituted of all routes, where the sets of arcs of the routes are disjoint. The routes contain no loop nor cycle, since all vertices of a route are different. Thus, the directed multigraph is acyclic. An arc in the multigraph may represent several physical links or nodes of the modeled network, which do not induce contention points. 
 
@@ -41,15 +41,14 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	 
  	\subsection{Dynamic of Datagrams Transmissions}
 	    
- 		In this thesis, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. We are developing a prototype of this work based on ethernet base-X~\cite{ieee_8023}, see chapter~\ref{chap:TSN}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
+ 		In this thesis, we consider a discretized time. The unit of time is called a {\bf tic}. This is the time needed to send an atomic data in a link of the network. We assume that the speed of the links is the same over all the network. We are developing a prototype of this work based on ethernet base-X~\cite{ieee_8023}, see Chapter~\ref{chap:TSN}, using standard values for the parameters of the network: the size of an atomic data is $64$ bits, the speed of the links is $10$Gbps, and the length of a tic is thus about $6.4$ nanoseconds. 
 
         In the process we study, a message, called a {\bf datagram}, is sent on each route from the source node. The \textbf{size} of a datagram is an integer, denoted by $\tau$, it is the number of tics needed by a node to emit the full datagram through a link.  In this thesis, we assume that $\tau$ is the same for all routes. It is justified by our application to C-RAN, where all source nodes are RRHs sending the same type of message. There is no fragmentation: Once a datagram has been emitted, it cannot be fragmented during its travel in the network. 
 
         Let $r=(s,\dots,t)$ be a route. In order to avoid contention, it is possible to buffer datagrams in the contention points in $\cal{B}$. An \textbf{assignment} $A$ of a routed network $N = (\cal{R},\,\cal{B},\,\omega)$ is a function which associates to each route $r \in \cal{R}$, the pair of integers $A(r) = (o_r,w_r)$.
         The value $o_r$ is the \textbf{offset}, the time at which the datagram is available in the first vertex of $r$. The value $w_r$ is the \textbf{waiting time}: the datagram is buffered 
         for $w_r$ tics in $u_j \in {\cal B} \cap r$, the vertex representing the BBU.
-    		The \textbf{arrival time} of a datagram in the vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(r,u_i) + o_r $ if 
- 		    $i < j$ and $t(r,u_i) = \lambda(r,u_i) + o_r + w_r$ otherwise.
+    		The \textbf{arrival time} of a datagram in the vertex $u_i$ of $r$, is the first time at which the datagram sent on $r$ reaches $u_i$, and is defined by $t(r,u_i) = \lambda(r,u_i) + o_r $ if $i < j$ and $t(r,u_i) = \lambda(r,u_i) + o_r + w_r$ otherwise.
 
  		 Let $u_l$ be the last vertex of the route $r$, the \textbf{transmission time} of the datagram on 
   		$r$ is denoted by $TR(r,A)$ and is equal to $\lambda(r) + w_r$ or equivalently $t(r,u_l) - o_r$. This is the total time taken by the process we study: the sending of the datagram from the RRH to the BBU and the return of the answer back to the RRH. We can decompose this time into $\lambda(r)$, the \emph{physical latency} of the process and $w_r$, the \emph{logical latency}. 
@@ -69,7 +68,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
  	\subsection{Periodic Emission of Datagrams}
 	In the previous section, we have explained how \emph{one} datagram follows its route.
 	However, the process we model in this thesis is \emph{periodic}: for each period of $P$ tics, a datagram is sent, from each source node in the network, at its offset. The process is assumed to be infinite, since it must work for an arbitrary number of periods. For a given route, we use the same offset and waiting time in all periods, for simplicity of implementation in real networks and to make our problem more tractable from a theoretical perspective. Hence, at the same time of two different periods, all datagrams are at the same position in the network: the assignments built are themselves periodic of period $P$. Thus, we only need to consider the behavior of the datagrams on each node of the network during a single period, and to apply the same pattern to every subsequent period. 
- 	Using a different offset for each route corresponds to sending their datagram at a different time in the period. This matches our hypothesis that the emissions of the RRHs need not to be synchronized but they share a common global time, useful for coordination of their emission.
+ 	Using a different offset for each route corresponds to sending their datagram at a different time in the period. This matches our hypothesis that the emissions of the RRHs need not to be synchronized but they share a common global time, useful for coordination of their emissions.
 
  	Let $A$ be an assignment of a routed network $N = (\cal{R},\,\cal{B},\,\omega)$.
     Let us denote by $[r,u]_{P,\tau}$, the set of tics used by a datagram on the route $r$ at vertex $u$ in a period $P$, that is $[r,u]_{P,\tau} = \{t(r,u) + i \mod P \mid 0 \leq i < \tau \}$. This set of tics depends on $A$,
@@ -80,7 +79,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
     thus we say that $A$ is a valid \textbf{$(P,\tau)$-assignment}. When $P$ and $\tau$ are clear from the context, 
     we denote $[r,u]_{P,\tau}$ by $[r,u]$ and say that $A$ is a valid assignment. 
 
-     The following Figure~\ref{fig:example} illustrates two valid periodic assignment for different values of $P$ and $\tau$, and the criticality of waiting time in latency reduction. The three routes are depicted by three different colors. If we let $P = 2$ and $\tau = 1$, then there is a $(2,1)$-periodic valid assignment with waiting times zero by taking $0$ as offset for each route. However, for the same routed network but $P=5$ and $\tau = 2$, there is no solution to the problem with waiting times zero. If we allow $1$ tic of waiting time for one route, we can build the valid assignment $((0,0),(2,1),(0,0))$.
+     Figure~\ref{fig:example} illustrates two valid periodic assignments for different values of $P$ and $\tau$, but the same network. The three routes are depicted by three different colors. If we let $P = 2$ and $\tau = 1$, then there is a $(2,1)$-periodic valid assignment with waiting times zero by taking $0$ as offset for each route. However, for the same routed network but $P=5$ and $\tau = 2$, there is no solution to the problem with waiting times zero. If we allow $1$ tic of waiting time for one route, we can build the valid assignment $((0,0),(2,1),(0,0))$.
 
 
   
@@ -146,7 +145,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
       	The period $P$, as well as the size of a datagram $\tau$ are fixed in our C-RAN settings, but not the buffering policy. Hence, the aim of this section is to find a valid assignment which minimizes the worst latency of the transmissions over the network, that is $TR(A)$. We denote by \mintra the problem of finding the minimal value of $TR(A)$, for a given period, datagram size and routed network.
       	For simpler hardness proofs and easier reductions, we rather study the decision version of \mintra, that we call \pall for \textbf{P}eriodic \textbf{A}ssignment for \textbf{L}ow \textbf{L}atency. Each route must respect a time limit called a \emph{deadline}. These limits are encoded in a deadline function $d$, which maps to each route $r$ an integer such that $TR(r,A)$ must be less than $d(r)$.
       	We define the \textbf{margin} of a route $r$ in a routed network $N$ with deadline function $d$ as 
-        $ d(r) - \lambda(r)$. The margin of a route is the maximum possible waiting time of the route.
+        $ d(r) - \lambda(r)$. The margin is a bound on the waiting of a route in a valid assignment.
 
      
       \noindent {\bf Periodic Assignment for Low Latency} 
@@ -158,7 +157,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
 	  In the next section, this problem is proved to be $\NP$-hard. In Chapter~\ref{chap:PALL}, we propose heuristics solving the search version of \pall (computing a valid assignment), also denoted by \pall for simplicity. In the definition of \pall, we have chosen to bound the transmission time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. 
 
 	 We say that an assignment is \textbf{bufferless} when the waiting time of all routes are zero.
-	 The assignment can then be seen as a function from the routes to the integers (the value of the offset, the waiting time is omitted). We consider a restricted version of \pall, requiring to find a bufferless assignment and studied in Chapter~\ref{chap:PAZL}. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is more efficient in real telecommunication networks, since we do not need to deal with any buffering at all. A switch taking full advantage of the absence of buffer is presented in Chapter~\ref{chap:TSN}.
+	 The assignment can then be seen as a function from the routes to the integers (the value of the offset, the waiting time is omitted). We consider a restricted version of \pall, requiring to find a bufferless assignment and studied in Chapter~\ref{chap:PAZL}. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is more efficient when implemented in real telecommunication networks, since we do not need to deal with any contention buffer at all. A switch taking full advantage of the absence of buffer is presented in Chapter~\ref{chap:TSN}.
 
       An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
@@ -521,7 +520,7 @@ $\downarrow$
  
 \end{center}
 
-\caption{Transformation by the proof of proposition~\ref{prop:canonical} of the star routed network of Figure~\ref{fig:star} to its canonical form, initially with $\tau = 1$, $P=5$, $d_1 = 30$, $d_2 = 34$, $d_3 = 32$.}
+\caption{Transformation by the proof of Proposition~\ref{prop:canonical} of the star routed network of Figure~\ref{fig:star} to its canonical form, initially with $\tau = 1$, $P=5$, $d_1 = 30$, $d_2 = 34$, $d_3 = 32$.}
 \label{fig:canonical}
 \end{figure}
 
@@ -560,7 +559,8 @@ $\downarrow$
 	We show in this section that \pall is $\NP$-hard by proving $\NP$-hardness for a restricted version: \pazl with $\tau = 1$. We give two proofs that \pazl is $\NP$-complete.
 	The first proof works even for contention depth two, but not for star routed networks.
 	 For contention depth one, the problem is trivial: either the load is less than one and there is a valid assignment with zero waiting time or there is no valid assignment. 
-	 The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. Solving \pall is trivial on trees because they can be reduced to one vertex of contention depth one. Thus, it may be interesting to study its complexity on bounded treewidth (or dagwidth) networks, a common property of real networks~\cite{de2011treewidth}.
+	 The second proof works for graphs with contention width $2$: the conflicts are locally very simple, but the problem is complex globally nonetheless. 
+   Solving \pall is trivial on trees because they can be reduced to one vertex of contention depth one. Thus, it may be interesting to study the complexity of \pall on bounded treewidth (or dagwidth) networks, a common property of real networks~\cite{de2011treewidth}.
  
 
  \begin{theorem}\label{th:hardness_contention_depth}
@@ -698,8 +698,7 @@ arc going to $v_i^1$, from the last vertex of the form $v_{i,j,k}$ in $r_i$, to 
 With this construction, we have ensured, that the datagram of $r_i$ arrives at 
 $v_i^1$ at time $o$ modulo $n$, for all $i \in [n]$. 
 
-The second part of the routes, from $v_i^1$ to $v_i^2$ is built exactly as in the proof of Theorem~\ref{th:inapprox}. Hence, the waiting time in the vertices $v_i^1$ plays the exact same role as the offset
-in the graph of Theorem~\ref{th:inapprox}: the valid $(n,1)$-assignments are in bijection with colorings of $H$, the waiting times corresponding to the colors.
+The second part of the routes, from $v_i^1$ to $v_i^2$ is built exactly as in the proof of Theorem~\ref{th:inapprox}. Hence, the waiting time in the vertices $v_i^1$ plays the exact same role as the offset in the graph of Theorem~\ref{th:inapprox}: the valid $(n,1)$-assignments are in bijection with colorings of $H$, the waiting times corresponding to the colors.
 
 Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, such that, for all $i,j \in [n]^2$, $\lambda(r_i) = \lambda(r_j)$.  Since all routes are of the same size, $TR(A)$ is equal to the maximal waiting time of $A$. Hence, the maximum waiting time is equal to the number of different waiting times required to have a valid assignment. A valid $(n,1)$-assignment which minimizes $TR(A)$ is in bijection with a minimal proper coloring of $H$, which proves the theorem.
 
@@ -721,7 +720,10 @@ Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, 
 
 We model C-RAN networks by weighted directed acyclic multigraphs called routed networks. 
 The process we study is Periodic. Datagrams are sent by the sources of the routes at every period. Once a datagram have been sent, it can be buffered in only one contention point of the network. 
-The solutions to this problem are called periodic assignments and are a choice of offset and waiting time (on one contention point) for all datagrams such that there are no collisions between them. An assignment is computed for one period, and repeated all over the time for every period. The value of an assignment $A$ is denoted $TR(A)$ and correspond to the largest value on all routes of the time elapsed between the sending of a datagram and the reception of the answer in the RRH.
+The solutions to this problem are called periodic assignments and are a choice of offset and waiting time (on one contention point) for all datagrams such that there are no collisions between them. An assignment is computed for one period, and repeated all over the time for every period. The value of an assignment $A$ is denoted by $TR(A)$ and corresponds to the largest value on all routes of the time elapsed between the sending of a datagram and the reception of the answer in the RRH.
+We also introduce the simplest non trivial topology: the star routed networks in which every route shares the same two contention vertices.
 
- We define two problems, \pall and it's variant \pazl, of finding an assignment on a class of routed networks: star routed networks for which every route shares the same contention vertices. We showed that \pazl and \pall are $\NP$-Hard, even for routed network of small contention depth or contention width, with reduction of arc and vertex coloring problems.
+
+We introduce the problem \pall of finding an assignment respecting a given constraint on the latency of each route. We also give its variant \pazl, where the constraint 
+are as strong as possible: the assignment must use no waiting time. We showed that \pazl and \pall are $\NP$-Hard, even for routed network of small contention depth or contention width, using reductions to arc and vertex coloring problems.
 
