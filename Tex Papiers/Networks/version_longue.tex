@@ -314,7 +314,7 @@ by the RRH and the last vertex represents the same RRH that receives the answer,
      \hline
      $\omega(r,u)$ & Weight of the arc $(u,v)$ of $r$ \\
      \hline
-     $\lambda(r,u_i)$ & Length of the route $r$ up to $u_i$\\
+     $\lambda(r,u)$ & Length of the route $r$ up to vertex $u$\\
      \hline
      $\lambda(r)$ & Length of the route $r$\\
      \hline 
@@ -330,7 +330,7 @@ by the RRH and the last vertex represents the same RRH that receives the answer,
      \hline
 	 $t(r,u)$ & Transmission time on the route $r$, up to the vertex $u$\\
      \hline
-     $ [r,u]$ & Tics used in the period by the route $r$ at vertex $t$\\
+     $ [r,u]$ & Tics used in the period by the route $r$ at vertex $u$\\
      \hline
       \end{tabularx}
       \end{center}
@@ -1092,7 +1092,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 
  	 We first consider routes which are shorter than $\tau$: a datagram cannot be contained completely in a single arc which is common in our applications. We generate random star routed networks, by drawing uniformly at random the weights of the arcs of the fronthaul network in $[700]$, which corresponds to links of less than $5$km between a BBU and an RRH.
 
-     In the following experiment, we generate $10,000$ random instances of \pazl for $1$ to $0.4$ of load. We represent, in Figure~\ref{fig:short}, the percentage of success of each algorithm as a function of the load. We make three experiments with $8$, $12$ and $16$ routes to understand the effect of the number of routes on the quality of our algorithms. A bound on the maximal success rate is given by the exhaustive search which always finds a solution if there is one. 
+     In the following experiment, we generate $10,000$ random instances of \pazl for load of $1$ down to $0.4$. We represent, in Figure~\ref{fig:short}, the percentage of success of each algorithm as a function of the load. We make three experiments with $8$, $12$ and $16$ routes to understand the effect of the number of routes on the quality of our algorithms. A bound on the maximal success rate is given by the exhaustive search which always finds a solution if there is one. 
        
       \begin{figure}[h]
       \begin{center}
@@ -1101,7 +1101,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 	 \includegraphics[width=0.4\textwidth]{pazlshort12.pdf}
 	 \includegraphics[width=0.4\textwidth]{pazlshort16.pdf}
       \end{center}
-      \caption{Success rate of the three algorithms solving \pazl, for short routes and $8$ routes (left), $12$ routes (middle) and $16$ routes (right)}\label{fig:short}
+      \caption{Success rate of the three algorithms solving \pazl, for short routes and $8$ routes, $12$ routes (bottom left) and $16$ routes (bottom right)}\label{fig:short}
       \end{figure}
 
       First, we remark that \ESCA finds a solution even when the load is high. It justifies the idea to look for an assignment without waiting time, in this short routes regime. 
@@ -1189,7 +1189,7 @@ Finding an assignment in that case is trivial: send all datagrams so that they f
  	We call \textbf{W}aiting \textbf{T}ime \textbf{A}ssignment or \wta the problem \pall where the offsets of the routes are also given as input. A solution to \wta
  	is a valid assignment such that the offsets coincide with those given in the instance. 
 
-   In the rest of the section we study different methods to solve \wta either by polynomial time heuristics or by an FPT algorithm. The methods to solve \wta are then combined with the heuristics proposed to fix the offsets of the routes to obtain an algorithm solving \pall.  
+   In the rest of the section we study different methods to solve \wta either by polynomial time heuristics or by an FPT algorithm. The methods to solve \wta are then combined with the heuristics we have described to fix the offsets of the routes, which yields an algorithm solving \pall.  
    
    \subsection{Greedy Scheduling of Waiting Times}
 
@@ -1386,7 +1386,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     We set the number of routes to $8$ to make comparisons with the results of Section~\ref{sec:exp_PAZL} easier. We draw uniformly the weights of the arcs of the fronthaul network in $[P]$. We use \emph{the same deadline} for all routes, which is the most common constraint, when modeling a C-RAN problem: all RRHs have the same latency constraint and all BBUs take the same time to process the answer. 
 
 
-    We define the {\bf margin} of an instance as the margin of the longest route of the routed network. Since all routes have the same deadline, it is the difference between the length of the logest route and the deadline. Note that the margin is defined before making the network canonical, since this operation makes the deadlines all differents, and thus breaks the semantic of the margin.
+    We define the {\bf margin} of an instance as the margin of the longest route of the routed network. Since all routes have the same deadline, it is the difference between the length of the longest route and the deadline. Note that the margin is defined before making the network canonical, since this operation makes the deadlines all differents, and thus breaks the semantic of the margin.
 	The margin represents the \emph{logical latency} which can be used by the communication process, without taking into account the physical length of the network, since it cannot be changed. For a given star routed network, it is equivalent to set the margin or all the deadlines to the length of the longest route plus the margin. However, to compare different star routed networks with different length of routes, the margin is more relevant than the deadline. Hence, in our experiments, we consider margins from $0$ to $3,000$ tics to understand how much logical latency is needed to find an assignment. We look at two different regimes, a medium load of $0.8$ and a high load of $0.95$. Considering smaller load is not relevant since we can solve the problem using bufferless assignments, as shown in Section~\ref{sec:exp_PAZL}. 
    
    	We first try to understand what is the best choice of heuristics for the first stage of the algorithm. The first stage is followed in this experiment by \greedydeadline, the simplest algorithm to solve \wta. In Figure~\ref{fig:success1random}, the success rate of all possible first stage heuristics to solve \pall is given, function of the margin of the instances. The success rate is an average computed over $10,000$ random star routed networks. 
@@ -1423,10 +1423,10 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
       \label{fig:success1000random}
           \end{figure}
 
- First remark that our algorithms finds assignments with margin $0$ for many instances with $0.95$ of load and long routes which was not possible when only looking for bufferless assignments (see Section~\ref{sec:exp_PAZL}). It justifies the interest of studying \pall and not only \pazl.
+ First remark that our algorithms find assignments with margin $0$ for many instances with $0.95$ of load and long routes which was not possible when only looking for bufferless assignments (see Section~\ref{sec:exp_PAZL}). It justifies the interest of studying \pall and not only \pazl.
   
      Using many random orders is much better than DA, the best policy using one specific order. 
-     With a load of $0.95$, a solution is found with margin $0$ most of the time. The three random order policies have similar performances, but RORS has slightly better success rate than the two others ones, under high load and small margin. Hence, in the following experiments, we draw $1,000$ random orders using the policy RORS to set the offsets of the assignments.
+     With a load of $0.95$, a solution is found with margin $0$ most of the time. The three random order policies have similar performances, but RORS has slightly better success rate than the two others ones, under high load and small margin. Hence, in the following experiments, we always draw $1,000$ random orders using the policy RORS to set the offsets of the assignments.
      
      We now compare the performances of the four different algorithms used in the second stage to set the waiting times. Since \greedydeadline already finds assignments with margin $0$ under mild loads, it is more interesting to focus on the behavior of the algorithms under high load. In Figure~\ref{fig:success21000}, we represent the success rate of the four algorithms with regards to the margin, computed over $10,000$ random star routed networks generated with the same parameters as previously. 
      
@@ -1569,9 +1569,9 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
    The experiment shows that statistical multiplexing does not ensure a minimal latency. 
     For random topologies, the latency is extremely high when using FIFO ($6538$ tics in average), with a margin of about $10,000$ for the worst $30\%$ of instances, which corresponds to half the period ($0.5$ms). Even when the messages are managed with \critdead, $20\%$ of the instances have a margin of more than $4,000$ ($2838$ tics in aveage) while PMLS finds an assignment with $0$ margin $99\%$ of the time! 
     
-    For hard topologies (right figure), the average margin of statistical multiplexing ($9052$ for FIFO, $6574$ for \critdead) is worst than for random topologies. The worst case of \critdead  remains the same ($\simeq 16500$) while the worst case of FIFO fall from $30828$ tics for random topoliges to $19105$ tics on hard topologies. The settings are stressful for \PMLS, and we find an assignment in only $78\%$ of the instances with margin $0$, and it needs a margin of $2,000$ to be sure to find an assignment. However, \PMLS still vastly outperforms the statistical multiplexing both for the average margin and for the worst margin. 
+    For hard topologies (right figure), the average margin of statistical multiplexing ($9052$ tics for FIFO, $6574$ tics for \critdead) is worst than for random topologies. The worst case of \critdead  remains the same ($\simeq 16500$ tics) while the worst case of FIFO fall from $30828$ tics for random topologies to $19105$ tics on hard topologies. The settings are stressful for \PMLS, and we find an assignment with margin $0$ in only $78\%$ of the instances, and it needs a margin of $2,000$ tics to be sure to find an assignment. However, \PMLS still vastly outperforms the statistical multiplexing both for the average margin and for the worst margin. 
     
-    Even under verry small loads ($0.4$), statistical multiplexing suffers for a very bad average(respectively $1290$ for FIFO, $1052$ for \critdead) and worst(respectively $109639$ and $6938$) margin on random instances, while \PMLS is $0$.
+    Even under a light load of $0.4$, for which we can always find bufferless assignment, statistical multiplexing has a very high average margin ($1290$ tics for FIFO and $1052$ tics for \critdead) and worst case margin ($109639$ tics for FIFO and $6938$ tics for \critdead).
 
     For each $1,000$ tics of latency we save from the periodic process, we are able to lengthen the routes of $10$km, which has a huge economical impact. We feel that it strongly justifies the use of a deterministic sending scheme for latency critical applications such as our C-RAN motivating problem.    
      
