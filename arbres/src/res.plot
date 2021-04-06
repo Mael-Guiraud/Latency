@@ -1,5 +1,5 @@
 
- file = "resmult95solodistrib"
+ file = "resmult40solo"
 
 
 
@@ -28,7 +28,7 @@ set xlabel "Margin"
 set yrange [0:1]
 set border 3
 set term postscript color solid
-set output '| ps2pdf - stochasticdistrib.pdf'
+set output '| ps2pdf - stochastic.pdf'
 
 set key right bot
 replot
