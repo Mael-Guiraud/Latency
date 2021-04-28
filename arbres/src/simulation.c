@@ -1177,8 +1177,8 @@ void simultiplexing(int seed)
 	system("rm -f distrififo distrififo2 distrideadline districomputed distridistrib");
 	for(int i=0;i<nbsim;i++)
 	{
-		Graph g = g= init_graph_random_tree(STANDARD_LOAD);
-		//Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
+		//Graph g = g= init_graph_random_tree(STANDARD_LOAD);
+		Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
 		P = PERIOD;
 		timebefifo=0;
 		timebefifo2=0;

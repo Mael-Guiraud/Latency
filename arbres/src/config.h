@@ -33,13 +33,13 @@
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 0
 
-#define PERIOD 33333	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
+#define PERIOD 21052	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
 //For star simulation
 #define NB_ROUTES 8
 
-#define NB_SIMULS 100
+#define NB_SIMULS 1000
 
 
 //openMP parallel

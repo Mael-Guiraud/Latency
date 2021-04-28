@@ -284,7 +284,7 @@ In this section, we show how every bufferless assignment can be put into a canon
 We use that form to design an algorithm solving \pma in fixed parameter tractable time ($\FPT$), with parameter $n$ the number of routes (for more on parametrized complexity see~\cite{downey2012parameterized}). This is justified since $n$ is small in practice, from $10$ to $20$ in our settings, and the other parameters such as $P$, $\tau$ or the weights are large.
 
 Let $({\cal R},\omega)$ be a star routed network and let $A$ be a bufferless $(P,\tau)$-periodic assignment.
-We say that that $A$ is \textbf{compact} if there is a route $r_0 \in \cal{R}$ such that the following holds: for all subsets $S\subset \cal{R}$ with $r_0 \notin S$, the bufferless assignment $A'$, defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S$ and $A(r)$ otherwise, is not valid. In other words, an assignment is compact if for all routes $r$ but one, $A(r)$ cannot be reduced by one, that is either in the first or the second period, there is a route $r'$ using the tics just before $A(r)$. See Figure~\ref{fig:compact} for an example of a compact assignment, obtained by the procedure of the next proposition. 
+We say that that $A$ is \textbf{compact} if there is a route $r_0 \in \cal{R}$ such that the following holds: for all subsets $S\subset \cal{R}$ with $r_0 \notin S$, the bufferless assignment $A'$, defined by $A'(r) = A(r) - 1 \mod P$ if $r \in S$ and $A(r)$ otherwise, is not valid. In other words, an assignment is compact if for all routes $r$ but one, $A(r)$ cannot be reduced by one, that is either in the first or the second period, there is a route $r'$ using the tics just before $r$. See Figure~\ref{fig:compact} for an example of a compact assignment, obtained by the procedure of the next proposition. 
   \begin{figure}
       \begin{center} 
       \includegraphics[width=\textwidth]{Chapitre4PAZL/compacttoassignment.pdf}
@@ -297,19 +297,19 @@ Let $N = ({\cal R}, \omega)$ be a star routed network. If there is a $(P,\tau)$-
 \end{proposition}
 \begin{proof}
 Consider $A$ a $(P,\tau)$-periodic bufferless assignment of $N$.
-We describe an algorithm which builds a sequence $(r_0,\dots,r_{n-1})$ and a sequence  
-$A_i$ of valid bufferless assignments. We denote by $COMP_i = \{ r_j \mid j < i\}$
+We describe an algorithm which builds a sequence $COMP_i$ of sets of routes and a sequence  
+$A_i$ of valid bufferless assignments. For all $i \leq n$, the set $COMP_i$ has cardinal $i$ and satisfies  $COMP_{i-1} \subset COMP_i$.
 
-Let $r_0$ be an arbitrary route of ${\cal R}$ and $A_0 = A$. For $i = 1$ to $n$, we choose $r_i$ as follows.
-Let $A_{i} = A_{i-1}$. While there is no collision, for all routes $r \in {\cal R} \setminus COMP_i$, let $A_i(r) = A_i(r) - 1$. Then choose any route $r$ in ${\cal R} \setminus COMP$ such that setting $A_i(r) = A_i(r-1)$ creates a collision and let $r_i = r$. By construction $A_i$ is a valid bufferless assignment, since it is modified only when no collision is created.
+Let $r$ be an arbitrary route of ${\cal R}$ and $A_0 = A$, we set $COMP_0 = \emptyset$.
+ For $i = 1$ to $n$, we choose a route $r$, denoted by $r_i$, as follows.
+Let $A_{i} = A_{i-1}$. While there is no collision, for all routes $r \in {\cal R} \setminus COMP_{i-1}$, let $A_i(r) = A_i(r) - 1$. Then choose any route $r$ in ${\cal R} \setminus COMP_{i-1}$ such that setting $A_i(r) = A_i(r)-1$ creates a collision and let $r_i = r$. By construction $A_i$ is a valid bufferless assignment, since it is modified only when no collision is created. We let $COMP_i = COMP_{i-1} \cup \{r_i\}$.
 
-We prove by induction on $i$, that $A_i$ is compact when restricted to $COMP_{i+1}$.
-For $i = 0$, $|COMP_1| = 1$ and the property is trivially satisfied. Let us consider $A_i$,
-by induction hypothesis, since the offsets of routes in $COMP_{i}$ are not modified at step $i$ of the algorithm, $A$ is compact when restricted to $COMP_{i}$. 
+We prove by induction on $i$, that $A_i$ is compact when restricted to $COMP_{i}$.
+We have $|COMP_1| = 1$, hence $A_1$ is compact over $COMP_1$. Let us consider $A_i$,
+by induction hypothesis, since the offsets of routes in $COMP_{i-1}$ are not modified at step $i$ of the algorithm, $A$ is compact when restricted to $COMP_{i-1}$. 
 
  Consider $S \subseteq COMP_i$ which does not contain $r_0$. If $S$ contains
-an element of $COMP_{i}$, then $S \setminus {r_i}$ is not empty and by compactness we cannot decrement all offsets of $S\setminus {r_i}$ without creating a collision. The same property is true for $S$. If $S = \{r_i\}$, then by construction of $r_i$ by the algorithm, removing one from $A_i(r_i)$ creates a collision. Hence,
-$A_i$ is compact restricted to $COMP_{i+1}$, which proves the induction and the proposition.
+an element of $COMP_{i-1}$, then $S \setminus {r_i}$ is not empty and by compacity we cannot decrement all offsets of $S\setminus {r_i}$ without creating a collision. The same property is true for $S$. If $S = \{r_i\}$, then by construction of $r_i$ by the algorithm, removing one from $A_i(r_i)$ creates a collision. Hence, $A_i$ is compact restricted to $COMP_{i}$, which proves the induction and the proposition.
 \end{proof}
 
 We now present an algorithm to find a $(P,\tau)$-periodic assignment by trying all compact assignments.
@@ -338,7 +338,7 @@ The algorithm to solve \pma builds every possible compact assignment in the incr
 
 We call the algorithm described in Theorem~\ref{th:FPT} \textbf{E}xhaustive \textbf{S}earch of \textbf{C}ompact \textbf{A}ssignments or \ESCA. The complexity of \ESCA is in $O(4^n n!)$. While a better analysis of the number of compact assignments could improve this bound, the simple star routed networks with all arcs of weights $0$ has $(n-1)!$ compact assignments. Hence, to improve significantly on \ESCA, one should find an even more restricted notion of bufferless assignment than compact assignment.
 
-To make \ESCA more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set $S$ of $k$ routes whose offsets have been fixed at some point in the search tree. We consider the times used by these routes in the first period. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ where the intervals $(a_i,b_i)$ are the times not used yet in the first period. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor}$ routes can still send a datagram through the first period. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the current one on $S$ and we backtrack in the search tree. The same cut is also used for the second period. These cuts rely on the fact that the partial assignment is wasting bandwidth by creating intervals which are not multiples of $\tau$. It helps with instances of large load, which are also the hardest to solve.
+To make \ESCA more efficient in practice, we make cuts in the search tree used to explore all compact assignments. Consider a set $S$ of $k$ routes whose offsets have been fixed at some point in the search tree. We consider the times used by these routes in the first period. It divides the period into $[(a_0,b_0), \dots, (a_{k-1},b_{k-1})]$ where the intervals $(a_i,b_i)$ are the times not used yet in the first period. Therefore at most $\displaystyle{ \sum_{i=0}^{k-1} \lfloor(b_{i} -a_i)/\tau\rfloor}$ routes can still send a datagram through the first period. If this value is less than $n - k$, it is not possible to create a compact assignment by extending the current one on $S$ and we backtrack in the search tree. The same cut is also used for the second period. These cuts rely on the fact that the partial assignment is wasting bandwidth by creating intervals which are not multiples of $\tau$.They significantly speed up \ESCA on instances of large load, which are also the longest to solve.
 
 
 \subsection{Experimental Results} \label{sec:perf_large}
@@ -407,9 +407,9 @@ In this section, the performance on random instances of the algorithms presented
 
        \firstfit has also excellent performances ($100\%$ of success under loads lower to $0.8$). However, since we do not have strong theoretical results for this algorithms and it does not performs as well as \shortestlongest in this regime, it is not interesting to rely on it.
 
-      \metaoffset and \greedyuniform both seem to always work when the load is less than $1/2$ and have a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seems to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger, which happens each time $\tau$ is added to the period (to decrease the load, the period is increased) and is more frequent when there are more routes.
+      \metaoffset and \greedyuniform both seem to always work when the load is less than $1/2$ and have a good probability to work up to a load of $2/3$, which is twice better than the theoretical bound. \metaoffset presents discontinuities in the probability of success at several loads, which seems to smooth out when the number of routes increases. It can be explained by the fact that \metaoffset becomes better when decreasing the load makes the number of available meta-offsets larger. The number of meta-offsets increases when $\tau$ is added to the period (to decrease the load, the period is increased), which is more frequent when there are more routes.
       
-      \greedyuniform and \metaoffset performances depend on the number of routes. The more routes there is, the lower the success rate. This is even clearer in experiment of Figure~\ref{fig:shortroutes} in the next section in which there is $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and random delays and has no theoretical guarantee for arbitrary $\tau$ and small delay.
+      \greedyuniform and \metaoffset performances depend on the number of routes. The more routes there is, the lower the success rate. This is even clearer in experiment of Figure~\ref{fig:shortroutes} in the next section in which there are $100$ routes. Remember that \greedyuniform is an algorithm presented and analyzed in Section~\ref{sec:small}. This algorithm is designed for $\tau = 1$ and random delays and has no theoretical guarantee for arbitrary $\tau$ and small delay.
      
 
 
@@ -464,7 +464,7 @@ In the following experiments, since Lemma~\ref{lemma:multiple} explains how to t
 \end{figure}
 \vspace{1cm}
 
-In Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall} the performances of \shortestlongest are abysmal (falls to $10\%$ of success rate when the load is greater than $0.2$, and $0\%$ at $0.3$ of load) and are thus not represented in this figures, in order to focus on other algorithms. This can be explained by the fact it depends on the difference of size between the longest and the smallest route, which is large here since the delays are drawn in $[P]$. This observation is reinforced by the results of Figure~\ref{fig:10mess}. Indeed, since the number of route is lower than in the two previous experiment, the probability of drawing a set of delays with a large difference is lower, and thus the success rate of \shortestlongest is better. 
+In Figure~\ref{fig:100messBig} and Figure~\ref{fig:100messSmall} the performances of \shortestlongest are abysmal (falls to $10\%$ of success rate when the load is greater than $0.2$, and $0\%$ at $0.3$ of load) and are thus not represented in this figures, in order to focus on other algorithms. This can be explained by the fact it depends on the difference of size between the longest and the smallest route, which is large here since the delays are drawn in $[P]$. This observation is reinforced by the results of Figure~\ref{fig:10mess}. Indeed, since the number of routes is lower than in the two previous experiments, the probability of drawing a set of delays with a large difference is lower, and thus the success rate of \shortestlongest is better. 
 
 For all sets of parameters, the other greedy algorithms have the same relative performances. \metaoffset and \greedyuniform
 perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
@@ -494,7 +494,7 @@ Figure~\ref{fig:shortroutes}. The difference from the case of large delay is tha
     \hline
       \end{tabularx}
       \end{center}
-      \caption{Running time of the exhaustive search.}
+      \caption{Running time of \ESCA, averaged over 100 random instances.}
       \label{fig:table}
       \end{figure}
 
@@ -506,9 +506,9 @@ When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} sol
 
 \subsection{Deterministic Algorithm}
 
-To go above $1/2$ of load, we optimize a potential measuring how many offsets are available for all datagrams, scheduled or not. datagrams are scheduled while possible using any greedy algorithm. Then, when all unscheduled datagrams have no available offset, we use a Swap operation defined later, which improves the potential. When the potential is high enough, it ensures that there are two datagrams whose offset can be changed so that a new datagram can be scheduled. 
+To go above $1/2$ of load, we optimize a potential measuring how many offsets are available for all datagrams, scheduled or not. Datagrams are scheduled while possible using any greedy algorithm. Then, when all unscheduled datagrams have no available offset, we use a Swap operation defined later, which improves the potential. When the potential is high enough, it ensures that there are two datagrams whose offset can be changed so that a new datagram can be scheduled. 
 
-The algorithm is not greedy, since we allow to exchanging a scheduled datagram with an unscheduled one. It cannot work online, since it requires to know all delays of the datagrams in advance. 
+The algorithm is not greedy, since we allow to exchange a scheduled datagram with an unscheduled one. It cannot work online, since it requires to know all delays of the datagrams in advance. 
 
 \begin{definition}
 The potential of a datagram of delay $\notationdelay$, for a partial assignment $A$
@@ -582,7 +582,7 @@ By hypothesis, $i$ cannot be scheduled, then, for all $p \in P_{f}$, $p+\notatio
 Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$. Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
 
-Let us precisely describe the algorithm \swapandmove:  datagrams are scheduled while possible by \firstfit and then the Swap operation is applied while it increases the potential. When the potential is maximal, \swapandmove schedule a new datagram by moving at most two scheduled datagrams to other available offsets. If it fails to do so, \swapandmove stops, otherwise the whole procedure is repeated. We analyze \swapandmove in the following theorem.
+Let us precisely describe the algorithm \swapandmove:  datagrams are scheduled while possible by \firstfit and then the Swap operation is applied while it increases the potential. When the potential is maximal, \swapandmove schedules a new datagram by moving at most two scheduled datagrams to other available offsets. If it fails to do so, \swapandmove stops, otherwise the whole procedure is repeated. We analyze \swapandmove in the following theorem.
 
 \begin{theorem}
 \swapandmove solves positively \pma, in polynomial time, for instances with $\tau =1$ and load less than $1/2 + (\sqrt{5}/2 -1) \approx 0,618$.
@@ -804,13 +804,13 @@ hence there is a $t_0$ such that $L(t_0) \leq n (\tau-1)/2$. Hence, the average 
 \section*{Conclusion}
   \addcontentsline{toc}{section}{Conclusion}
 In this chapter, we study the problem \pazl that is finding periodic assignments without buffering on star routed networks, a routed network with two serial contention points.  
-We show that for messages of arbitrary size, there is always a solution as soon as the load of the network is less than $40\%$.
+We show that for messages of arbitrary size, there is always a solution as soon as the load of the network is less than $0.4$.
 To do so, we propose several greedy algorithms of increasing sophistication. They rely on optimizing different measures of how many positions there are in the second period,
 given a partial assignment and any new datagram to schedule. 
 We give a canonical representation of an assignment, whose compactness allow to derive an FPT algorithm to solve \pma parametrized by the number of routes. When the number of routes is less than $20$, we can thus find in reasonable time an optimal solution to \pma. 
 
 
-For messages of size $1$, we prove that it is always possible to schedule them, when the load is less than $61\%$ using a polynomial time algorithm.
+For messages of size $1$, we prove that it is always possible to schedule them, when the load is less than $0.61$ using a polynomial time algorithm.
 The algorithm relies on optimizing a potential, which represents, given a partial assignment, how many possible positions there are for the datagrams not yet scheduled. 
 The algorithm is not greedy, contrarily to those presented for the case $\tau > 1$, since optimizing the potential requires a procedure of local optimization 
 which exchange a scheduled datagram with an unscheduled one.  
