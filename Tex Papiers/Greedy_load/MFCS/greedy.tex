@@ -68,25 +68,6 @@
 
 \maketitle
 
-%En français
-%Ordonnancement de messages périodiques et de leurs réponses sur un lien partagé
-
-%Le Cloud-RAN est une nouvelle architecture de réseau mobile dans laquelle les unités de calcul, traditionnellement 
-% installées au pieds des antennes, sont déportées dans des data-centers distants. Dans ces conditions, pour respecter des contraintes liées aux protocoles 4G et 5G, il faut minimiser la latence des messages périodiques envoyés par les antennes
-%à leurs unités de calcul. Nous essayons donc ici de trouver des plans périodiques de transmission des messages qui ne nécessitent pas de buffer et donc de latence supplémentaire.
-
-%Dans cet article nous étudions une topologie en étoile, ou la contention vient d'un lien partagé entre toutes les antennes.
-%Pour des messages arbitrairement grand, nous montrons qu'il existe toujours un plan de transmission des messages si la charge du réseau est inférieure à $40\%. De plus, nous montrons comment réduire le problème à des messages de taille unitaire
-%pour une latence additionnelle modeste.
-
-%Pour les messages de taille $1$, nous donnons un algorithme en temps polynomial qui trouve un plan de transmission
-%pour des charges jusqu'à $58\%$. De plus, en analysant un algorithme aléatoire glouton, pour n'importe quelle charge, 
-% presque toutes les instances avec suffisamment de messages ont une solution, ce qui explique pourquoi les algorithmes
-%gloutons présentés dans l'article marchent si bien en pratique.
-
-
-%keywords :C-RAN; latency; periodic scheduling; greedy algorithms
-
 
 \begin{abstract}
 Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data-centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol constraints, is to guarantee a low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a periodic sending scheme of these messages \emph{without contention nor buffering}.
@@ -97,11 +78,13 @@ The main contributions are polynomial time algorithms which \emph{always} find a
 
 
 \section{Introduction}
-Centralized radio network architecture, called C-RAN for Cloud Radio Access Network, has been proposed as a next generation architecture to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the reception of the answer, computed by a BaseBand Unit (BBU) in the cloud. For example, LTE standards require processing functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network.
+Centralized radio network architecture, called C-RAN for Cloud Radio Access Network, has been proposed as a next generation architecture to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the reception of the answer, computed by a BaseBand Unit (BBU) in the cloud. For example, LTE standards require processing functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. 
 
- %Statistical multiplexing even with a large bandwidth does not satisfies the latency requirements of C-RAN~\cite{dominique2018deterministic,barth2018deterministic}. The current solution~\cite{pizzinat2015things,tayq2017real} is to use dedicated circuits for the fronthaul. Each end-point, an RRH on one side and a BBU on the other side is connected through direct fiber or full optical switches. This eliminates all contentions since each message flow has its own link, but it is extremely expensive and do not scale in the case of a mobile network composed of about $10,000$ base stations. 
+Our aim is to operate a C-RAN on a low-cost shared switched network: several (tens of) antennas share an high-speed link to send their periodic messages to one (or several) data-center.
+This shared link is the only contention point for the messages going to the data-center and it is also the contention point for the messages sent back by the data-center to the antenna.
+This model with a single contention point may also capture other situation such as processors sharing a bus or sensors doing periodic radio transmissions on the same frequency.
 
-The question we address is thus the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention. %This kind of deterministic approach has gained some traction recently: Deterministic Networking is under standardization in IEEE 802.1 TSN group~\cite{finn-detnet-architecture-08}, as well at IETF DetNet working group~\cite{ieee802}. 
+The question we address is thus the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention.  
 
 The algorithmic problem studied, called \emph{Periodic Message Assignment} or \pma, is as follows:
 Given a period, a message size and a delay between the two contention points for each message, set a departure time in the period for each message, so that they go through both contention points without collision. It is similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since the sending pattern for a single period must be repeated without creating collision at contention points. In flow shop problems, the aim is usually to minimize the makespan, or schedule length, but in our periodic variant this quantity is infinite. Hence, we choose to look for any periodic schedule without buffering between the two contention points, to minimize the trip time of each message. 
@@ -112,7 +95,8 @@ Given a period, a message size and a delay between the two contention points for
 
 The model we study was recently introduced in~\cite{dominique2018deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these works, the main results are heuristics, using classical scheduling algorithms as subroutines, and FPT algorithms which find a sending scheme with \emph{minimal latency}. 
 The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is also briefly introduced and studied in~\cite{dominique2018deterministic}: A simple greedy algorithm for \pma, which is guaranteed to work when the load of the link is less than $1/3$, is given and we recall it in Theorem~\ref{th:metaoffset}. In this article, we propose many new algorithms which solve \pma on instances of higer loads. In particular, we provide a very efficient algorithm for the special case of messages of size one and a proof that greedy algorithms work well on average instances.
-
+%plus insister sur les résultats et avantage d'éviter la contention par rapport aux autres travaux c'est de ne pas avoir à ajouter des buffers pou gérer ça et simplifier le problème. Dans l'annexe on montre une manière 
+%d'utiliser le problème sans délai pour aider à résoudre le problème avec délai
 
 
 \paragraph*{Organization of the Paper}
