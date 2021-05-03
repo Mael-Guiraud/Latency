@@ -96,9 +96,6 @@ The main contributions are polynomial time algorithms which \emph{always} find a
 \end{abstract}
 
 
-\newpage 
-
-
 \section{Introduction}
 Centralized radio network architecture, called C-RAN for Cloud Radio Access Network, has been proposed as a next generation architecture to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the reception of the answer, computed by a BaseBand Unit (BBU) in the cloud. For example, LTE standards require processing functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. Our aim is to operate a C-RAN on a low-cost shared switched network.
 
@@ -570,12 +567,18 @@ $f(\lambda) < 1$ when $\lambda < 1$. By an union bound, the probability that \gr
 \label{sec:appendix}
 
 
-In this appendix, we provide a justification of our interest for the case $\tau = 1$
-and experiments on all algorithms presented in the paper over synthetic data.
+In this appendix, we justify the interest of studying $\tau = 1$ and a network with a single shared link.
+We also present the results of all algorithms of the paper run over synthetic data.
+
+
+\section{The compact $k$-tuple algorithm}
+
+
+%mettre ici l'explication de l'algo
+
 
 
 \section{From Large to Small Messages}\label{sec:reduction}
-
 
 
 In this section, we explain how we can trade load or buffering in the network to reduce the size of messages up to $\tau = 1$. This further justifies the interest of Sec.~\ref{sec:small}, where specific algorithms for $\tau = 1$ are given.
@@ -612,8 +615,7 @@ half of the same message in $A'$ or the position $\tau$ before, which is either 
 \end{figure}
 
 Remark that combining \greedyuniform and Th.~\ref{th:double_load} allows to solve $\pma$ on random instances, with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. 
-This explains why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on bounding $Fo(A)$, cannot guarantee anything for load larger than $1/2$.
-However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm which exhibits good performance on random instances.
+This is why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on minimizing $Fo(A)$, cannot guarantee anything for load larger than $1/2$. However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm which exhibits good performance on random instances.
 
 \subsection{Trade-off between Latency and Message Size}
 
@@ -621,7 +623,7 @@ The problem \pma is a simplified version of the practical problem we adress, all
 
 The idea is to buffer all messages so that their $d_i$ have the same
 remainder modulo $\tau$. It costs at most $\tau - 1$ of buffering, which is not
-so good, since algorithms optimizing the latency do better on random instances, see~\cite{barth2018deterministic}. However, it is much better than buffering for a time $P$, the only value for which we are guaranted to find an assignment, whatever the instance. When all delays are changed so that $d_i$ is a multiple of $\tau$, we have an easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$, as explained in the proof of Lemma.~\ref{lemma:multiple}.
+so good, since algorithms optimizing the latency do better on random instances, see~\cite{barth2018deterministic}. However, it is much better than buffering for a time $P$, the only value for which we are guaranteed to find an assignment, whatever the instance. When all delays are changed so that $d_i$ is a multiple of $\tau$, we have an easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$, as explained in the proof of Lemma.~\ref{lemma:multiple}.
 
 
 We can do the same kind of transformation by buffering all messages, so that $d_i$ is a multiple of $\tau / k$. The cost in terms of latency is then at most $\tau / k - 1$ but the reduction yields messages of size $k$.
@@ -646,6 +648,16 @@ Another aim would be to minimize the average latency rather than the worst laten
 We prove that we can do the transformation yielding $\tau=1$ while optimizing the average latency. 
  The only degree of freedom in the presented reduction is the choice of the reference remainder since all other delays are then modified to have the same remainder. Let us define the total latency for a choice $t$ of reference time, denoted by $L(t)$, as the sum of buffering times used for the messages, when $t$ has been removed from their delay.
 If we sum $L(t)$, from $t=0$ to $\tau-1$, the contribution of each message is $\sum_{i=0}^{\tau-1} i$. Since there are $n$ messages, the sum of $L(t)$ for all $t$ is $n \tau (\tau-1)/2$. There is at least one term of the sum less than its average, hence there is a $t_0$ such that $L(t_0) \leq n (\tau-1)/2$. Hence, the average delay for a message, with $t_0$ as reference is less than $(\tau -1)/2$.
+
+\section{Coherent Routing}
+
+In this section, we explain how our algorithms to solve the problem \pma may be used on more complex networks.
+%donner la définition du coherent routing
+%donner un exemple
+%dire que le problème est NP dur pour de vrai -> oui en citant le papier arxiv, les exemples sont coherent routing, le mettre dans l'intro
+%dire qu'on peut adapter tous les algos greedys-> la seule différence, c'est qu'on a une paire first period/second period différent pour chaque message 
+%par contre pour l'algo swap, il faudrait de nouvelles idées
+
 
 \section{Experimental Results}
 
