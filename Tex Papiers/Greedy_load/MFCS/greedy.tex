@@ -41,13 +41,14 @@
 \title{Scheduling Periodic Messages on a Shared Link} %TODO Please add
 %\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
 
-%\author{Ma\"el Guiraud}{David Laboratory, UVSQ, France \and Nokia Bell Labs, France}{mael.guiraud@uvsq.fr}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional
+\author{Ma\"el Guiraud}{David Laboratory, UVSQ, France \and Nokia Bell Labs, France}{mael.guiraud@uvsq.fr}{}{}
+\author{Yann Strozecki}{David Laboratory, UVSQ, France }{yann.strozecki@uvsq.fr}{}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional
 
-\author{Anonymous}{Unknown}{}{}{}
 
-\authorrunning{Anonymous} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
 
-\Copyright{Anonymous} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+\authorrunning{M. Guiraud and Y. Strozecki} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+
+\Copyright{Ma\"el Guiraud and Yann Strozecki} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
 \ccsdesc[500]{Theory of computation~Design and analysis of algorithms}
 
@@ -81,10 +82,10 @@ The main contributions are polynomial time algorithms which \emph{always} find a
 Centralized radio network architecture, called C-RAN for Cloud Radio Access Network, has been proposed as a next generation architecture to reduce energy consumption costs~\cite{mobile2011c} and more generally the total cost of ownership. The main challenge for C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by a Remote Radio Head (RRH) and the reception of the answer, computed by a BaseBand Unit (BBU) in the cloud. For example, LTE standards require processing functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the frontaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{bouguen2012lte}. 
 
 Our aim is to operate a C-RAN on a low-cost shared switched network: several (tens of) antennas share an high-speed link to send their periodic messages to one (or several) data-center.
-This shared link is the only contention point for the messages going to the data-center and it is also the contention point for the messages sent back by the data-center to the antenna.
-This model with a single contention point may also capture other situation such as processors sharing a bus or sensors doing periodic radio transmissions on the same frequency.
+This shared link is the only contention point for a message going to the data-center and it is also the contention point for the answer sent back by the data-center to the antenna.
+This model with two contention points (one for the message and one for the answer) also capture other situations such as processors sharing a bus or sensors doing periodic radio transmissions on the same frequency.
 
-The question we address is thus the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention.  
+The question we address is the following: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention.  
 
 The algorithmic problem studied, called \emph{Periodic Message Assignment} or \pma, is as follows:
 Given a period, a message size and a delay between the two contention points for each message, set a departure time in the period for each message, so that they go through both contention points without collision. It is similar to the two flow shop scheduling problem~\cite{yu2004minimizing} with periodicity. The periodicity adds more constraints, since the sending pattern for a single period must be repeated without creating collision at contention points. In flow shop problems, the aim is usually to minimize the makespan, or schedule length, but in our periodic variant this quantity is infinite. Hence, we choose to look for any periodic schedule without buffering between the two contention points, to minimize the trip time of each message. 
@@ -94,9 +95,11 @@ Given a period, a message size and a delay between the two contention points for
  Complex scheduling problems for time sensitive networks have been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines. We think our approach can be brought to these settings.
 
 The model we study was recently introduced in~\cite{dominique2018deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these works, the main results are heuristics, using classical scheduling algorithms as subroutines, and FPT algorithms which find a sending scheme with \emph{minimal latency}. 
-The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is also briefly introduced and studied in~\cite{dominique2018deterministic}: A simple greedy algorithm for \pma, which is guaranteed to work when the load of the link is less than $1/3$, is given and we recall it in Theorem~\ref{th:metaoffset}. In this article, we propose many new algorithms which solve \pma on instances of higer loads. In particular, we provide a very efficient algorithm for the special case of messages of size one and a proof that greedy algorithms work well on average instances.
-%plus insister sur les résultats et avantage d'éviter la contention par rapport aux autres travaux c'est de ne pas avoir à ajouter des buffers pou gérer ça et simplifier le problème. Dans l'annexe on montre une manière 
-%d'utiliser le problème sans délai pour aider à résoudre le problème avec délai
+The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is also briefly introduced and studied in~\cite{dominique2018deterministic}.
+In this article, we propose several new algorithms which dramatically improve on the greedy algorithm used to solve \pma in~\cite{dominique2018deterministic}, in the worst case or in average and for large and small messages. 
+While a sending scheme without buffering is simpler and less expensive to implement in C-RAN networks than one with buffering, it may not exist. However, we prove in this article that when the load is not too high,
+there is always a solution without buffering. Moreover, we explain in Sec.~\ref{sec:reduction} how solving \pma can be used to produce heuristic to solve the problem of finding sending schedules with small latency.
+
 
 
 \paragraph*{Organization of the Paper}
@@ -104,7 +107,8 @@ The problem of finding sending schemes with \emph{no additional latency}, which 
 In Sec.~\ref{sec:model}, we present the model and the problem \pma. In Sec.~\ref{sec:large},
 we present several greedy algorithms and prove they always find a solution to \pma for moderate loads. 
 These algorithms rely on schemes to build compact enough solutions, to bound measures of the size wasted when scheduling messages. Then, we present deterministic and probabilistic algorithms for the case $\tau = 1$ in Sec.~\ref{sec:small}, which work for much higher loads than the algorithms for large messages. The deterministic algorithm is not greedy, contrarily to algorithms of Sec.~\ref{sec:large}, since it uses a swap mechanism which can move already scheduled messages. 
- In Sec.~\ref{sec:reduction} of the Appendix, we justify how we can restrict the problem to messages of size one for the price of doubling the load or adding some latency. Also in the Appendix, the performance of all presented algorithms (and some more) are shown on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}. It turns out that our algorithms work even better on random instances than what we have established for their worst case.
+ In Appendix~\ref{sec:reduction} we justify how we can restrict the problem to messages of size one for the price of doubling the load or adding some latency. 
+ In Appendix~\ref{sec:coherent}, we show how the presented algorithms also work in complex networks with many contention points, as long as the routing is coherent. Finally, the performance of all presented algorithms (and some more) are shown on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}. It turns out that our algorithms work even better on random instances than what we have established for their worst case.
 
 
 \section{Modeling a C-RAN Network}\label{sec:model}
@@ -146,10 +150,10 @@ These algorithms rely on schemes to build compact enough solutions, to bound mea
 In this article, we model a simple network in which periodic messages flow through a single bidirectional link. Each RRH sends messages through the link to its
 BBU and two messages cannot go at once in the link: this is the first contention point, represented in Fig.~\ref{fig:model}. Upon receiving a message, a BBU sends an answer back to its RRH, which goes through the link in the other direction: this is the second contention point represented in Fig.~\ref{fig:model}. Since the answer must be sent back as soon as a message arrives, we see this process as a single message going from an RRH to its BBU and back to the RRH, while traversing two contention points. 
 
-Messages using the link in two different directions do not interact, since the link we model is full-duplex. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. This \textbf{size} represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. Allowing messages of different sizes would help model other applications than C-RAN. The algorithms presented in this article are not directly applicable to this more general case, but we think that several ideas presented here could be adapted.
-%améliorer la justification (peux modéliser quand meme type de message, mais further work to understand the case of several sizes)
+Messages using the link in two different directions do not interact, since the link we model is full-duplex. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. This \textbf{size} represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. Allowing messages of different sizes would help model applications where several type of periodic messages use the same network, further work to adapt the algorithms presented in this paper is required to handle this potential generalization.
 
- We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The model and problem can easily be generalized to any topology, that is any directed acyclic multigraph with any number of contention points, see~\cite{dominique2018deterministic}. We choose here to focus on the simplest, but realistic, non-trivial network, for which we can still obtain some theoretical results. %citer l'annexe ou je vais mettre un algo simple pour le cas coherent routing
+
+ We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The model and problem can easily be generalized to any topology, that is any directed acyclic multigraph with any number of contention points, see~\cite{dominique2018deterministic}. We choose here to focus on a realistic network with a single shared link, which is simple enough to obtain some theoretical results. It turns out that most algorithms developped for this network can also be used on networks with many contention points, as long as the routing is coherent, see Appendix~\cite{sec:coherent}. 
 
 The time is discretized and \emph{the process we consider is periodic} of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. A message is emmited an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of an interval of $P$ units of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. 
 
@@ -158,7 +162,7 @@ at the first contention point (i.e. in the first period). Let us consider a mess
 of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period).
 
 We want to send all messages, so that there is no collision in the shared link.
-In other words, we look for a way to send the messages without using buffering in the BBU and 
+In other words, we look for a way to send the messages without using buffering,
 hence limiting the latency of messages to the physical length of the links. An \textbf{assignment} is a choice of an offset for each message such that \emph{no pair of messages collide}, as shown in Fig.~\ref{fig:assignment}.
 Formally, an assignment is a function from the messages in $[n]$ to their offsets in $[P]$.  
 Let \textbf{Periodic Message Assignment} or \pma be the following problem: given an instance of $n$ messages of delays $d_0,\dots,d_{n-1}$, a period $P$ and a size $\tau$, find an assignment or decide there is none. When an assignment is found, we say the problem is solved \textbf{positively}.
@@ -172,28 +176,26 @@ Let \textbf{Periodic Message Assignment} or \pma be the following problem: given
 \end{figure}
 
 The complexity of \pma is not yet known. However, it has been proven that, when parameterized by
-$n$ the number of messages, the problem is \FPT~\cite{barth2018deterministic}.
-A slight generalization of \pma, with more contention points, but each message only going through two of them as in \pma, is \NP-hard~\cite{barth2018deterministic}. If the shared link is not full-duplex, that is, there is a single contention point and each message goes through it twice, it is also \NP-hard, since we can encode a similar non periodic problem~\cite{orman1997complexity}. Hence, we conjecture that \pma is \NP-hard.
-%dire que malgré nos efforts on ne sait pas le prouver (neanmoins l'article montre qu'on doit faire la preuve avec des instances de charge importante)
+$n$ the number of messages, the problem is \FPT~\cite{barth2018deterministic}. A slight generalization of \pma presented in Appendix~\ref{sec:coherent}, with more contention points, but each message only going through two of them as in \pma, is \NP-hard~\cite{barth2018deterministic}. If the shared link is not full-duplex, that is, there is a single contention point and each message goes through it twice, it is also \NP-hard, since we can encode a similar non periodic problem~\cite{orman1997complexity}. However, we did not achieve to prove that \pma is \NP-hard, but we conjecture it is.
 	
-To overcome the supposed hardness of \pma, we study it when the load of the system is small enough. The \textbf{load} is defined as the number of units of time used in a period by all messages divided by the period that is $n\tau /P$. There cannot be an assignment when the load is larger than one; we prove in this article that, for moderate loads, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm. This kind of result is very helpful when solving the following optimization version of \pma: given a set of messages, find the largest subset 
+Because we are interested in \pma when it can be solved positively, we study it when the load of the system is small enough. The \textbf{load} is defined as the number of units of time used in a period by all messages divided by the period that is $n\tau /P$. There cannot be an assignment when the load is larger than one; we prove in this article that, for moderate loads, there is \emph{always} an assignment and that it can be found by a polynomial time algorithm. This kind of result is very helpful when solving the following optimization version of \pma: given a set of messages, find the largest subset 
 which admits an assignment. A weigthed version, where the messages have different values can also be considered. An optimal solution to the optimization problem is a set of messages corresponding to a load of at most $1$. Assume we have an algorithm that always finds an assignment for an instance of load $\lambda$. Then, such an algorithm finds an assignment for any subset of load $\lambda$
 and is an approximation algorithm for the optimization problem with approximation ratio $\lambda$.
 
 
 \section{Greedy Algorithms for Large Messages} \label{sec:large}
 
-In this section, we study the case of arbitrary values for $\tau$. When modeling real problems,
-it is relevant to have $\tau > 1$ when the transmission time of a single message is large with regard to its delay, which is the case in C-RAN networks.
-%dire qu'on choisit la granularité du temps et qu'on pourrait fixer tau = 1, mais que typiquement les liens sont de taille environ tau et que ça ne serait pas pertinent
-%de les modéliser aussi imprécisément
+In this section, we study the case of arbitrary values for $\tau$. When modeling a C-RAN network,
+we can choose the time granularity, and we could set it so $\tau = 1$ for simplicity. However, the size of a link and hence the delay of the messages
+is often of the same magnitude as $\tau$, hence in that case setting $\tau = 1$ is a too coarse granularity to correctly model the network.
 
 
 A \textbf{partial assignment} $A$ is a function defined from a subset $S$ of $[n]$ to $[P]$.
 The cardinal of $S$ is the \textbf{size} of partial assignment $A$. A message in $S$ is \textbf{scheduled} (by $A$), and a message not in $S$ is \textbf{unscheduled}. We only consider partial assignments such that no pair of messages of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the message $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
-All presented algorithms build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. In the rest of the paper, we sometimes compare the relative position of messages, but one should remember that the time is periodic and these are relative positions on a circle. Moreover, when it is unimportant and can hinder comprehension, we may omit to write \emph{mod P} in some remarks and computations.
-%est-ce qu'on peut enlever la remarque en étant plus précis dans la suite ?
+All presented algorithms build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. In the rest of the paper, we sometimes compare the relative position of messages to detect collisions, but one should remember that the time is periodic and these are relative positions on a circle. 
+In some remarks and computations, we may omit to write \emph{mod P}, when it is unimportant and weigh down the presentation.
+
 
 \subsection{First Fit}
 
@@ -633,7 +635,7 @@ We prove that we can do the transformation yielding $\tau=1$ while optimizing th
  The only degree of freedom in the presented reduction is the choice of the reference remainder since all other delays are then modified to have the same remainder. Let us define the total latency for a choice $t$ of reference time, denoted by $L(t)$, as the sum of buffering times used for the messages, when $t$ has been removed from their delay.
 If we sum $L(t)$, from $t=0$ to $\tau-1$, the contribution of each message is $\sum_{i=0}^{\tau-1} i$. Since there are $n$ messages, the sum of $L(t)$ for all $t$ is $n \tau (\tau-1)/2$. There is at least one term of the sum less than its average, hence there is a $t_0$ such that $L(t_0) \leq n (\tau-1)/2$. Hence, the average delay for a message, with $t_0$ as reference is less than $(\tau -1)/2$.
 
-\section{Coherent Routing}
+\section{Coherent Routing}\label{sec:coherent}
 
 In this section, we explain how our algorithms to solve the problem \pma may be used on more complex networks.
 %donner la définition du coherent routing
