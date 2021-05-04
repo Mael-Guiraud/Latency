@@ -186,14 +186,14 @@ and is an approximation algorithm for the optimization problem with approximatio
 \section{Greedy Algorithms for Large Messages} \label{sec:large}
 
 In this section, we study the case of arbitrary values for $\tau$. When modeling a C-RAN network,
-we can choose the time granularity, and we could set it so $\tau = 1$ for simplicity. However, the size of a link and hence the delay of the messages
-is often of the same magnitude as $\tau$, hence in that case setting $\tau = 1$ is a too coarse granularity to correctly model the network.
+we can choose the time granularity, and we could set it so $\tau = 1$ for simplicity. However, the size of a link and thus delay of the messages
+is often of the same magnitude as $\tau$, therefore setting $\tau = 1$ is a too coarse granularity to correctly model the network.
 
 
 A \textbf{partial assignment} $A$ is a function defined from a subset $S$ of $[n]$ to $[P]$.
 The cardinal of $S$ is the \textbf{size} of partial assignment $A$. A message in $S$ is \textbf{scheduled} (by $A$), and a message not in $S$ is \textbf{unscheduled}. We only consider partial assignments such that no pair of messages of $S$ collide. If $A$ has domain $S$, and $i \notin S$, we define the extension of $A$ to the message $i$ by the offset $o$, denoted by $A[i \rightarrow o]$, as $A$ on $S$ and $A[i \rightarrow o](i) = o$.
 
-All presented algorithms build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms of this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. In the rest of the paper, we sometimes compare the relative position of messages to detect collisions, but one should remember that the time is periodic and these are relative positions on a circle. 
+All presented algorithms build an assignment incrementally, by growing the size of a partial assignment. Moreover, algorithms in this section are \emph{greedy}: Once an offset is chosen for a message, it is never changed. In the rest of the paper, we sometimes compare the relative position of messages to detect collisions, but one should remember that the time is periodic and these are relative positions on a circle. 
 In some remarks and computations, we may omit to write \emph{mod P}, when it is unimportant and weigh down the presentation.
 
 
@@ -263,8 +263,7 @@ Notice that, transformation of Lemma~\ref{lemma:multiple} does not give a biject
 %\end{figure}
 
 
-We are interested in the remainder modulo $\tau$ of the delays. Let $d_i = d_{i}'\tau + r_i$ be the Euclidean division of $d_i$ by $\tau$. We assume, from now on, that \emph{messages are sorted by increasing $r_i$}
-and we say that $d'_i$ is the \emph{meta-delay}.
+We are interested in the remainder modulo $\tau$ of the delays. Let $d_i = d_{i}'\tau + r_i$ be the Euclidean division of $d_i$ by $\tau$. We assume, from now on, that \emph{messages are sorted by increasing $r_i$}.
 A \textbf{Compact pair}, as shown in Fig.~\ref{fig:compactpair} is a pair of messages $(i,j)$ with $i < j$ that can be scheduled using meta-offsets such that $A(i) + (d'_i+1)\tau = A(j) + d'_j\tau$, i.e. the beginning of $j$ is less than $\tau$ unit of times after the end of $i$ in the second period.
 The \textbf{gap} between $i$ and $j$ is defined as  $g = d'_{i} + 1 - d'_{j} \mod m$, it is the distance in meta offsets between $i$ and $j$ in the first period. By definition, we can make a compact pair out of $i$ and $j$, if and only if their gap is not zero.
 
@@ -312,40 +311,14 @@ second period and $2$ in the first. Hence, if we let $n_1$ be the number of mess
 Solving this equation, we obtain that $n_1 \geq \frac{m}{8}$ thus the number of messages scheduled is at least $2n_2 + n_1 \geq \frac{3}{8}m$. Assuming there are exactly $\frac{3}{8}m$ messages to schedule, then $\frac{2m}{8}$ messages are scheduled as compact pairs. It is two third of the $\frac{3}{8}m$ messages, hence Lemma~\ref{lemma:pair_find} guarantees the existence of enough compact pairs. Therefore, an assignment is always produced when the load is less or equal to $\frac{3}{8}$.
 \end{proof}
 
-\compactpair can be improved by forming compact tuples instead of compact pairs.
-A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ (with $r_{i_1},\dots,r_{i_k}$ increasing), for which meta-offsets can be chosen so that, there is no collision, the messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau = A(i_{l+1}) + d'_{i_{l+1}}\tau$.
-The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples
-using meta offsets while possible, then scheduling compact $k-1$-tuples and so on until $k=1$.
-
-
-\begin{lemma}\label{lemma:uple_find}
-Given $k + k(k-1)(2k-1)/6$ messages, $k$ of them always form a compact $k$-tuple and we can find them in polynomial time. 
-\end{lemma}
-\begin{proof}
-We assume the messages are sorted according to $r_i$. We prove the lemma by induction on $k$. Lemma~\ref{lemma:pair_find} already proves the lemma for $k=2$.
-Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$
-messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay,
-then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. Each of the $k-1$ elements of $C$ forbids one possible meta-delay for an additional $k$-th message in $C$. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
-\end{proof}
+\compactpair can be improved by forming compact tuples instead of compact pairs, see Appendix~\ref{sec:compact} for the description 
+of algorithm \texttt{Compact k-tuples} and its analysis.
 
 
 \begin{theorem}\label{th:k-tuples}
 \texttt{Compact 8-tuples} always solves \pma positively on instances of load less than $4/10$, for instances with $n \geq 205$.
 \end{theorem}
-\begin{proof}
-We use the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. %If the remainder of the messages in the $j$-tuples are larger than the remainder in the $k$-tuples, it forbids $k+j$ messages only.
-It enables us to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $Fmo_i(A)$, the number of forbidden meta-offsets when placing compact $i$-tuple in the algorithm.
-If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
-we have the following equation:  $$ Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
-The equation for $n_1$ is slightly better: 
-$$ Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
-A bound on $n_i$ can be computed, using the fact that $A$ can be extended while $Fmo_i(A) < m$. 
-Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built, when $n + n_i - \sum_{i \leq j \leq 8} j*n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
-A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is less than $4/10$ and for $n \geq 205$.
-\end{proof}
 
-The code computing $n_i$ can be found on one author's website\footnote{https://yann-strozecki.github.io/textesmaths.html}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
-The bound of Lemma~\ref{lemma:uple_find} can be refined, by using better algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the tuples greedily. For instance, with $P=50\tau$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 \section{Messages of Size One} \label{sec:small}
 
@@ -554,13 +527,48 @@ $f(\lambda) < 1$ when $\lambda < 1$. By an union bound, the probability that \gr
 
 
 In this appendix, we justify the interest of studying $\tau = 1$ and a network with a single shared link.
-We also present the results of all algorithms of the paper run over synthetic data.
+We also present the results of all algorithms of the paper run over synthetic data and we describe the algorithm \texttt{Compact k-tuples}.
 
 
-\section{The compact $k$-tuple algorithm}
+\section{Compact k-tuples}\label{sec:compact}
 
 
-%mettre ici l'explication de l'algo
+Recall that the a delay $d_i$ is equal to  $d'_i*\tau + r_i$, we call $d'_i$ the \textbf{meta-delay}. The algorithm we describe relies only
+on meta-delays and the fact that the $r_i$ are increasing.
+A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ with $i_1,\dots,i_k$ increasing, for which meta-offsets can be chosen so that, there is no collision, the messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau = A(i_{l+1}) + d'_{i_{l+1}}\tau$. Scheduling a compact $k$-tuple is choosing a meta-offset for the first message of the tuple, the offsets of the 
+other messages are also fixed by this choice.  
+The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples
+using meta offsets while possible, then scheduling compact $(k-1)$-tuples and so on until $k=1$.
+
+
+\begin{lemma}\label{lemma:uple_find}
+Given $k + k(k-1)(2k-1)/6$ messages, $k$ of them always form a compact $k$-tuple and we can find them in polynomial time. 
+\end{lemma}
+\begin{proof}
+We assume the messages are sorted according to $r_i$. We prove the lemma by induction on $k$. Lemma~\ref{lemma:pair_find} already proves the lemma for $k=2$.
+Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$
+messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay,
+then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. Each of the $k-1$ elements of $C$ forbids one possible meta-delay for an additional $k$-th message in $C$. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
+\end{proof}
+
+
+\begin{theorem}\label{th:k-tuples}
+\texttt{Compact 8-tuples} always solves \pma positively on instances of load less than $4/10$, for instances with $n \geq 205$.
+\end{theorem}
+\begin{proof}
+We use the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. 
+It enables us to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $Fmo_i(A)$, the number of forbidden meta-offsets when scheduling compact $i$-tuples in the algorithm.
+If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
+we have the following equation:  $$ Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
+The equation for $n_1$ is slightly better: 
+$$ Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
+A bound on $n_i$ can be computed, using the fact that $A$ can be extended while $Fmo_i(A) < m$. 
+Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built, when $n + n_i - \sum_{i \leq j \leq 8} j*n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
+A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is less than $4/10$ and for $n \geq 205$.
+\end{proof}
+
+The code computing $n_i$ can be found on one author's website\footnote{https://yann-strozecki.github.io/textesmaths.html}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
+The bound of Lemma~\ref{lemma:uple_find} can be refined, by using better algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 
 
@@ -724,7 +732,7 @@ less than $1/2$, while it is easy to build an instance of \pma of load $1/3 +\ep
 The difference between the worst case analysis and the average case analysis is explained for \greedyuniform, when $\tau = 1$ in Sec.~\ref{sec:small}.
 
 \firstfit performs better than \metaoffset while they have the same worst case. \compactpair, which is the best theoretically also performs well in the experiments, always finding assignments for load of 
-$0.6$.  \compactfit, which is similar in spirit to \compactpair but is designed to have a good success rate on random instances is indeed better than  \compactpair, when there are enough messages.
+$0.6$.  \compactfit, which is similar in spirit to \compactpair but is designed to have a good success rate on random instances is indeed better than \compactpair, when there are enough messages.
 
 As demonstrated by Fig.~\ref{fig:100messBig} and Fig.~\ref{fig:100messSmall}, the size of the messages has little impact on the success rate of the algorithms, when the number of messages and the load are kept the same. Comparing Fig.~\ref{fig:10mess} and Fig.~\ref{fig:100messBig} shows that for more messages, the transition between $100\%$ success rate to $0\%$ success rate happens faster.
 Finally, the results of Exact Resolution in Fig.~\ref{fig:10mess} show that the greedy algorithms are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which \pma can always be solved positively.
