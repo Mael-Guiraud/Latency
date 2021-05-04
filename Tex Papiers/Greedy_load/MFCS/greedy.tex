@@ -25,7 +25,8 @@
 
  
 %\newtheorem{fact}{Fact}
-
+\DeclareMathOperator{\Fo}{FO} 
+\DeclareMathOperator{\Fmo}{FMO} 
 \newcommand\pma{\textsc{pma}\xspace}
 \newcommand\firstfit{\texttt{First Fit}\xspace}
 \newcommand\compactpair{\texttt{Compact Pairs}\xspace}
@@ -38,7 +39,7 @@
 
 \bibliographystyle{plainurl}% the mandatory bibstyle
 
-\title{Scheduling Periodic Messages on a Shared Link} %TODO Please add
+\title{Scheduling Periodic Messages on a Shared Link without Buffering} %TODO Please add
 %\titlerunning{Dummy short title} %TODO optional, please use if title is longer than one line
 
 \author{Ma\"el Guiraud}{David Laboratory, UVSQ, France \and Nokia Bell Labs, France}{mael.guiraud@uvsq.fr}{}{}
@@ -202,18 +203,18 @@ In some remarks and computations, we may omit to write \emph{mod P}, when it is 
 
 Consider some partial assignment $A$, in the first period, the message $i$ uses the times in $[A(i), A(i) + \tau -1]$. If a message $j$ is scheduled by $A$, with $A(j) < A(i)$, then the last time it uses in the first period is $A(j)+\tau-1$ and it should be less than $A(i)$, which implies that $A(j) \leq A(i) - \tau$. Symmetrically, if $A(j) > A(i)$, to avoid collision between messages $j$ and $i$, we have $A(j) \geq A(i) + \tau$. Hence, message $i$ forbids the interval $[A(i) - \tau +1, A(i) + \tau -1]$ as offsets for messages still not scheduled, because of its use of time in the first period. The same reasoning shows that $2\tau -1$ offsets are also forbidden because of the times used in the second period. Hence, if $|S|$ messages are already scheduled, then at most $|S|(4\tau -2)$ offsets are forbidden for an unscheduled message. The real number of forbidden offsets may be smaller, since the same offset can be forbidden both because of a message on the first and on the second period.
 
- Let $A$ be a partial assignment defined over $S$ and $i\notin S$, we let $Fo(A)$ be the maximum over $d_i \in [P]$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has a collision}\right\}|$. 
- The notation $Fo(A)$ stands for \emph{forbidden offset by $A$} and depends only on $A$ and not on the unscheduled messages. We have computed in the previous paragraph that $Fo(A)$ is less than $(4 \tau -2)|S|$. 
+ Let $A$ be a partial assignment defined over $S$ and $i\notin S$, we let $\Fo(A)$ be the maximum over $i \in [n]$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has a collision}\right\}|$. 
+ The notation $\Fo(A)$ stands for \emph{forbidden offset by $A$}. We have computed in the previous paragraph that $\Fo(A)$ is less than $(4 \tau -2)|S|$. 
 
-Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), test all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment, and use it to extend the assignment. If $Fo(A) < P$, then whatever the delay of the message we want to extend $A$ with, there is an offset to do so. Since $Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, \firstfit (or any greedy algorithm) always succeeds when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
-It turns out that \firstfit always creates compact assignments (as defined in~\cite{dominique2018deterministic}), that is a message is always next to another one in one of the two periods. Hence, we can prove a better bound on $Fo(A)$, when $A$ is built by \firstfit, as stated in the following theorem.
+Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), test all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment, and use it to extend the assignment. If $\Fo(A) < P$, then whatever the delay of the message we want to extend $A$ with, there is an offset to do so. Since $\Fo(A) \leq (4 \tau -2)|S|$ and $|S| < n$, \firstfit (or any greedy algorithm) always succeeds when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is less than $1/4$.
+It turns out that \firstfit always creates compact assignments (as defined in~\cite{dominique2018deterministic}), that is a message is always next to another one in one of the two periods. Hence, we can prove a better bound on $\Fo(A)$, when $A$ is built by \firstfit, as stated in the following theorem.
 
 \begin{theorem}
 \firstfit solves \pma positively on instances of load less than $1/3$. 
 \end{theorem}
 \begin{proof}
-We show by induction on the size of $S$, that $Fo(A) \leq |S|(3\tau -1) + \tau -1$. For $S = 1$, it is clear since a single message forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a message $i \notin S$ such that \firstfit builds $A[i \rightarrow o]$ from $A$. By definition of \firstfit, choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled message between $o - \tau $ and $o-1$, hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, hence only $3\tau -1$ new offsets are forbidden, that is $Fo(A[i \rightarrow o]) \leq Fo(A) + (3\tau -1)$, which proves the induction.  
- During \firstfit, $Fo(A)$ is maximal when the last element is scheduled, that is when $A$ is of size $n-1$, hence $Fo(A) \leq (n-1)(3\tau -1) + \tau - 1 < 3n\tau$, which proves the theorem.
+We show by induction on the size of $S$, that $\Fo(A) \leq |S|(3\tau -1) + \tau -1$. For $S = 1$, it is clear since a single message forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $\Fo(A) \leq |S|(3\tau -1) + \tau -1$ and consider a message $i \notin S$ such that \firstfit builds $A[i \rightarrow o]$ from $A$. By definition of \firstfit, choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled message between $o - \tau $ and $o-1$, hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, hence only $3\tau -1$ new offsets are forbidden, that is $\Fo(A[i \rightarrow o]) \leq \Fo(A) + (3\tau -1)$, which proves the induction.  
+ During \firstfit, $\Fo(A)$ is maximal when the last element is scheduled, that is when $A$ is of size $n-1$, hence $\Fo(A) \leq (n-1)(3\tau -1) + \tau - 1 < 3n\tau$, which proves the theorem.
 \end{proof}
 
 \subsection{Meta-Offset}
@@ -222,9 +223,9 @@ The method of this section is described in~\cite{dominique2018deterministic} and
 The idea is to restrict the possible offsets at which messages can be scheduled. It seems counter-intuitive, since it decreases artificially the number of available offsets to schedule new messages. However, it allows to reduce the number of forbidden offsets for unscheduled messages. A \textbf{meta-offset} is an offset of value $i\tau$,
 with $i$ an integer from $0$ to $\lceil P / \tau \rceil$. We call \metaoffset the greedy algorithm which works as \firstfit, but consider only meta-offsets when scheduling messages. 
 
-To study \metaoffset, we introduce a variant of $Fo(A)$ restricted to meta-offsets.
- Let $A$ be a partial assignment defined over $S$ and $i\notin S$, we let $Fo(A)$ be the maximum over $d_i= j\tau$ with $j \in [P/\tau]$ of $|\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has a collision}\right\}|$.
- By definition, two messages with a different meta-offset cannot collide in the first period. Hence, $Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
+To study \metaoffset, we introduce a variant of $\Fo(A)$ restricted to meta-offsets.
+ Let $A$ be a partial assignment defined over $S$ and $i\notin S$, we let $\Fmo(A)$ be the maximum over $i \in [n]$ of $|\left\{ j \in [P/\tau] \mid A[i \rightarrow j\tau] \text{ has a collision}\right\}|$.
+ By definition, two messages with a different meta-offset cannot collide in the first period. Hence, $\Fmo(A)$ can be bounded by $3|S|$ and we obtain the following theorem.
 
 
 \begin{theorem}[Proposition 3 of~\cite{dominique2018deterministic}]\label{th:metaoffset}
@@ -235,7 +236,7 @@ The complexity of a naive implementation of \metaoffset is in $O(n P/\tau)$, whi
 
 \subsection{Compact Tuples}
 
-We present in this section a family of greedy algorithms which solve \pma positively for larger loads. We try to combine the good properties of the two previous algorithms: the compactness of the assignments produced by \firstfit and the absence of collision in the first period of \metaoffset. The idea is to schedule several messages at once, using meta-offsets, to maximize the compactness of the obtained solution. We first describe the algorithm which schedules pairs of messages and then explain quickly how to extend it to any tuples of messages.
+We present in this section a family of greedy algorithms which solve \pma positively for larger loads. We try to combine the good properties of the two previous algorithms: the compactness of the assignments produced by \firstfit and the absence of collision in the first period of \metaoffset. The idea is to schedule several messages at once, using meta-offsets, to maximize the compactness of the obtained solution. We describe an algorithm which schedules pairs of messages, which can be extended to any tuples of messages.
 
 
 From now on, we use Lemma~\ref{lemma:multiple} to assume $P = m\tau$ in the rest of this section. This hypothesis makes the analysis of algorithms based on meta-offsets simpler and tighter. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. If we drop this hypothesis, the theorems of this section
@@ -283,10 +284,10 @@ Given three messages $(1,2,3)$ in order of increasing delay modulo $\tau$, then 
 If the first two messages or the first and the third message form a compact pair, we are done. If not, then by definition $d_{1}' = 1 + d_{2}' = 1 + d_{3}'$. Hence, messages $2$ and $3$ have the same delay and form a compact pair of gap $1$.
 \end{proof}
 
-Let \compactpair be the following greedy algorithm:  A sequence of at least $n/3$ compact pairs is built by forming triples of messages in order of increasing $r_i$, and applying Lemma~\ref{lemma:pair_find} to each triple. Pairs are scheduled in the order they have been built using meta-offsets. If at some point all compact pairs are scheduled or the current one cannot be scheduled, the remaining messages are scheduled as in \metaoffset. The analysis of \compactpair relies on the evaluation of the number of forbidden meta-offsets. In the first phase of \compactpair, we evaluate the number of forbidden offsets when scheduling any compact pair, that we denote by $Fmo_2(A)$. In the second phase, we need to evaluate $Fmo(A)$. When scheduling a message in the second phase, a scheduled compact pair only forbids \emph{three} meta-offsets in the second period. If messages in a pair are scheduled independently, they forbid \emph{four} meta-offsets, which explains the improvement from \compactpair. We use the following lemma, whose proof is directly derived from the previous reamrk, as illustrated in Fig.~\ref{fig:forbidenmeta} to bound $Fmo_2(A)$. 
+Let \compactpair be the following greedy algorithm:  A sequence of at least $n/3$ compact pairs is built by forming triples of messages in order of increasing $r_i$, and applying Lemma~\ref{lemma:pair_find} to each triple. Pairs are scheduled in the order they have been built using meta-offsets. If at some point all compact pairs are scheduled or the current one cannot be scheduled, the remaining messages are scheduled as in \metaoffset. The analysis of \compactpair relies on the evaluation of the number of forbidden meta-offsets. In the first phase of \compactpair, we evaluate the number of forbidden offsets when scheduling any compact pair, that we denote by $\Fmo_2(A)$. In the second phase, we need to evaluate $\Fmo(A)$. When scheduling a message in the second phase, a scheduled compact pair only forbids \emph{three} meta-offsets in the second period. If messages in a pair are scheduled independently, they forbid \emph{four} meta-offsets, which explains the improvement from \compactpair. We use the following lemma, whose proof is directly derived from the previous remark, as illustrated in Fig.~\ref{fig:forbidenmeta} to bound $\Fmo_2(A)$. 
 
 \begin{lemma}\label{lemma:pair_forbid}
-A compact pair already scheduled by \compactpair forbids at most four meta-offsets in the second period to another compact pair when scheduled by \compactpair.
+A compact pair already scheduled by \compactpair forbids at most four meta-offsets in the second period to any another compact pair.
 \end{lemma}
 
 \begin{figure}
@@ -303,11 +304,11 @@ A compact pair already scheduled by \compactpair forbids at most four meta-offse
 \begin{proof}
 Let $n_2$ be the number of compact pairs scheduled in the first phase. When scheduling a new pair, the position of the $2n_2$ messages on the first period forbid $4n_2$ offsets for a compact pair. Indeed, each scheduled message can collide with each of the two messages which form a compact pair. In the second period, we can use Lemma~\ref{lemma:pair_forbid} to bound the number of forbidden offsets by $4n_2$. 
 Hence, we have established that during the first phase, the partial solution $A$
-satisfies $Fmo_2(A) \leq 8n_2$. This first phase continues while there are available offsets for compact pairs, which is guaranteed when $Fmo_2(A) \leq m$, that is while $n_2 \leq m/8$. Hence, we may assume that $n_2 = m/8$.
+satisfies $\Fmo_2(A) \leq 8n_2$. This first phase continues while there are available offsets for compact pairs, which is guaranteed when $\Fmo_2(A) \leq m$, that is while $n_2 \leq m/8$. Hence, we may assume that $n_2 = m/8$.
 
 In the second phase, a compact pair forbids $3$ meta-offsets in the 
-second period and $2$ in the first. Hence, if we let $n_1$ be the number of messages scheduled in the second phase to build partial assignment $A$, we have $Fmo(A) \leq n_2*5 + n_1*3$. 
-\compactpair can always schedule messages when $Fmo(A)$ is less than $m$, which is implied by $n_2*5 + n_1*3 \leq m$.
+second period and $2$ in the first. Hence, if we let $n_1$ be the number of messages scheduled in the second phase to build partial assignment $A$, we have $\Fmo(A) \leq n_2*5 + n_1*3$. 
+\compactpair can always schedule messages when $\Fmo(A)$ is less than $m$, which is implied by $n_2*5 + n_1*3 \leq m$.
 Solving this equation, we obtain that $n_1 \geq \frac{m}{8}$ thus the number of messages scheduled is at least $2n_2 + n_1 \geq \frac{3}{8}m$. Assuming there are exactly $\frac{3}{8}m$ messages to schedule, then $\frac{2m}{8}$ messages are scheduled as compact pairs. It is two third of the $\frac{3}{8}m$ messages, hence Lemma~\ref{lemma:pair_find} guarantees the existence of enough compact pairs. Therefore, an assignment is always produced when the load is less or equal to $\frac{3}{8}$.
 \end{proof}
 
@@ -322,13 +323,13 @@ of algorithm \texttt{Compact k-tuples} and its analysis.
 
 \section{Messages of Size One} \label{sec:small}
 
-When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We give, in this section, a method which always finds an assignment for a load larger than $1/2$.
+When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $\Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the number of scheduled messages. We give, in this section, a method which always finds an assignment for a load larger than $1/2$.
 
 \subsection{Deterministic Algorithm}
 
-To go above $1/2$ of load, we optimize a potential measuring how many offsets are available for all messages, scheduled or not. Messages are scheduled while possible using any greedy algorithm. Then, when all unscheduled messages have no available offset, we use a Swap operation defined later, which improves the potential. When the potential is high enough, it ensures that there are two messages whose offset can be changed so that a new message can be scheduled. 
-
-The algorithm is not greedy, since we allow to change the offsets of two scheduled message to make room for an unscheduled one. It cannot work online, since it requires to know all delays of the messages in advance. 
+To go above $1/2$ of load, we optimize a potential measuring how many offsets are available for the messages of the instance, scheduled or not. 
+%Messages are scheduled while possible using any greedy algorithm. Then, when all unscheduled messages have no available offset, we use a Swap operation defined later, which improves the potential. 
+When the potential is high enough, it ensures that there are two messages whose offset can be changed so that a new message can be scheduled. 
 
 \begin{definition}
 The potential of a message of delay $d$, for a partial assignment $A$
@@ -349,17 +350,17 @@ then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence
 
 \begin{lemma}
 Given a partial assignment $A$ of size $s$, and $i$ an unscheduled message of potential 
-$v$, then the set $\{o \mid A(i \rightarrow o) \text{ has no collision}\}$ is of size $P - 2s + v$.
+$v$, then the set $\{o \mid A[i \rightarrow o] \text{ has no collision}\}$ is of size $P - 2s + v$.
 \end{lemma}
 
-For our algorithm, we need a global measure of quality of a partial assignment, 
-that we try to increase when the algorithm fail to schedule new messages. 
+We define a global measure of quality of a partial assignment, 
+that we need to increase by local modification when it is not possible to schedule a new message. 
 We call our measure \textbf{the potential of an assignment} and we denote it by $Pot(A)$, it is the sum of potentials of all messages in the instance.
 
 
 \begin{definition}
-The potential of a position $p$, for a partial assignment $A$, is the number of messages $j$, such that 
-$A(j \leftarrow p)$ has a collision. 
+The potential of a position $p$, for a partial assignment $A$, is the number of messages $i$, such that 
+$A[i \rightarrow p]$ has a collision. 
 \end{definition}
 
 %\begin{figure}
@@ -386,9 +387,9 @@ The sum of potentials of all positions of a partial assignment of size $k$ is $n
 
  As a consequence of this lemma, $Pot(A) \leq nk$. Let us define a \textbf{Swap operation},
  which guarantees to obtain at last half the maximal value of the potential.
-Let $A$ be some partial assignment of size $s$ and let $i$ be an unscheduled message of delay $d$. 
+Let $A$ be some partial assignment of size $s$ and let $i$ be an unscheduled message. 
 Assume that $i$ cannot be used to extend $A$. The Swap operation is the following: 
-select a free position $p$ in the first period, remove the message which uses the position $p+d$ in the second period from $A$ and extend $A$ by $i$ with offset $o$. We denote by $Swap(i,p,A)$ the partial assignment obtained by this operation.
+select a free position $p$ in the first period, remove the message which uses the position $p+d_i$ in the second period from $A$ and extend $A$ by $i$ with offset $p$. We denote by $Swap(i,p,A)$ the partial assignment obtained by this operation.
 
 \begin{lemma}\label{lemma:swap}
 Let $A$ be some partial assignment of size $k$ and let $i$ be an unscheduled message. If $i$ cannot be used to extend $A$, then either $Pot(A) \geq kn/2$ or there is $p \in [P]$ such that $Pot(Swap(i,p,A)) > Pot(A)$.
@@ -403,17 +404,17 @@ By hypothesis, $i$ cannot be scheduled, then, for all $p \in P_{f}$, $p+d_i$ is 
 Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$. Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
 
-%\subsubsection*{The Swap Algorithm}
 
-
-Let us precisely describe the algorithm \swapandmove:  messages are scheduled while possible by \firstfit and then the Swap operation is applied while it increases the potential. When the potential is maximal, \swapandmove schedules a new message by moving at most two scheduled messages to other available offsets. If it fails to do so, \swapandmove stops, otherwise the whole procedure is repeated. We analyze \swapandmove in the following theorem.
+Let us now describe the algorithm \swapandmove:  messages are scheduled while possible by \firstfit and then the Swap operation is applied while it increases the potential. When the potential is maximal, \swapandmove schedules a new message by moving at most two scheduled messages to other available offsets. If it fails to do so, \swapandmove stops, otherwise the whole procedure is repeated. 
+\swapandmove  is not greedy, since we allow to change the offsets of two scheduled message to make room for an unscheduled one. It cannot work online, since it requires to know all delays of the messages in advance. 
+%We analyze \swapandmove in the following theorem.
 
 \begin{theorem}
 \swapandmove solves positively \pma, in time $O(n^3)$, for instances with $\tau =1$ and load less than $1/2 + (\sqrt{5}/2 -1) \approx 0,618$.
 \end{theorem}
 
 \begin{proof}
-We determine for which value of the load \swapandmove always works. We let $n = (1/2 + \epsilon)P$ be the number of messages, the load is $1/2 + \epsilon$. We need only to study the case when $n-1$ messages are scheduled by $A$ and \swapandmove tries to schedule the last one, since the previous steps are similar but easier. 
+We determine for which value of the load \swapandmove always works. We let $n = (1/2 + \epsilon)P$ be the number of messages, the load is $1/2 + \epsilon$. We need only to study the case when $n-1$ messages are scheduled by $A$ and \swapandmove tries to schedule the last one, since previous steps are similar but easier. 
 
 Let $d$ be the delay of the unscheduled message. We consider the pairs 
 of times $(p,p+d)$ for $p \in [P]$. Since the message
@@ -444,10 +445,9 @@ If we consider all $n'$ used offsets $o$ and all times time $o+d$ in the second 
 then $o$ and $o+d$ are both used for at least $n' - (P -n') = 2\epsilon P$ values of $o$.
 The potential of any message is thus larger or equal to $2\epsilon P$. When a message cannot be scheduled, its potential is less or equal to $2\epsilon P$, hence it is equal to $2\epsilon P$.
 
-Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. As a consequence, the method of Lemma~\ref{lemma:swap} will guarantee a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. Any algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. However, we may hope to improve on the analysis in Lemma~\ref{lemma:swap}, since it is not optimal: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. 
+Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. However, we may hope to improve on the analysis in Lemma~\ref{lemma:swap}, since it is not optimal: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. Hence, we conjecture that \swapandmove solves \pma positively for load up to $2/3$. 
 
-We conjecture that \swapandmove solves \pma positively for load up to $2/3$. 
-On random instances, we expect the potential to be higher than the guarantee of Lemma~\ref{lemma:swap} and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
+%On random instances, we expect the potential to be higher than the guarantee of Lemma~\ref{lemma:swap} and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
 
 \subsection{Randomized Algorithm for Random Instances}
 
@@ -609,7 +609,7 @@ half of the same message in $A'$ or the position $\tau$ before, which is either 
 \end{figure}
 
 Remark that combining \greedyuniform and Th.~\ref{th:double_load} allows to solve $\pma$ on random instances, with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. 
-This is why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on minimizing $Fo(A)$, cannot guarantee anything for load larger than $1/2$. However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm which exhibits good performance on random instances.
+This is why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on minimizing $\Fo(A)$, cannot guarantee anything for load larger than $1/2$. However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm which exhibits good performance on random instances.
 
 \subsection{Trade-off between Latency and Message Size}
 
