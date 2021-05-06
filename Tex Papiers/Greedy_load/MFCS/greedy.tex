@@ -245,7 +245,7 @@ In Lemma~\ref{lemma:multiple}, we show that we can assume $P = m\tau$ in the res
 can be restated as proving the existence of an assignment for a load $\lambda - o(1)$, where $o(1)$ goes to $0$ when $n$ grows. 
 
 \begin{lemma}\label{lemma:multiple}
-Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = \lfloor P / \tau \rfloor$. There is an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
+Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = \lfloor P / \tau \rfloor$. There is an integer $\tau'$ and an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
 \end{lemma}
 \begin{proof}
 %Fig.~\ref{fig:multipleperiod} illustrates the reductions we define in this proof on a small instance.
@@ -276,7 +276,7 @@ The \textbf{gap} between $i$ and $j$ is defined as  $g = d'_{i} + 1 - d'_{j} \mo
 
 \includegraphics[scale=0.7]{compact_pair}
 \end{center}
-\caption{A compact pair scheduled using meta-offsets, with $d'_0 = 2$ and $d'_1 = 0$}
+\caption{The compact pair $(0,1)$ with $d'_0 = 2$ and $d'_1 = 0$}
 \label{fig:compactpair}
 \end{figure}
 
@@ -299,7 +299,7 @@ Then $C_1$ forbids at most four meta-offsets to $C_2$ and three meta-offsets to 
 \includegraphics[scale=0.7]{pairforbiden}
 \end{center}
 
-\caption{Meta offsets forbidden by a scheduled compact pair (in blue) when scheduling another compact pair (in red) with larger $r_i$'s} 
+\caption{Positions forbidden by a scheduled compact pair (in blue) when scheduling another compact pair (in red) with larger $r_i$'s} 
 \label{fig:forbidenmeta}
 \end{figure}
 \begin{theorem}
@@ -362,7 +362,7 @@ We call our measure \textbf{the potential of an assignment} and we denote it by 
 
 
 \begin{definition}
-The potential of a position $p$, for a partial assignment $A$, is the number of messages $i$, such that 
+The potential of a position $p \in [P]$, for a partial assignment $A$, is the number of messages $i \in [n]$, such that 
 $A[i \rightarrow p]$ has a collision. 
 \end{definition}
 
@@ -448,13 +448,13 @@ If we consider all $n'$ used positions $p$ and all times time $p+d$ in the secon
 then $p$ and $p+d$ are both used for at least $n' - (P -n') = 2\epsilon P$ values of $p$.
 The potential of any message is thus larger or equal to $2\epsilon P$. When a message cannot be scheduled, its potential is less or equal to $2\epsilon P$, hence it is equal to $2\epsilon P$.
 
-Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. Hence, we conjecture that \swapandmove solves \pma positively for load up to $2/3$. Note that the analysis in Lemma~\ref{lemma:swap} may be improved, since it is not optimal: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. 
+Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. Hence, we conjecture that \swapandmove solves \pma positively for load up to $2/3$. To go further, the analysis in Lemma~\ref{lemma:swap} may be improved: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. However, there is an instance (found by a bruteforce search) with $8$ messages and $P=10$ for which there is no assignment, hence the largest $\lambda$ for which $\pma$ has always a solution is strictly less than $8/10$. 
+
 %On random instances, we expect the potential to be higher than the guarantee of Lemma~\ref{lemma:swap} and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
 
 \subsection{Randomized Algorithm for Random Instances}
 
-We would like to better understand the behavior of the presented greedy algorithms
-on instances drawn uniformly at random. To this aim, we analyze the algorithm \greedyuniform, defined as follows: for each message in the order of the input, choose one of the offsets, which does not create a collision with the current partial assignment, uniformly at random. 
+We would like to better understand the behavior of greedy algorithms on instances drawn uniformly at random. To this aim, we analyze the algorithm \greedyuniform, defined as follows: for each message in the order of the input, choose one of the offsets, which does not create a collision with the current partial assignment, uniformly at random. 
 
 We analyze \greedyuniform over random instances:  all messages have 
 their delays drawn independently and uniformly in $[P]$. We compute the probability of success of \greedyuniform over all random choices by the algorithm \emph{and all possible instances}. 
@@ -477,7 +477,7 @@ of the $n+1^{th}$ message randomly, extending the trace by a random possible off
 Since \greedyuniform can be seen as a simple random process on traces by Th.~\ref{theorem:uniform}, it is easy to analyze its probability of success.
 
 \begin{theorem}\label{theorem:uniform}
-The probability over all instances with $n$ messages and period $P$ that \greedyuniform solves $\pma$ positively is $$\displaystyle{\prod_{i=P/2}^{n-1}(1 - \frac{\binom{n}{2i-P}}{\binom{P}{i}})}.$$
+The probability over all instances with $n$ messages and period $P$ that \greedyuniform solves $\pma$ positively is $\displaystyle{\prod_{i=P/2}^{n-1}1 - \frac{\binom{n}{2i-P}}{\binom{P}{i}}}$.
 \end{theorem}
 \begin{proof}
 We evaluate $\Pr(P,n)$ the probability that \greedyuniform fails at the $n^{th}$ step assuming it has not failed before. It is independent of the delay of the $n^{th}$ message. Indeed, the operation which adds one to all times used in the second period is a bijection on the set of traces of size $n-1$. It is equivalent to remove one to the delay of the $n^{th}$ message. We can thus assume that the delay is zero.
@@ -490,8 +490,10 @@ the probabilities of success $(1 - \Pr(P,i))$ at step $i$, for all $i \leq n$, w
 \end{proof}
 
 
-If we fix the load $\lambda = n/P$, we can bound $\Pr(P,n)$ using Stirling formula. We obtain a constant $C_{\lambda}$
+If we fix the load $\lambda = n/P$, we can bound $\Pr(P,n)$ using Stirling formula. The computation yields a constant $C_{\lambda}$
 such that $\Pr(P,n) \leq C_{\lambda} \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^P$.
+For instance, with $\lambda = 2/3$, $\Pr(P,n) < 1,16 \times (0,84)^P$.
+
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
 The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
 $f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by $C_{\lambda} \lambda P f(\lambda)^P$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
