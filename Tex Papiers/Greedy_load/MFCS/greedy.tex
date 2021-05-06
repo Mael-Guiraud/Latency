@@ -417,12 +417,12 @@ Let us now describe the algorithm \swapandmove:  messages are scheduled while po
 \end{theorem}
 
 \begin{proof}
-We determine for which value of the load \swapandmove always works. We let $n = (1/2 + \epsilon)P$ be the number of messages, the load is $1/2 + \epsilon$. We need only to study the case when $n-1$ messages are scheduled by $A$ and \swapandmove tries to schedule the last one, since previous steps are similar but easier. 
+We determine for which value of the load \swapandmove always finds an assignment. We let $n = (1/2 + \epsilon)P$ be the number of messages, the load is $1/2 + \epsilon$. We only study the situation when $n-1$ messages are scheduled by $A$ and \swapandmove tries to schedule the last one, since previous steps are similar but easier. 
 
 Let $d$ be the delay of the unscheduled message. We consider the pairs 
 of times $(p,p+d)$ for $p \in [P]$. Since the message
 cannot be scheduled, there are three cases. First, $p$ is unused in the first period but $p+d$ is used in the second period. Since there are $n-1$ scheduled messages, there are $P-n+1$ such value of $p$. If a message using the time $p+d$ in the second period can be scheduled elsewhere, so that the unscheduled message can use offset $p$, then \swapandmove succeeds.
-Otherwise, the message has no possible offsets, which means its potential is equal to $2(\epsilon P -1)$.
+Otherwise, the message has no possible offset, which means its potential is equal to $2(\epsilon P -1)$.
 The second case is symmetric: $p$ is used in the first period but $p+d$ is unused in the second period. 
 Finally, we have the case $p$ is used in the first period and $p+d$ is used in the second period.  There are $2(\epsilon P -1)$ such values of $p$. If the two messages using times 
 $p$ and $p+d$ can be rescheduled so that offset $p$ can be used for the unscheduled message,
@@ -444,23 +444,22 @@ a message is added to the partial assignment. The potential is bounded by $O(n^2
 \end{proof}
 
 Consider a partial assignment of size $n' = (1/2 + \epsilon)P$, and a message of delay $d$.
-If we consider all $n'$ used offsets $o$ and all times time $o+d$ in the second period, 
-then $o$ and $o+d$ are both used for at least $n' - (P -n') = 2\epsilon P$ values of $o$.
+If we consider all $n'$ used positions $p$ and all times time $p+d$ in the second period, 
+then $p$ and $p+d$ are both used for at least $n' - (P -n') = 2\epsilon P$ values of $p$.
 The potential of any message is thus larger or equal to $2\epsilon P$. When a message cannot be scheduled, its potential is less or equal to $2\epsilon P$, hence it is equal to $2\epsilon P$.
 
-Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. However, we may hope to improve on the analysis in Lemma~\ref{lemma:swap}, since it is not optimal: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. Hence, we conjecture that \swapandmove solves \pma positively for load up to $2/3$. 
-
+Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. Hence, we conjecture that \swapandmove solves \pma positively for load up to $2/3$. Note that the analysis in Lemma~\ref{lemma:swap} may be improved, since it is not optimal: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. 
 %On random instances, we expect the potential to be higher than the guarantee of Lemma~\ref{lemma:swap} and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
 
 \subsection{Randomized Algorithm for Random Instances}
 
-We would like to understand better the behavior of our algorithms
+We would like to better understand the behavior of the presented greedy algorithms
 on instances drawn uniformly at random. To this aim, we analyze the algorithm \greedyuniform, defined as follows: for each message in the order of the input, choose one of the offsets, which does not create a collision with the current partial assignment, uniformly at random. 
 
 We analyze \greedyuniform over random instances:  all messages have 
-their delays drawn independently and uniformly in $[m]$. We compute the probability of success of \greedyuniform over all random choices by the algorithm \emph{and all possible instances}. 
-It turns out that this probability, for a fixed load strictly less than one, goes to one when $m$ grows. 
-For a given partial assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $m$, the trace of an assignment is a pair of subsets of $[m]$ of size $n$. We now show that these traces are produced uniformly by \greedyuniform.
+their delays drawn independently and uniformly in $[P]$. We compute the probability of success of \greedyuniform over all random choices by the algorithm \emph{and all possible instances}. 
+It turns out that this probability, for a fixed load strictly less than one, goes to one when $P$ grows. 
+For a given partial assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $P$, the trace of an assignment is a pair of subsets of $[P]$ of size $n$. We now show that these traces are produced uniformly by \greedyuniform.
 
 \begin{theorem}
 The distribution of traces of assignments produced by \greedyuniform when it succeeds, from instances drawn uniformly at random, is also uniform.
@@ -472,31 +471,30 @@ Assume now the theorem true for some $n>1$. \greedyuniform, by induction hypothe
 uniform traces from the first $n$ messages.  Hence, we should prove that, if we draw the delay
 of the $n+1^{th}$ message randomly, extending the trace by a random possible offset produces a random distribution on the traces of size $n+1$. 
 
- If we draw an offset uniformly at random (among all $m$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces \greedyuniform. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
+ If we draw an offset uniformly at random (among all $P$ offsets) and then extend the trace by scheduling the last message at this offset or fail, the distribution over the traces of size $n+1$ is the same as what produces \greedyuniform. Indeed, all offsets which can be used to extend the trace have the same probability to be drawn. Since all delays are drawn independently, we can assume that, given a trace, we first draw an offset uniformly, then draw uniformly the delay of the added message and add it to the trace if it is possible. This proves that all extensions of a given trace are equiprobable. Thus, all traces of size $n+1$ are equiprobable, since they each can be formed from $(n+1)^2$ traces of size $n$ by removing one used time from the first and second period. This proves the induction and the theorem.
 \end{proof}
 
 Since \greedyuniform can be seen as a simple random process on traces by Th.~\ref{theorem:uniform}, it is easy to analyze its probability of success.
 
 \begin{theorem}\label{theorem:uniform}
-The probability over all instances with $n$ messages and period $m$ that \greedyuniform solves $\pma$ positively is $$\displaystyle{\prod_{i=m/2}^{n-1}(1 - \frac{\binom{n}{2i-m}}{\binom{m}{i}})}.$$
+The probability over all instances with $n$ messages and period $P$ that \greedyuniform solves $\pma$ positively is $$\displaystyle{\prod_{i=P/2}^{n-1}(1 - \frac{\binom{n}{2i-P}}{\binom{P}{i}})}.$$
 \end{theorem}
 \begin{proof}
-We evaluate $\Pr(m,n)$ the probability that \greedyuniform fails at the $n^{th}$ step assuming it has not failed before. It is independent of the delay of the $n^{th}$ message. Indeed, the operation which adds one to all times used 
-in the second period is a bijection on the set of traces of size $n-1$. It is equivalent to remove one to the delay of the $n^{th}$ message. We can thus assume that the delay is zero.
+We evaluate $\Pr(P,n)$ the probability that \greedyuniform fails at the $n^{th}$ step assuming it has not failed before. It is independent of the delay of the $n^{th}$ message. Indeed, the operation which adds one to all times used in the second period is a bijection on the set of traces of size $n-1$. It is equivalent to remove one to the delay of the $n^{th}$ message. We can thus assume that the delay is zero.
 
 Let $S_1$ be the set of times used in the first period by the $n-1$ first messages
-and $S_2$ the set of times used in the second period. We can assume that $S_1$ is fixed, since all subsets of the first period are equiprobable and because $S_2$ is independent of $S_1$ (Th.~\ref{theorem:uniform}). There is no possible offset for the $n^{th}$ message, if and only if $S_1 \cup S_2 = [m]$. It means that $S_2$ has been drawn such that it contains $[m] \setminus S_1$. By Th.\ref{theorem:uniform}, $S_2$ is uniformly distributed over all sets of size $n-1$. Hence, the probability that  $[m]  \setminus S_1 \subseteq S_2$  is the probability to draw a set of size $n-1$ which contains $m-n + 1$ fixed elements. This proves $\Pr(m,n) = \frac{\binom{n}{2(n-1)-m}}{\binom{m}{n-1}}$.
+and $S_2$ the set of times used in the second period. We can assume that $S_1$ is fixed, since all subsets of the first period are equiprobable and because $S_2$ is independent of $S_1$ (Th.~\ref{theorem:uniform}). There is no possible offset for the $n^{th}$ message, if and only if $S_1 \cup S_2 = [P]$. It means that $S_2$ has been drawn such that it contains $[P] \setminus S_1$. By Th.\ref{theorem:uniform}, $S_2$ is uniformly distributed over all sets of size $n-1$. Hence, the probability that  $[P]  \setminus S_1 \subseteq S_2$  is the probability to draw a set of size $n-1$ which contains $P-n + 1$ fixed elements. This proves $\Pr(P,n) = \frac{\binom{n}{2(n-1)-P}}{\binom{P}{n-1}}$.
 
 From the previous expression, we can derive the probability of success of \greedyuniform by a simple product of 
-the probabilities of success $(1 - \Pr(m,i))$ at step $i$, for all $i \leq n$, which proves the theorem. 
+the probabilities of success $(1 - \Pr(P,i))$ at step $i$, for all $i \leq n$, which proves the theorem. 
 \end{proof}
 
 
-If we fix the load $\lambda = n/m$, we can bound $P(m,n)$ using Stirling formula. We obtain for some constant $C$, 
-that $P(m,n) \leq C \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^m$.
+If we fix the load $\lambda = n/P$, we can bound $\Pr(P,n)$ using Stirling formula. We obtain a constant $C_{\lambda}$
+such that $\Pr(P,n) \leq C_{\lambda} \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^P$.
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
 The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
-$f(\lambda) < 1$ when $\lambda < 1$. By an union bound, the probability that \greedyuniform fails is bounded by $C \lambda m f(\lambda)^m$. For any fixed $\lambda$, the previous expression rapidly goes to zero when $m$ goes to infinity. It explains why \greedyuniform is good in practice for large $m$, even when the load is large. 
+$f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by $C_{\lambda} \lambda P f(\lambda)^P$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
 
 
  \bibliography{Sources}
@@ -536,7 +534,7 @@ We also present the results of all algorithms of the paper run over synthetic da
 \section{Compact k-tuples}\label{sec:compact}
 
 
-Recall that the a delay $d_i$ is equal to  $d'_i*\tau + r_i$, we call $d'_i$ the \textbf{meta-delay}. The algorithm we describe relies only
+Recall that a delay $d_i$ is equal to  $d'_i*\tau + r_i$, we call $d'_i$ the \textbf{meta-delay}. The algorithm we describe relies only
 on meta-delays and the fact that the $r_i$ are increasing.
 A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ with $i_1,\dots,i_k$ increasing, for which meta-offsets can be chosen so that, there is no collision, the messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau = A(i_{l+1}) + d'_{i_{l+1}}\tau$. Scheduling a compact $k$-tuple is choosing a meta-offset for the first message of the tuple, the offsets of the 
 other messages are also fixed by this choice.  
@@ -570,7 +568,7 @@ Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built,
 A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is less than $4/10$ and for $n \geq 205$.
 \end{proof}
 
-The code computing $n_i$ can be found on one author's website\footnote{https://yann-strozecki.github.io/textesmaths.html}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
+The code computing $n_i$ can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
 The bound of Lemma~\ref{lemma:uple_find} can be refined, by using better algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 
@@ -639,7 +637,7 @@ $ (1 + 3/2) n/2  + (1 + 1)n/2 = 9n/4$. Hence, both conditions are satisfied and 
 \end{proof}
 
 
-We may want to add less latency to the message using the longest route. A natural idea is choose the message with the longest route as the reference remainder by subtracting its remainder to every delay. As a consequence, this message needs zero buffering. However, the message with the second longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. 
+We may want to add less latency to the message using the longest route. A simple solution is the following: choose the message with the longest route as the reference remainder by subtracting its remainder to every delay. As a consequence, this message needs zero buffering. However, the message with the second longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. 
 
 Another aim would be to minimize the average latency rather than the worst latency.
 We prove that we can do the transformation yielding $\tau=1$ while optimizing the average latency. 
@@ -648,7 +646,7 @@ If we sum $L(t)$, from $t=0$ to $\tau-1$, the contribution of each message is $\
 
 \section{Coherent Routing}\label{sec:coherent}
 
-In this section, we explain how our algorithms to solve the problem \pma may be used on more complex networks.
+In this section, we explain how algorithms solving \pma may be used on more complex networks with many contention points.
 %donner la définition du coherent routing
 %donner un exemple
 %dire que le problème est NP dur pour de vrai -> oui en citant le papier arxiv, les exemples sont coherent routing, le mettre dans l'intro
@@ -662,7 +660,7 @@ In this section, we explain how our algorithms to solve the problem \pma may be 
 \subsection{Experimental Results for Large Messages} \label{sec:perf_large}
 
 
-In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{anonymized url}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
 
 We consider the following algorithms:
 \begin{itemize}
@@ -727,7 +725,7 @@ On a regular laptop, all algorithms terminates in less than a second when solvin
 \label{fig:shortroutes}
 \end{minipage}
 
-
+\medskip
 
 For all sets of parameters, the algorithms have the same relative performances. \metaoffset and \greedyuniform
 perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
@@ -741,7 +739,7 @@ As demonstrated by Fig.~\ref{fig:100messBig} and Fig.~\ref{fig:100messSmall}, th
 Finally, the results of Exact Resolution in Fig.~\ref{fig:10mess} show that the greedy algorithms are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which \pma can always be solved positively.
 
 We also investigate the behavior of the algorithms when the delay of the messages are drawn in $[\tau]$ in Fig.~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficient: they always find a solution for $99$ messages. It is expected, since all $d'_i$ are equal in these settings and 
-they will both build a $99$-compact tuples and thus can only fail for load $1$.
+they will both build a $99$-compact tuple and thus can only fail for load $1$.
 
 \subsection{Experimental Results for Small Messages} \label{sec:perf_small}
 
