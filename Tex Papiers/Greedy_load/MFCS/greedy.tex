@@ -649,11 +649,37 @@ If we sum $L(t)$, from $t=0$ to $\tau-1$, the contribution of each message is $\
 \section{Coherent Routing}\label{sec:coherent}
 
 In this section, we explain how algorithms solving \pma may be used on more complex networks with many contention points.
-%donner la définition du coherent routing
-%donner un exemple
-%dire que le problème est NP dur pour de vrai -> oui en citant le papier arxiv, les exemples sont coherent routing, le mettre dans l'intro
-%dire qu'on peut adapter tous les algos greedys-> la seule différence, c'est qu'on a une paire first period/second period différent pour chaque message 
-%par contre pour l'algo swap, il faudrait de nouvelles idées
+We consider networks with \textbf{coherent routing}, a common property of telecommunication network (see e.g.~\cite{Schwiebert1996ANA}).
+Each message follow a fixed route from an antenna to the data-center, and the coherent routing property implies that two routes
+share either nothing or a single path (i.e. a sequence of contiguous links) in the network. See Fig.~\cite{fig:coherent_routing} for a network with coherent routing.
+
+In other word, for each pair of message, there is either no common contention point or a single contention point
+which is the beginning of their common path, and if there is no collision at this contention point, there is no collision between these two messages further in the network.
+The routing is coherent from the antennas to the data-centers, and it is also coherent from the data-centers to the antenna. 
+Hence, each pair of messages can be characterized by their two contentions points (on the way forward and on the way back) and the delay between these two points. 
+
+The problem $\pma$ can be defined over any networks: the problem is to find an assignment (an offset for each message) such that there is no collision in the network.
+The problem $\pma$ (under the name \textsc{PAZL}) is proven to be $\NP$-hard in~\cite{dominique2018deterministic} and the instances used for the reduction
+have a coherent routing. However, we now explain why the algorithms proposed in this article for the single shared link case, can be easily transfered to
+coherent routing case. To do that we prove that we can transform a network with coherent routing into a network with a single shared link such that 
+one assignment of the latter is also an assignment of the former.
+
+The transformation is the following: let us consider two contention points $c_1$ and $c_2$ in the network, such that
+there is no contention point before $c_1$ nor between $c_1$ and $c_2$. Then, all messages going through $c_2$ but not $c_1$ are 
+routed through $c_1$ and $c_2$ is not a contention point anymore, see Fig~\cite{fig:transformation}. Let $l$ be the length of the link
+between $c_1$ and $c_2$. Assume that we have rerouted messages in $S$ from $c_2$ to $c_1$, an let $A$ be an assignment for the transformed network,
+then the assignment $A'$ defined as for $i\notin S, A'(i) = A(i)$ and for $i \in S, A'(i) = A(i) + l \mod P$ is an assignment for the original network.
+
+The coherent routing property ensures that applying the transformation to some network $N$ while possible, yields a network $N'$ with a single shared link. Hence, we can apply the algorithms presented in this article to find an assignment for $N'$, which can be transformed into an assignment for $N$. Let us define the load of any network as $n\tau /P$, then the load of $N'$ is the same as the load of $N$. It proves that there is always an assignment when the load of a coherent network is less than $4/10$ or less than $1/2 + (\sqrt{5}/2 -1)$ and $\tau = 1$. 
+
+Remark that there is a more precise way to define the load for general networks, since the load is not a global notion. 
+Let $n_c$ be the number of messages going through the contention point $c$, then the load at $c$ is $n_c\tau/P$. The \textbf{local load} of the network is then defined as the maximum
+of the load of the contention points. It is always less than the load defined as $n\tau /P$ and it can be significantly so.
+It is easy to see that in a network with coherent routing, any greedy algorithm finds a solution when the local load is less than $1/4$ since we can associate 
+two contention points only to each message. However, the algorithm of this article does not seem to work well when bounding the local load. 
+
+
+
 
 
 \section{Experimental Results}
