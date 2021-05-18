@@ -386,7 +386,7 @@ Specificity of Cloud-RAN:
 Current approaches: \begin{itemize}
 \vspace{1cm}
 \item Dedicated network $\rightarrow$ Too expensive
-\item Statistical multiplexing (TSN/Qbv) $\rightarrow$ \textcolor{red}{bounded latency only}
+\item Statistical multiplexing (TSN/Qbv) $\rightarrow$ \textcolor{red}{weak bound on latency}
 \end{itemize}
 \end{multicols}
 
@@ -807,11 +807,9 @@ There is a \textcolor{blue}{collision} between two routes when their messages go
 \centering
 Choosing the offset such that there are no collisions.
 \vspace{0.5cm}
-\pause
 
-An \textcolor{blue}{assignment} is a choice of offsets for each route without collisions.
 \end{frame}
-\begin{frame}{Two way trip assignment}
+\begin{frame}{Assignment}
  
  \begin{center}
 \scalebox{0.3}{
@@ -864,37 +862,94 @@ An \textcolor{blue}{assignment} is a choice of offsets for each route without co
 \end{tikzpicture}
 }
 \end{center}
+
+
 \pause
 
 In each BBU, one can choose the \textcolor{blue}{waiting time} before sending back the answer.\\
+
 
 \begin{center}
   \includegraphics[scale=0.7]{BBU}\\
  \end{center} 
 
-\pause
-\todo{une figure pour expliquer ce que c'est un assignment (sur un graph on attend au debut et dans le point de la BBU)}
-\textbf{Problem:}
 
-Given a routed network, a period and a message size, find an assignment such that there is no collisions.
+\pause 
+
+An \textcolor{blue}{assignment} is a choice of offsets and waiting times for each route without collisions.
+
    
 \end{frame}
+\begin{frame}{Process Time}
 
-\begin{frame}{Problems}
-\textbf{Problem:}
+ \begin{center}
+\scalebox{0.3}{
 
-Given a routed network, a period and a message size, find an assignment such that there is no collisions (PALL).
-\textbf{Optimisation problem:}
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [blue,->] node[anchor=south]{$5$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
+
+\path (c2) edge [blue,->] node[anchor=south]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
+
+\path (c1) edge [blue,->,bend left=30] node[anchor=south]{$7+2+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$7+1+1$} (c2);
+
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+\vspace{1cm}
+\includegraphics[width=0.7\textwidth]{time.pdf}
+
+\end{center}
+
+\pause
+ \textbf{Problem:}
 Find an assignment that minimize the full process time.
-\todo{une figure pour expliquer ce que c'est le full process time}
-
-\textbf{Variant : PAZL}
+\textbf{PAZL(variant):}
 No waiting time in the BBU.
-
 \end{frame}
 
 
 \begin{frame}{NP-hardness}
+\begin{theorem}\label{th:hardness_contention_depth}
+PAZL is $\NP$-complete
+\end{theorem}
 
     \scalebox{0.5}{
     \begin{tikzpicture}
@@ -1067,15 +1122,15 @@ No waiting time in the BBU.
 \vspace{1cm}
 PAZL Solved for star shaped networks:
 \begin{itemize}
-	\item Fast greedy algorithms for light loads.
-	\item FPT Algorithm for small number of routes.
+	\item Exsitence of a solution for medarate loads using polynomial time algorithms.
+	\item FPT Algorithm with the number of routes as parameter.
 	\end{itemize}
 	\end{center}
 \end{frame}
 \subsection{A two stage approach for PALL}
 \begin{frame}{A two stage approach for PALL}
 \begin{center}
-\textbf{First step:} We fix the offset of the route arbitrary.
+\textbf{First step:} We fix the offset of the route arbitrarily.
 \scalebox{0.4}{
 
 \begin{tikzpicture}
@@ -1128,7 +1183,8 @@ PAZL Solved for star shaped networks:
 }
  
  \pause
-\textbf{Problem: Waiting Time Assignment:}
+\textbf{Second Step: Solving Waiting Time Assignment}
+
 Given the offsets, the routed network and a deadline for all routes, find the assignment that minimize the full process time.
 
  \scalebox{0.4}{
@@ -1189,7 +1245,7 @@ Given the offsets, the routed network and a deadline for all routes, find the as
     \hline
      Route& $0$ & $1$ & $2$& $3$ & $4$\\
     \hline
-    Deadline & $10$ &$15$&$5$&$7$&$30$\\
+    Deadline & $10$ &$15$&$5$&$7$&$32$\\
     \hline
      Release time & $0$ &$2$&$3$&$16$&$17$\\
     \hline
@@ -1219,15 +1275,22 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \begin{frame}{Solving WTA: Polynomial time algorithms}
 
   
-   \textbf{MLS} : Scheduling algorithm finding a solution minimizing makespawn. 
+   \textbf{MLS} : Polynomial time scheduling algorithm finding a solution minimizing makespawn. 
    \pause
    \textcolor{red}{Periodicity not managed.}      
 
 
    \pause 
-   \textbf{PMLS} \todo{Une figure qui montre ce qui ne marcherais pas dans MLS et pourquoi PMLS trouve bcp plus d'instances}
+   \textbf{PMLS} 
+\begin{center}
+   \includegraphics[width=0.7\textwidth]{pmls.pdf}
+\pause
+\includegraphics[width=0.7\textwidth]{pmls2.pdf}
+\end{center}
+ 
 
-   \textbf{ASPMLS} FPT-Algorithm based on PMLS $\rightarrow$ Always find the optimal solution when the number of routes is small.
+   \textbf{ASPMLS} FPT-Algorithm based on PMLS $\rightarrow$ Always find the optimal solution when parametrized by the number of routes.
+
 \end{frame}
 
 
@@ -1235,12 +1298,12 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \subsection{Results}
 \begin{frame}{Results: Algorithms for WTA}
 \centering
-\includegraphics[width=0.9\textwidth]{retour_21000.pdf}
+\includegraphics[width=0.9\textwidth]{retour_210002.pdf}
 
 \end{frame}
 \begin{frame}{Results: PMLS against statistical multiplexing}
 \centering
-\includegraphics[width=\textwidth]{stochastic.pdf}
+\includegraphics[width=\textwidth]{stochastic2.pdf}
 \end{frame}
 
 
@@ -1251,9 +1314,128 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \end{frame}
 
 
-\section{SPALL on random topologies (10 min)}
-\subsection{Shape of the topologies(1min)}
-\begin{frame}{Harder Instances}
+\section{Syncrhonized PALL}
+\subsection{Definition of SPALL}
+
+
+
+\begin{frame}{Contention points}
+\begin{center}
+\scalebox{0.4}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
+   \renewcommand{\VertexLightFillColor}{orange}
+  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [->] node[anchor=south]{$5$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
+
+\path (c2) edge [->] node[anchor=south]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
+
+\path (c1) edge [->,bend left=30] node[anchor=south]{$7+2+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$7+1+1$} (c2);
+
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+\onslide<1>\draw[red] (0,0) circle (8ex);
+\onslide<1>\draw[red] (0,2) circle (8ex);
+\onslide<1>\draw[red] (0,4) circle (8ex);
+\onslide<2>\draw[red] (5,2) circle (8ex);
+\onslide<3>\draw[red] (10,2) circle (8ex);
+\end{tikzpicture}
+}
+ 
+\end{center}
+
+There is no more offsets, but a buffer in each contention point.
+
+
+Once all the points of a same level are solved, we solve the next level.
+
+\end{frame}
+\begin{frame}{SPALL on a star shaped network}
+
+ \begin{overprint}
+
+\onslide<1>\includegraphics[width=\textwidth]{time.pdf}
+\onslide<2>\includegraphics[width=\textwidth]{time2.pdf}
+
+\end{overprint}
+
+\end{frame}
+
+
+\subsection{Compact form}
+\begin{frame}{Compact representation}
+\begin{center}
+	\includegraphics[width=\linewidth]{normalizedassignment}
+	\end{center}
+
+  Construction of a compact representation from an assignment.
+\pause
+\begin{itemize}
+  \item Not all assignments have a compact representation.
+  \pause
+  \item Several assignments can have a compact representation.
+  \end{itemize}
+\end{frame}
+\begin{frame}{Assignment from a compact representation }
+\begin{center}
+	\includegraphics[width=\linewidth]{compacttoassignment}
+
+	Inductive construction of an assignment from the compact assignment $((2,1,0,3),\{1\})$ on a single contention point .
+\end{center}
+\begin{itemize}
+  \item The assignment built by a compact representation is \textcolo{red}{minimal}.
+  \pause
+  \item Helps to reduce the number of solutions to explore for an FPT algorithm with the number of routes and the contention depth as parameters.
+  \end{itemize}
+\end{frame}
+\subsection{Local search algorithms }
+\begin{frame}{Local Search Algorithms}
+
+   \textbf{Hill Climbing} : Starting from Hybrid Greedy Normalized
+   \pause
+ 
+   \textbf{Tabu Search} Long computation time, not efficient
+\pause
+
+   \textbf{Simulated Annealing} Solutions close to the optimal solutions. Complexity : exponential in the contention depth.
+
+\pause
+   \textbf{Branch and Bound algorithm} optimized FPT algorithm.
+
+\end{frame}
+\begin{frame}{Deeper networks}
 \centering
 %\includegraphics[width=0.9\textwidth]{graphmodel.pdf}
 \scalebox{0.4}{
@@ -1380,57 +1562,6 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 }
 
 
-
-\end{frame}
-\begin{frame}{Greedy Dealine}
-\begin{center}
-	\includegraphics[width=\linewidth]{examplegreedyfail}
-	\end{center}
-\end{frame}
-\begin{frame}{Greedy Packed}
-\begin{center}
-	Slide avec le même exemple mais greedy packed.
-	\end{center}
-\end{frame}
-\begin{frame}{Performance of greedy algorithms}
-
-      \begin{minipage}[b]{0.49\linewidth}
-   \includegraphics[width=\linewidth]{90load.pdf}
-  \end{minipage} 
-  \begin{minipage}[b]{0.49\linewidth}
-      \includegraphics[width=\linewidth]{greedysuccess.pdf}
-  \end{minipage} 
-\end{frame}
-
-
-
-
-
-
-\subsection{Compact form}
-\begin{frame}{Compact representation}
-\begin{center}
-	\includegraphics[width=\linewidth]{normalizedassignment}
-	\end{center}
-\end{frame}
-\begin{frame}{Assignment from a compact representation }
-\begin{center}
-	\includegraphics[width=\linewidth]{compacttoassignment}
-
-	Inductive construction of an assignment from the compact assignment $((2,1,0,3),\{1\})$ on a single contention point .
-\end{center}
-\end{frame}
-\subsection{Local search algorithms }
-\begin{frame}{Local Search Algorithms}
-
-   \textbf{Hill Climbing} : Starting from Hybrid Greedy Normalized
-   \pause
- 
-   \textbf{Tabu Search} Long computation time, not efficient
-\pause
-   \textbf{Simulated Annealing} Solutions close to the optimal solutions. Complexity : exponential in the contention depth.
-\pause
-   \textbf{Branch and Bound algorithm} Exponential in the number of routes and the contention depth.
 
 \end{frame}
 \subsection{Results}
