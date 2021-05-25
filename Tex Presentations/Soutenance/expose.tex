@@ -28,6 +28,16 @@
 
 \author{{\bf Maël~Guiraud}}
 
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
 
 \institute[Nokia Bell Labs, DAVID-UVSQ] 
 {
@@ -50,15 +60,10 @@
 \end{frame}
 
 
-\begin{frame}
-
-\tableofcontents 
-\end{frame}
 
 
-
-\section{Introduction (15 min)}
-\subsection{Context (5min)}
+\section{Introduction }
+\subsection{Context }
 \begin{frame}{A Radio Antenna}
 \begin{center}
   \includegraphics [width=\textwidth]{radio.jpg} 
@@ -362,9 +367,9 @@
   \pause
   C-RAN aims to mutualize the computation ressources.
   
-  \textcolor{red}{Since the processing time is constrained by protocol, the lower the transmission delay, the more important the sharing (ie. the coverage area of a data center).}
-  
-  \textcolor{blue}{The minimum latency allows to increase the mutualization.}
+  \pause
+
+  Since the processing time is constrained by protocol, the lower the transmission delay, the more important the sharing (ie. the coverage area of a data center).
   
   
 \end{frame}
@@ -373,18 +378,22 @@
 \begin{frame}{Problematic}
   \centering
   
-  
+  \begin{center}
+  \includegraphics [width=6cm]{modelstar} 
+\end{center}
+
  \begin{multicols}{2}
 Specificity of Cloud-RAN:
-\vspace{1cm}
+
 \begin{itemize}
+  \item Periodic traffic 
 \item \textcolor{red}{Minimize latency}: increase the cover area.
-\item Periodic traffic 
+
 
 \end{itemize}
 \vspace{2cm}
 Current approaches: \begin{itemize}
-\vspace{1cm}
+
 \item Dedicated network $\rightarrow$ Too expensive
 \item Statistical multiplexing (TSN/Qbv) $\rightarrow$ \textcolor{red}{weak bound on latency}
 \end{itemize}
@@ -939,16 +948,17 @@ An \textcolor{blue}{assignment} is a choice of offsets and waiting times for eac
 \end{center}
 
 \pause
- \textbf{Problem:}
-Find an assignment that minimize the full process time.
-\textbf{PAZL(variant):}
-No waiting time in the BBU.
+ \textbf{Periodic Assignment for Low Latency (PALL):}
+Find an assignment that minimize the process time.
+
+\textbf{PAZL (variant):}
+No waiting time in the BBU: Only optimal solutions for PALL.
 \end{frame}
 
 
 \begin{frame}{NP-hardness}
 \begin{theorem}\label{th:hardness_contention_depth}
-PAZL is $\NP$-complete
+PAZL is $\NP$-complete.
 \end{theorem}
 
     \scalebox{0.5}{
@@ -989,9 +999,12 @@ PAZL is $\NP$-complete
      \end{tikzpicture}
      }
 
-     Reduction of an instance H of vertex-coloring
+     Reduction of an instance H of vertex-coloring to an instance of PAZL. 
 \end{frame}
 \begin{frame}{NP-hardness}
+\begin{theorem}\label{th:hardness_contention_depth}
+PAZL is $\NP$-complete.
+\end{theorem}
 
     \scalebox{0.5}{
     \begin{tikzpicture}
@@ -1063,9 +1076,9 @@ PAZL is $\NP$-complete
      \end{tikzpicture}
      }
 
-     Reduction of an instance H of vertex-coloring to an instance of PAZL.
+     Reduction of an instance H of vertex-coloring to an instance of PAZL. A P-coloration of H is equivalent to a P-periodic Assignment of N.
 \end{frame}
-\section{Solving PALL on simple topologies (15 min)}
+\section{Solving PALL on simple topologies}
 \subsection{Star shaped network}
 \begin{frame}{Star Shaped network}
 \begin{center}
@@ -1117,20 +1130,21 @@ PAZL is $\NP$-complete
 
 \end{tikzpicture}
 }
-
+\end{center}
 \pause
 \vspace{1cm}
 PAZL Solved for star shaped networks:
 \begin{itemize}
-	\item Exsitence of a solution for medarate loads using polynomial time algorithms.
+	\item Exsitence of a solution for modarate loads using polynomial time algorithms.
 	\item FPT Algorithm with the number of routes as parameter.
 	\end{itemize}
-	\end{center}
+
 \end{frame}
 \subsection{A two stage approach for PALL}
 \begin{frame}{A two stage approach for PALL}
-\begin{center}
+
 \textbf{First step:} We fix the offset of the route arbitrarily.
+\begin{center}
 \scalebox{0.4}{
 
 \begin{tikzpicture}
@@ -1181,13 +1195,14 @@ PAZL Solved for star shaped networks:
 
 \end{tikzpicture}
 }
- 
+ \end{center}
  \pause
 \textbf{Second Step: Solving Waiting Time Assignment}
 
 Given the offsets, the routed network and a deadline for all routes, find the assignment that minimize the full process time.
-
+\begin{center}
  \scalebox{0.4}{
+
 
 \begin{tikzpicture}
   \SetGraphUnit{5}
@@ -1243,11 +1258,11 @@ Given the offsets, the routed network and a deadline for all routes, find the as
           \begin{center}
    \begin{tabularx}{0.7\textwidth}{|c|X|X|X|X|X|X|}
     \hline
-     Route& $0$ & $1$ & $2$& $3$ & $4$\\
+     Route& \textcolor{blue}{$0$}  & \only<1-2>{ $1$ }\only<3->{\textcolor{red}{$1$}}& \only<1>{ $2$ }\only<2->{\textcolor{green}{$2$}}& $3$ & $4$\\
     \hline
-    Deadline & $10$ &$15$&$5$&$7$&$32$\\
+    Deadline & $10$ &$15$&\only<1>{ $5$ }\only<2>{\textbf{5}}\only<3->{ $5$ }&$7$&$32$\\
     \hline
-     Release time & $0$ &$2$&$3$&$16$&$17$\\
+     Arrival time in $c_2$ & $0$ &$2$&$3$&$16$&$17$\\
     \hline
     Waiting time & $0$ &$5$&$1$&$0$&$15$\\
     \hline
@@ -1257,15 +1272,15 @@ Given the offsets, the routed network and a deadline for all routes, find the as
       
        A run of GreedyDeadline with $P = 20, \tau = 4$.
 
-      \includegraphics[width=0.7\textwidth]{greedy1.pdf}
+      \includegraphics[width=0.7\textwidth]{step1.pdf}
 \pause
-\includegraphics[width=0.7\textwidth]{greedy2.pdf}
+\includegraphics[width=0.7\textwidth]{ste2.pdf}
 \pause
-\includegraphics[width=0.7\textwidth]{greedy3.pdf}
+\includegraphics[width=0.7\textwidth]{step3.pdf}
 \pause
-\includegraphics[width=0.7\textwidth]{greedy4.pdf}
+\includegraphics[width=0.7\textwidth]{step4.pdf}
 \pause
-\includegraphics[width=0.7\textwidth]{greedy5.pdf}
+\includegraphics[width=0.7\textwidth]{step5.pdf}
 
  
       \end{center}
@@ -1275,21 +1290,21 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \begin{frame}{Solving WTA: Polynomial time algorithms}
 
   
-   \textbf{MLS} : Polynomial time scheduling algorithm finding a solution minimizing makespawn. 
+   \textbf{MLS:}  Polynomial time algorithm. Finds a solution minimizing process time. 
    \pause
    \textcolor{red}{Periodicity not managed.}      
 
 
    \pause 
-   \textbf{PMLS} 
-\begin{center}
-   \includegraphics[width=0.7\textwidth]{pmls.pdf}
+   \textbf{PMLS:} 
+
+   \includegraphics[width=0.54\textwidth]{pmls.pdf}
 \pause
-\includegraphics[width=0.7\textwidth]{pmls2.pdf}
-\end{center}
+\includegraphics[width=0.9\textwidth]{pmls2.pdf}
+
  
 
-   \textbf{ASPMLS} FPT-Algorithm based on PMLS $\rightarrow$ Always find the optimal solution when parametrized by the number of routes.
+   \textbf{ASPMLS:} FPT-Algorithm based on PMLS $\rightarrow$ Always find the optimal solution.
 
 \end{frame}
 
@@ -1390,49 +1405,6 @@ Once all the points of a same level are solved, we solve the next level.
 \onslide<2>\includegraphics[width=\textwidth]{time2.pdf}
 
 \end{overprint}
-
-\end{frame}
-
-
-\subsection{Compact form}
-\begin{frame}{Compact representation}
-\begin{center}
-	\includegraphics[width=\linewidth]{normalizedassignment}
-	\end{center}
-
-  Construction of a compact representation from an assignment.
-\pause
-\begin{itemize}
-  \item Not all assignments have a compact representation.
-  \pause
-  \item Several assignments can have a compact representation.
-  \end{itemize}
-\end{frame}
-\begin{frame}{Assignment from a compact representation }
-\begin{center}
-	\includegraphics[width=\linewidth]{compacttoassignment}
-
-	Inductive construction of an assignment from the compact assignment $((2,1,0,3),\{1\})$ on a single contention point .
-\end{center}
-\begin{itemize}
-  \item The assignment built by a compact representation is \textcolo{red}{minimal}.
-  \pause
-  \item Helps to reduce the number of solutions to explore for an FPT algorithm with the number of routes and the contention depth as parameters.
-  \end{itemize}
-\end{frame}
-\subsection{Local search algorithms }
-\begin{frame}{Local Search Algorithms}
-
-   \textbf{Hill Climbing} : Starting from Hybrid Greedy Normalized
-   \pause
- 
-   \textbf{Tabu Search} Long computation time, not efficient
-\pause
-
-   \textbf{Simulated Annealing} Solutions close to the optimal solutions. Complexity : exponential in the contention depth.
-
-\pause
-   \textbf{Branch and Bound algorithm} optimized FPT algorithm.
 
 \end{frame}
 \begin{frame}{Deeper networks}
@@ -1564,6 +1536,50 @@ Once all the points of a same level are solved, we solve the next level.
 
 
 \end{frame}
+
+\subsection{Compact form}
+\begin{frame}{Compact representation}
+\begin{center}
+	\includegraphics[width=\linewidth]{normalizedassignment}
+	\end{center}
+
+  Construction of a compact representation from an assignment.
+\pause
+\begin{itemize}
+  \item Not all assignments have a compact representation.
+  \pause
+  \item Several assignments can have a compact representation.
+  \end{itemize}
+\end{frame}
+\begin{frame}{Assignment from a compact representation }
+\begin{center}
+	\includegraphics[width=\linewidth]{compacttoassignment}
+
+	Inductive construction of an assignment from the compact assignment $((2,1,0,3),\{1\})$ on a single contention point .
+\end{center}
+\begin{itemize}
+  \item The assignment built by a compact representation is \textcolor{red}{minimal}.
+  \pause
+
+  \item Helps to reduce the number of solutions to explore. Only the number of routes and the contention depth are the exponentials parameters.
+  \end{itemize}
+\end{frame}
+\subsection{Local search algorithms }
+\begin{frame}{Local Search Algorithms}
+
+   \textbf{Hill Climbing} : Starting from greedy algorithm.
+   \pause
+ 
+   \textbf{Tabu Search} Long computation time, not efficient
+\pause
+
+   \textbf{Simulated Annealing} Solutions close to the optimal solutions. Complexity : exponential in the contention depth.
+
+\pause
+   \textbf{Branch and Bound algorithm} optimized FPT algorithm.
+
+\end{frame}
+
 \subsection{Results}
 \begin{frame}{Results}
 \begin{center}
@@ -1582,7 +1598,7 @@ Once all the points of a same level are solved, we solve the next level.
 
 
    \begin{itemize}
-   	\item 2 International publications \todo{citer?}.
+   	\item 2 International publications.
    	\item Complexification of the model: 
    	\begin{itemize}
    		\item Different link size.
