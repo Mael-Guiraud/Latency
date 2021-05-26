@@ -24,7 +24,7 @@
   LabelStyle/.style = { rectangle, rounded corners, draw,
                        font = \bfseries },
   EdgeStyle/.append style = {-} }
-\title{ Deterministic architectures for low latency in 5G and beyond systems}
+\title{Deterministic scheduling of periodic datagrams for low latency in 5G and beyond}
 
 \author{{\bf Maël~Guiraud}}
 
@@ -64,6 +64,38 @@
 
 \section{Introduction }
 \subsection{Context }
+
+
+\begin{frame}{5G Context}
+
+
+  \centering
+  
+  \includegraphics[scale=0.4]{usecases.png}
+  
+
+\end{frame}
+\begin{frame}{Use cases}
+
+
+  \centering
+  
+  \includegraphics[scale=0.4]{ind40.jpg}
+
+  Industry 4.0
+
+\end{frame}
+\begin{frame}{Use cases}
+
+
+  \centering
+  
+  \includegraphics[scale=0.25]{vehicle.jpg}
+
+  Autonomous Vehicle
+
+\end{frame}
+
 \begin{frame}{A Radio Antenna}
 \begin{center}
   \includegraphics [width=\textwidth]{radio.jpg} 
@@ -395,45 +427,15 @@ Specificity of Cloud-RAN:
 Current approaches: \begin{itemize}
 
 \item Dedicated network $\rightarrow$ Too expensive
-\item Statistical multiplexing (TSN/Qbv) $\rightarrow$ \textcolor{red}{weak bound on latency}
+\item Statistical multiplexing $\rightarrow$ Buffering inducing additional latency
 \end{itemize}
 \end{multicols}
 
 \end{frame}
 
 
-\begin{frame}{5G Context}
-
-
-  \centering
-  
-  \includegraphics[scale=0.4]{usecases.png}
-  
-
-\end{frame}
-\begin{frame}{Other use cases}
-
-
-  \centering
-  
-  \includegraphics[scale=0.4]{ind40.jpg}
-
-  Industry 4.0
-
-\end{frame}
-\begin{frame}{Other use cases}
-
-
-  \centering
-  
-  \includegraphics[scale=0.25]{vehicle.jpg}
-
-  Autonomous Vehicle
-
-\end{frame}
-
 \subsection{Model, problems (10 min)}
-
+ 
 \begin{frame}{Model}
 \begin{center}
   \includegraphics [width=9cm]{1routealler} 
@@ -441,7 +443,7 @@ Current approaches: \begin{itemize}
 
 \begin{itemize}
 \item Network $\rightarrow$ Weighted DAG
-\item  Physical Delay of a link $\rightarrow$ Weight of the arc
+\item  Physical Delay of a link $\rightarrow$ Weight of the arcs
 \item  Only the contention points are represented in the graph
 \end{itemize}
 
@@ -635,16 +637,16 @@ Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
   \end{center}
  \vspace{0.5cm}
    
-   Every $P$ units of time, a message of size $\tau$ is emitted from each RRH.
+  Discretized Time: every $P$ units of time, a message of size $\tau$ is emitted from each RRH.
 $P$ and $\tau$ are fixed by the context. 
-\pause
+
    The process is \textcolor{red}{periodic} : the message is emitted in each period at the same time, called \textcolor{blue}{offset}.
    
 \end{frame}
 
 
  \begin{frame}{Collisions}
-
+ $P=13, \tau = 3$ 
 \begin{center}
 \scalebox{0.6}{
 
@@ -682,7 +684,7 @@ $P$ and $\tau$ are fixed by the context.
 
 \end{frame}
  \begin{frame}{Collisions}
-
+ $P=13, \tau = 3$ 
 \begin{center}
 \scalebox{0.6}{
 
@@ -719,12 +721,14 @@ $P$ and $\tau$ are fixed by the context.
 \end{tikzpicture}
 }
 \end{center}
-\vspace{1cm}
+
 \centering
 There is a \textcolor{blue}{collision} between two routes when their messages go through the first vertex of a common arc at the same time.
-\vspace{0.5cm}
 
- \textcolor{red}{Periodicity must be taken into consideration} 
+\pause
+ \textcolor{red}{Periodicity must be taken into consideration.}
+ \includegraphics[scale=0.1]{cols1.png} 
+
 \end{frame}
 
 
@@ -949,10 +953,10 @@ An \textcolor{blue}{assignment} is a choice of offsets and waiting times for eac
 
 \pause
  \textbf{Periodic Assignment for Low Latency (PALL):}
-Find an assignment that minimize the process time.
+Find an assignment such that the \textbf{deadline} constraint is satisfied for each route.
 
 \textbf{PAZL (variant):}
-No waiting time in the BBU: Only optimal solutions for PALL.
+No waiting times in the BBUs: Solutions for PAZL are a subset of optimal solutions for PALL.
 \end{frame}
 
 
@@ -1143,7 +1147,7 @@ PAZL Solved for star shaped networks:
 \subsection{A two stage approach for PALL}
 \begin{frame}{A two stage approach for PALL}
 
-\textbf{First step:} We fix the offset of the route arbitrarily.
+\textbf{First step:} We fix the offset of the route such that there is no collisions in $c_1$.
 \begin{center}
 \scalebox{0.4}{
 
@@ -1258,13 +1262,13 @@ Given the offsets, the routed network and a deadline for all routes, find the as
           \begin{center}
    \begin{tabularx}{0.7\textwidth}{|c|X|X|X|X|X|X|}
     \hline
-     Route& \textcolor{blue}{$0$}  & \only<1-2>{ $1$ }\only<3->{\textcolor{red}{$1$}}& \only<1>{ $2$ }\only<2->{\textcolor{green}{$2$}}& $3$ & $4$\\
+     Route& \textcolor{blue}{$0$}  & \only<1-4>{ $1$ }\only<5->{\textcolor{red}{$1$}}& \only<1-2>{ $2$ }\only<3->{\textcolor{green}{$2$}}& $3$ & $4$\\
     \hline
-    Deadline & $10$ &$15$&\only<1>{ $5$ }\only<2>{\textbf{5}}\only<3->{ $5$ }&$7$&$32$\\
+    Deadline & $10$ &$15$&\only<1-2>{ $5$ }\only<3-4>{\textbf{5}}\only<5->{ $5$ }&$7$&$32$\\
     \hline
      Arrival time in $c_2$ & $0$ &$2$&$3$&$16$&$17$\\
     \hline
-    Waiting time & $0$ &$5$&$1$&$0$&$15$\\
+    Waiting time & \only<2->{$0$} &\only<6->{$5$}&\only<4->{$1$}&\only<8->{$0$}&\only<10->{$15$}\\
     \hline
       \end{tabularx}
 
@@ -1274,11 +1278,15 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 
       \includegraphics[width=0.7\textwidth]{step1.pdf}
 \pause
+\pause
 \includegraphics[width=0.7\textwidth]{ste2.pdf}
+\pause
 \pause
 \includegraphics[width=0.7\textwidth]{step3.pdf}
 \pause
+\pause
 \includegraphics[width=0.7\textwidth]{step4.pdf}
+\pause
 \pause
 \includegraphics[width=0.7\textwidth]{step5.pdf}
 
@@ -1296,10 +1304,12 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 
 
    \pause 
-   \textbf{PMLS:} 
+ 
 
    \includegraphics[width=0.54\textwidth]{pmls.pdf}
 \pause
+
+  \textbf{PMLS:} 
 \includegraphics[width=0.9\textwidth]{pmls2.pdf}
 
  
@@ -1329,7 +1339,7 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \end{frame}
 
 
-\section{Syncrhonized PALL}
+\section{Synchronized PALL}
 \subsection{Definition of SPALL}
 
 
@@ -1381,20 +1391,22 @@ Given the offsets, the routed network and a deadline for all routes, find the as
   %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
  %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
  
-\onslide<1>\draw[red] (0,0) circle (8ex);
-\onslide<1>\draw[red] (0,2) circle (8ex);
-\onslide<1>\draw[red] (0,4) circle (8ex);
-\onslide<2>\draw[red] (5,2) circle (8ex);
-\onslide<3>\draw[red] (10,2) circle (8ex);
+\only<1>\draw[red] (0,0) circle (8ex);
+\only<1>\draw[red] (0,2) circle (8ex);
+\only<1>\draw[red] (0,4) circle (8ex);
+\only<2>\draw[red] (5,2) circle (8ex);
+\only<3>\draw[red] (10,2) circle (8ex);
 \end{tikzpicture}
 }
  
 \end{center}
+The antennas are \textbf{synchronized}: All messages are emited at the same date.
 
+\pause
 There is no more offsets, but a buffer in each contention point.
 
-
-Once all the points of a same level are solved, we solve the next level.
+\pause
+We choose a buffering time for each message in every contention points of the same level. 
 
 \end{frame}
 \begin{frame}{SPALL on a star shaped network}
@@ -1509,23 +1521,23 @@ Once all the points of a same level are solved, we solve the next level.
 \path (t4) edge [->,pink]  (t5);
 \path (t4) edge [->]  (t6);
 
-\path (k1) edge [->,blue]  (t7);
-\path (k2) edge [->,green]  (t7);
-\path (k3) edge [->,red]  (t8);
-\path (k4) edge [->,orange]  (t8);
-\path (k5) edge [->,brown]  (t9);
-\path (k6) edge [->,purple]  (t9);
-\path (k7) edge [->,pink]  (t10);
-\path (k8) edge [->]  (t10);
+\path (k1) edge [<-,blue]  (t7);
+\path (k2) edge [<-,green]  (t7);
+\path (k3) edge [<-,red]  (t8);
+\path (k4) edge [<-,orange]  (t8);
+\path (k5) edge [<-,brown]  (t9);
+\path (k6) edge [<-,purple]  (t9);
+\path (k7) edge [<-,pink]  (t10);
+\path (k8) edge [<-]  (t10);
 
-\path (t7) edge [->,blue]  (t5);
-\path (t7) edge [->,green]  (t6);
-\path (t8) edge [->,red]  (t5);
-\path (t8) edge [->,orange]  (t6);
-\path (t9) edge [->,brown]  (t5);
-\path (t9) edge [->,purple]  (t6);
-\path (t10) edge [->,pink]  (t5);
-\path (t10) edge [->]  (t6);
+\path (t7) edge [<-,blue]  (t5);
+\path (t7) edge [<-,green]  (t6);
+\path (t8) edge [<-,red]  (t5);
+\path (t8) edge [<-,orange]  (t6);
+\path (t9) edge [<-,brown]  (t5);
+\path (t9) edge [<-,purple]  (t6);
+\path (t10) edge [<-,pink]  (t5);
+\path (t10) edge [<-]  (t6);
 
 
 
@@ -1537,8 +1549,9 @@ Once all the points of a same level are solved, we solve the next level.
 
 \end{frame}
 
-\subsection{Compact form}
+\subsection{Compact representation}
 \begin{frame}{Compact representation}
+A compact representation of an assignment on a contention point $u$ is a pair ($O_u$,\only<1>{...}\only<2->{$S_u$}).
 
 	\includegraphics[width=0.65\linewidth]{order}
   \pause
@@ -1549,11 +1562,13 @@ Once all the points of a same level are solved, we solve the next level.
 \begin{itemize}
   \item Not all assignments have a compact representation.
   \pause
-  \item Several assignments can have a compact representation.
+  \item Several assignments can have the same compact representation.
   \end{itemize}
 \end{frame}
 \begin{frame}{Assignment from a compact representation }
-Inductive construction of an assignment from the compact representation $((2,1,0,3),\{1\})$ on a single contention point .
+Inductive construction of an assignment from the compact representation. 
+
+Example for $((2,1,0,3),\{1\})$ on a single contention point .
 
 
 	\includegraphics[width=0.5\linewidth]{compacttoassignment1}
@@ -1566,15 +1581,16 @@ Inductive construction of an assignment from the compact representation $((2,1,0
 \pause
 
 \begin{itemize}
-  \item The assignment built by a compact representation is \textcolor{red}{minimal}.
+  \item The assignment built from a compact representation is \textcolor{red}{minimal}.
   \pause
 
-  \item Helps to reduce the number of solutions to explore. Only the number of routes and the contention depth are the exponentials parameters.
+  \item Helps to reduce the number of solutions to explore. Only the number of routes and the depth of the network are the exponentials parameters.
   \end{itemize}
 \end{frame}
 \subsection{Local search algorithms }
 \begin{frame}{Neighborhood and Local Search Algorithms}
 
+ Neighborood of a compact representation defined by a permutation:
 \begin{center}
 \scalebox{0.7}{
 
@@ -1628,6 +1644,11 @@ Inductive construction of an assignment from the compact representation $((2,1,0
 \section{Conclusion}
 \begin{frame}{Conclusion}
 
+
+\begin{block}{Key result.}
+  Determinstic Networking is the best way to manage deterministic flows.
+\end{block}
+
 \begin{block}{Industrial prototype in development.}
 \begin{itemize}
     \item Hot topic in telecommunications.
@@ -1637,7 +1658,7 @@ Inductive construction of an assignment from the compact representation $((2,1,0
   
 \begin{block}{Complexification of the model.}
   \begin{itemize}
-      \item Different link size.
+      \item Different bandwidth.
       \item Not the same period for all messages.
       \item Different message size.
     \end{itemize}
@@ -1649,6 +1670,7 @@ Inductive construction of an assignment from the compact representation $((2,1,0
       \item Performances of PALL algorithms on deeper networks.
     \end{itemize}
 \end{block}
+
 
 \end{frame}
 
