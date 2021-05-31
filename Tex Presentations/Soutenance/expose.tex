@@ -578,6 +578,7 @@ Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
 
 \end{tikzpicture}
 }
+
 \end{center}
 \end{frame}
   \begin{frame}{Model: The communication process}
@@ -638,12 +639,18 @@ Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
   \includegraphics [width=11.5cm]{rrhtime} 
   \end{center}
  \vspace{0.5cm}
-   
-  Discretized Time: every $P$ units of time, a message of size $\tau$ is emitted from each RRH.
+     \only<2>{
+  Every $P$ units of time, a message of size $\tau$ is emitted from each RRH.
 $P$ and $\tau$ are fixed by the context. 
 
-   The process is \textcolor{red}{periodic} : each message is emitted in each period at the same time, called \textcolor{blue}{offset}.
-   
+   The process is \textcolor{red}{periodic} : each message is emitted in each period at the same time, called \textcolor{blue}{offset}.}
+
+   \only<3->{
+\begin{definition}
+\centering
+Load = $\frac{\text{Size of the messages}}{\text{Period}} \pause = \frac{3\tau}{P}$ 
+\end{definition}
+}
 \end{frame}
 
 
@@ -723,11 +730,13 @@ $P$ and $\tau$ are fixed by the context.
 \end{tikzpicture}
 }
 \end{center}
+\begin{definition}
 
-\centering
 There is a \textcolor{blue}{collision} between two routes when their messages go through the first vertex of a common arc at the same time.
+\end{definition}
 
 \pause
+\centering
  \textcolor{red}{Periodicity must be taken into consideration.}
  \includegraphics[scale=0.1]{cols1.png} 
 
@@ -822,12 +831,16 @@ There is a \textcolor{blue}{collision} between two routes when their messages go
 \begin{center}
 Choosing the offset such that there is no collisions.
 \end{center}
+\begin{definition}
 An \textcolor{blue}{Assignment} is a choice of offset for each message.
+\end{definition}
 \end{frame}
 
 \begin{frame}{A first problem}
+\only<1>{
  \begin{center}
-\scalebox{0.4}{
+
+\scalebox{0.35}{
 
 \begin{tikzpicture}
   \SetGraphUnit{5}
@@ -878,7 +891,69 @@ An \textcolor{blue}{Assignment} is a choice of offset for each message.
 \end{tikzpicture}
 }
 \end{center}
+}
+\only<2->{
+   \begin{center}
+\scalebox{0.35}{
 
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,orange]
+     \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+
+
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,black]
+
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [red,->] node[anchor=south]{$5$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
+
+\path (c2) edge [green,->] node[anchor=south]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
+
+\path (c1) edge [blue,->,bend left=30] node[anchor=south]{$7+2+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$7+1+1$} (c2);
+
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+\pause
+\vspace{0.5cm}
+\includegraphics[width=0.7\textwidth]{time0.pdf}
+
+\end{center}
+
+}
+\pause
  \begin{exampleblock}{Periodic Assignment for Zero Latency (PAZL)}
   Given a routed network, find an assignment such that there is no collisions in $c_1$ and $c_2$.
  \end{exampleblock}
@@ -1177,17 +1252,18 @@ Algorithms to solve PAZL:
 
 \pause
 
-In each BBU, one can choose the \textcolor{blue}{waiting time} before sending back the answer.\\
 
+In $c_2$, one can choose the \textcolor{blue}{waiting time} before sending back the answer.\\
 
 \begin{center}
-  \includegraphics[scale=0.7]{BBU}\\
+  \includegraphics[scale=0.6]{BBU}\\
  \end{center} 
 
 
 \pause 
+\begin{definition}
 Redefinition of the notion of \textcolor{blue}{assignment}: a choice of offsets and waiting times for each route without collisions.
-
+\end{definition}
    
 \end{frame}
 \begin{frame}{Transmission Time}
@@ -1258,7 +1334,6 @@ Redefinition of the notion of \textcolor{blue}{assignment}: a choice of offsets 
 Each route must have a transmission time lower or equal to a given \textbf{deadline}.
 \pause
 \vspace{1cm}
- \textbf{Periodic Assignment for Low Latency (PALL):}
 
  \begin{exampleblock}{Periodic Assignment for Low Latency (PALL)}
   Given a routed network, find an assignment such that the deadline constraint is satisfied for each route.
@@ -1399,7 +1474,7 @@ Each route must have a transmission time lower or equal to a given \textbf{deadl
     \hline
      Arrival time in $c_2$ & $0$ &$2$&$3$&$16$&$17$\\
     \hline
-    Waiting time & \only<2->{$0$} &\only<6->{$5$}&\only<4->{$1$}&\only<8->{$0$}&\only<10->{$15$}\\
+    Waiting time & \only<2->{$0$} &\only<6->{$6$}&\only<4->{$1$}&\only<8->{$0$}&\only<10->{$15$}\\
     \hline
       \end{tabularx}
 
@@ -1465,12 +1540,12 @@ Each route must have a transmission time lower or equal to a given \textbf{deadl
 
 
 \begin{frame}{Mixing C-RAN traffic with Best-Effort Traffic}
-C-RAN traffic: High priority, deterministic traffic, scheduled with minimal latency.
+\textbf{C-RAN traffic}: High priority, deterministic traffic, scheduled with minimal latency.
 
 \vspace{0.5cm}
 
 \pause
-Best Effort traffic: Low priority, stochastic law on arrivals, no specific rules on forwarding.
+\textbf{Best Effort traffic}: Low priority, stochastic law on arrivals, no specific rules on forwarding.
 
 \vspace{0.5cm}
 
@@ -1559,8 +1634,9 @@ The antennas are \textbf{synchronized}: All messages are emited at the same date
 There is no more offsets, but a buffer in each contention point.
 
 \pause
+\begin{definition}
 An \textcolor{blue}{Assignment} is a choice of buffering time for each message in every contention point.
-
+\end{definition}
 \pause
  \begin{exampleblock}{Synchronized Periodic Assignment for Low Latency (SPALL)}
  Given the routed network, find an assignment satisfying the deadlines constraints.
@@ -1771,7 +1847,7 @@ An \textcolor{blue}{Assignment} is a choice of buffering time for each message i
 
 Each contention point at the same level can be solved independantly.
 
-Once all the contention point of the same level have been solved, we deal with the contention points of the next level.
+Once all the contention points of the same level have been solved, we deal with the contention points of the next level.
 
 \end{frame}
 
@@ -1810,7 +1886,7 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
   \item The assignment built from a compact representation is \textcolor{red}{minimal}.
   \pause
 
-  \item Helps to reduce the number of solutions to explore. Only the number of routes and the depth of the network are the exponentials parameters.
+  \item Help to reduce the number of solutions to explore. Exponential in the number of routes an depth of the network.
   \end{itemize}
 \end{frame}
 \subsection{Solving SPALL: Local search algorithms }
