@@ -18,6 +18,7 @@
 \usepackage{multicol}
 \usepackage{setspace}
 \usepackage[absolute,overlay]{textpos}
+\beamertemplatenavigationsymbolsempty
 \graphicspath{{fig/}}
 
 \tikzset{
@@ -401,7 +402,7 @@
   
   \pause
 
-  Since the processing time is constrained by protocol, the lower the transmission delay, the more important the sharing (ie. the coverage area of a data center).
+  The latency is constrained by protocol.
   
   
 \end{frame}
@@ -415,35 +416,36 @@
 \end{center}
 
  \begin{multicols}{2}
-Specificity of Cloud-RAN:
+Statistical multiplexing:
+
 
 \begin{itemize}
-  \item Periodic traffic 
-\item \textcolor{red}{Minimize latency}: increase the cover area.
-
-
+\item Buffering inducing additional latency
+\item Average guarantee on Latency
 \end{itemize}
 \vspace{2cm}
-Current approaches: \begin{itemize}
 
-\item Dedicated network $\rightarrow$ Too expensive
-\item Statistical multiplexing $\rightarrow$ Buffering inducing additional latency
+C-RAN specifications:
+ \begin{itemize}
+\item $100\%$ of the packets under a given latency.
+\item Minimize latency means an higher area cover.
 \end{itemize}
+
 \end{multicols}
 
 \end{frame}
 
 
-\subsection{Model, problems (10 min)}
+\subsection{Model, problems}
  
-\begin{frame}{Model}
+\begin{frame}{Model: The routed network}
 \begin{center}
   \includegraphics [width=9cm]{1routealler} 
 \end{center}
 
 \begin{itemize}
-\item Network $\rightarrow$ Weighted DAG
-\item  Physical Delay of a link $\rightarrow$ Weight of the arcs
+\item Network $\rightarrow$ Weighted Directed Acyclic Multigraph
+\item  Discrete time model: Physical Delay of a link $\rightarrow$ Weight of the arcs (tics).
 \item  Only the contention points are represented in the graph
 \end{itemize}
 
@@ -480,7 +482,7 @@ Current approaches: \begin{itemize}
 
  \end{frame}
  
-\begin{frame}{Model}
+\begin{frame}{Model: The routed network}
 Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
  \begin{center}
   \includegraphics [width=9cm]{1routeretour} 
@@ -520,7 +522,7 @@ Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
 \end{center}
 \end{frame}
 
-\begin{frame}{Model}
+\begin{frame}{Model: The routed network}
 
  \begin{center}
   \includegraphics [width=7.5cm]{starfronthaul} 
@@ -576,9 +578,10 @@ Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
 
 \end{tikzpicture}
 }
+
 \end{center}
 \end{frame}
-  \begin{frame}{The communication process}
+  \begin{frame}{Model: The communication process}
  
  \begin{center}
 \scalebox{0.3}{
@@ -636,16 +639,22 @@ Both ways: from RRH to BBU (forward) then from BBU to RRH (backward)
   \includegraphics [width=11.5cm]{rrhtime} 
   \end{center}
  \vspace{0.5cm}
-   
-  Discretized Time: every $P$ units of time, a message of size $\tau$ is emitted from each RRH.
+     \only<2>{
+  Every $P$ units of time, a message of size $\tau$ is emitted from each RRH.
 $P$ and $\tau$ are fixed by the context. 
 
-   The process is \textcolor{red}{periodic} : the message is emitted in each period at the same time, called \textcolor{blue}{offset}.
-   
+   The process is \textcolor{red}{periodic} : each message is emitted in each period at the same time, called \textcolor{blue}{offset}.}
+
+   \only<3->{
+\begin{definition}
+\centering
+Load = $\frac{\text{Size of the messages}}{\text{Period}} \pause = \frac{3\tau}{P}$ 
+\end{definition}
+}
 \end{frame}
 
 
- \begin{frame}{Collisions}
+ \begin{frame}{Model: The communication process}
  $P=13, \tau = 3$ 
 \begin{center}
 \scalebox{0.6}{
@@ -683,8 +692,8 @@ $P$ and $\tau$ are fixed by the context.
 \end{center}
 
 \end{frame}
- \begin{frame}{Collisions}
- $P=13, \tau = 3$ 
+ \begin{frame}{Model: The communication process}
+ Example for $P=13$ and $\tau = 3$.
 \begin{center}
 \scalebox{0.6}{
 
@@ -721,11 +730,13 @@ $P$ and $\tau$ are fixed by the context.
 \end{tikzpicture}
 }
 \end{center}
+\begin{definition}
 
-\centering
 There is a \textcolor{blue}{collision} between two routes when their messages go through the first vertex of a common arc at the same time.
+\end{definition}
 
 \pause
+\centering
  \textcolor{red}{Periodicity must be taken into consideration.}
  \includegraphics[scale=0.1]{cols1.png} 
 
@@ -734,9 +745,9 @@ There is a \textcolor{blue}{collision} between two routes when their messages go
 
 
 
- \begin{frame}{Assignment }
+ \begin{frame}{Assignment}
 
- $P=13, \tau = 3$ 
+ Example for $P=13$ and $\tau = 3$.
  
 \begin{center}
  \begin{multicols}{2}
@@ -818,15 +829,19 @@ There is a \textcolor{blue}{collision} between two routes when their messages go
 \end{center}
 
 \vspace{1cm}
-\centering
-Choosing the offset such that there are no collisions.
-\vspace{0.5cm}
-
+\begin{center}
+Choosing the offset such that there is no collisions.
+\end{center}
+\begin{definition}
+An \textcolor{blue}{Assignment} is a choice of offset for each message.
+\end{definition}
 \end{frame}
-\begin{frame}{Assignment}
- 
+
+\begin{frame}{A first problem}
+\only<1>{
  \begin{center}
-\scalebox{0.3}{
+
+\scalebox{0.35}{
 
 \begin{tikzpicture}
   \SetGraphUnit{5}
@@ -841,6 +856,7 @@ Choosing the offset such that there are no collisions.
 \Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
 \Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
 \draw[red] (10,2) circle (8ex);
+\draw[red] (5,2) circle (8ex);
 \Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
 
   \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
@@ -876,36 +892,21 @@ Choosing the offset such that there are no collisions.
 \end{tikzpicture}
 }
 \end{center}
-
-
-\pause
-
-In each BBU, one can choose the \textcolor{blue}{waiting time} before sending back the answer.\\
-
-
-\begin{center}
-  \includegraphics[scale=0.7]{BBU}\\
- \end{center} 
-
-
-\pause 
-
-An \textcolor{blue}{assignment} is a choice of offsets and waiting times for each route without collisions.
-
-   
-\end{frame}
-\begin{frame}{Process Time}
-
- \begin{center}
-\scalebox{0.3}{
+}
+\only<2->{
+   \begin{center}
+\scalebox{0.35}{
 
 \begin{tikzpicture}
   \SetGraphUnit{5}
     \tikzset{
   EdgeStyle/.append style = {->} }
-   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt]
-   \renewcommand{\VertexLightFillColor}{orange}
-  \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,orange]
+     \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+
+
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,black]
+
   \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
 \Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
 \Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
@@ -913,9 +914,8 @@ An \textcolor{blue}{assignment} is a choice of offsets and waiting times for eac
 \Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
 
 \Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
-
   \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
-  
+
  %\SetVertexNoLabel
   %\Vertex[x=4,y=2]{n1}
 
@@ -926,14 +926,14 @@ An \textcolor{blue}{assignment} is a choice of offsets and waiting times for eac
   %  \Edge[label = $7+3$](c2)(s2p)
  %  \Edge[label = $7+7$](c2)(s3p)
 %\Edge[label = $7 + 5$](c2)(s1p)
-\path (s1) edge [blue,->] node[anchor=south]{$5$} (c1);
+\path (s1) edge [red,->] node[anchor=south]{$5$} (c1);
 
 \path (s2) edge [->] node[anchor=south]{$3$} (c1);
 \path (s3) edge [->] node[anchor=south]{$7$} (c1);
 \path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
 \path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
 
-\path (c2) edge [blue,->] node[anchor=south]{$7+5$} (s1p);
+\path (c2) edge [green,->] node[anchor=south]{$7+5$} (s1p);
 
 \path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
 
@@ -947,21 +947,22 @@ An \textcolor{blue}{assignment} is a choice of offsets and waiting times for eac
 \end{tikzpicture}
 }
 
-\vspace{1cm}
-\includegraphics[width=0.7\textwidth]{time.pdf}
+\pause
+\vspace{0.5cm}
+\includegraphics[width=0.7\textwidth]{time0.pdf}
 
 \end{center}
 
+}
 \pause
- \textbf{Periodic Assignment for Low Latency (PALL):}
-Find an assignment such that the \textbf{deadline} constraint is satisfied for each route.
-
-\textbf{PAZL (variant):}
-No waiting times in the BBUs: Solutions for PAZL are a subset of optimal solutions for PALL.
+ \begin{exampleblock}{Periodic Assignment for Zero Latency (PAZL)}
+  Given a routed network, find an assignment such that there is no collisions in $c_1$ and $c_2$.
+ \end{exampleblock}
 \end{frame}
 
 
-\begin{frame}{NP-hardness}
+
+\begin{frame}{Complexity}
 \begin{theorem}\label{th:hardness_contention_depth}
 PAZL is $\NP$-complete.
 \end{theorem}
@@ -978,22 +979,20 @@ PAZL is $\NP$-complete.
 
       \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
   \tikzset{
-   VertexStyle/.append style = {blue} }
+   VertexStyle/.append style = { thick, loosely dashdotted} }
   \Vertex[x=-8,y=3]{u}
         \tikzset{
-      VertexStyle/.append style = {green} }
+      VertexStyle/.append style = {dashed, thick} }
     \Vertex[x=-7,y=5]{v}
 
       \tikzset{
-      VertexStyle/.append style = {red} }
+      VertexStyle/.append style = {dotted, thick} }
     \Vertex[x=-6,y=4]{w}
-    \tikzset{
-      VertexStyle/.append style = {black} }
-      
+
        
     
   \tikzset{
-       EdgeStyle/.append style = {black,-} }
+       EdgeStyle/.append style = {black,solid,-} }
 
        \Edge(u)(v)
        \Edge(u)(w)
@@ -1006,7 +1005,105 @@ PAZL is $\NP$-complete.
 
      Reduction of an instance H of vertex-coloring to an instance of PAZL. 
 \end{frame}
-\begin{frame}{NP-hardness}
+
+\begin{frame}{Complexity}
+\begin{theorem}\label{th:hardness_contention_depth}
+PAZL is $\NP$-complete.
+\end{theorem}
+
+    \scalebox{0.5}{
+    \begin{tikzpicture}
+    \tikzset{
+      LabelStyle/.style = { rectangle, rounded corners, draw,
+        font = \bfseries },
+    EdgeStyle/.append style = {->} }
+      \SetGraphUnit{5}
+      
+       \onslide<3->{
+      \node[draw,dotted, thick,circle] (s3) at (4, 2) {$w^1$}; 
+      }
+      \onslide<2->{
+      \node[draw,dashed, thick,circle] (s2) at (0, 4) {$v^1$}; 
+      }
+      \node[draw,circle,thick, loosely dashdotted] (s1) at (0, 6) {$u^1$}; 
+ \onslide<3->{
+      \node[draw,dotted, thick,circle] (t3) at (12, 3) {$w^2$}; 
+      }
+       \onslide<2->{
+      \node[draw,dashed, thick,circle] (t2) at (10, 5) {$v^2$}; 
+      }
+      \node[draw,circle,thick, loosely dashdotted] (t1) at (10, 1) {$u^2$}; 
+      
+
+      \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 20pt]
+  \tikzset{
+   VertexStyle/.append style = {thick, loosely dashdotted} }
+  \Vertex[x=-8,y=3]{u}
+        \tikzset{
+      VertexStyle/.append style = {dashed, thick} }
+    \Vertex[x=-7,y=5]{v}
+
+      \tikzset{
+      VertexStyle/.append style = {dotted, thick} }
+    \Vertex[x=-6,y=4]{w}
+    \tikzset{
+      VertexStyle/.append style = {black,solid} }
+      
+       
+       \SetVertexNoLabel
+       \onslide<2->{
+       \Vertex[x=2,y=5]{A}}
+
+       \onslide<3->{
+       \Vertex[x=6,y=3]{E}}
+
+       \tikzset{
+       EdgeStyle/.append style = {dashed, thick} }
+       \onslide<2->{
+       \Edge(s2)(A)
+       
+      \Edge(A)(t2)
+      }
+ 
+       
+       \tikzset{
+      EdgeStyle/.append style = {dotted, thick} }
+      \onslide<3->{
+       \Edge(s3)(E)
+       \Edge(E)(t3)
+       } 
+  \tikzset{
+       EdgeStyle/.append style = {thick, loosely dashdotted} }
+      \onslide<1>{\Edge(s1)(t1)}
+       \onslide<2->{
+       \Edge(s1)(A)
+      
+      }
+      \onslide<2>
+      { \Edge(A)(t1)}
+      \onslide<3->{
+       \Edge(A)(E)
+              
+       \Edge(E)(t1)
+       }
+       
+  \tikzset{
+       EdgeStyle/.append style = {black,-,solid} }
+
+       \Edge(u)(v)
+       \Edge(u)(w)
+     \node (1) at (-3,4){\Huge $\rightarrow$};
+      
+     \node (2) at (-7,0){\Huge H};
+      \node (3) at (10,0){\Huge N};
+     \end{tikzpicture}
+     }
+
+     Reduction of an instance H of vertex-coloring to an instance of PAZL. 
+\end{frame}
+
+
+\begin{frame}{Complexity}
 \begin{theorem}\label{th:hardness_contention_depth}
 PAZL is $\NP$-complete.
 \end{theorem}
@@ -1083,11 +1180,26 @@ PAZL is $\NP$-complete.
 
      Reduction of an instance H of vertex-coloring to an instance of PAZL. A P-coloration of H is equivalent to a P-periodic Assignment of N.
 \end{frame}
-\section{Solving PALL on simple topologies}
-\subsection{Star shaped network}
-\begin{frame}{Star Shaped network}
+
+\begin{frame}{Solving PAZL}
+Algorithms to solve PAZL:
+\begin{itemize}
+  \item Exsitence of a solution for moderate loads using polynomial time algorithms.
+  \item FPT Algorithm with the number of routes as parameter.
+  \end{itemize}
 \begin{center}
-\scalebox{0.4}{
+  \includegraphics[scale=0.4]{pazlshort8.pdf}\\
+ \end{center} 
+
+
+\end{frame}
+
+
+
+\begin{frame}{Assignment}
+ 
+ \begin{center}
+\scalebox{0.3}{
 
 \begin{tikzpicture}
   \SetGraphUnit{5}
@@ -1101,6 +1213,7 @@ PAZL is $\NP$-complete.
 \Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
 \Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
 \Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+\draw[red] (10,2) circle (8ex);
 \Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
 
   \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
@@ -1136,15 +1249,106 @@ PAZL is $\NP$-complete.
 \end{tikzpicture}
 }
 \end{center}
+
+
 \pause
+
+
+In $c_2$, one can choose the \textcolor{blue}{waiting time} before sending back the answer.\\
+
+\begin{center}
+  \includegraphics[scale=0.6]{BBU}\\
+ \end{center} 
+
+
+\pause 
+\begin{definition}
+Redefinition of the notion of \textcolor{blue}{assignment}: a choice of offsets and waiting times for each route without collisions.
+\end{definition}
+   
+\end{frame}
+\begin{frame}{Transmission Time}
+
+ \begin{center}
+\scalebox{0.35}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,orange]
+     \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,black]
+
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+
+  \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [red,->] node[anchor=south]{$5$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
+
+\path (c2) edge [green,->] node[anchor=south]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
+
+\path (c1) edge [blue,->,bend left=30] node[anchor=south]{$7+2+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$7+1+1$} (c2);
+
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
 \vspace{1cm}
-PAZL Solved for star shaped networks:
-\begin{itemize}
-	\item Exsitence of a solution for modarate loads using polynomial time algorithms.
-	\item FPT Algorithm with the number of routes as parameter.
-	\end{itemize}
+\includegraphics[width=0.7\textwidth]{time.pdf}
+
+\end{center}
+
+
 
 \end{frame}
+\begin{frame}{Deadline and Problem}
+
+Each route must have a transmission time lower or equal to a given \textbf{deadline}.
+\pause
+\vspace{1cm}
+
+ \begin{exampleblock}{Periodic Assignment for Low Latency (PALL)}
+  Given a routed network, find an assignment such that the deadline constraint is satisfied for each route.
+ \end{exampleblock}
+
+\vspace{1cm}
+\pause
+ PALL is NP-complete.
+
+\end{frame}
+
+\section{Solving PALL on simple topologies}
+
+
 \subsection{A two stage approach for PALL}
 \begin{frame}{A two stage approach for PALL}
 
@@ -1202,9 +1406,11 @@ PAZL Solved for star shaped networks:
 }
  \end{center}
  \pause
-\textbf{Second Step: Solving Waiting Time Assignment}
+\textbf{Second Step:}
+ \begin{exampleblock}{Waiting Time Assignment (WTA)}
+ Given the routed network and the offsets for all routes, find an assignment satisfying the deadlines constraints.
+ \end{exampleblock}
 
-Given the offsets, the routed network and a deadline for all routes, find the assignment that minimize the full process time.
 \begin{center}
  \scalebox{0.4}{
 
@@ -1269,7 +1475,7 @@ Given the offsets, the routed network and a deadline for all routes, find the as
     \hline
      Arrival time in $c_2$ & $0$ &$2$&$3$&$16$&$17$\\
     \hline
-    Waiting time & \only<2->{$0$} &\only<6->{$5$}&\only<4->{$1$}&\only<8->{$0$}&\only<10->{$15$}\\
+    Waiting time & \only<2->{$0$} &\only<6->{$6$}&\only<4->{$1$}&\only<8->{$0$}&\only<10->{$15$}\\
     \hline
       \end{tabularx}
 
@@ -1299,7 +1505,7 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \begin{frame}{Solving WTA: Polynomial time algorithms}
 
   
-   \textbf{MLS:}  Polynomial time algorithm. Finds a solution minimizing process time. 
+   \textbf{MLS:}  Polynomial time algorithm. Finds a solution minimizing the date at which all messages are scheduled. 
    \pause
    \textcolor{red}{Periodicity not managed.}      
 
@@ -1313,9 +1519,9 @@ Given the offsets, the routed network and a deadline for all routes, find the as
   \textbf{PMLS:} 
 \includegraphics[width=0.9\textwidth]{pmls2.pdf}
 
- 
+ \pause
 
-   \textbf{ASPMLS:} FPT-Algorithm based on PMLS $\rightarrow$ Always find the optimal solution.
+   \textbf{ASPMLS:} FPT-Algorithm based on PMLS $\rightarrow$ Always find a solution if existing.
 
 \end{frame}
 
@@ -1333,6 +1539,28 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \end{frame}
 
 
+
+\begin{frame}{Mixing C-RAN traffic with Best-Effort Traffic}
+\textbf{C-RAN traffic}: High priority, deterministic traffic, scheduled with minimal latency.
+
+\vspace{0.5cm}
+
+\pause
+\textbf{Best Effort traffic}: Low priority, stochastic law on arrivals, no specific rules on forwarding.
+
+\vspace{0.5cm}
+
+\pause
+PMLS creates long sequences of C-RAN traffic in which there is no free spaces for BE traffic.
+
+\vspace{1cm}
+\pause
+\centering
+\includegraphics[width=0.9\textwidth]{space.pdf}
+
+\end{frame}
+
+
 \begin{frame}{Mixing C-RAN traffic with Best-Effort Traffic}
 \centering
 \includegraphics[width=0.9\textwidth]{res.pdf}
@@ -1345,7 +1573,7 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 
 
 
-\begin{frame}{Contention points}
+\begin{frame}{Synchronized Version of PALL}
 \begin{center}
 \scalebox{0.4}{
 
@@ -1395,8 +1623,8 @@ Given the offsets, the routed network and a deadline for all routes, find the as
 \only<1>\draw[red] (0,0) circle (8ex);
 \only<1>\draw[red] (0,2) circle (8ex);
 \only<1>\draw[red] (0,4) circle (8ex);
-\only<2>\draw[red] (5,2) circle (8ex);
-\only<3>\draw[red] (10,2) circle (8ex);
+\only<2->\draw[red] (5,2) circle (8ex);
+\only<2->\draw[red] (10,2) circle (8ex);
 \end{tikzpicture}
 }
  
@@ -1407,11 +1635,83 @@ The antennas are \textbf{synchronized}: All messages are emited at the same date
 There is no more offsets, but a buffer in each contention point.
 
 \pause
-We choose a buffering time for each message in every contention points of the same level. 
-
+\begin{definition}
+An \textcolor{blue}{Assignment} is a choice of buffering time for each message in every contention point.
+\end{definition}
+\pause
+ \begin{exampleblock}{Synchronized Periodic Assignment for Low Latency (SPALL)}
+ Given the routed network, find an assignment satisfying the deadlines constraints.
+ \end{exampleblock}
 \end{frame}
-\begin{frame}{SPALL on a star shaped network}
+\begin{frame}{Transmission Time in SPALL}
 
+\begin{center}
+\scalebox{0.3}{
+
+\begin{tikzpicture}
+  \SetGraphUnit{5}
+    \tikzset{
+  EdgeStyle/.append style = {->} }
+  \onslide<1>{
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,orange]
+     \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,black]
+\Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+  }
+   \onslide<2->{
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,orange]
+      \Vertex[x=5,y=2, L = {\huge $c_1$}]{c1}
+
+\Vertex[x=10,y=2, L = {\huge $c_2$}]{c2};
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,black]
+ \Vertex[x=0,y=4, L = {\huge $s_1$}]{s1};
+  }
+
+
+   \tikzstyle{VertexStyle}=[shape = circle, draw, minimum size = 30pt,black]
+
+  \Vertex[x=0,y=2, L = {\huge $s_2$}]{s2};
+\Vertex[x=0,y=0, L = {\huge $s_3$}]{s3};
+\Vertex[x=15,y=4, L = {\huge $s_1'$}]{s1p};
+\Vertex[x=15,y=2, L = {\huge $s_2'$}]{s2p};
+\Vertex[x=15,y=0, L = {\huge $s_3'$}]{s3p};
+
+
+
+ %\SetVertexNoLabel
+  %\Vertex[x=4,y=2]{n1}
+
+  %\Edge[label = $5$](s1)(c1)
+  %\Edge[label = $7 + 4+4$](c1)(c2)
+  %\Edge[label = $3$](s2)(c1)
+   %\Edge[label = $7$](s3)(c1)
+  %  \Edge[label = $7+3$](c2)(s2p)
+ %  \Edge[label = $7+7$](c2)(s3p)
+%\Edge[label = $7 + 5$](c2)(s1p)
+\path (s1) edge [red,->] node[anchor=south]{$5$} (c1);
+
+\path (s2) edge [->] node[anchor=south]{$3$} (c1);
+\path (s3) edge [->] node[anchor=south]{$7$} (c1);
+\path (c2) edge [->] node[anchor=south]{$7+3$} (s2p);
+\path (c2) edge [->] node[anchor=south]{$7+7$} (s3p);
+
+\path (c2) edge [green,->] node[anchor=south]{$7+5$} (s1p);
+
+\path (c1) edge [->] node[anchor=south]{$7+4+4$} (c2);
+
+\path (c1) edge [blue,->,bend left=30] node[anchor=south]{$7+2+2$} (c2);
+\path (c1) edge [->,bend right=30] node[anchor=north]{$7+1+1$} (c2);
+
+  %\draw[->,line width=0.5pt] (5,2.51) parabola bend (7.5,3.5) (10,2.51);
+ %\draw[->,line width=0.5pt] (5,1.49) parabola bend (7.5,0.5) (10,1.49);
+ 
+
+\end{tikzpicture}
+}
+
+\end{center}
  \begin{overprint}
 
 \onslide<1>\includegraphics[width=\textwidth]{time.pdf}
@@ -1546,11 +1846,13 @@ We choose a buffering time for each message in every contention points of the sa
 \end{tikzpicture}
 }
 
+Each contention point at the same level can be solved independantly.
 
+Once all the contention points of the same level have been solved, we deal with the contention points of the next level.
 
 \end{frame}
 
-\subsection{Compact representation}
+\subsection{Solving SPALL: Compact representation}
 \begin{frame}{Compact representation}
 A compact representation of an assignment on a contention point $u$ is a pair ($O_u$,\only<1>{...}\only<2->{$S_u$}).
 
@@ -1566,7 +1868,7 @@ A compact representation of an assignment on a contention point $u$ is a pair ($
   \item Several assignments can have the same compact representation.
   \end{itemize}
 \end{frame}
-\begin{frame}{Assignment from a compact representation }
+\begin{frame}{Solving SPALL: Assignment from a compact representation }
 Inductive construction of an assignment from the compact representation. 
 
 Example for $((2,1,0,3),\{1\})$ on a single contention point .
@@ -1585,10 +1887,10 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
   \item The assignment built from a compact representation is \textcolor{red}{minimal}.
   \pause
 
-  \item Helps to reduce the number of solutions to explore. Only the number of routes and the depth of the network are the exponentials parameters.
+  \item Help to reduce the number of solutions to explore. Exponential in the number of routes an depth of the network.
   \end{itemize}
 \end{frame}
-\subsection{Local search algorithms }
+\subsection{Solving SPALL: Local search algorithms }
 \begin{frame}{Neighborhood and Local Search Algorithms}
 
  Neighborood of a compact representation defined by a permutation:
@@ -1608,7 +1910,7 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
   \node[align=center] (p3) at (13.6,3) {$O_u = (2,0,1)$\\$S = \{1\}$};
   \node[align=center] (p4) at (10,3) {$O_u = (2,0,1)$\\$S = \{0,1\}$};
   \node[align=center] (p5) at (6.4,3) {$O_u = (2,0,1)$\\$S = \{1,2\}$};
-  \node[align=center] (p6) at (6.4,7) {$O_u = (2,0,1)$\\$S = \{0,1,2\}$};
+  \node[align=center] (p6) at (6.4,7) {$O_u = (2,0,1)$\\$S = \{0,1\}$};
 
 
  
@@ -1626,6 +1928,10 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
 
 \end{center}
 
+\pause
+
+Initial Solution : Greedy similar to PALL.
+\pause
 
    \textbf{Algorithms :} Hill Climbing ,
    \pause
@@ -1633,10 +1939,11 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
 \pause Simulated Annealing, 
 \pause Branch and Bound.
 
+
 \end{frame}
 
 \subsection{Results}
-\begin{frame}{Results}
+\begin{frame}{Results: Algorithms to solve SPALL}
 \begin{center}
 	\includegraphics[width=\linewidth]{all8routes}
 
@@ -1647,7 +1954,7 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
 
 
 \begin{block}{Key result.}
-  Determinstic Networking is the best way to manage deterministic flows.
+  Deterministic Networking is the best way to manage deterministic flows.
 \end{block}
 
 \begin{block}{Industrial prototype in development.}
@@ -1661,13 +1968,13 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
   \begin{itemize}
       \item Different bandwidth.
       \item Not the same period for all messages.
-      \item Different message size.
+      \item Different messages size.
     \end{itemize}
 \end{block}
 
 \begin{block}{Open Questions.}
   \begin{itemize}
-      \item NP-Hardness of PALL on star networks.
+      \item Complexity of PALL on star networks.
       \item Performances of PALL algorithms on deeper networks.
     \end{itemize}
 \end{block}
@@ -1675,6 +1982,33 @@ Example for $((2,1,0,3),\{1\})$ on a single contention point .
 
 \end{frame}
 
+\begin{frame}
+\begin{center}
+\huge{\scshape Thank You \\ For your time and attention !}
+\end{center}
+\vspace{1cm}
+
+ \begin{multicols}{2}
+Published Papers:
+\begin{itemize}
+  \item 
+\tiny{Dominique Barth, Maël Guiraud, Brice Leclerc, Olivier Marcé, Yann Strozecki\\
+Deterministic Scheduling of Periodic Messages for Cloud RAN. ICT 2018: 405-410}
+  \item \tiny{Dominique Barth, Maël Guiraud, Yann Strozecki\\
+Deterministic Contention Management for Low Latency Cloud RAN over an Optical Ring. ONDM 2019: 479-491}
+\end{itemize}
+
+Pre-print:
+\begin{itemize}
+  \item \tiny{Dominique Barth, Maël Guiraud, Brice Leclerc, Olivier Marcé, Yann Strozecki\\
+Deterministic Scheduling of Periodic Messages for Cloud RAN (2021, long version). Submitted to Networks.}
+  \item \tiny{Maël Guiraud, Yann Strozecki\\
+Scheduling periodic messages on a shared link (2021). Submitted to MFCS.}
+\end{itemize}
+
+\end{multicols}
+
+\end{frame}
 
 
 
