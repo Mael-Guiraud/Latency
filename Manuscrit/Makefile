@@ -2,6 +2,7 @@
 
 all:
 	pdflatex Manuscript.tex
+	pdflatex Appendix1.tex
 	bibtex Manuscript
 	pdflatex Manuscript.tex
 	pdflatex Manuscript.tex
