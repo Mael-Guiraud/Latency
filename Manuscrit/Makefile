@@ -2,10 +2,12 @@
 
 all:
 	pdflatex Manuscript.tex
+	pdflatex Appendix1.tex
 	bibtex Manuscript
 	pdflatex Manuscript.tex
 	pdflatex Manuscript.tex
 	pdftk couv.pdf Manuscript.pdf cat output Manuscrit.pdf
+	pdftk Manuscrit.pdf Appendix1.pdf cat output Manuscrit_Guiraud.pdf
 	evince Manuscrit.pdf &
 ifeq ($(USER),mael)
 	echo $(USER)
