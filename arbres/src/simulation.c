@@ -386,10 +386,7 @@ void simuldistrib(int seed)
 			P= (load_max(&g)*MESSAGE_SIZE)/STANDARD_LOAD;
 		
 		for(int algo = 0;algo<nb_algos;algo++)
-		{
-
-			
-				
+		{	
 			//printf("Algorithm %s \n",noms[algo]);
 			a= 0;
 			nb = 0;
