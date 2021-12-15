@@ -282,7 +282,7 @@ by the RRH and the last vertex represents the same RRH that receives the answer,
 	  In the next subsection, this problem is proved to be $\NP$-hard. In Section~\ref{sec:PALL}, we propose heuristics solving the search version of \pall (computing a valid assignment), also denoted by \pall for simplicity. In the definition of \pall, we have chosen to bound the transmission time of each route, in particular we can control the worst case latency. It is justified by our C-RAN application with hard constraints on the latency. 
 
 	 We say that an assignment is \textbf{bufferless} when the waiting time of all routes are zero.
-	 The assignment can then be seen as a function from the routes to the integers (the value of the offset, the waiting time is omitted). We consider a restricted version of \pall, requiring to find a bufferless assignment. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is more efficient when implemented in real telecommunication networks, since we do not need contention buffer at all. A switch taking full advantage of the absence of buffer is presented in~\cite{guiraud_phd}. 
+	 The assignment can then be seen as a function from the routes to the integers (the value of the offset, the waiting time is omitted). We consider a restricted version of \pall, requiring to find a bufferless assignment. This is equivalent to using the deadline function $d(r) = \lambda(r)$, that is the transmission time must be equal to the size of the route, which implies $w_r = 0$ for all $r \in \cal{R}$. This problem is called \textbf{P}eriodic \textbf{A}ssignment for \textbf{Z}ero \textbf{L}atency and is denoted by \pazl. Studying \pazl is simpler: in an instance, there is no need to precise $\cal{B}$ in the routed network nor the deadline function and a solution is just an offset for each route.  Moreover, a solution to \pazl is more efficient when implemented in real telecommunication networks, since we do not need contention buffer at all. A switch taking full advantage of the absence of buffer is presented in~\cite{Marc2201:Experimental}. 
       An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$-periodic assignment but no $(P',\tau)$-periodic assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
 	\begin{proposition} \label{prop:monotonic}
@@ -1087,7 +1087,7 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 
      In the following experiments, we illustrate how well the algorithms work with regards to the load. To change the load, both parameters $\tau$ and $n$ are fixed and we modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
 
-     The code in C is available on the web page of one author\footnote{\url{https://yann-strozecki.github.io/}} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i7 and the sources are compiled with gcc version 7.3.0. All experiments end in at most a few dozen seconds.
+     For all experiments of this paper, the code in C is available on the web page of one author\cite{webpage} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i5 and the sources are compiled with gcc version 8.4.0. All experiments end in at most a few dozen seconds.
 
 \begin{figure}
 \begin{center}
@@ -1404,7 +1404,9 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
     \paragraph{Evaluating the Necessary Margin}
     
-    We set the number of routes to $8$ to make comparisons with the results of Section~\ref{sec:exp_PAZL} easier. We draw uniformly the weights of the arcs of the fronthaul network in $[P]$. We use \emph{the same deadline} for all routes, which is the most common constraint, when modeling a C-RAN problem: all RRHs have the same latency constraint and all BBUs take the same time to process the answer. 
+    We set the number of routes to $8$ to make comparisons with the results of Section~\ref{sec:exp_PAZL} easier (the datagram size and the bandwidth of the links also remains the same). In order to not overload the section, we choose to draw uniformly the weights of the arcs of the fronthaul network in $[P]$. Indeed, choosing $[P]$ as value covers all kind of instance, and particulary the instance with shorts weights of the arcs which correspond to realistic fronthaul networks.
+
+    We use \emph{the same deadline} for all routes, which is the most common constraint, when modeling a C-RAN problem: all RRHs have the same latency constraint and all BBUs take the same time to process the answer. 
 
 
     We define the {\bf margin} of an instance as the margin of the longest route of the routed network. Since all routes have the same deadline, it is the difference between the length of the longest route and the deadline. Note that the margin is defined before making the network canonical, since this operation makes the deadlines all differents, and thus breaks the semantic of the margin.
@@ -1705,12 +1707,16 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
  	fronthaul network for C-RAN.
   	From a theoritical perspective, we need to prove that \pazl and \pall are $\NP$-hard on star routed networks. Then, we should design a better \FPT algorithm for \pall on star routed networks, as efficient as the one for \pazl. This would help us understand if any performance is lost by using \PMLS as a heuristic in practice. Then, we must generalize our study of the \pall problem to other common fronthaul topologies, such as caterpillars, trees, cycles or bounded treewidth graphs. Some elements on cycle topologies are given in~\cite{DBLP:conf/ondm/BarthGS19} and on routed networks of bounded contention depth, for synchronized RRHs in~\cite{guiraud2020synchronized}.
 
+     We focus on this paper on the algorithmic aspect of deterministic networking. In order to predict the case of emergencies (rupture of a link) in star routed networks, there is nothing else to do than line the fibers because there is only one route for the antennas. In \ref{guiraud_phd} we consider meshed topologies on which the way we schedule messages allows flexible adding or removing of flows without completely recompute the solutions.
+
    	Several variations of our model are relevant to capture more use cases than C-RAN. 
    	We may consider routes periodically emitting datagrams of \emph{different sizes} to represent different payload transmitted in the network. In that case, we cannot rely on \PMLS since the corresponding non periodic scheduling problem is already $\NP$-hard. 
    	We could also allow for links of different speeds in the fronthaul network, but we must then model
    	the interface between links more precisely, which is tedious but could be solved using scheduling over several parallel machines using~\cite{simons1989fast}.
 	Instead of minimizing the worst transmission time, we may want to minimize the average transmission time. This objective is linear, and it makes the size of the route irrelevant to the objective. Hence, it should be \emph{easier} to solve, for intance using linear programming. We could allow preemption, that is the datagrams may be cut into pieces, which would certainly change the complexity of the problem and help with the latency.  
    	Instead of computing periodic sending schemes, we could try to organize communications with pseudo-periodic schemes (periodic over several periods). Finally, the routes may not be fixed but computed from the network to minimize $TR(A)$, which makes the problem even more difficult to solve (certainly $\Pi_2$-complete instead of $\NP$-complete). 
+
+
 
 
 
