@@ -82,8 +82,8 @@ We give several algorithms to compute such schemes for star routed networks, a c
 Cloud Radio Access Network or C-RAN, have been proposed as a next generation mobile network architecture to reduce energy consumption~\cite{mobile2011c,checko2014cloud} and more generally the total cost of ownership.
 C-RAN is a centralized architecture: each antenna has a Remote Radio Head (RRH) which sends the signal to
 a BaseBand Unit (BBU) in a data-center\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}.
-The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by real-time virtualized network functions of a BBU. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul network} between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
-Our aim is to operate a C-RAN on a low-cost shared switched network.
+The main challenge for this type of architecture is to reach a latency compatible with transport protocols~\cite{ieeep802}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by real-time virtualized network functions of a BBU. For example, LTE standards require to process functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{dogra2020survey,3gpp5g,boccardi2014five}. The specificity of the C-RAN context is not only the latency constraint, but also the periodicity of the data transfer in the \emph{frontaul network} between RRHs and BBUs: frames need to be emitted and received each millisecond~\cite{bouguen2012lte}.
+Our aim is to operate a C-RAN on a low-cost shared switched packet network.
 The question we address is the following: is it possible to schedule messages such that they do not collide in the network to avoid latency caused by queuing delays? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas.
 
 Let us expose briefly our model: the network topology is modeled by a directed weighted multigraph given by a set of directed paths (routes). A path goes from a node representing the sending of a message by an RRH, to a node representing a BBU and finally to a node representing the reception of the answer by the RRH. Time is discretized and a unit of time or \emph{tic} corresponds to the time needed to transmit a minimal unit of data over the network. To obtain the best possible latency, we want to avoid any buffering in internal nodes of the graph, corresponding to switches of the network. We take advantage of the deterministic nature of the C-RAN messages, called datagrams, i.e. the dates of arrival of the datagrams in the RRHs are known beforehand. In fact, following LTE standard~\cite{bouguen2012lte}, we assume that arrivals of all datagrams are periodic with the same period. We propose to design a \emph{periodic} process to send the messages through the network without collision. By periodic process of period $P$, we mean that the network at times $t$ and $t+P$ is in the exact same state. 
@@ -94,79 +94,53 @@ We assume that the route taken by each datagram emmited by some RRH is fixed, an
 When building a periodic assignment, we must take into account the periodicity which makes many scheduling methods unusable. Not only a datagram must not collide with the datagrams sent by the others BBU/RRH in the same period, but also in the other periods. The latency, that is the time between the emission of a datagram and the complete return of its answer, must be minimized. This means that the only buffering we are allowed -- the waiting time before sending back the answer-- must be small, in particular when the route is long.
 % Note that the model is technology agnostic, i.e. it is compatible with an optical network with a fixed packet size. 
 
- In this article, we assume that all RRHs send datagrams with the same periodicity, but are not synchronized. It means that the datagram of each RRH is available at a different time in the period, given by its offset.
- In current cellular network, the RRHs are synchronized, and simulating our settings would cost a large additional latency, since datagrams should be buffered in their RRHs to honor their offsets. 
-Hence, the model we propose should be seen as a suggestion to design future cellular networks, where emissions of the RRHs are not synchronized. It can already model sensor networks in cars, logistic problems in production lines or multiprocessor systems, where periodic messages (or goods) must be scheduled over a bus (or an assembly line), since we have a better handle on when these messages are generated.
+
+ In this article, we assume that all RRHs send datagrams with the same periodicity of 1ms as required by 5G specifications~\cite{romano2019imt}. Also, it is needed that all the answers be back to the RRHs before a given deadline. This is why we focus on minimizing the datagrams latency. We consider that the datagram of each RRH is available at a different time in the period, given by its offset. In order to not consider the offest as a buffer delay, we make the choice to consider that control and data planes are separated. We work on minimizing the latency on the data plane, while some synchronization mechanism can be applied on the control plane~\cite{khalili2016uplink,yemini2016multiple}. In the case of networks with long routes, the use of Timing Advance is deployed to guarantee the synchronization of the receptions despite the difference in length of the routes in the network~\cite{mahmood2019time}. 
+ %In current cellular network, the RRHs are synchronized, and simulating our settings would cost a large additional latency, since datagrams should be buffered in their RRHs to honor their offsets. 
+Hence, the model we propose can be seen as a suggestion to design future cellular networks, where emissions of the RRHs are not synchronized. It can already model sensor networks in cars, logistic problems in production lines or multiprocessor systems, where periodic messages (or goods) must be scheduled over a bus (or an assembly line), since we have a better handle on when these messages are generated. Also, the results obtained in this paper are applicable for the guarantees of asynchronous deterministic latency necessary for remote control in the context of industry 4.0~\cite{peng2021latency,garcia2019latency}.
  
-In this article, we focus on \emph{star routed networks}, which represent a simple but common topology,
+In this article, we focus on \emph{star routed networks}, which represent a simple but common topology~\cite{electronics9122131,bhattacharjee2020time},
 where all RRHs share a single link. We give efficient algorithms for two versions of the problems, called 
 \pall and \pazl, the second one requiring zero waiting time in the BBU. The algorithms are either polynomial or mildly exponential in $n$, the number of RRHs, and are able to compute periodic sending schemes
 for star shaped networks with tens of RRHs. The solutions we obtain are extremely good, with no 
-additional latency most of the time, eventhough buffering can only be done in the BBU. For more complex networks and synchronized RRHs, studied in a follow-up work~\cite{guiraud2020synchronized}, we need to allow buffering at each node to obtain good sending schemes.
+additional latency most of the time, eventhough buffering can only be done in the BBU. For more complex networks and synchronized RRHs, studied in a follow-up work~\cite{guiraud2021deterministic}, we need to allow buffering at each node to obtain good sending schemes.
 
 
  \subsection*{Related works}
 
-
-
-
 Statistical multiplexing is the most common mechanism used to manage packet based networks in the last $40$ years. While tools~\cite{metricsietf} ensure a latency lower than a given value for $95\%$ of the packets, such a guarantee is not sufficient in our context in which all packets must satisfy latency constraints. Indeed, mechanisms like Express Forwarding~\cite{exprforw} can be used to prioritize some packets over the others, but they fail to guarantee the delivery of a given packet in a given time delay when several packets compete for the same resource. 
 
 
-One of the solution consists in relying on an almost full optical approach, where each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches~\cite{pizzinat2015things,tayq2017real}. This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about $10,000$ base stations. This number will increase by a factor of $2$ to $20$ with the emergence of “small cells” which increases base station density to reach higher throughput \cite{dahlman20185g,romano2019imt}. It is thus needed to find a solution to offer low latency over commoditized packet based networks.  Another approach consists in using optical rings dimentioned for Both fronthaul and best-effort flows~\cite{rommel2020towards,luu2021dynamic}, but this approach rely to network dimentioning and optical multiplexing technologies.
+One of the solution consists in relying on an almost full optical approach, where each end-point (RRH on one side, BBU on the other side) is connected through direct fiber or full optical switches~\cite{kai2020amplify,tayq2017real}. This architecture is very expensive and hardly scales in the case of a mobile network. As illustrative purpose, a single (one operator) mobile network in France is composed of about $10,000$ base stations. This number will increase by a factor of $2$ to $20$ with the emergence of “small cells” which increases base station density to reach higher throughput \cite{dahlman20185g,romano2019imt}. It is thus needed to find a solution to offer low latency over commoditized packet based networks.  Another approach consists in using optical rings dimentioned for Both fronthaul and best-effort flows~\cite{rommel2020towards,luu2021dynamic}, but this approach rely to network dimentioning and optical multiplexing technologies.
 
-Although 3GPP standards for 5G are not completely frozen yet, the core network is designed to use switched packets networks on ethernet technology~\cite{gomes2015fronthaul}. 
+Although 3GPP standards for 5G are not completely frozen yet, the core network is designed to use switched packets networks on ethernet technology~\cite{ieee1914,gomes2015fronthaul}. 
 The additional latency induced by contention buffers is one of the major manageable source of delay in a switched packets network.
-Our approach of consists in deterministically managing datagrams in each node in order to prevent contention. When it is not possible to get rid of the contention buffers, we want to fix the duration each datagram is buffered. The contention buffers are not anymore a consequence of the traffic but a tool to manage it. This approach may look similar to the concept of Deterministic Networking. A working group from IETF called DetNet~\cite{finn-detnet-architecture-08} works in collaboration with TSN (Time Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking~\cite{8613095,durr2016no}. The main difference between DetNet and TSN is the layer it focuses on. While DetNet works on Layer 3, TSN develops solutions for Layer 2. Whatever the case, using the term "deterministic" is inappropriate since all works related to DetNet or TSN are still based on statistical models. The latency guarantee given by those approaches are an upper bound on the latency, while we aim to minimize it. In the same spirit, network calculus relies on a statistical model to guarantee bounded latency~\cite{9217707}
-
+Our approach of consists in deterministically managing datagrams in each node in order to prevent contention. This approach may look similar to the concept of Deterministic Networking. A working group from IETF called DetNet~\cite{finn-detnet-architecture-08} works in collaboration with TSN (Time Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking~\cite{bhattacharjee2020time,8613095,durr2016no}. Nevertheless, using the term "deterministic" is inappropriate since all works related to DetNet or TSN are still based on statistical models. The latency guarantee given by those approaches are an upper bound on the latency, while we aim to minimize it. In the same spirit, network calculus relies on a statistical model to guarantee bounded latency~\cite{9217707}.
 
  The model and the algorithms of this paper make the hypothesis that the network components are able to collect some information and send it to a centralized entity, to differentiate several kinds of flow and to forward it at an exact date, imposed by the controller. TSN standards like 802.1Qat Stream Reservation Protocol~\cite{ieee802qat} improoved by IEEE 802.1Qcc~\cite{6755436} propose technical solution for those hypothesis, related to the principle of Software Defined Network (SDN)~\cite{mohamed2021software,li2015software,7356556}.
 
-
- In this paper, we work on deterministic flows. Thus, we propose algorithms to compute deterministic scheduling of the flows in the network, while minimizing the latency due to buffering. Remark that minimizing the buffering latency allows not only to meet latency constraints of applications, but also to leave additional time for others sources of latency (additional computations, longer length of fibers, etc...). When computing a scheduling, we must take into account the \textbf{periodicity} which makes the problem difficult to solve. Not only a datagram must not collide with the datagrams sent by the others BBU/RRH in the same period, but also in the other periods. In this paper, we propose algorithms that minimize contention by removing the contention buffers on star networks, a common architecture for C-RAN~\cite{electronics9122131,bhattacharjee2020time}.  A switch taking full advantage of the absence of buffer is presented in~\cite{Marc2201:Experimental} and several patents on this technology have been already published, see for example~\cite{howe2005time,leclerc2016transmission}.
 
 
 
 
      
-The algorithmic problem we focus on may look like wormhole problems~\cite{ni1993survey,cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{zhou2013multiple} but it is not expressive enough to capture our problem. 
+The algorithmic problem we focus on may look like wormhole problems~\cite{ni1993survey,cole1996benefit}, but we want to minimize the time lost in buffers and not just to avoid deadlocks. On a technical aspect, wormhole switches~\cite{cole1996benefit} are designed to read only the header of the messages before forwarding it instead of buffering the entire messages as in store-and-forward~\cite{tindell1992store}. This method has a huge impact on the latency, particularly on long messages, and we go further by trying to remove all buffering in the switches.
+
+ Several graph colorings have been introduced to model similar problems such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. The only coloring with periodicity is the circular coloring~\cite{ZHU2001371,zhou2013multiple} but it is not expressive enough to capture our problem. 
+
+
 The problem \pall on a star routed network is very close to a two flow-shop scheduling problem~\cite{yu2004minimizing} with the additional constraint of periodicity. To our knowledge, all studied periodic scheduling problems are different from \pall that we consider in this article. 
 Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem correspond to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
-The train timetabling problem~\cite{lusby2011railway} and its restriction, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem. Indeed, they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms\dots  In the same spirit, complex scheduling problems for time sensitive networks have also been practically solved, using mixed integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}.
-
-
-\paragraph{Wormhole}
-
-Because we consider contiguous messages, we first focused on wormhole problems~\cite{ni1993survey,cole1996benefit}. Wormhole problems consider graphs representing interconnection networks, in which the vertices are the nodes of the network and the edges are the physical links. Long messages are sent in the network, using ressources during a long time. A \emph{deadlock} occurs when several messages are waiting for each others to release a ressource. The main problem consists in avoiding deadlocks. The algorithmic solution proposed consists in multiplexing the physical channels in several virtual channels, and to develop routing algorithms to determine the virtual channel used by each message. 
-The problem is very similar, but we do not have the same degrees of freedom: in our network, the routing  is given. Moreover, our messages require the entire capacity of the links and we cannot use multiplexing, except in a variation of our model presented in Chapter~\ref{chap:BE}. Furthermore, deadlocks can not occur in the networks we model, since the considered routings are \textbf{coherent}\cite{Schwiebert1996ANA}. A routing is coherent if two routes share a single path (i.e. a sequence of contiguous links) in the network.
-
-On a technical aspect, wormhole switches~\cite{cole1996benefit} are designed to read only the header of the messages before forwarding it instead of buffering the entire messages as in store-and-forward~\cite{tindell1992store}. This method has a huge impact on the latency, particularly on long messages, and we go further by trying to remove all buffering in the switches.
-
-
-\paragraph{Graph coloring for ressources allocation}
-
-One of our approach consisted in representing the shared ressources of the network by a conflict graph. The vertices of the graph represent the routes of the networks and there is an edge between two vertices if their associated routes share the same ressource (i.e. an output port on a switch). The edges of the graph are labeled by the difference of the physical length of the links between the sources of the routes and the conflict point. A proper coloring of such a graph is a scheduling of the network without collisions between the messages. Several graph colorings have been introduced to model similar problems. In~\cite{erlebach2001complexity} the objective is to minimize the number of wavelength in shared links for optical networks. Flow allocations problems are studied in~\cite{borndorfer1998frequency}, applied to the allocation of the frequencies in radio networks. Unfortunately, they do not take into account the periodicity of the scheduling and the associated problems are already $\NP$-complete. 
-
-\paragraph{Circular Coloring}
-The only coloring taking into account periodicity is the circular coloring~\cite{ZHU2001371,zhou2013multiple}. As an example, circular coloring can model a road intersection as a graph in which the vertices are the flows and there is and edge between two vertices if the flow must not overlap. The problem is to find a proper vertex coloring of the graph. Such an approach is close to our problem of coloring conflict graphs. However, the models presented do not consider the weight on the arcs, and cannot easily capture general graphs. Also, because the problem is already $\NP$-hard , this approach did not catch our attention.
-Circular arc coloring~\cite{10.2307/2100446} also manages jobs that can be related to periodic messages. The authors consider a clock and several arcs around this clock, representing the time needed by a job. The objective is to find the minimal number of men needed to complete the job. If two arcs overlap, the same man cannot be affected to both jobs. Nevertheless, this problem has been shown $\NP$-hard~\cite{10.1007/BFb0053971} and the model is really far from ours.
-
-\subsection{Scheduling approaches}
-Our problem is very close to a scheduling problem, with an additional periodicity constraint. Therefore, we looked for scheduling approaches that can be used for, or adapted to our problem.
-
-\paragraph{Train Scheduling}
-
-The train timetabling problem~\cite{lusby2011railway} and its restriction, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of the problem we study. Indeed, they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms\dots
+The train timetabling problem~\cite{lusby2011railway} and its restriction, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem. Indeed, they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size, speed, the network can be more complex than a single track and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve (and always $\NP$-hard). Thus, some delay is allowed to make the problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed integer programming, genetic algorithms\dots
 
 \paragraph{Linear Programming for Latency Constrained Network}
-We define in this thesis a simple network topology called the {\em star shaped network}. In star shaped networks, all flows go through the same link, and there is only two relevant contention points (one in the way to the BBUs, and one in the way back to the RRHs).
+We define in this paper a simple network topology called the {\em star shaped network}. In star shaped networks, all flows go through the same link, and there is only two relevant contention points (one in the way to the BBUs, and one in the way back to the RRHs).
 
-Variation on the problem of scheduling periodic messages for Cloud-RAN have been investigated in~\cite{nayak2017incremental,steiner2018traffic,silviu2017,naresh2016}. In these papers, authors study the practical problem of scheduling a few number of flows in a star shaped network. Given a network in which the routing is set, the objective is to schedule several periodic flows with a critical latency and several best-effort flows, as we do in Chapter~\ref{chap:BE}. To do so, the authors use new technical standards (TSN, detailed in Chapter~\ref{chap:TSN}) that allow to prioritize flows, and linear programming in order to compute a schedule between the critical flows. In the same spirit, the use of an SMT solver rather than linear programming is proposed in~\cite{dos2019tsnsched}. %Such an approach is still based on statistical models and just ensure that the packets have an end-to-end latency lower than a given value. In this thesis, we focus on minimizing the latency of critical flows, even when there is some best-effort traffic as show in Chapter~\ref{chap:BE}.
-The flows described in these papers are different from ours. While we consider that a single long message is sent by a source every period, the authors propose flows in which several little packets are sent. The scheduling are computed on multiple periods while we compute a scheduling on one period, which can be repeated periodically.
-Furthermore, the experiments are made on small topologies, because these approaches does not scale neither with the number of routes nor the number of conflict points on each route, while we propose polynomial time algorithms that give satisfying solution for every kind of topology. However, this kind of approach, as explained in~\cite{steiner2018traffic}, can be used as a standardization tool to verify the viability of solutions computed by faster algorithms.
+Variation on the problem of scheduling periodic messages for Cloud-RAN have been investigated in~\cite{nayak2017incremental,steiner2018traffic,silviu2017,naresh2016}. In these papers, authors study the practical problem of scheduling a few number of flows in a star shaped network. To do so, the authors use linear programming in order to compute a schedule between the flows. In the same spirit, the use of an SMT solver rather than linear programming is proposed in~\cite{dos2019tsnsched}. The flows described in these papers are different from ours. While we consider that a single long message is sent by a source every period, the authors propose flows in which several little packets are sent. The scheduling are computed on multiple periods while we compute a scheduling on one period, which can be repeated periodically.
+Furthermore, the experiments are made on small topologies, because these approaches does not scale with the number of routes~\cite{masoudi2020cost}, while we propose polynomial time algorithms that give satisfying solution. However, this kind of approach, as explained in~\cite{steiner2018traffic}, can be used as a standardization tool to verify the viability of solutions computed by faster algorithms. 
 
-
+ In this paper, we work on deterministic flows. Thus, we propose algorithms to compute deterministic scheduling of the flows in the network, while minimizing the latency due to buffering. Remark that minimizing the buffering latency allows not only to meet latency constraints of applications, but also to leave additional time for others sources of latency (additional computations, longer length of fibers, etc...). When computing a scheduling, we must take into account the \textbf{periodicity} which makes the problem difficult to solve. Not only a datagram must not collide with the datagrams sent by the others BBU/RRH in the same period, but also in the other periods. In this paper, we propose algorithms that minimize contention by removing the contention buffers on star networks, a common architecture for C-RAN~\cite{electronics9122131,bhattacharjee2020time}.  A switch taking full advantage of the absence of buffer is presented in~\cite{Marc2201:Experimental} and several patents on this technology have been already published, see for example~\cite{howe2005time,leclerc2016transmission}.
 
 
 
@@ -1133,13 +1107,13 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
    \paragraph{Experimental Settings}
 
 
-     The defaults parameters of all experiments in this article are derived from the C-RAN context and summarized in Tabular~\ref{tab:params}: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are approximately of size $1$~Mbit, which corresponds to $2,500$ tics. The number of routes is set to $n = 8$ in most experiments. 
+     The defaults parameters of all experiments in this article are derived from the C-RAN context~\cite{wang2017cloud} and summarized in Tabular~\ref{tab:params}: a tic correspond to the sending time of $64$ Bytes of data on links of bandwidth $10$~Gbps. The datagrams are approximately of size $1.18$~Mbit, which corresponds to $2,500$ tics. 
 
-     All experiments are done on synthetic data generated randomly. We generate the physical fronthaul
+     All experiments are done on synthetic networks generated randomly. We generate the physical fronthaul
      network represented in Figure~\ref{fig:star}, by drawing the size of each link according 
      to some distribution which depends on the experiment. Then, the corresponding canonical star routed network is built from the generated fronthaul and the algorithms tested on it. 
 
-     In the following experiments, we illustrate how well the algorithms work with regards to the load. To change the load, both parameters $\tau$ and $n$ are fixed and we modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms.
+     In the following experiments, we illustrate how well the algorithms work with regards to the load. To change the load, both parameters $\tau$ and $n$ are fixed and we modify the period $P$, which allows for a smooth control of the load and does not impact the execution time of the algorithms. In most experiments, we fix the number of routes to $n = 8$. In the case of fronthaul networks the period is $1$ms, that correspond to $20,000$ tics and thus a load of $0.95$ with 8 routes.
 
      For all experiments of this paper, the code in C is available on the web page of one author\cite{webpage} under a copyleft license. The code has been run on a standard $2016$ laptop with a $2.2$~Ghz Intel Core i5 and the sources are compiled with gcc version 8.4.0. All experiments end in at most a few dozen seconds.
 
@@ -1149,11 +1123,15 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 \hline
 Parameter& Value & Size in tics \\
 \hline
-Bandwidth of links &  $10$~Gbps & $\simeq 420$ tics/km\\
+Duration of a tic& $\simeq51$ns&1\\
 \hline
-Datagrams size &  $1$~Mbit & $2500$ tics\\
+Bandwidth of links &  $10$~Gbps & -\\
 \hline
-Number of routes & $8$ & -\\
+Datagrams size ($\tau$)&  $1.18$~Mbit & $2500$ tics\\
+\hline
+Number of routes ($n$) & $8$ & -\\
+\hline
+Period (for fronthaul)& $1$ms&$\simeq20,000$\\
 \hline
 \end{tabular}
 
@@ -1476,18 +1454,20 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
  
 \begin{figure}[h] 
-  \begin{minipage}[b]{.49\linewidth} 
+ % \begin{minipage}[b]{.49\linewidth} 
 \begin{center} 
-  \includegraphics[width=\linewidth]{departs_gp_250001.pdf}
-\end{center}
+  \includegraphics[width=0.7\linewidth]{departs_gp_250001.pdf}
+%\end{center}
 
-\end{minipage}
-\begin{minipage}[b]{.49\linewidth}   
-  \includegraphics[width=\linewidth]{departs_gp_210001.pdf}
+%\end{minipage}
+%\begin{minipage}[b]{.49\linewidth}   
+  \includegraphics[width=0.7\linewidth]{departs_gp_210001.pdf}
 
-\end{minipage}
-      \caption{Success rate of different sending orders, left $0.8$ load, right $0.95$ load.}
+%\end{minipage}
+      \caption{Success rate of different sending orders, top $0.8$ load, bottom $0.95$ load.}
            \label{fig:success1random}
+           \end{center}
+
      \end{figure}
 
           
@@ -1498,10 +1478,11 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
 \begin{figure}[h] 
   \centering
-  \includegraphics[width=0.49\textwidth]{departs_gp_25000.pdf}
-    \includegraphics[width=0.49\textwidth]{departs_gp_21000.pdf}
+  \includegraphics[width=0.7\linewidth]{departs_gp_25000.pdf}
+
+    \includegraphics[width=0.7\linewidth]{departs_gp_21000.pdf}
     
-       \caption{Success rate of different sending orders with the random orders generated $1000$ times, left $0.8$ load, right $0.95$ load.}
+       \caption{Success rate of different sending orders with the random orders generated $1000$ times, top $0.8$ load, bottom $0.95$ load.}
       \label{fig:success1000random}
           \end{figure}
 
@@ -1514,7 +1495,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
      
     \begin{figure} [h] 
        \begin{center}
-      \includegraphics[width=0.7\textwidth]{retour_21000.pdf}
+      \includegraphics[width=0.8\textwidth]{retour_21000.pdf}
       \end{center}
       \caption{Success rate of four algorithms solving \pall, $0.95$ load}
      \label{fig:success21000}
@@ -1585,24 +1566,24 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
  	 We do the same experiment at the right of the figure, except that the weights of arcs of half of the routes is drawn in $[I]$ and the length of the other half is drawn in $[P/2,P/2 + I[$. The situation is the same as for the previous experiment but with better success rates, hence the case of two data centers seems simpler to deal with in practice.
   
            \begin{figure}
-           \begin{minipage}{0.49\linewidth}
+        %   \begin{minipage}{0.49\linewidth}
     
        \begin{center}
-      \includegraphics[width = \linewidth]{departs_distrib1Grp.pdf}
+      \includegraphics[width = 0.6\linewidth]{departs_distrib1Grp.pdf}
      
      
      
- \end{center}
-   \end{minipage}\hfill
-\begin{minipage}{0.48\linewidth}   
+ %\end{center}
+   %\end{minipage}\hfill
+%\begin{minipage}{0.48\linewidth}   
          
-       \begin{center}
-      \includegraphics[width = \linewidth]{departs_distrib2Grp.pdf}
+      % \begin{center}
+      \includegraphics[width = 0.6\linewidth]{departs_distrib2Grp.pdf}
    
   
          \end{center}
-      \end{minipage}\hfill
-         \caption{Success rate of \PMLS, with length of arcs drawn either in $[I]$ (left) or in $[I]$ or $[P/2,P/2 + I[$ (right).}
+      %\end{minipage}\hfill
+         \caption{Success rate of \PMLS, with length of arcs drawn either in $[I]$ (top) or in $[I]$ or $[P/2,P/2 + I[$ (bottom).}
       \label{fig:2grp} 
   \end{figure}
 \section{Deterministic Assignments vs Statistical Multiplexing}\label{sec:comparison}
@@ -1628,21 +1609,21 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     \begin{figure}
 
 
-\begin{minipage}{0.49\linewidth}
+%\begin{minipage}{0.49\linewidth}
        \begin{center}
-      \includegraphics[width = \linewidth]{stochasticdistrib.pdf}
-      \end{center}
-   \end{minipage}\hfill
-\begin{minipage}{0.49\linewidth}   
+      \includegraphics[width = 0.7\linewidth]{stochasticdistrib.pdf}
+     % \end{center}
+   %\end{minipage}\hfill
+%\begin{minipage}{0.49\linewidth}   
 
-       \begin{center}
-     \includegraphics[width = \linewidth]{stochastic.pdf}
+     %  \begin{center}
+     \includegraphics[width = 0.7\linewidth]{stochastic.pdf}
 
        \end{center}
-      \end{minipage}\hfill
+    %  \end{minipage}\hfill
       
       
-  \caption{Probability of success of statistical multiplexing and \PMLS for several margins on random topologies when the size of the routes are distributed either on $P$ (left) or on a small range of values (right).}
+  \caption{Probability of success of statistical multiplexing and \PMLS for several margins on random topologies when the size of the routes are distributed either on $P$ (top) or on a small range of values (bottom).}
       \label{fig:sto} 
       \end{figure}
 
@@ -1686,7 +1667,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
            \begin{figure}
        \begin{center}
-      \includegraphics[width = 0.7\textwidth]{space.pdf}
+      \includegraphics[width = 0.8\textwidth]{space.pdf}
        %\input{figures/stochastic}
       \end{center} 
       \caption{A $(P,\tau')$-assignment interpreted as a $(P,\tau)$-assignment}
@@ -1698,7 +1679,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
     \begin{figure}
        \begin{center}
-      \includegraphics[width = 0.7\textwidth]{distribtau.pdf}
+      \includegraphics[width = 0.8\textwidth]{distribtau.pdf}
        %\input{figures/stochastic}
       \end{center}
       \caption{Probability of finding a $(P,\tau')$-assignment over $10,000$ instances}
@@ -1734,7 +1715,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
      \begin{figure}
        \begin{center}
-      \includegraphics[width = 0.8\textwidth]{res.pdf}
+      \includegraphics[width = 1\textwidth]{res.pdf}
        %\input{figures/stochastic}
       \end{center}
       \caption{Cumulative distribution of the latency of BE datagrams for several network management schemes}
