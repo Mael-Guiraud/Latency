@@ -136,7 +136,7 @@ to \pazl. Out of the load, the other important parameter when solving \pall and 
 
 In this article, we focus on the \emph{star routed networks}, which represent a simple but common topology for C-RAN~\cite{electronics9122131,bhattacharjee2020time},
 where all RRHs share a single link on their route to their BBUs. The mutualization of links going to the data-center is a low-cost solution for a fronthaul network for C-RAN.  
-A switch taking full advantage of the absence of buffer inside a star routed network is presented in~\cite{Marc2201:Experimental} and several patents on this technology have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. For more complex networks and synchronized RRHs, studied in a follow-up work~\cite{guiraud2021deterministic}, we need to allow buffering at each node to obtain good sending schemes and the latency is higher.
+A Hard-TSN switch taking full advantage of the absence of buffers inside a star routed network guarantees $0$ jitter on flows~\cite{Marc2201:Experimental}. Several patents on this technology have been already published, see for example~\cite{howe2005time,leclerc2016transmission}. For more complex networks and synchronized RRHs, studied in a follow-up work~\cite{guiraud2021deterministic}, we need to allow buffering at each node to obtain good sending schemes and the latency is higher.
 
 
  \subsection*{Related works}
@@ -165,22 +165,23 @@ Variation on the problem of scheduling periodic messages for time sensitive star
  %In this paper, we work on deterministic flows. Thus, we propose algorithms to compute deterministic scheduling of the flows in the network, while minimizing the latency due to buffering. Remark that minimizing the buffering latency allows not only to meet latency constraints of applications, but also to leave additional time for others sources of latency (additional computations, longer length of fibers, etc...). When computing a scheduling, we must take into account the \textbf{periodicity} which makes the problem difficult to solve. Not only a datagram must not collide with the datagrams sent by the others BBU/RRH in the same period, but also in the other periods. In this paper, we propose algorithms that minimize contention by removing the contention buffers on star networks, a common architecture for C-RAN~\cite{electronics9122131,bhattacharjee2020time}. 
 \subsection*{Contribution}
 
-We propose in this paper a full deterministic approach of the networks with solutions ensuring a \textbf{minimal latency and $0$ jitter} based on the fact that the flows we consider are deterministic. Indeed, this work was made in parallel with researchers from Nokia Bell Labs France working on the concept of Hard-TSN~\cite{Marc2201:Experimental}. Some prototypes of Hard-TSN switches have been developed to ensure $0$ jitter on flows as soon as the arrival dates of each message are known. We give several algorithms to compute those arrival dates. Our main contributions are the following:
-\begin{itemize}
-\item Proofs NP-Hardness of the problems we express here.
-\item Several greedy algorithms able to compute minimal latency for realistic networks (short routes), even when the number of flows is large.
-\item Theoretical guarantees of the existence of minimal solutions, based on the load of the network.
-\item FPT algorithms able to find optimal solutions when the number of flows stays reasonable ($\simeq 20$)
-\item Experiments on the latency and the computation time depending on several parameters such as the load, the number of flows, or the size of the routes.
-\item Comparison of the performance of our algorithms with statistical multiplexing policies.
-\item Propositions to adapt our algorithms to reduce the latency of non-deterministic flows sharing the network with the flow we schedule.
-\end{itemize}
+We propose in this paper a deterministic management of the deterministic and periodic flows of C-RAN, which guarantees solutions with \textbf{minimal latency and $0$ jitter}. We introduce several algorithmic problems to capture the search for deterministic and periodic sending schemes with low latency, namely \pazl, \pall and \wta and we prove that they are \NP-complete on simple topologies of fronthaul networks. We focus on star routed networks, which represents a fronthaul network where all RRHs share a common link to 
+the data-center to lower the cost. 
+
+We give exact algorithms to solve \pazl, \pall and \wta, their complexity being exponential in the number of RRHs in the networks
+but not in the other larger parameters of the network. They solve our problems for less than $20$ RRHs and allow to validate the other proposed algorithms. 
+We show that the load of the star routed network is a fundamental parameter: when it is low, there is always a solution to the problem
+\pazl, that is without buffering. When it is higher, a buffering in the BBU is necessary and we propose many heuristics to solve the problem \pall. 
+Through experiments on many star routed networks, we show that \PMLS is the heuristic with the best quality, while its complexity is only quadratic.
+
+We propose a method to adapt our periodic sending schemes to the presence of additional stochastic traffic. We show that using stochastic multiplexing for C-RAN does not 
+guarantee a good latency, while our solution adds no logical latency to the C-RAN traffic and it even improves the latency of the stochastic traffic. 
 
 \subsection*{Outline}
 
  In Section~\ref{sec:def}, we propose a model of the fronthaul network and the periodic sending of datagrams along its routes. Then, we introduce the problem \pall to formalize the problem of finding a periodic sending of the messages in a network without collision at contention point. We also present the problem \pazl, a restriction of \pall where no waiting time in the BBU is allowed. We present a simple but very common topology, the star routed network, with a single shared duplex link, that is studied in the rest of the article.  In Section~\ref{sec:complexity}, we prove that both \pazl and \pall are $\NP$-hard for very restricted classes of graphs, and that their optimization counterparts are hard to approximate. 
  In Section~\ref{sec:PAZL}, we study the problem \pazl and several algorithms are proposed: Polynomial time for small loads or small routes, or exponential time in the number of routes, based on a compact representation of optimal solutions. We use these algorithms to provide experimental evidences that \pazl can be solved positively when the network is mildly loaded. In Section~\ref{sec:PALL}, we propose polynomial time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work well, even in extremely loaded networks. 
-Finally, in Section~\ref{sec:comparison}, we show that our solution largely outperforms stochastic multiplexing, even using a buffering policy taking into account the latency, or in the presence of additional random traffic in the network.
+Finally, in Section~\ref{sec:comparison}, we compare our determistic approach to stochastic multiplexing, with several buffering policies, and with additional random traffic in the network.
 
 
 
@@ -1116,7 +1117,7 @@ Finally, set the weights of the last arc going to $v_i^2$, for all $i \in [n]$, 
   In this subsection, we deal with the problem \pazl on a star routed network: 
   we give several simple heuristics and an exact fixed parameter tractable algorithm, in time exponential in the number of routes only. We show in the experiments of Section~\ref{sec:exp_PAZL}, that \pazl can be very often solved positively, in particular for short routes and when the load is moderate. The dependency of \pazl to the load has been studied in details in a follow-up work~\cite{guiraud2020scheduling}, in which \pazl is solved for higher loads using more involved polynomial time algorithms. 
   
-	\subsection{Shortest-Longest policy}
+	\subsection{Shortest-Longest Policy}
     
 
     We first present a simple policy, which works when the period is large, with regard to the lengths of the routes. More generally, it works as soon as the length of the routes modulo the period are close. The algorithm is called \shortestlongest: it sends datagrams on the shared link from the route with the shortest arc $(c_1,c_2)$ to the longest. There is no idle time in the contention point $c_1$, i.e. a datagram goes through $c_1$ right after the previous one has left $c_1$.
@@ -1286,11 +1287,11 @@ To make \ESCA more efficient in practice, we make cuts in the search tree used t
 \hline
 Parameter& Value & Time in tics \\
 \hline
-Duration of a tic& $\simeq51$ns&1\\
+Duration of a tic& $\simeq51$ns&1 tic\\
 \hline
 Datagram size ($\tau$)&  $1.18$~Mbit & $2500$ tics\\
 \hline
-Period ($P$)& $1$ms&$\simeq20,000$\\
+Period ($P$)& $1$ms&$\simeq20,000$ tics\\
 \hline
 Bandwidth of links &  $10$~Gbps & -\\
 \hline
@@ -1786,7 +1787,7 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
 
       %Even if this policy seems to work in practice when the network is not too loaded, it does not give any guarantee on the latency. 
 
-     In Figure~\ref{fig:sto}, we represent the probability of success of statistical multiplexing and \PMLS for different margins. The success rates are computed from $10,000$ star routed networks for each margin. On the left part of Figure~\ref{fig:sto}, the arcs of the network are uniformly drawn in $[P]$, while on the right part, the arcs of the network are uniformly drawn in $[1600]$ (the hardest settings of the previous section). The other parameters of the experiences are the same as previously and the load is $0.95$. 
+     In Figure~\ref{fig:sto}, we represent the probability of success of statistical multiplexing and \PMLS for different margins. The success rates are computed from $10,000$ star routed networks for each margin. On the top of Figure~\ref{fig:sto}, the arcs of the network are uniformly drawn in $[P]$, while on the bottom of Figure~\ref{fig:sto}, the arcs of the network are uniformly drawn in $[1600]$ (the hardest settings of the previous section). The other parameters of the experiences are the same as previously and the load is $0.95$. 
      
     \begin{figure}
 
@@ -1837,27 +1838,26 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
     \begin{proof}
     Let $A$ be the assignment of $I'$, the absence of collision is the absence of 
     intersection between intervals $[r_i,c_1]_{P,\tau'}$ (and $[r_i,c_2]_{P,\tau'}$). 
-    If we consider $A$ as an assignment of $I$, then the intervals are $[r_i,c_1]_{P,\tau}$ and 
-    are strictly included in $[r_i,c_1]_{P,\tau'}$, hence they do not have intersections either. 
+    If we consider $A$ as an assignment of $I$, then the intervals of used tics are $[r_i,c_1]_{P,\tau}$ (resp. $[r_i,c_2]_{P,\tau}$). 
+    These intervals are strictly included in $[r_i,c_1]_{P,\tau'}$ (resp. $[r_i,c_2]_{P,\tau'}$), hence they do not have intersection either. 
     \end{proof}
 
 
-     Lemma~\ref{lemma:smaller_tau} gives a way to obtain a solution of the original instance from the instance with a larger message size as illustrated in Figure~\ref{fig:space}, with the additional property that all datagrams are separated
-    by at least $\tau' - \tau$ free tics in each contention point. We are interested in finding the maximal $\tau'$
-    for which there is an assignment. Since the property of having an assignment is monotonous with regards to $\tau'$,
-    we can do so by a dichotomous search on $\tau$.
+     Lemma~\ref{lemma:smaller_tau} gives a way to obtain a solution of an instance from the same instance with a larger message size, as illustrated in Figure~\ref{fig:space}. 
+     This transformation guarantees that all datagrams are separated by at least $\tau' - \tau$ free tics in each contention point. We are interested in finding the maximal $\tau'$
+    for which there is an assignment. Since the property of having an assignment is monotonous with regards to $\tau'$, we can do so by a dichotomous search on $\tau$.
 
            \begin{figure}
        \begin{center}
       \includegraphics[width = 0.8\textwidth]{space.pdf}
        %\input{figures/stochastic}
       \end{center} 
-      \caption{A $(P,\tau')$-assignment interpreted as a $(P,\tau)$-assignment}
+      \caption{A $(P,\tau')$-assignment interpreted as a $(P,\tau)$ assignment}
       \label{fig:space}   
      \end{figure}   
 
 
-    We call \SPMLS, for \textbf{S}paced \PMLS, the adaptation of \PMLS which finds an assignment for the largest possible $\tau$ by dichotomous search on $\tau$. We experimentally investigate how large can be $\tau'$ so that \SPMLS finds a $(P,\tau')$-assignment. In Figure~\ref{fig:spacetau}, we represent the probability to find a $(P,\tau')$-assignment function of $\tau'$. The star routed networks are generated as in Section~\ref{sec:resultsPALL}, with $8$ routes and length of the arcs drawn in $[P]$. The network has a load of $0.6$ of C-RAN traffic, hence the period is set to $33,333$ for $\tau = 2500$. The network is less loaded with C-RAN traffic than in the previous sections because it will also support non deterministic traffic, incurring an additional load.
+    We call \SPMLS, for \textbf{S}paced \PMLS, the adaptation of \PMLS which finds an assignment for the largest possible $\tau$ by dichotomous search on $\tau$. We experimentally investigate how large can be $\tau'$ so that \SPMLS finds a $(P,\tau')$ assignment. In Figure~\ref{fig:spacetau}, we represent the probability to find a $(P,\tau')$ assignment function of $\tau'$. The star routed networks are generated as in Section~\ref{sec:resultsPALL}, with $8$ routes and length of the arcs drawn in $[P]$. The network has a load of $0.6$ of C-RAN traffic, hence the period is set to $33,333$ for $\tau = 2500$. The network is less loaded with C-RAN traffic than in the previous sections because it will also support stochastic traffic, incurring an additional load.
 
     \begin{figure}
        \begin{center}
@@ -1868,32 +1868,30 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
       \label{fig:spacetau}   
      \end{figure}   
 
-	For more than $80\%$ of the instances, there is an assignment for the maximal size of a datagram $\tau' = \frac{P}{n} = 4166$. This means that \SPMLS perfectly balances the free tics in the period. In the worst case, a solution with $\tau' = 3925$ is found, which still yields $3925 - 2500 = 1425$ unused tics between datagrams. Hence, we expect \SPMLS to work well in conjunction with random traffic.
-	The excellent performance of \PMLS when the load is high explains this result and further justifies the work we have done to solve \pall efficiently under high load rather than just requiring mild load in applications. 
+	For more than $80\%$ of the instances, there is an assignment for the maximal size of a datagram $\tau' = \frac{P}{n} = 4166$. This means that \SPMLS perfectly balances the free tics in the period. In the worst case, a solution with $\tau' = 3925$ is found, which still yields at least $3925 - 2500 = 1425$ unused tics between datagrams. Hence, we expect \SPMLS to work well in conjunction with random traffic. 	The excellent performance of \PMLS when the load is high explains this result and further justifies the work we have done to solve \pall efficiently under high load rather than just requiring mild load in applications. 
 
 
     \subsubsection{Performance Evaluation}
     
-    We evaluate in this section different ways to manage both statistical and deterministic traffics together in the same network.
+    We evaluate in this section different ways to manage statistical and deterministic traffics together in the same network.
  
     \paragraph{Best-effort datagrams generation}
-   Let us denote best-effort by BE. The BE traffic is generated as follows. The size of a BE datagram is small in practice, and set to $50$ tics in our experiments. We generate $0.2$ of average load of BE traffic in our experiment, to obtain a total load of $0.8$. The BE datagrams do not make a round trip in the network as the C-RAN datagrams, they go through a single contention point. 
-    We simulate that, by generating $0.2$ of average load of BE datagrams for each of the two contention points $c_1$ and $c_2$. The \textbf{latency} of a BE datagram is defined as the time it must wait before going
-    through its contention points.
+   Let us denote best-effort by BE. The BE traffic is generated as follows. The size of a BE datagram is small in practice, and set to $50$ tics in our experiments. We generate a random BE traffic in our experiment, such that on average it adds $0.2$ to the load load to obtain a total load of $0.8$. The BE datagrams do not make a round trip in the network as the C-RAN datagrams, they go through a single contention point. 
+    We simulate that, by generating independently BE datagrams for each of the two contention points $c_1$ and $c_2$. The \textbf{latency} of a BE datagram is defined as the time it must wait before going through its contention points.
 
-    On each contention point, the generation is split in two exponential distributions which give the time before the next arrival of datagrams. The first one models background traffic, it has an average load of $0.15$ and generates one BE datagram every $333$ tics on average. The second models a burst of BE datagrams, it has an average load of $0.5$ and generates \emph{ten} BE datagrams every $10,000$ tics on average. 
+    On each contention point, the generation is split into two exponential distributions which give the time before the next arrival of datagrams. The first one models background traffic, corresponding to an average load of $0.15$,  it generates one BE datagram every $333$ tics on average. The second models a burst of BE datagrams, it corresponds to an average load of $0.05$, it generates \emph{ten} BE datagrams at the same time every $10,000$ tics on average. 
     
    	\paragraph{Statistical multiplexing policy}
 
-   We test several policies to deal with all traffics using statistical multiplexing.
+    We test several policies to deal with all traffics using statistical multiplexing.
    	The BE traffic is managed using \FIFO, and we propose two policies to deal with C-RAN. First, all datagrams, BE or C-RAN, are stored in the same buffer and dealt with the \FIFO policy regardless of their type. We call this policy \FIFO.
 
-    In order to minimize the latency of C-RAN traffic, we can store the two types of datagrams in two different buffers, managed each with \FIFO, but we prioritize the C-RAN datagrams which are always sent first. It can be technically implemented using TSN 802.1Qbu~\cite{ieee802}, that allows to define priority class in the traffic to schedule first the traffic with the highest priority, here the C-RAN traffic. We call this policy \framepre.
+    To minimize the latency of C-RAN traffic, we can store the two types of datagrams in two different buffers, managed each with \FIFO, but we prioritize the C-RAN datagrams which are always sent first. It can be technically implemented using TSN 802.1Qbu~\cite{ieee802}, which allows defining priority class in the traffic to schedule first the traffic with the highest priority, here the C-RAN traffic. We call this policy \framepre.
    
-   We also consider the case of C-RAN traffic scheduled by \PMLS or \SPMLS. Then, we need to forbid the transit of a BE datagram which collides with a C-RAN datagram. Thus, in each contention point, we reserve $50$ tics (the size of a BE datagram) before the arrival of a C-RAN message. Observe that it wastes some ressources and thus slightly decreases the maximal throughput and may worsen the latency of BE datagrams.
+   We also consider C-RAN traffic scheduled by \PMLS or \SPMLS. In that case, we need to forbid the transit of a BE datagram that collides with a C-RAN datagram. Thus, in each contention point, we reserve $50$ tics (the size of a BE datagram) before the arrival of a C-RAN message. Observe that it wastes some resources and thus slightly decreases the maximal throughput and may worsen the latency of BE datagrams.
     
     Figure~\ref{fig:belatency} shows the cumulative distribution of the logical latency of BE datagrams, that is the probability that a BE datagram has a latency less than some value.
-    The distribution is computed over $1000$ random instances, and for each the traffic is simulated for ten periods.
+    The distribution is computed over $1000$ random instances, and for each instance, the traffic is simulated for ten periods.
 
      \begin{figure}
        \begin{center}
@@ -1905,33 +1903,36 @@ valid assignment of the instance of \pall by rounding. There are $2^n$ sets $S$ 
      \end{figure}    
      
 
-     If we compare \FIFO and \framepre, we see that the latency of BE datagrams is better ($1977$ tics on average) with \FIFO. It is expected, since in \framepre the C-RAN datagrams are prioritized and thus 
+     If we compare \FIFO and \framepre, we see that the latency of BE datagrams is better ($1977$ tics on average) with \FIFO. It is expected since in \framepre the C-RAN datagrams are prioritized and thus 
      the latency of the BE datagrams is strictly worse, $3256$ tics on average. However, this is a trade-off with the margin of the C-RAN datagrams, which is strictly better for \framepre: $1919$ tics on average versus $5265$ tics for \FIFO. 
 
      Using a deterministic approach for C-RAN with \PMLS, the trade-off is even stronger:
-      the C-RAN margin is down to $0$, but the BE traffic is more impacted, at latency of $4909$ tics on average. This can be explained by both reservation of tics to deal with the periodic sending scheme and the long sequences of C-RAN datagrams without free time in contention points.
+      the C-RAN margin is down to $0$, but the BE traffic is more impacted, with a latency of $4909$ tics on average. This can be explained by both reservation of tics to deal with the periodic sending scheme and the long sequences of C-RAN datagrams without free time in contention points.
      
-     Using \SPMLS, the C-RAN traffic is smoothed over the period, in order to regularly leave some free tics for BE traffic. By construction, we still have C-RAN margin of $0$ but it improves the latency of 
-     BE datagrams to $949$ tics on average, which is even better than with \FIFO. 
+     Using \SPMLS, the C-RAN traffic is smoothed over the period, to regularly leave some free tics for BE traffic. By construction, we still have C-RAN margin of $0$ but it improves the latency of BE datagrams to $949$ tics on average, which is even better than with \FIFO. 
      
-      This result shows that managing deterministic traffic deterministically is also good for the other sources of traffic on the network. We have already observed such a phenomenon in~\cite{DBLP:conf/ondm/BarthGS19}, a similar 
-     problem on an optical ring.
+      This result shows that managing deterministic traffic deterministically is also good for the stochastic sources of traffic in the network. We have already observed such a phenomenon in~\cite{DBLP:conf/ondm/BarthGS19}, a similar problem on an optical ring.
      
 
 
  \section{Conclusion}
  
-	In this article, we proposed two kinds of deterministic sending schemes to establish low latency periodic communication between BBUs and RRHs in a star routed network. The first method uses no buffering and has no latency overhead. It works when the routes are short (using algorithm \shortestlongest) or when the load is less than $0.8$ (using algorithm \ESCA).  
-	When the load is higher, buffering is allowed in the BBUs and we propose the algorithm \PMLS which finds a deterministic communication scheme with almost no additional logical latency.
- 	Our deterministic approach is vastly superior to the classical statistical multiplexing for all loads of the network, even when sources of random traffic are present. Indeed, even with an oversized network (small load), the latency of statistical multiplexing is an order of magnitude larger than what is expected, while our solution requires zero logical latency for most instances in the harshest settings. This emphasizes that \emph{deterministic sources} of traffic are always best \emph{dealt with deterministically}.  
+	In this article, we proposed two kinds of deterministic sending schemes to establish low latency periodic communication between BBUs and RRHs in a fronthaul network. We have shown 
+    that finding these schemes is $\NP$-complete even for simple networks of width $2$ or depth $2$. Hence, we focus on solving them on star routed networks, which are even simpler, 
+    but model practical fronthaul networks.
     
- 	There are still several challenge to tackle so that our work can be easily used in a real fronthaul network for C-RAN. 
-  	From a theoretical perspective, we need to prove that \pazl and \pall are $\NP$-hard on star routed networks. Then, we should design a better \FPT algorithm for \pall on star routed networks, as efficient as the one for \pazl. This would help us understand if any performance is lost by using \PMLS as a heuristic in practice. Then, we must generalize our study of the \pall problem to other common fronthaul topologies, such as caterpillars, trees, cycles or bounded treewidth graphs. Some elements on cycle topologies are given in~\cite{DBLP:conf/ondm/BarthGS19} and on routed networks of bounded contention depth, for synchronized RRHs in~\cite{guiraud2020synchronized}.
+    The first kind of sending scheme uses no buffering and has no latency overhead. Such schemes exist and can be found when the routes are short (using algorithm \shortestlongest) or when the load is less than $0.8$ and the number of routes is at most $20$ (using algorithm \ESCA).  
+	When the load is higher, buffering is allowed in the BBUs and we propose the algorithm \PMLS to find a deterministic communication scheme with almost no additional logical latency.
+    We have compared algorithm \PMLS to other alternatives and in particular we show it is on par with \ASPMLS, which uses an FPT optimal subroutine instead of an almost linear time heuristic.
 
+ 	Our deterministic approach is vastly superior to the classical statistical multiplexing for all loads of the network, even when sources of random traffic are present. Indeed, even with an oversized network (small load), the latency of statistical multiplexing is an order of magnitude larger than what is required, while our solution requires zero logical latency for most instances even in the harshest settings. This emphasizes that \emph{deterministic sources} of traffic are always best \emph{dealt with deterministically}.  
+    
+ 	There are still several challenges to tackle so that our work can be easily used in a real fronthaul network for C-RAN. 
+  	From a theoretical perspective, we need to prove that \pazl and \pall are $\NP$-hard on star routed networks. Then, we should design a better \FPT algorithm for \pall on star routed networks, as efficient as the one for \pazl. This would help us understand if any performance is lost by using \PMLS as a heuristic in practice. Then, we must generalize our study of the \pall problem to other common fronthaul topologies, such as caterpillars, trees, cycles, or bounded treewidth graphs. Some elements on cycle topologies are given in~\cite{DBLP:conf/ondm/BarthGS19} and on routed networks of bounded contention depth, for synchronized RRHs in~\cite{guiraud2020synchronized}.
 
 
    	Several variations of our model are relevant to capture more use cases than C-RAN. 
-   	We may consider routes periodically emitting datagrams of \emph{different sizes} to represent different payload transmitted in the network. In that case, we cannot rely on \PMLS since the corresponding non periodic scheduling problem is already $\NP$-hard. 
+   	We may consider routes periodically emitting datagrams of \emph{different sizes} to represent different payloads transmitted in the network. In that case, we cannot rely on \PMLS since the corresponding scheduling problem is already $\NP$-hard. 
    	We could also allow for links of different speeds in the fronthaul network, but we must then model
    	the interface between links more precisely, which is tedious but could be solved using scheduling over several parallel machines using~\cite{simons1989fast}.
 	Instead of minimizing the worst transmission time, we may want to minimize the average transmission time. This objective is linear, and it makes the size of the route irrelevant to the objective. Hence, it should be \emph{easier} to solve, for instance using linear programming. We could allow preemption, that is the datagrams may be cut into pieces, which would certainly change the complexity of the problem and help with the latency.  
