@@ -29,7 +29,7 @@ int main()
 	/*****
 	Taux de reussite de chaque algo PAZL en fonction de la periode
 	*****/
-	//echec_PAZL(16,2500,700,10000);
+	echec_PAZL(8,2500,20000,10000);
 
 
 	/******************************************/
@@ -50,7 +50,7 @@ int main()
 	*****/
 
 	
-	sucess_aller_PALL(8,2500,20000,3000,10000,21052);
+	//sucess_aller_PALL(8,2500,20000,3000,10000,21052);
 
 	/******************************************/
 

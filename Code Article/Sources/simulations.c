@@ -113,7 +113,7 @@ void simuls_periode_PAZL(int nb_routes, int taille_message, int taille_routes,in
 //taux de reussite de chaque algo PAZL en fonction de la periode
 void echec_PAZL(int nb_routes, int taille_message,int taille_routes, int nb_simuls)
 {
-	FILE * F = fopen("../datas/results_echec_longues.data","w");
+	FILE * F = fopen("../datas/results_echec_longues8.data","w");
 	Graphe g;
 	long long int total_3NT, total_brute, total_sl,total_theorique;
 	int res_brute;
