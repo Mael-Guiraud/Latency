@@ -155,13 +155,13 @@ void sucess_aller_PALL(int nb_routes, int taille_paquets,int taille_route,int ma
 {
 
 	char nom[64];
-	sprintf(nom,"../datas/compare_departs_%d.data",periode);
+	sprintf(nom,"../datas/compare_departs_ro_%d.data",periode);
 	FILE * F = fopen(nom,"w");
 	Graphe g ;
 	int resa,resb,resc,resd,rese;
 	float a0,a1,a2,b,c,d,e;
 	int tmax;
-	int nb_rand = 1;
+	int nb_rand = 1000;
 	int * m_i;
 	int * offsets;
 	int permutation[nb_routes];

@@ -49,7 +49,8 @@ int main()
 	Taux de reussite de départ PALL avec un retour GP sur une periode donnée (on fait varier la marge)
 	*****/
 
-	//sucess_aller_PALL(8,2500,20000,3000,10000,25000);
+	
+	sucess_aller_PALL(8,2500,20000,3000,10000,21052);
 
 	/******************************************/
 
@@ -88,7 +89,7 @@ int main()
 	
 
 	//Test stochastique vs pmls
-	stochastic_vs_PMLS(8,2500,22000,1000, 12000);
+	//stochastic_vs_PMLS(8,2500,22000,1000, 12000);
 
 
 
