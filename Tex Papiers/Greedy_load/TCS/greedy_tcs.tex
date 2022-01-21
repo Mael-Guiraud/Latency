@@ -1,6 +1,6 @@
 \documentclass[a4paper,UKenglish,cleveref, autoref, thm-restate]{lipics-v2019}
 
-
+\usepackage[bb=dsserif]{mathalpha}
 \usepackage[utf8]{inputenc}
 \usepackage{xspace}
 \usepackage{url}
@@ -256,7 +256,7 @@ can be restated as proving the existence of an assignment for a load $\lambda - 
 Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = \lfloor P / \tau \rfloor$. There is an integer $\tau'$ and an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
 \end{lemma}
 \begin{proof}
-%Fig.~\ref{fig:multipleperiod} illustrates the reductions we define in this proof on a small instance.
+Fig.~\ref{fig:multipleperiod} illustrates the reductions we define in this proof on a small instance.
 Let $P = m \tau + r$ with $r \leq \tau$. We define the instance $I'$ as follows: $P' = mP$, $d_{i}' = m d_i$ and $\tau' = m \tau + r$. With this choice, we have $P' = m(m \tau + r) = m \tau'$.
 Consider an assignment $A'$ of the instance $I'$. We let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions. We then use a compactification procedure on $A'$ seen as an assignment of $I''$, with size of messages multiple of $m$ (see Th.4 of~\cite{dominique2018deterministic} for a similar compactification). W.l.o.g., message $0$ is positioned at offset zero. The first time message $0$ uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Consider the following translation of $A'$: $A'(0) = 0$ and for $i>0, A'(i) = A'(i) -s$. We choose $s$ to be a non negative integer such that
 $A'$ translated by $s$ is an assignment without collision, while $A'$ translated by $s+1$ has a collision with message $0$. We let $A'$ be $A'$ translated by $s$, then by construction,
@@ -265,13 +265,13 @@ $A'$ translated by $s$ is an assignment without collision, while $A'$ translated
 
 Notice that, transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
 
-%\begin{figure}
-% \begin{center}
-%\includegraphics[scale=0.75]{multipleperiod}
-%\end{center}
-%\caption{Transformation from $A''$ to $A$}
-%\label{fig:multipleperiod}
-%\end{figure}
+\begin{figure}
+ \begin{center}
+\includegraphics[scale=0.75]{multipleperiod}
+\end{center}
+\caption{Transformation from $A''$ to $A$}
+\label{fig:multipleperiod}
+\end{figure}
 
 
 When all delays are multiple of $P$, \metaoffset automatically schedule the messages compactly.
@@ -349,26 +349,29 @@ The potential of a message of delay $d$, for a partial assignment $A$
 is the number of integers $p \in [P]$ such that $p$ is used in the first period and $p+d \mod P$ is used in the second period.
 \end{definition}
 
-%The computation of the potential of a message of delay $3$, is illustrated in Fig.~\ref{fig:messagepotential}.
+The computation of the potential of a message of delay $3$, is illustrated in Fig.~\ref{fig:messagepotential}.
 The potential of a message counts how many forbidden offsets are avoided by the message given a partial assignment $A$.
 Indeed, when $p$ is used in the first period and $p+d \mod P$ is used in the second period,
 then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
-%\begin{figure}
-% \begin{center}
-%\includegraphics[scale=1]{messagepotential}
-%\end{center}
-%\caption{A message with a potential $2$}
-%\label{fig:messagepotential}
-%\end{figure}
+\begin{figure}
+\begin{center}
+\includegraphics[scale=1]{messagepotential}
+\end{center}
+\caption{A message of delay $3$ and potential $2$, scheduled messages in gray.}
+\label{fig:messagepotential}
+\end{figure}
 
 \begin{lemma}
 Given a partial assignment $A$ of size $s$, and $i$ an unscheduled message of potential 
 $v$, then the set $\{o \mid A[i \rightarrow o] \text{ has no collision}\}$ is of size $P - 2s + v$.
 \end{lemma}
+\begin{proof}
+ Each of the $s$ messages scheduled by $A$ forbids at most two offsets for $i$, that is $2s$ in total. In these $2s$ forbidden offsets, exactly $v$ are counted twice by definition of the potential
+ of the message $i$. Since there are $P$ possible values for the offset $o$ of the message $i$, there are $P - 2s + v$ offsets without collision.
+\end{proof}
 
-We define a global measure of quality of a partial assignment, 
-that we later optimize by local modification when it is not possible to schedule a new message. 
-We call our measure \textbf{the potential of an assignment} and we denote it by $Pot(A)$, it is the sum of potentials of all messages in the instance.
+We define a global measure of quality of a partial assignment, that we later optimize by local modification when it is not possible to schedule a new message. 
+Given a partial assignment $A$, the sum of potentials of all messages in the instance is called \textbf{the potential} of the assignment $A$ and is denoted by $Pot(A)$. 
 
 
 \begin{definition}
@@ -376,27 +379,50 @@ The potential of a position $p \in [P]$, for a partial assignment $A$, is the nu
 $A[i \rightarrow p]$ has a collision. 
 \end{definition}
 
-%\begin{figure}
-% \begin{center}
-%\includegraphics[scale=1]{positionspotential}
-%\end{center}
-%\caption{A position of potential $3$}
-%\label{fig:positionpotential}
-%\end{figure}
+\begin{figure}
+\begin{center}
+\includegraphics[scale=1]{positionspotential}
+\end{center}
+\caption{Position $3$ is of potential $3$, scheduled messages in gray.}
+\label{fig:positionpotential}
+\end{figure}
 
-%The potential of a position is illustrated in Fig.~\ref{fig:positionpotential}.
+The potential of a position is illustrated in Fig.~\ref{fig:positionpotential}.
 Instead of decomposing the global potential as a sum over messages, it can be interpreted
 as a sum over positions, as stated in the next lemma.
 
 \begin{lemma}\label{lemma:pot_pos}
 The sum of potentials of all positions used in the first period by messages scheduled by $A$ is equal to $Pot(A)$.  
 \end{lemma}
+\begin{proof}
+Let $O$ be the set of offsets used by $A$. Denote by $pot_{pos}(o)$ the potential of position $o$ and by the $pot_{mes}(i)$ the potential
+of message $i$ for the assignment $A$. Let us denote by $\mathbb{1}(o,d)$ the indicator function which is equal to one if and only if for $A$,
+$o$ is used in the first period and $o+d$ is used in the second period.
 
-By definition of the potential of a position, we obtain the following simple invariant.
+By definition of potential of an assignment, $$Pot(A) = \sum_{i \in [n]} pot_{mes}(i).$$
+By definition of the potential of a message, 
+$$\displaystyle{Pot(A) = \sum_{i \in [n]} \sum_{\substack{o \in [P]}} \mathbb{1}(o,d_i) }.$$
+By exchanging the summation order, we obtain,
+$$\displaystyle{Pot(A) = \sum_{o \in [P] }\sum_{i \in [n]} \mathbb{1}(o,d_i) }.$$
+When $o$ is not used in the first period, it contributes nothing to the sum,
+$$\displaystyle{Pot(A) = \sum_{\substack{o \in [P],\, o \text{ is used }\\ \text{ in the first period } } }\sum_{i \in [n]} \mathbb{1}(o,d_i) }.$$
+Then, by definition of potential of a position we obtain,
+
+$$\displaystyle{Pot(A) = \sum_{\substack{o \in [P],\, o \text{ is used }\\ \text{ in the first period } } } pot_{pos}(o)}.$$
+\end{proof}
+
+The sum of the potentials of \emph{all} positions can easily be computed and only depends on the size of the partial assignment.
 
 \begin{lemma}\label{lemma:inv}
 The sum of potentials of all positions of a partial assignment of size $k$ is $nk$.  
 \end{lemma}
+\begin{proof}
+Using the notations of the previous Lemma, we want to compute $\sum_{o \in [P]} pot_{pos}(o)$ which is by definition
+$$\sum_{o \in [P]} \sum_{\substack {i \in [n],\, o + d_i \text{ is used} \\ \text{in the second period}}} 1.$$
+Remark that for one position $p$ used in the second period, and one message $i$, there is exactly one offset $o$ such that $p = o+d_i \mod P$.
+Hence, each used position of the second period contributes $1$ for each message in the previous sum, that is $n$ in total.
+Since $A$ is of size $k$, there are $k$ used positions and the sum is equal to $kn$.
+\end{proof}
 
  As a consequence of this lemma, $Pot(A) \leq nk$. Let us define a \textbf{Swap operation},
  which guarantees to obtain at least half the maximal value of the potential.
@@ -419,7 +445,7 @@ Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$
 
 
 Let us now describe the algorithm \swapandmove:  messages are scheduled while possible by \firstfit and then the Swap operation is applied while it increases the potential. When the potential is maximal, \swapandmove schedules a new message by moving at most two scheduled messages to other available offsets. If it fails to do so, \swapandmove stops, otherwise the whole procedure is repeated. 
-\swapandmove  is not greedy, since we allow to change the offsets of two scheduled message to make room for an unscheduled one. It cannot work online, since it requires to know all delays of the messages in advance. 
+\swapandmove  is not greedy, since we allow to change the offsets of two scheduled messages to make room for an unscheduled one. It cannot work online, since it requires to know all delays of the messages in advance. 
 %We analyze \swapandmove in the following theorem.
 
 \begin{theorem}
@@ -432,7 +458,7 @@ We determine for which value of the load \swapandmove always finds an assignment
 Let $d$ be the delay of the unscheduled message. We consider the pairs 
 of times $(p,p+d)$ for $p \in [P]$. Since the message
 cannot be scheduled, there are three cases. First, $p$ is unused in the first period but $p+d$ is used in the second period. Since there are $n-1$ scheduled messages, there are $P-n+1$ such value of $p$. If a message using the time $p+d$ in the second period can be scheduled elsewhere, so that the unscheduled message can use offset $p$, then \swapandmove succeeds.
-Otherwise, the message has no possible offset, which means its potential is equal to $2(\epsilon P -1)$.
+Otherwise, the message has no available offset, which means its potential is equal to $2(\epsilon P -1)$.
 The second case is symmetric: $p$ is used in the first period but $p+d$ is unused in the second period. 
 Finally, we have the case $p$ is used in the first period and $p+d$ is used in the second period.  There are $2(\epsilon P -1)$ such values of $p$. If the two messages using times 
 $p$ and $p+d$ can be rescheduled so that offset $p$ can be used for the unscheduled message,
