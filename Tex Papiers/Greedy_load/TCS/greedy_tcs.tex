@@ -244,7 +244,7 @@ The complexity of \metaoffset is in $O(n^2)$, since for each of the $n$ messages
 
 
 
-\subsection{Compact Tuples}
+\subsection{Compact Pairs}
 
 We present in this section a family of greedy algorithms which solve \pma positively for larger loads. We combine the good properties of the two previous algorithms: the compactness of the assignments produced by \firstfit and the absence of collision in the first period of \metaoffset. The idea is to schedule several messages at once, using meta-offsets, to maximize the compactness of the obtained solution. We describe an algorithm which schedules pairs of messages, which is then extended to any tuples of messages.
 
@@ -325,8 +325,55 @@ second period and $2$ in the first. Hence, if we let $n_1$ be the number of mess
 Solving this equation, we obtain that $n_1 \geq \frac{m}{8}$ thus the number of messages scheduled is at least $2n_2 + n_1 \geq \frac{3}{8}m$. Assuming there are exactly $\frac{3}{8}m$ messages to schedule, then $\frac{2m}{8}$ messages are scheduled as compact pairs. It is two third of the $\frac{3}{8}m$ messages, hence Lemma~\ref{lemma:pair_find} guarantees the existence of enough compact pairs. Therefore, an assignment is always produced when the load is less or equal to $\frac{3}{8}$.
 \end{proof}
 
-\compactpair can be improved by forming compact tuples instead of compact pairs, see Appendix~\ref{sec:compact} for the description 
- and the analysis of algorithm \texttt{Compact k-tuples}.
+
+
+\subsection{Compact Tuples}\label{sec:compact}
+
+
+
+Algorithm \compactpair can be improved by forming \emph{compact tuples} instead of compact pairs.
+Recall that a delay $d_i$ is equal to  $d'_i\tau + r_i$, we call $d'_i$ the \textbf{meta-delay}. 
+The algorithm we describe relies only on meta-delays and the fact that values $r_i$ are increasing.
+
+\begin{definition}
+Let $i_1 < \dots < i_k$ be a sequence of messages with $i_1,\dots,i_k$ increasing. 
+It is a compact $k$-tuple, if there is a valid partial assignment of these messages, such that messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau \mod P = A(i_{l+1}) + d'_{i_{l+1}}\tau \mod P$.
+\end{definition}
+
+ Scheduling a compact $k$-tuple is choosing a meta-offset for the first message of the tuple, the offsets of the 
+other messages are also fixed by this choice.  
+The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples using meta offsets while possible, then scheduling compact $(k-1)$-tuples and so on until $k=1$.
+
+
+\begin{lemma}\label{lemma:uple_find}
+Given $k + k(k-1)(2k-1)/6$ messages, $k$ of them always form a compact $k$-tuple and we can find them in polynomial time. 
+\end{lemma}
+\begin{proof}
+We assume the messages are sorted by increasing $r_i$s. We prove the lemma by induction on $k$. Lemma~\ref{lemma:pair_find} already proves the lemma for $k=2$.
+Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$
+messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay,
+then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. Each of the $k-1$ elements of $C$ forbids one possible meta-delay for an additional $k$-th message in $C$. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
+\end{proof}
+
+
+\begin{theorem}\label{th:k-tuples}
+\texttt{Compact 8-tuples} always solves \pma positively on instances of load less than $4/10$, for instances with $n \geq 205$.
+\end{theorem}
+\begin{proof}
+We use the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. 
+It enables us to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $\Fmo_i(A)$, the number of forbidden meta-offsets when scheduling compact $i$-tuples in the algorithm.
+If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
+we have the following equation:  $$ \Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
+The equation for $n_1$ is slightly better: 
+$$ \Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
+A bound on $n_i$ can be computed, using the fact that $A$ can be extended while $\Fmo_i(A) < m$. 
+Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built, when $n + n_i - \sum_{i \leq j \leq 8} j*n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
+A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is less than $4/10$ and for $n \geq 205$.
+\end{proof}
+
+The code computing $n_i$ can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
+The bound of Lemma~\ref{lemma:uple_find} can be refined, by using better algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the $k$-tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
+
 
 
 \begin{theorem}\label{th:k-tuples}
@@ -480,11 +527,11 @@ a message is added to the partial assignment. The potential is bounded by $O(n^2
 \end{proof}
 
 Consider a partial assignment of size $n' = (1/2 + \epsilon)P$, and a message of delay $d$.
-If we consider all $n'$ used positions $p$ and all times time $p+d$ in the second period, 
+If we consider all $n'$ used positions $p$ and all times $p+d$ in the second period, 
 then $p$ and $p+d$ are both used for at least $n' - (P -n') = 2\epsilon P$ values of $p$.
 The potential of any message is thus larger or equal to $2\epsilon P$. When a message cannot be scheduled, its potential is less or equal to $2\epsilon P$, hence it is equal to $2\epsilon P$.
 
-Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. Hence, we conjecture that \swapandmove solves \pma positively for load up to $2/3$. To go further, the analysis in Lemma~\ref{lemma:swap} may be improved: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. However, there is an instance (found by a bruteforce search) with $8$ messages and $P=10$ for which there is no assignment, hence the largest $\lambda$ for which $\pma$ has always a solution is strictly less than $8/10$. 
+Hence, the potential of any assignment of size $n'$ is at least $2\epsilon P n $. The method of Lemma~\ref{lemma:swap} guarantes a non-trivial potential for $2\epsilon P n <  nn'/2$, that is $\epsilon < 1/6$. As a consequence, an algorithm relying on the potential and the Swap operation cannot be guaranteed to work for load larger than $2/3 = 1/2 + 1/6$. We conjecture that \swapandmove solves \pma positively for load up to $2/3$. To go further, the analysis in Lemma~\ref{lemma:swap} may be improved: $2\epsilon P$ positions in $P_{u}$ are not taken into account in the proof. However, there is an instance (found by a bruteforce search) with $8$ messages and $P=10$ for which there is no assignment, hence the largest $\lambda$ for which $\pma$ has always a solution is strictly less than $8/10$. 
 
 %On random instances, we expect the potential to be higher than the guarantee of Lemma~\ref{lemma:swap} and to be better spread on the messages, which would make \swapandmove works for even larger loads, as it is indeed observed in experiments (see Appendix~\ref{sec:perf_small}).
 
@@ -494,8 +541,14 @@ We would like to better understand the behavior of greedy algorithms on instance
 
 We analyze \greedyuniform over random instances:  all messages have 
 their delays drawn independently and uniformly in $[P]$. We compute the probability of success of \greedyuniform over all random choices by the algorithm \emph{and all possible instances}. 
-It turns out that this probability, for a fixed load strictly less than one, goes to one when $P$ grows. 
-For a given partial assignment, we are only interested in its trace: the set of times which are used in the first and second period. Hence, if $n$ messages are scheduled in a period of size $P$, the trace of an assignment is a pair of subsets of $[P]$ of size $n$. We now show that these traces are produced uniformly by \greedyuniform.
+It turns out that this probability, for a fixed load strictly less than one, goes to one when $P$ grows. To simplify the analysis of \greedyuniform, we introduce the notion of \textbf{trace} of an assignment. 
+
+\begin{definition}
+Let $A$ be partial assignment of size $k$, its trace is a pair of subsets $(S_,S_2)$ of $[P]$ of size $k$ such that $S_1$
+are the time used by $A$ in the first period and $S_2$ the time used by $A$ in the second period.
+\end{definition}
+
+ We now prove that traces are produced uniformly by \greedyuniform.
 
 \begin{theorem}
 The distribution of traces of assignments produced by \greedyuniform when it succeeds, from instances drawn uniformly at random, is also uniform.
@@ -535,6 +588,144 @@ The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1
 $f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by $C_{\lambda} \lambda P f(\lambda)^P$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
 
 
+
+
+\section{Experimental Results}
+
+In this section, we evaluate all presented algorithms and some others on random instances.
+For most algorithms, it would be extremely difficult to theoretically analyze the fraction of positive instances for a given load 
+as we did for \greedyuniform. By doing these experiments, we get an idea of the difference between the bounds on the load we have proved for worst case
+instances and random instances.
+
+
+\subsection{Experimental Results for Large Messages} \label{sec:perf_large}
+
+
+In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+
+We consider the following algorithms:
+\begin{itemize}
+  \item \firstfit
+  \item \metaoffset
+  \item \compactpair
+  \item \compactfit
+  \item \greedyuniform, the algorithm introduced and analyzed in Sec.~\ref{sec:small}, used for arbitrary $\tau$
+  \item \texttt{Exact Resolution} which always find an assignment if there is one, using an algorithm from~\cite{dominique2018deterministic}  
+\end{itemize}
+
+\begin{figure}[h]
+ \begin{center}
+\includegraphics[scale=1]{compactfit}
+\end{center}
+\caption{An run of \compactfit with $\tau = 2$ and $P=10$, which creates two compact pairs}
+\label{fig:compactfit}
+\end{figure}
+
+The only algorithm we have yet to describe is \compactfit. The idea is, as for \compactpair, to combine the absence of collision on the first period of \metaoffset and the compactness of assignments given by \firstfit.
+The messages are ordered by increasing remainder of delay modulo $\tau$, and each message is scheduled so that it extends an already scheduled compact tuples. 
+In other words, it is scheduled using meta offsets, so that using one less for meta offset creates a collision on \emph{the second period}. If it is not possible to schedule the message in that way, the first possible meta-offset is chosen. See Fig.~\ref{fig:compactfit} for an example run of \compactfit. This algorithm is designed to work well on random instances. Indeed, it 
+is not hard to evaluate the average size of the created compact tuples, and from that, to prove that \compactfit works with high probability when the load is strictly less than $1/2$.
+
+
+On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of messages (but polynomial in the other parameters). Hence, the exact value of the success rate given by the exact resolution is only available in the experiment with at most $10$ messages (the algorithm cannot compute a solution in less than an hour for twenty messages and high load). 
+
+
+
+\begin{minipage}[c]{.49\linewidth}
+
+\begin{center}
+\includegraphics[scale=0.275]{100messBig}
+
+\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1000$, $P=100,000$}
+\label{fig:100messBig}
+\end{center} 
+\end{minipage}
+\begin{minipage}[c]{.45\linewidth}
+\begin{center}  
+\includegraphics[scale=0.275]{100messSmall}
+\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 10$, $P=1,000$}
+\label{fig:100messSmall}
+\end{center}
+\end{minipage}
+
+
+
+\begin{minipage}[c]{.49\linewidth}
+
+\begin{center}
+\includegraphics[scale=0.275]{10mess}
+\end{center}
+\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1000$, $P=10,000$}
+\label{fig:10mess}
+\end{minipage}
+\begin{minipage}[c]{.45\linewidth}
+\begin{center}
+\includegraphics[scale=0.275]{routestau}
+\end{center}
+\captionof{figure}{Same parameters as in Fig.~\ref{fig:100messBig}, delays uniformly drawn in $[\tau]$}
+\label{fig:shortroutes}
+\end{minipage}
+
+\medskip
+
+For all sets of parameters, the algorithms have the same relative performances. \metaoffset and \greedyuniform
+perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
+less than $1/2$, while it is easy to build an instance of \pma of load $1/3 +\epsilon$ which makes them fail. 
+%The difference between the worst case analysis and the average case analysis is explained for \greedyuniform, when $\tau = 1$ in Sec.~\ref{sec:small}.
+
+\firstfit performs better than \metaoffset while they have the same bound in the worst case. \compactpair, which is the best theoretically also performs well in the experiments, always finding assignments for load of 
+$0.6$.  \compactfit, which is similar in spirit to \compactpair but is designed to have a good success rate on random instances is indeed better than \compactpair, when there are enough messages.
+
+As demonstrated by Fig.~\ref{fig:100messBig} and Fig.~\ref{fig:100messSmall}, the size of the messages has little impact on the success rate of the algorithms, when the number of messages and the load are kept the same. Comparing Fig.~\ref{fig:10mess} and Fig.~\ref{fig:100messBig} shows that for more messages, the transition between $100\%$ success rate to $0\%$ success rate happens faster.
+Finally, the results of Exact Resolution in Fig.~\ref{fig:10mess} show that the greedy algorithms are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment found by Exact Resolution, which gives an upper bound on the highest load for which \pma can always be solved positively.
+
+We also investigate the behavior of the algorithms when the delay of the messages are drawn in $[\tau]$ in Fig.~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficient: they always find a solution for $99$ messages. It is expected, since all $d'_i$ are equal in these settings and they will both build a $99$-compact tuple and thus can only fail for load $1$.
+
+\subsection{Experimental Results for Small Messages} \label{sec:perf_small}
+
+
+In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:small} is experimentally characterized. The settings are as in Sec.~\ref{sec:perf_large}, with $\tau = 1$. The evaluated algorithms are:
+
+\begin{itemize}
+  \item \firstfit
+  \item \greedyuniform 
+  \item \greedypotential, a greedy algorithm which leverages the notion of potential introduced for Swap. 
+  It schedules messages in arbitrary order, choosing the available offset which maximizes the potential of the unscheduled messages
+  \item \swapandmove 
+  \item \texttt{Exact Resolution}
+\end{itemize}
+
+As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than the bound given by worst case analysis. In the experiment presented in Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. \greedyuniform behaves exactly as proved in Th.~\ref{theorem:uniform}, with a very small variance. The performance of \swapandmove and of its simpler variant \greedypotential, which optimizes the potential in a greedy way, are much better than \firstfit or \greedyuniform. Amazingly, \swapandmove always finds an assignment when the load is less than $0.95$. \swapandmove is extremely close to Exact Resolution, but for $P=10$ and load $0.9$ or $1$, it fails to find some valid assignments, as shown in Fig.~\ref{fig:tau1-10mess}.
+
+\begin{minipage}[c]{.49\linewidth} 
+\begin{center} 
+\includegraphics[scale=0.275]{success_tau1} 
+\end{center}
+\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1$ and $P=100$}
+\label{fig:tau1}
+\end{minipage}
+\begin{minipage}[c]{.45\linewidth} 
+
+\begin{center}
+\includegraphics[scale=0.275]{tau110}
+\end{center}
+\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1$ and $P=10$}
+\label{fig:tau1-10mess}
+\end{minipage}
+ 
+ \medskip
+ Finally, we evaluate the computation times of the algorithms to understand whether they scale to large instances. We present the computation times in Fig.~\ref{fig:timelog} and we choose to consider instances of load $1$, since they require the most computation time for a given size. The empirical complexity of an algorithm is evaluated by a
+ linear regression on the function which associates to $\log(n)$, the log of the computation time of the algorithm on $n$ messages.  \firstfit, \greedyuniform and \swapandmove scale almost in the same way, with an empirical complexity slightly below $O(n^2)$, while \greedypotential has an empirical complexity of $O(n^3)$. The empirical complexity corresponds to the worst case complexity we have proved, except for \swapandmove which is in $O(n^3)$. There are two explanations: most of the messages are scheduled by the fast \firstfit subroutine and most Swap operations improve the potential by more than $1$, contrarily to what is assumed in the worst case analysis.
+
+\begin{figure}
+ \begin{center}
+\includegraphics[scale=0.275]{log}
+\end{center}
+\caption{Computation time (logarithmic scale) function of the number of messages of all algorithms on $10000$ instances of load $1$}
+\label{fig:timelog}
+\end{figure}
+
+
  \bibliography{Sources}
 %\section{Conclusion}
 
@@ -569,45 +760,6 @@ In this appendix, we justify the interest of studying $\tau = 1$ and a network w
 We also present the results of all algorithms of the paper run over synthetic data and we describe the algorithm \texttt{Compact k-tuples}.
 
 
-\section{Compact k-tuples}\label{sec:compact}
-
-
-Recall that a delay $d_i$ is equal to  $d'_i*\tau + r_i$, we call $d'_i$ the \textbf{meta-delay}. The algorithm we describe relies only
-on meta-delays and the fact that the $r_i$ are increasing.
-A compact $k$-tuple is a sequence of messages $i_1 < \dots < i_k$ with $i_1,\dots,i_k$ increasing, for which meta-offsets can be chosen so that, there is no collision, the messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau = A(i_{l+1}) + d'_{i_{l+1}}\tau$. Scheduling a compact $k$-tuple is choosing a meta-offset for the first message of the tuple, the offsets of the 
-other messages are also fixed by this choice.  
-The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples
-using meta offsets while possible, then scheduling compact $(k-1)$-tuples and so on until $k=1$.
-
-
-\begin{lemma}\label{lemma:uple_find}
-Given $k + k(k-1)(2k-1)/6$ messages, $k$ of them always form a compact $k$-tuple and we can find them in polynomial time. 
-\end{lemma}
-\begin{proof}
-We assume the messages are sorted according to $r_i$. We prove the lemma by induction on $k$. Lemma~\ref{lemma:pair_find} already proves the lemma for $k=2$.
-Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$
-messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay,
-then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. Each of the $k-1$ elements of $C$ forbids one possible meta-delay for an additional $k$-th message in $C$. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
-\end{proof}
-
-
-\begin{theorem}\label{th:k-tuples}
-\texttt{Compact 8-tuples} always solves \pma positively on instances of load less than $4/10$, for instances with $n \geq 205$.
-\end{theorem}
-\begin{proof}
-We use the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. 
-It enables us to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $\Fmo_i(A)$, the number of forbidden meta-offsets when scheduling compact $i$-tuples in the algorithm.
-If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
-we have the following equation:  $$ \Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j*i + j + i+ 1)}.$$
-The equation for $n_1$ is slightly better: 
-$$ \Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
-A bound on $n_i$ can be computed, using the fact that $A$ can be extended while $\Fmo_i(A) < m$. 
-Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built, when $n + n_i - \sum_{i \leq j \leq 8} j*n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
-A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is less than $4/10$ and for $n \geq 205$.
-\end{proof}
-
-The code computing $n_i$ can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
-The bound of Lemma~\ref{lemma:uple_find} can be refined, by using better algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 
 
@@ -919,138 +1071,6 @@ It is easy to see that in a network with coherent routing, any greedy algorithm 
 exactly two contention points to each message. However, the algorithms of this article do not seem to work for a local load larger than $1/4$, since the bounds on $\Fo$ or $\Fmo$ do not hold anymore. 
 
 
-
-
-\section{Experimental Results}
-
-
-\subsection{Experimental Results for Large Messages} \label{sec:perf_large}
-
-
-In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. We experiment with several periods and message sizes. For each set of parameters, we try every possible load by changing the number of messages and give the success rate of each algorithm. The success rate is measured on $10000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
-
-We consider the following algorithms:
-\begin{itemize}
-  \item \firstfit
-  \item \metaoffset
-  \item \compactpair
-  \item \compactfit
-  \item \greedyuniform, the algorithm introduced and analyzed in Sec.~\ref{sec:small}, used for arbitrary $\tau$
-  \item \texttt{Exact Resolution} using an algorithm from~\cite{dominique2018deterministic}  
-\end{itemize}
-
-\begin{figure}[h]
- \begin{center}
-\includegraphics[scale=1]{compactfit}
-\end{center}
-\caption{An run of \compactfit with $\tau = 2$ and $P=10$, which creates two compact pairs}
-\label{fig:compactfit}
-\end{figure}
-
-The only algorithm we have yet to describe is \compactfit. The idea is, as for \compactpair, to combine the absence of collision on the first period of \metaoffset and the compactness of assignments given by \firstfit.
-The messages are ordered by increasing remainder of delay modulo $\tau$, and each message is scheduled so that it extends an already scheduled compact tuples. 
-In other words, it is scheduled using meta offsets, so that using one less for meta offset creates a collision on \emph{the second period}. If it is not possible to schedule the message in that way, the first possible meta-offset is chosen. See Fig.~\ref{fig:compactfit} for an example run of \compactfit. This algorithm is designed to work well on random instances. Indeed, it 
-is not hard to evaluate the average size of the created compact tuples, and from that, to prove that \compactfit works with high probability when the load is strictly less than $1/2$.
-
-
-On a regular laptop, all algorithms terminates in less than a second when solving $10000$ instances with $100$ messages except the exact resolution, whose complexity is exponential in the number of messages (but polynomial in the other parameters). Hence, the exact value of the success rate given by the exact resolution is only available in the experiment with at most $10$ messages (the algorithm cannot compute a solution in less than an hour for twenty messages and high load). 
-
-
-
-\begin{minipage}[c]{.49\linewidth}
-
-\begin{center}
-\includegraphics[scale=0.275]{100messBig}
-
-\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1000$, $P=100,000$}
-\label{fig:100messBig}
-\end{center} 
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth}
-\begin{center}  
-\includegraphics[scale=0.275]{100messSmall}
-\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 10$, $P=1,000$}
-\label{fig:100messSmall}
-\end{center}
-\end{minipage}
-
-
-
-\begin{minipage}[c]{.49\linewidth}
-
-\begin{center}
-\includegraphics[scale=0.275]{10mess}
-\end{center}
-\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1000$, $P=10,000$}
-\label{fig:10mess}
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth}
-\begin{center}
-\includegraphics[scale=0.275]{routestau}
-\end{center}
-\captionof{figure}{Same parameters as in Fig.~\ref{fig:100messBig}, delays uniformly drawn in $[\tau]$}
-\label{fig:shortroutes}
-\end{minipage}
-
-\medskip
-
-For all sets of parameters, the algorithms have the same relative performances. \metaoffset and \greedyuniform
-perform the worst and have almost equal success rate. Remark that they have a $100\%$ success rate for load
-less than $1/2$, while it is easy to build an instance of \pma of load $1/3 +\epsilon$ which makes them fail. 
-The difference between the worst case analysis and the average case analysis is explained for \greedyuniform, when $\tau = 1$ in Sec.~\ref{sec:small}.
-
-\firstfit performs better than \metaoffset while they have the same worst case. \compactpair, which is the best theoretically also performs well in the experiments, always finding assignments for load of 
-$0.6$.  \compactfit, which is similar in spirit to \compactpair but is designed to have a good success rate on random instances is indeed better than \compactpair, when there are enough messages.
-
-As demonstrated by Fig.~\ref{fig:100messBig} and Fig.~\ref{fig:100messSmall}, the size of the messages has little impact on the success rate of the algorithms, when the number of messages and the load are kept the same. Comparing Fig.~\ref{fig:10mess} and Fig.~\ref{fig:100messBig} shows that for more messages, the transition between $100\%$ success rate to $0\%$ success rate happens faster.
-Finally, the results of Exact Resolution in Fig.~\ref{fig:10mess} show that the greedy algorithms are far from always finding a solution when it exists. Moreover, we have found an instance with load $0.8$ with no assignment, which gives an upper bound on the highest load for which \pma can always be solved positively.
-
-We also investigate the behavior of the algorithms when the delay of the messages are drawn in $[\tau]$ in Fig.~\ref{fig:shortroutes}. The difference from the case of large delay is that \compactpair and \compactfit are extremely efficient: they always find a solution for $99$ messages. It is expected, since all $d'_i$ are equal in these settings and 
-they will both build a $99$-compact tuple and thus can only fail for load $1$.
-
-\subsection{Experimental Results for Small Messages} \label{sec:perf_small}
-
-
-In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:small} is experimentally characterized. The settings are as in Sec.~\ref{sec:perf_large}, with $\tau = 1$. The evaluated algorithms are:
-
-\begin{itemize}
-  \item \firstfit
-  \item \greedyuniform 
-  \item \greedypotential, a greedy algorithm which leverages the notion of potential introduced for Swap. 
-  It schedules messages in arbitrary order, choosing the available offset which maximizes the potential of the unscheduled messages
-  \item \swapandmove 
-  \item \texttt{Exact Resolution}
-\end{itemize}
-
-As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than the bound given by worst case analysis. In the experiment presented in Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. \greedyuniform behaves exactly as proved in Th.~\ref{theorem:uniform}, with a very small variance. The performance of \swapandmove and of its simpler variant \greedypotential, which optimizes the potential in a greedy way, are much better than \firstfit or \greedyuniform. Amazingly, \swapandmove always finds an assignment when the load is less than $0.95$. \swapandmove is extremely close to Exact Resolution, but for $P=10$ and load $0.9$ or $1$, it fails to find some assignments, as shown in Fig.~\ref{fig:tau1-10mess}.
-
-\begin{minipage}[c]{.49\linewidth} 
-\begin{center} 
-\includegraphics[scale=0.275]{success_tau1} 
-\end{center}
-\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1$ and $P=100$}
-\label{fig:tau1}
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth} 
-
-\begin{center}
-\includegraphics[scale=0.275]{tau110}
-\end{center}
-\captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1$ and $P=10$}
-\label{fig:tau1-10mess}
-\end{minipage}
- 
- \medskip
- Finally, we evaluate the computation times of the algorithms to understand whether they scale to large instances. We present the computation times in Fig.~\ref{fig:timelog} and we choose to consider instances of load $1$, since they require the most computation time for a given size. The empirical complexity of an algorithm is evaluated by a
- linear regression on the function which associates to $\log(n)$, the log of the computation time of the algorithm on $n$ messages.  \firstfit, \greedyuniform and \swapandmove scale almost in the same way, with an empirical complexity slightly below $O(n^2)$, while \greedypotential has an empirical complexity of $O(n^3)$. The empirical complexity corresponds to the worst case complexity we have proved, except for \swapandmove which is in $O(n^3)$ worst case. There are two explanations: most of the messages are scheduled by the fast \firstfit subroutine and most Swap operations improve the potential by more than $1$, contrarily to what is assumed in the worst case analysis.
-
-\begin{figure}
- \begin{center}
-\includegraphics[scale=0.275]{log}
-\end{center}
-\caption{Computation time (logarithmic scale) function of the number of messages of all algorithms on $10000$ instances of load $1$}
-\label{fig:timelog}
-\end{figure}
 
 
 \end{document}
