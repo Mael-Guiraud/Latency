@@ -459,7 +459,7 @@ Let $A$ be some partial assignment of size $k$ and let $i$ be an unscheduled mes
 \end{lemma}
 
 \begin{proof}
-The positions in the first period can be partitioned into $P_{u}$ the positions used by some scheduled message and $P_{f}$ the unused positions.
+The positions in the first period can be partitioned into $P_{u}$ the positions used by some scheduled message and $P_{f}$ the free positions.
 Let $V_f$ be the sum of the potentials of the positions in $P_f$ and let $V_u$ be the sum of the potentials of the positions in $P_u$. By Lemma~\ref{lemma:inv}, since $P_f$ and $P_u$ partition the positions, we have $V_f + V_u = kn$. Moreover, by Lemma~\ref{lemma:pot_pos}, $Pot(A) = V_u$, then $V_f + Pot(A) = kn$.
 
 By hypothesis, $i$ cannot be scheduled, then, for all $p \in P_{f}$, $p+d_i$ is used in the second period. Let $F$ be the function which associates to $p \in P_{f}$ the position $A(j)$ such that there is $j$ a scheduled message which uses $p+d_i$ in the second period, that is $A(j) + d_j = p + d_i \mod P$. The function $F$ is an injection from $P_{f}$ to $P_u$. Remark that, in both $Swap(i,p,A)$ and $A$, the same positions are used in the second period. Hence, the potential of each position stay the same after the swap. As a consequence, doing the operation $Swap(i,p,A)$ adds to $Pot(A)$ the potential of the position $p$ and removes the potential of the position $F(p)$. 
@@ -479,22 +479,53 @@ Let us now describe the algorithm \swapandmove:  messages are scheduled while po
 \begin{proof}
 We determine for which value of the load \swapandmove always finds an assignment. We let $n = (1/2 + \epsilon)P$ be the number of messages, the load is $1/2 + \epsilon$. We only study the situation when $n-1$ messages are scheduled by $A$ and \swapandmove tries to schedule the last one, since previous steps are similar but easier. 
 
-Let $d$ be the delay of the unscheduled message. We consider the pairs 
-of times $(p,p+d)$ for $p \in [P]$. Since the message
-cannot be scheduled, there are three cases. First, $p$ is unused in the first period but $p+d$ is used in the second period. Since there are $n-1$ scheduled messages, there are $P-n+1$ such value of $p$. If a message using the time $p+d$ in the second period can be scheduled elsewhere, so that the unscheduled message can use offset $p$, then \swapandmove succeeds.
-Otherwise, the message has no available offset, which means its potential is equal to $2(\epsilon P -1)$.
-The second case is symmetric: $p$ is used in the first period but $p+d$ is unused in the second period. 
-Finally, we have the case $p$ is used in the first period and $p+d$ is used in the second period.  There are $2(\epsilon P -1)$ such values of $p$. If the two messages using times 
-$p$ and $p+d$ can be rescheduled so that offset $p$ can be used for the unscheduled message,
-then \swapandmove succeeds. This is always possible when one message is of potential at least $2\epsilon P -1$ and the other of potential at least $2\epsilon P + 1$. Since the messages must be of potential more than $2(\epsilon P -1)$ and at most $n-1$, it is satisfied when the sum of the two potentials is at least $2(\epsilon P -1) + n$.
+Let $d$ be the delay of the last unscheduled message, w.l.o.g. we assume that $d = 0$. 
+Let $P_f$ be the set of $p\in [P]$ which are free in the first period. Let $P^1_{u}$ be the set of $p\in [P]$,
+such that $p$ is used in the first period but $p$ is free in the second period. Let $P^2_{u}$ be the set of $p\in [P]$,
+such that $p$ is used in the first period and $p$ is used in the second period. 
 
-If we assume that \swapandmove is unable to schedule the last message by moving two scheduled messages, the previous analysis gives us a bound on twice $Pot(A)$: 
-$$ 2Pot(A) \leq 2(P-n+1) 2(\epsilon P -1) + 2(\epsilon P -1)(2(\epsilon P -1) + n) $$
-$$ Pot(A) \leq (\epsilon P -1) (P + n)$$
-By Lemma~\ref{lemma:swap}, we know that $Pot(A) \geq n(n-1)/2$, hence 
+Since there are $n-1$ messages scheduled by $A$, considering the positions used in the first period, we have $n-1 = |P^1_u| + |P^2_u|$.
+We assume that the last message cannot be scheduled by \firstfit, otherwise the theorem is proved. Hence, 
+if $p\in P_f$, then $p$ is used in the second period. By considering the used positions in the second period, we have $n - 1 = |P^2_u| + |P_f|$.
+Hence, because the three sets partition $[P]$, $|P^2_u| = 2(n-1) - P = 2(\epsilon P - 1)$ and $|P^1_u| = |P_f| = (1/2 - \epsilon)P - 1$.
+
+Consider a position $p \in P^1_u$, then $p$ is used in the first period by some message $i$.
+If the offset of $i$ can be changed in $A$ to obtain a valid assignment, then \swapandmove does it and succeeds because the last message can now be scheduled at offset $p$.
+The number of offsets which cannot be used by some message $i$ is $2(n-1) - pot_{msg}(i)$. Since the offset of $i$ cannot be changed, we have
+$pot_{msg}(i) = 2(n-1) - P = 2(\epsilon P -1)$. For the same reason, a message $i$ with $(A(i) + d_i \mod P \in P_f)$ has the same potential.
+
+Consider a position $p \in P^2_u$, then $p$ is used by a message $i$ in the first period and $p$ is used by a message
+$j$ in the second period. If both $i$ and $j$ can be scheduled elsewhere, then \swapandmove moves them and succeeds. 
+It is possible to schedule both messages when one is of potential at least $2\epsilon P -1$ and the other at least $2\epsilon P + 1$. 
+Since a message is of potential at most $n-1$, both messages can always be rescheduled when the sum of the two potentials is at least $2(\epsilon P -1) + n$.
+Hence we may assume that their sum is less than $2(\epsilon P -1) + n$. 
+
+By definition, $Pot(A)$ is the sum of the potential of the messages, that we can write as 
+$$Pot(A) = \sum_{\substack{i \in [n] \\ A(i) \in P^1_u} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i).$$
+
+We may also divide the sum according to the positions in the second period,
+
+$$Pot(A) = \sum_{\substack{i \in [n] \\ A(i) + d_i \in P_f} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i).$$
+
+By summing both equalities, using $|P^1_u| = |P_f| = (1/2 - \epsilon)P - 1$ and 
+$pot_{msg}(i) \leq 2(\epsilon P -1)$ for $A(i) \in P^1_u$ and  $A(i) + d(i) \in P_f$, we obtain  
+
+
+$$2Pot(A) \leq 2((1/2 - \epsilon)P - 1)2(\epsilon P -1) + \sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i).$$
+
+
+We have proved that $pot_{msg}(i) + pot_{msg}(j) < 2(\epsilon P -1) + n$ when $A(i) \in P^2_u$ and $A(i) = (A(j) + d_j \mod P)$ and  $|P^2_u| = 2(\epsilon P - 1)$.
+Hence, $$\sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i) < (2(\epsilon P - 1) + n)(2(\epsilon P - 1)).$$
+Using this inequality and simplifying the expression, we obtain 
+
+
+$$  Pot(A) < (\epsilon P -1) (P + n - 2).$$
+
+This bound is obtained when \swapandmove fails to schedule the last message.
+On the other hand, by Lemma~\ref{lemma:swap}, we know that $Pot(A) \geq n(n-1)/2$, hence 
 \swapandmove must succeed when
-$$n(n-1)/2 \geq  (\epsilon P -1) (P + n).$$
-By expanding and simplifying, we obtain a second degree inequation in $\epsilon$, $1/4 - 2\epsilon - \epsilon ^2 \geq  0$.
+$$n(n-1)/2 \geq  (\epsilon P -1) (P + n -2).$$
+By expanding and simplifying the previous inequation, we obtain a second degree inequation in $\epsilon$, $1/4 - 2\epsilon - \epsilon ^2 \geq  0$.
 Solving this inequation yields $\epsilon \leq \sqrt{5}/2 -1$.
 
 
@@ -563,18 +594,18 @@ As an illustration, with $\lambda = 2/3$, $\Pr(P,n) < 1,16 \times (0,84)^P$.
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
 The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
 $f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by $C_{\lambda} \lambda P f(\lambda)^P$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
-For instance, with $n = 8$ and $P=12$ (thus $\lambda = 2/3$), the probability of success of \greedyuniform is larger than $0,92$.
+For instance, with $n = 8$ and $P=12$ (thus $\lambda = 2/3$), the probability of success of \greedyuniform is larger than $0,92$ (see Sec.~\ref{sec:perf_small} for more values).
 
 
 \section{Generalizations}\label{sec:gen}
 
-In this section, we prove that we can remove several hypotheses ...
+In this section, we prove that several hypotheses made in the previous sections can be relaxed and that the 
+problem \pma capture periodic message scheduling in more complex networks.
 
 \subsection{Period Value}
 
 
-In Lemma~\ref{lemma:multiple}, we show that we can assume $P = m\tau$. This hypothesis was done to make the analysis of algorithms based on meta-offsets simpler and tighter. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. If we drop this hypothesis, the theorems of Sec.~\ref{sec:large}
-can be restated as proving the existence of a valid assignment for a load $\lambda - o(1)$, where $o(1)$ goes to $0$ when $n$ grows. 
+We prove that we can assume that $P$ is a multiple of $\tau$ in Lemma~\ref{lemma:multiple}. This hypothesis was done to make the analysis of algorithms based on meta-offsets simpler and tighter. 
 
 \begin{lemma}\label{lemma:multiple}
 Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and $m = \lfloor P / \tau \rfloor$. There is an integer $\tau'$ and an instance $J$ with $n$ messages of size $\tau'$ and period $P'= m\tau'$ such that any assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
@@ -582,12 +613,20 @@ Let $I$ be an instance of \pma with $n$ messages of size $\tau$, period $P$ and 
 \begin{proof}
 Fig.~\ref{fig:multipleperiod} illustrates the reductions we define in this proof on a small instance.
 Let $P = m \tau + r$ with $r \leq \tau$. We define the instance $I'$ as follows: $P' = mP$, $d_{i}' = m d_i$ and $\tau' = m \tau + r$. With this choice, we have $P' = m(m \tau + r) = m \tau'$.
-Consider an assignment $A'$ of the instance $I'$. We let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions. We then use a compactification procedure on $A'$ seen as an assignment of $I''$, with size of messages multiple of $m$ (see Th.4 of~\cite{dominique2018deterministic} for a similar compactification). W.l.o.g., message $0$ is positioned at offset zero. The first time message $0$ uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Consider the following translation of $A'$: $A'(0) = 0$ and for $i>0, A'(i) = A'(i) -s$. We choose $s$ to be a non negative integer such that
-$A'$ translated by $s$ is an assignment without collision, while $A'$ translated by $s+1$ has a collision with message $0$. We let $A'$ be $A'$ translated by $s$, then by construction,
- there is a message $j$ which is next to message $0$ in the first or second period. It implies that either $A'(j)$ or $A'(j)+d_j \mod P'$ is a multiple of $m$ and since $d_j$ is a multiple of $m$, then both $A'(j)$ and $A'(j)+d_j \mod P'$ are multiples of $m$. The procedure can be repeated, by fixing messages $O$ and $j$ and translating the other messages, and so on until we get an assignment $A''$ to $I''$, such that all positions of messages in the first and second period are multiples of $m$. Finally, we define $A$ assignment of $I$ as $A(i) = A''(i)/m$. 
+Consider an assignment $A'$ of the instance $I'$. We let $\tau'' = m\tau$, then $A'$ is also an assignment for $I'' = (P',\tau'',(d_{0}',\dots,d_{n-1}'))$. Indeed, the size of each message, thus the intervals of time used in the first and second period begin at the same position but are shorter, which cannot create collisions. 
+
+We describe a compactification procedure to transform $A'$ seen as an assignment of $I''$, with size of messages multiple of $m$ (see Th.4 of~\cite{dominique2018deterministic} for a similar method). 
+
+W.l.o.g., we assume that message $0$ is at offset zero in $A'$. The first time message $0$ uses in the second period is a multiple of $m$ since its delay is by construction a multiple of $m$. Consider the following shift of $A'$: $A_1'(0) = 0$ and for $i>0, A_1'(i) = A'(i) - s$. We let $s$ be a non negative integer such that $A'$ shifted by $s$ is a valid assignment, while $A'$ shifted by $s+1$ has a collision involving message $0$. By construction of $A_1'$, because of the choice of $s$, there is a message $j$ which is next to message $0$ in the first or second period. It implies that either $A_1'(j)$ or $A_1'(j)+d_j \mod P'$ is a multiple of $m$ and since $d_j$ is a multiple of $m$, then both $A_1'(j)$ and $A_1'(j)+d_j \mod P'$ are multiples of $m$. The procedure is repeated, we obtain $A_{i+1}$ from $A_i$ by fixing
+$i$ messages of $A_i$ with an offset multiple of $m$ and shifting the other messages as previously. 
+
+
+By construction, $A_n'$ is a valid assignment of $I''$, and all positions of messages in the first and second period are multiples of $m$. Finally, we let $A$ be the assignment of $I$ defined as, for all $i \in [n]$, $A(i) = A_n'(i)/m$. 
 \end{proof}
 
 Notice that, transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
+We obtain an instance with a period $P'= m\tau'$, which is slightly smaller than the original period $P$. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. If we drop the hypothesis that $P=m\tau$, the theorems of Sec.~\ref{sec:large}
+can be restated as proving the existence of a valid assignment for a load $\lambda - o(1)$, where $o(1)$ goes to $0$ when $n$ grows. 
 
 \begin{figure}
  \begin{center}
