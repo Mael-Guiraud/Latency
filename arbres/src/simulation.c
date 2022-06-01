@@ -114,14 +114,14 @@ void test(unsigned int seed)
 	printf("Borneinf %d \n",borneInf(&g,P,message_size));
 	
 	sprintf(nom,"borneinf");
-	/*
+	
 	reset_periods(&g,P);reinit_delays(&g);
 
+	printf("debut fpt\n");
+	int fpt = branchbound( &g, P,  message_size,NULL,NULL,0);
 
-	//int fpt = branchbound( &g, P,  message_size,NULL,NULL,0);
-	int fpt = 0;
 	
-	//printf("FPT = %d \n",fpt);
+	printf("FPT = %d \n",fpt);
 	
 	reset_periods(&g,P);reinit_delays(&g);
 		
@@ -187,8 +187,8 @@ void test(unsigned int seed)
 	{
 		printf(GRN "FPT trouve au moins aussi bien que la descente ! \n" RESET);
 	}
-	
-	int tabo = taboo( &g, P, message_size,100,100);
+	float nb=0.0;
+	int tabo = taboo( &g, P, message_size,100,100,&nb);
 	printf("taboo %d \n",tabo);	
 	sprintf(nom,"taboo");
 	printf("Valeur de verifie_solution = %d \n",verifie_solution(&g,message_size));
@@ -310,7 +310,7 @@ void test(unsigned int seed)
 	printf("\n printing python ...");print_python(&g);printf("Ok.\n");
 	printf("\n printing json arcs ..."); print_json_arcs(&g);
 	printf("Logs in logs.txt\n");
-*/
+
 
 	
 	//printf("multiplexing = %d %d %d\n",multiplexing(&g, P, message_size, 1, DEADLINE),multiplexing(&g, P, message_size, 10, DEADLINE),multiplexing(&g, P, message_size, 100, DEADLINE));

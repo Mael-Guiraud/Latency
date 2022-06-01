@@ -361,7 +361,7 @@ int rec_arcs(Graph *g,int arcid, int P, int message_size,int borneinf)
 	
 		for(int j=0;j<g->arc_pool[arcid].nb_routes;j++)
 		{
-			if(arcid < NB_BBU)
+			if(arcid < g->nb_bbu)
 			{
 				g->arc_pool[arcid].routes_order_f[j] = tab[permuts[j].val];
 				g->arc_pool[arcid].routes_order_b[j] = tab[permuts[j].val];	
