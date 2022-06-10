@@ -58,6 +58,8 @@ void affiche_ensemble_unique(Ensemble * ens)
 	}
 	printf("(%p) num %d / date %d /fils g %p /frereG %p /frereD %p\n",ens,ens->numero_element,ens->temps_depart,ens->filsG,ens->frereG,ens->frereD);
 }
+
+
 void affiche_ensemble(Ensemble * ens)
 {
 	//affiche_1_ensemble(ens);
@@ -318,6 +320,7 @@ int date_fin(Ensemble * ens,int taille_paquet)
 	{
 		ens = ens->frereD;
 	}
+
 	//affiche_ensemble_unique(ens);
 	if(ens->numero_element == -1)
 	{
@@ -326,6 +329,17 @@ int date_fin(Ensemble * ens,int taille_paquet)
 	else
 	{
 		return ens->temps_depart+taille_paquet;
+	}
+}
+int date_debut(Ensemble * ens)
+{
+	if(ens->numero_element == -1)
+	{
+		return date_debut(ens->filsG);
+	}
+	else
+	{
+		return ens->temps_depart;
 	}
 }
 
@@ -1228,34 +1242,19 @@ int check_Deadlines(int*tab,int size)
 		return 1;
 }
 
-int main()
-{	
-	srand(time(NULL));
 
-	//PARAMETERS
-	int nbr_route = 8;
-	int release_max = 10;
-	int time_add_deadline_max = 5;
-	int job_size = 1;
-	int release[nbr_route];
-	int deadline[nbr_route];
-	for(int i=0;i<nbr_route;i++){release[i] = rand()%release_max;}
-	release[0]=0;
-	for(int i=0;i<nbr_route;i++){deadline[i] = release[i]+job_size+rand()%time_add_deadline_max;}
-
-	
+int wrapper_algo(int* release,int* deadline, int nbr_route,int job_size)
+{
 	Element * elems;
 	Ensemble * ens;
-	Ensemble * a_free;
-	
-	
+	Ensemble * a_free;	
 	elems = init_element();
-
 	for(int j=0;j<nbr_route;j++)
 	{
 		elems = ajoute_elemt(elems,j,release[j],deadline[j]);
 	}
 	//printf("FPT premier = %d\n",premier);
+	printf("Les jobs sont : \n");
 	affichejobs(elems);
 	ens = algo_simons(elems,nbr_route,job_size,0,0);
 	if(ens == NULL)
@@ -1263,13 +1262,31 @@ int main()
 		printf("No solution found. \n");
 		return 1;
 	}
-	affiche_ensemble(ens);
 
+	int temps = date_fin(ens,job_size) - date_debut(ens);
+	affiche_ensemble(ens);
 	libereens(ens);
 	freeelems(elems);
-
-	return 0;
-	
+	return temps;
 
 }
 
+int main()
+{	
+	srand(time(NULL));
+	//PARAMETERS
+	int nbr_route = 4;
+	int release_max = 10;
+	int time_add_deadline_max = 5;
+	int job_size = 1;
+	int release[nbr_route];
+	int deadline[nbr_route];
+
+	//GENERATION DES DONNES
+	for(int i=0;i<nbr_route;i++){release[i] = rand()%release_max;}
+	for(int i=0;i<nbr_route;i++){deadline[i] = release[i]+job_size+rand()%time_add_deadline_max;}
+	printf("Temps effectif %d \n",wrapper_algo(release,deadline,nbr_route,job_size));
+
+	return 0;
+
+}
