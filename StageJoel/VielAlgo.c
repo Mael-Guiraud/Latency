@@ -1264,6 +1264,7 @@ int wrapper_algo(int* release,int* deadline, int nbr_route,int job_size)
 	}
 
 	int temps = date_fin(ens,job_size) - date_debut(ens);
+	printf("La solution est : \n");
 	affiche_ensemble(ens);
 	libereens(ens);
 	freeelems(elems);
