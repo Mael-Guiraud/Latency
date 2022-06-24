@@ -22,7 +22,7 @@ All rights reserved.
 #include "random.h"
 #include "graphes.h"
 
-#define PARALLEL 1
+#define PARALLEL 0
 
 double time_diff(struct timeval tv1, struct timeval tv2)
 {
@@ -311,9 +311,9 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 {
 
 	char nom[64];
-	sprintf(nom,"../datas/compare_retour_%d.data",periode);
+	sprintf(nom,"../datas/durold.data",periode);
 	FILE * F = fopen(nom,"w");
-	FILE * F2 = fopen("../datas/exec_time.data","w");
+	FILE * F2 = fopen("../datas/duroldtime.data","w");
 	Graphe g ;
 	int resgp,ress,ressp,resfpt;
 	float gp,s,sp,fpt;
@@ -329,12 +329,12 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 	
 			
 		
-	for(int marge=0;marge<= marge_max;marge += 150)
+	for(int marge=0;marge<= marge_max;marge += 10)
 	{
-		gp=0;
-		s=0;
-		fpt = 0;
-		sp =0;
+		gp=0.0;
+		s=0.0;
+		fpt = 0.0;
+		sp =0.0;
 		timesp = 0.0;
 		timefpt=0.0;
 		
@@ -343,12 +343,12 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		for(int i = 0;i<nb_simuls;i++)
 		{
 			g = init_graphe(2*nb_routes+1);
-			graphe_etoile(g,taille_route);
-			//graphe_etoile_dur( g,taille_route,1000);
-			//graphe_etoile_Psur2( g, taille_route,1000 );
+			//graphe_etoile(g,taille_route);
+			//graphe_etoile_dur( g,taille_route,800);
+			graphe_etoile_Psur2( g, taille_route,800 );
 			tmax = marge + longest_route(g);
 			//printf("-------------\nGraphe : \n");
-			//affiche_etoile(g);
+			
 			//printf("\n");
 			//printf("TMAX = %d\n",tmax);
 			//printf("tmax = %d(%d + %d) \n",tmax,longest_route(g),marge);
@@ -411,7 +411,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						gettimeofday (&tv1, NULL);
 						resfpt = FPT_PALL(g,taille_paquets, tmax, periode, m_i);
 						gettimeofday (&tv2, NULL);
-						timefpt += time_diff(tv1,tv2);
+						timefpt += 1;time_diff(tv1,tv2);
 						if(resfpt != -1)
 						{
 							fpt_found = 1;
@@ -422,7 +422,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 					if(!sp_found)
 					{
 						gettimeofday (&tv1, NULL);
-						ressp = simons_periodique(g,taille_paquets,tmax,periode,m_i);
+						ressp =  simons_periodique(g,taille_paquets,tmax,periode,m_i);
 						gettimeofday (&tv2, NULL);
 						timesp += time_diff(tv1,tv2);
 						if(ressp != -1)
@@ -438,12 +438,13 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 						break;
 					
 				}
-				if(!SYNCH)
+				/*if(!SYNCH)
 					if(fpt_found && (!sp_found))
 					{
 						affiche_etoile(g);
 						print_dot(g);
 					}
+					*/
 				if( (!fpt_found) && (sp_found))
 				{
 					printf("IMPOSSIBLE\n");
@@ -461,7 +462,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		
 	
    			      fprintf(F,"%d %f %f %f %f\n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
-   		     fprintf(stdout,"%d %f %f %f %f\n",marge,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
+   		     fprintf(stdout,"%d %f %f %f %f %f\n",marge,gp,gp/nb_simuls*100,s/nb_simuls*100,sp/nb_simuls*100,fpt/nb_simuls*100);
    		     	 fprintf(F2,"%d %f %f \n",marge,timesp/nb_simuls,timefpt/nb_simuls);
    		     fprintf(stdout,"%d %f %f \n",marge,timesp/nb_simuls,timefpt/nb_simuls);
 

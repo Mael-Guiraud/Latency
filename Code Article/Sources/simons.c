@@ -8,18 +8,18 @@ All rights reserved.
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
-
+#include "scheduling.h"
 #include "struct.h"
 #include "operations.h"
 #include "random_inters.h"
-
+ 
 typedef struct element{
 	int index;
 	int release;
 	int deadline;
 	struct element * next;
 } Element;
-
+#define ALGO_JOEL 0
 typedef struct ensemble{
 	int numero_element; // vaut -1 si c'est un ensemble
 	int temps_depart;
@@ -28,6 +28,7 @@ typedef struct ensemble{
 	struct ensemble * frereD;
 } Ensemble;
 
+int* wrapper_fun(Taskgroup tg);
 
 Ensemble * crisis(Ensemble * ens,Element * crisise, Element * elemspere,Element * touselems, int taille_paquet,int periode);
 Ensemble * init_ensemble(){return NULL;}
@@ -979,6 +980,7 @@ void transforme_waiting(Ensemble * ens, int * wi)
 int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * offsets)
 {
 	
+
 	///////////////////////////////////////////////////////taille_paquet = 6;
 	 if (!(g.N % 2))
     {
@@ -1095,163 +1097,199 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 			deadline[k] -= periode;
 		}
 	}*/
-
-
-
-
-	int	date=arrivee[i];
-	//////////////////////////////////////////////////////////////////int date = 0;
-	int j;
-
-	//afficheTwoWayTrip(t);
-	Element * elems = init_element();
-	//int deadline_route;
-	//int deadline_periode = date + periode;
-	for(j=0;j<nbr_route;j++)
+	if(!ALGO_JOEL)
 	{
-		//deadline_route = TMAX+m_i[j]- g.matrice[nbr_route][j]+taille_paquet;
-		elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
 
-	}
-/*
-	elems= ajoute_elemt(elems,0,0,74);
-	elems= ajoute_elemt(elems,1,21,46);
-	elems= ajoute_elemt(elems,2,2,60);
-	elems= ajoute_elemt(elems,3,50,68);
-	elems= ajoute_elemt(elems,4,4,34);
-	elems= ajoute_elemt(elems,5,10,36);
-	elems= ajoute_elemt(elems,6,28,38);
-	elems= ajoute_elemt(elems,7,54,62);
-	elems= ajoute_elemt(elems,8,30,48);
-	elems= ajoute_elemt(elems,9,52,68);
-	elems= ajoute_elemt(elems,10,25,40);
-	
-	*/
-	/*affiche_etoile(g);
-	affiche_tab(m_i,nbr_route);
-	printf("%d tmax \n", TMAX);
 
-	affichejobs(elems);*/
-	//affiche_tab(m_i,nbr_route);
-	//affichejobs(elems);
-	Element *  elems2 = cpy_elems(elems);
-	Element * tmp = elems2;
-	
-	int a_scheduler = nbr_route;
-	/////////////////////////////////////////////////////int a_scheduler = 11;
-	Ensemble * ens = NULL;
-	Ensemble * ensembletmp;
-	while(a_scheduler != 0)//tant qu'on n'a pas schedul tous les elements
-	{
-		//printf("test %p\n",elems2);
-		i = eligible(elems2,date);
-		//printf("i = %d\n",i);
-		if(i==-1)
+
+		int	date=arrivee[i];
+		//////////////////////////////////////////////////////////////////int date = 0;
+		int j;
+
+		//afficheTwoWayTrip(t);
+		Element * elems = init_element();
+		//int deadline_route;
+		//int deadline_periode = date + periode;
+		for(j=0;j<nbr_route;j++)
 		{
-			printf("Failure 1\n");
-			return -1;
+			//deadline_route = TMAX+m_i[j]- g.matrice[nbr_route][j]+taille_paquet;
+			elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
+
 		}
-		tmp = get_element_i(elems2,i);
+	/*
+		elems= ajoute_elemt(elems,0,0,74);
+		elems= ajoute_elemt(elems,1,21,46);
+		elems= ajoute_elemt(elems,2,2,60);
+		elems= ajoute_elemt(elems,3,50,68);
+		elems= ajoute_elemt(elems,4,4,34);
+		elems= ajoute_elemt(elems,5,10,36);
+		elems= ajoute_elemt(elems,6,28,38);
+		elems= ajoute_elemt(elems,7,54,62);
+		elems= ajoute_elemt(elems,8,30,48);
+		elems= ajoute_elemt(elems,9,52,68);
+		elems= ajoute_elemt(elems,10,25,40);
 		
-		if(tmp == NULL)
-		{
-			printf("Failure 0\n");
-			return -1;
-		}
+		*/
+		/*affiche_etoile(g);
+		affiche_tab(m_i,nbr_route);
+		printf("%d tmax \n", TMAX);
+		*/
 		
-		date = max(date,tmp->release);
-		if(date+taille_paquet > tmp->deadline)//CRISIS
+		//affiche_tab(m_i,nbr_route);
+		//affichejobs(elems);
+		Element *  elems2 = cpy_elems(elems);
+		Element * tmp = elems2;
+		
+		int a_scheduler = nbr_route;
+		/////////////////////////////////////////////////////int a_scheduler = 11;
+		Ensemble * ens = NULL;
+		Ensemble * ensembletmp;
+		while(a_scheduler != 0)//tant qu'on n'a pas schedul tous les elements
 		{
-			
-			//printf("Crisis(main) sur la tache %d\n",tmp->index);
-			//affiche_ensemble(ens);printf(" Avant\n");
-			Element * crisise = NULL;
-			crisise = ajoute_elemt(crisise,tmp->index,tmp->release,tmp->deadline);
-
-			elems2=retire_element_i(elems2,crisise->index);
-			if(!elems2)
-					elems2 = ajoute_elemt(elems2,INT_MAX,INT_MAX,INT_MAX);
-			//printf("Taches avant crisis\n");affichejobs(elems2);printf("\n");
-			//printf("ens avant crisis\n");affiche_ensemble(ens);printf("\n");
-			ens = crisis(ens,crisise,elems2,elems,taille_paquet,periode);
-				
-			freeelems(crisise);
-			//printf("Taches apres crisis\n");affichejobs(elems2);printf("\n");
-			//printf("ens apres crisis\n");affiche_ensemble(ens);printf("\n");
-			//affiche_ensemble(ens);printf(" Apres\n");
-			if(ens == NULL)
+			//printf("test %p\n",elems2);
+			i = eligible(elems2,date);
+			//printf("i = %d\n",i);
+			if(i==-1)
 			{
-				//affichejobs(elems2);
-				freeelems(elems);
-				freeelems(elems2);
+				printf("Failure 1\n");
 				return -1;
 			}
-			//on se remet a droite de l'ensemble
-			ensembletmp = ens;
-			while(ensembletmp->frereD)
-				ensembletmp = ensembletmp->frereD;
-			//affiche_ensemble(ensembletmp);printf("Elemenent le plus a droite\n");
-			date = date_fin(ens, taille_paquet);
+			tmp = get_element_i(elems2,i);
 			
-			/*printf("APRESCRISIS\n");
-			printf("Date %d : ",date);*/
-			//recalculer_deadlines(elems2,ens->temps_depart+periode);
-			elems2 = tri_elems(elems2);
-			/*affichejobs(elems2);
-			affiche_ensemble(ens);printf("\n\n\n");*/
-		}
-		else // pas crisis
-		{
-			//printf("AVANT eligible = %d\n",i);
-			//printf("Date %d : ",date);
-			//affichejobs(elems2);
-			//affiche_ensemble(ens);printf("\n");
-			if(ens == NULL)//si c'est la premiere fois
+			if(tmp == NULL)
 			{
-				ens = cree_ensemble(tmp->index,date);
+				printf("Failure 0\n");
+				return -1;
+			}
+			
+			date = max(date,tmp->release);
+			if(date+taille_paquet > tmp->deadline)//CRISIS
+			{
+				
+				//printf("Crisis(main) sur la tache %d\n",tmp->index);
+				//affiche_ensemble(ens);printf(" Avant\n");
+				Element * crisise = NULL;
+				crisise = ajoute_elemt(crisise,tmp->index,tmp->release,tmp->deadline);
+
+				elems2=retire_element_i(elems2,crisise->index);
+				if(!elems2)
+						elems2 = ajoute_elemt(elems2,INT_MAX,INT_MAX,INT_MAX);
+				//printf("Taches avant crisis\n");affichejobs(elems2);printf("\n");
+				//printf("ens avant crisis\n");affiche_ensemble(ens);printf("\n");
+				ens = crisis(ens,crisise,elems2,elems,taille_paquet,periode);
+					
+				freeelems(crisise);
+				//printf("Taches apres crisis\n");affichejobs(elems2);printf("\n");
+				//printf("ens apres crisis\n");affiche_ensemble(ens);printf("\n");
+				//affiche_ensemble(ens);printf(" Apres\n");
+				if(ens == NULL)
+				{
+					//affichejobs(elems2);
+					freeelems(elems);
+					freeelems(elems2);
+					return -1;
+				}
+				//on se remet a droite de l'ensemble
 				ensembletmp = ens;
+				while(ensembletmp->frereD)
+					ensembletmp = ensembletmp->frereD;
+				//affiche_ensemble(ensembletmp);printf("Elemenent le plus a droite\n");
+				date = date_fin(ens, taille_paquet);
+				
+				/*printf("APRESCRISIS\n");
+				printf("Date %d : ",date);*/
+				//recalculer_deadlines(elems2,ens->temps_depart+periode);
+				elems2 = tri_elems(elems2);
+				/*affichejobs(elems2);
+				affiche_ensemble(ens);printf("\n\n\n");*/
 			}
-			else
+			else // pas crisis
 			{
-				ensembletmp->frereD = cree_ensemble(tmp->index,date);
-				ensembletmp->frereD->frereG = ensembletmp;
-				ensembletmp = ensembletmp->frereD;
+				//printf("AVANT eligible = %d\n",i);
+				//printf("Date %d : ",date);
+				//affichejobs(elems2);
+				//affiche_ensemble(ens);printf("\n");
+				if(ens == NULL)//si c'est la premiere fois
+				{
+					ens = cree_ensemble(tmp->index,date);
+					ensembletmp = ens;
+				}
+				else
+				{
+					ensembletmp->frereD = cree_ensemble(tmp->index,date);
+					ensembletmp->frereD->frereG = ensembletmp;
+					ensembletmp = ensembletmp->frereD;
+				}
+				//printf("APRES\n");
+				elems2= retire_element_i(elems2,tmp->index);
+				a_scheduler--;
+				//printf("Date %d : ",date);
+				//affichejobs(elems2);
+				//affiche_ensemble(ens);printf("\n\n\n");
+				date+=taille_paquet;
+				
 			}
-			//printf("APRES\n");
-			elems2= retire_element_i(elems2,tmp->index);
-			a_scheduler--;
-			//printf("Date %d : ",date);
-			//affichejobs(elems2);
-			//affiche_ensemble(ens);printf("\n\n\n");
-			date+=taille_paquet;
 			
+			
+		
 		}
-		
-		
+		//affichejobs(elems);
+		//affiche_ensemble(ens);
+		//ecriture des temps trouvés
+		Ensemble * a_free = ens;
+
+		transforme_waiting(ens,w_i);
+
 	
+
+		libereens(a_free);
+		freeelems(elems);
+		freeelems(elems2);
+
+		//affiche_tab(m_i,nbr_route);
+		//printf("simons wi\n");affiche_tab(w_i,nbr_route);
+		//if(!is_ok(g,taille_paquet,m_i,w_i,periode)){printf("ERROR simons\n");}
+
+		 
 	}
-	//affiche_ensemble(ens);
-	//ecriture des temps trouvés
-	Ensemble * a_free = ens;
+	else
+	{
+		Task * task = (Task *)malloc(nbr_route * sizeof(Task));
+		for(int j=0;j<nbr_route;j++)
+		{
+			task[j].release_time=arrivee[j];
+			task[j].deadline=deadline[j];
 
-	transforme_waiting(ens,w_i);
-
+		}
+		Taskgroup tg;
+		tg.n = nbr_route;
+		tg.tasks=task;
+		//printf(" Les taches sont :");
+		//show_tasks(tg);
+		int * tabtmp = wrapper_fun(tg);
+		if(tabtmp == NULL)
+		{
+			//printf("On est ici\n");
+			return -1;
+		}
+		//show_schedule(tabtmp, tg.n);
+		for(int j=0;j<nbr_route;j++)
+		{
+			w_i[j]=tabtmp[j];
+		}
+		free(tabtmp);
+		free(tg.tasks);
+		
+		
+	}
 	//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 	for(i=0;i<nbr_route;i++)
 	{
 		w_i[i] -= arrivee[i];
 	}
-
-	libereens(a_free);
-	freeelems(elems);
-	freeelems(elems2);
-
-	//affiche_tab(m_i,nbr_route);
-	//printf("simons wi\n");affiche_tab(w_i,nbr_route);
-	//if(!is_ok(g,taille_paquet,m_i,w_i,periode)){printf("ERROR simons\n");}
-
 	int maximum ;
-
+	if(ALGO_JOEL)
+		return 1;
 
 	//CALCUL TMAX
 	if(!SYNCH)
@@ -1272,7 +1310,7 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 				maximum= m_i[i]+w_i[i]+2*Dl[i];
 		}
 	}
-	
+
 
 	//TEST DEPASSEMENT PERIODE
 	int retour[nbr_route];
@@ -1546,7 +1584,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 	int deadline_periode;
 	Element * elems;
 	Ensemble * ens;
-	Ensemble * a_free;
+	Ensemble * a_free= NULL;
 	int maximum;
 
 	//printf("SIMONS PER \n");
@@ -1588,34 +1626,83 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 			continue;
 
 		//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
-		for(int j=0;j<nbr_route;j++)
+		if(!ALGO_JOEL)
 		{
-			if(j != premier)
+			for(int j=0;j<nbr_route;j++)
 			{
-				//elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
-				elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_periode,deadline[j]));
-				//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline[j],deadline_periode);
+				if(j != premier)
+				{
+					//elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
+					elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_periode,deadline[j]));
+					//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline[j],deadline_periode);
+				}
+				else
+				{
+					elems = ajoute_elemt(elems,j,arrivee[j],arrivee[j]+taille_paquet);
+				}
+
+
+			}
+			//printf("Per premier = %d\n",premier);
+			//printf("Steeve\n");affichejobs(elems);
+			ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
+			if(ens == NULL)continue;
+			/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
+			ens->frereG->frereD = ens;
+			ens = ens->frereG;*/
+			a_free = ens;
+			
+			//printf("Solution : \n");
+			//affiche_ensemble(ens);printf("\n");
+			//printf("Fin per \n");
+			transforme_waiting(ens,fin);
+		
+
+			//affiche_tab(fin,nbr_route);
+		
+			libereens(a_free);
+			freeelems(elems);
+		}
+		else
+		{
+			Task * task = (Task *)malloc(nbr_route * sizeof(Task));
+			for(int j=0;j<nbr_route;j++)
+			{ 
+				if(j != premier)
+				{
+					task[j].release_time=arrivee[j];
+					task[j].deadline=min(deadline_periode,deadline[j]);
+
+				}
+				else
+				{
+					task[j].release_time=arrivee[j];
+					task[j].deadline=arrivee[j]+taille_paquet;
+				}
+			}
+			
+
+			Taskgroup tg;
+			tg.n = nbr_route;
+			tg.tasks=task;
+			//show_tasks(tg);
+			int * tabtmp = wrapper_fun(tg);
+			if(tabtmp == NULL)
+			{
+				//printf("ici\n");
+				continue;
 			}
 			else
+				return 1;
+			for(int j=0;j<nbr_route;j++)
 			{
-				elems = ajoute_elemt(elems,j,arrivee[j],arrivee[j]+taille_paquet);
+				//show_schedule(tabtmp, tg.n);
+				fin[j]=tabtmp[j];
 			}
-
-
+			free(tabtmp);
+			free(tg.tasks);
+			//affiche_tab(fin,nbr_route);
 		}
-		//printf("Per premier = %d\n",premier);
-		//affichejobs(elems);
-		ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
-		if(ens == NULL)continue;
-		/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
-		ens->frereG->frereD = ens;
-		ens = ens->frereG;*/
-		a_free = ens;
-		
-		
-		//affiche_ensemble(ens);printf("\n");
-		//printf("Fin per \n");
-		transforme_waiting(ens,fin);
 		//affiche_tab(fin,nbr_route);
 		//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 		for(int i=0;i<nbr_route;i++)
@@ -1630,8 +1717,7 @@ int simons_periodique(Graphe g, int taille_paquet,int TMAX, int periode, int * m
 		}
 		//affiche_tab(w_i,nbr_route);
 
-		libereens(a_free);
-		freeelems(elems);
+		
 		/*
 		affiche_tab(m_i,nbr_route);
 		affiche_tab(deadline,nbr_route);
@@ -1762,38 +1848,80 @@ int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int
 	*/
 
 	date=arrivee[premier];
-
-
-	elems = init_element();
 	deadline_periode = arrivee[premier] + periode;
-	//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
-	for(int j=0;j<nbr_route;j++)
+	if(!ALGO_JOEL)
 	{
-		if(j != premier)
+		elems = init_element();
+		
+		//	printf("date = %d, arrive premier = %d periode = %d, tmax = %d\n",date, arrivee[premier],periode,TMAX);
+		for(int j=0;j<nbr_route;j++)
 		{
-			//elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
-			elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_periode,deadline[j]));
-			//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline[j],deadline_periode);
+			if(j != premier)
+			{
+				//elems = ajoute_elemt(elems,j,arrivee[j],deadline[j]);
+				elems = ajoute_elemt(elems,j,arrivee[j],min(deadline_periode,deadline[j]));
+				//printf("ajout de %d ( %d, min(%d %d) )\n",j,arrivee[j],deadline[j],deadline_periode);
+			}
+			else
+				elems = ajoute_elemt(elems,j,arrivee[j],arrivee[j]+taille_paquet);
+
+
 		}
-		else
-			elems = ajoute_elemt(elems,j,arrivee[j],arrivee[j]+taille_paquet);
+		//printf("FPT premier = %d\n",premier);
+		//affichejobs(elems);
+		ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
+		if(ens == NULL)return -1;
+		/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
+		ens->frereG->frereD = ens;
+		ens = ens->frereG;*/
+		a_free = ens;
+		
+		
+		//affiche_ensemble(ens);printf("\n");
+		//printf("Fin FPT \n");
+		transforme_waiting(ens,fin);
 
+		
+			
 
+		libereens(a_free);
+		freeelems(elems);
 	}
-	//printf("FPT premier = %d\n",premier);
-	//affichejobs(elems);
-	ens = algo_simons(elems,nbr_route,taille_paquet,date,periode);
-	if(ens == NULL)return -1;
-	/*ens->frereG = cree_ensemble(premier,arrivee[premier]);
-	ens->frereG->frereD = ens;
-	ens = ens->frereG;*/
-	a_free = ens;
-	
-	
-	//affiche_ensemble(ens);printf("\n");
-	//printf("Fin FPT \n");
-	transforme_waiting(ens,fin);
+	else
+	{
+		Task * task = (Task *)malloc(nbr_route * sizeof(Task));
+		for(int j=0;j<nbr_route;j++)
+		{
+			if(j != premier)
+			{
+				task[j].release_time=arrivee[j];
+				task[j].deadline=min(deadline_periode,deadline[j]);
 
+			}
+			else
+			{
+				task[j].release_time=arrivee[j];
+				task[j].deadline=arrivee[j]+taille_paquet;
+			}
+
+
+		}
+	
+		Taskgroup tg;
+		tg.n = nbr_route;
+		tg.tasks=task;
+		int * tabtmp = wrapper_fun(tg);
+		if(tabtmp == NULL)
+			return -1;
+		else
+			return 1;
+		for(int j=0;j<nbr_route;j++)
+		{
+			fin[j]=tabtmp[j];
+		}
+		free(tabtmp);
+		free(tg.tasks);
+	}
 	//printf("apres transforme wi\n");affiche_tab(w_i,nbr_route);
 	for(int i=0;i<nbr_route;i++)
 	{
@@ -1806,11 +1934,6 @@ int simons_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int
 		}
 		w_i[i] = w_i[i]%periode;
 	}
-		
-
-	libereens(a_free);
-	freeelems(elems);
-
 	//affiche_tab(w_i,nbr_route);
 	//printf("simons wi\n");affiche_tab(w_i,nbr_route);
 	//affiche_solution(g,taille_paquet,m_i,w_i);
@@ -1856,7 +1979,7 @@ int rec_FPT(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i, int pr
 		test= simons_FPT(g,taille_paquet,TMAX,periode,m_i,premier,routes);
 		return test;
 	}
-	else
+	else 
 	{
 		//printf("PArcours a droite, %d\n",profondeur);
 		subset[profondeur] = 0;
