@@ -18,8 +18,8 @@ all: create_folder run
 run : prog 
 	./prog
 
-prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o $(DIRbin)random_inters.o $(DIRbin)graphes.o
-	$(CC) -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o $(DIRbin)graphes.o -fopenmp -lm
+prog: $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)random.o $(DIRbin)simulations.o $(DIRbin)random_inters.o $(DIRbin)graphes.o $(DIRbin)heap.o $(DIRbin)stack.o $(DIRbin)scheduling.o $(DIRbin)benchmark.o
+	$(CC) -o prog $(DIRbin)main.o $(DIRbin)PAZL.o $(DIRbin)PALL.o $(DIRbin)operations.o $(DIRbin)init.o $(DIRbin)tests.o $(DIRbin)simons.o $(DIRbin)simulations.o $(DIRbin)random.o $(DIRbin)random_inters.o $(DIRbin)graphes.o $(DIRbin)heap.o $(DIRbin)stack.o $(DIRbin)scheduling.o $(DIRbin)benchmark.o -fopenmp -lm
 
 $(DIRbin)main.o: main.c
 	$(CC) $(CFLAGS) main.c -o $(DIRbin)main.o 
@@ -53,6 +53,20 @@ $(DIRbin)random_inters.o: random_inters.c
 
 $(DIRbin)graphes.o: graphes.c
 	$(CC) $(CFLAGS) graphes.c -o $(DIRbin)graphes.o
+
+$(DIRbin)heap.o: heap.c
+	$(CC) $(CFLAGS) heap.c -o $(DIRbin)heap.o
+
+$(DIRbin)stack.o: stack.c
+	$(CC) $(CFLAGS) stack.c -o $(DIRbin)stack.o
+
+$(DIRbin)scheduling.o: scheduling.c
+	$(CC) $(CFLAGS) scheduling.c -o $(DIRbin)scheduling.o
+
+$(DIRbin)benchmark.o: benchmark.c
+	$(CC) $(CFLAGS) benchmark.c -o $(DIRbin)benchmark.o
+
+
 
 create_folder:
 	mkdir -p $(DIRbin)

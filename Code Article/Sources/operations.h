@@ -8,8 +8,11 @@ void fisher_yates(int * tab, int taille);
 int greater(int * tab,int taille);
 int lower(int * tab,int taille);
 
-int max(int a, int b);
+#define max(a, b) (((a) >= (b)) ? (a) : (b))
+#define min(a, b) (((a) <= (b)) ? (a) : (b))
 
-int min(int a,int b);
+//int max(int a, int b);
+
+//int min(int a,int b);
 
 int longest_route(Graphe g);
