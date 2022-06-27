@@ -1908,8 +1908,15 @@ int FPT_PALL(Graphe g, int taille_paquet,int TMAX, int periode, int * m_i)
 			deadline[i] =  TMAX+m_i[i]- g.matrice[nbr_route][i]+taille_paquet;
 		}
 		decaler_release(arrivee,deadline, periode, premier,nbr_route,taille_paquet);
-	
-		
+		for(int i=0;i<nbr_route;i++)
+			printf("%d ",Dl[i]);
+		printf("\n");
+		for(int i=0;i<nbr_route;i++)
+			printf("%d ",arrivee[i]);
+		printf("\n");
+		for(int i=0;i<nbr_route;i++)
+			printf("%d ",deadline[i]);
+		printf("\n\n\n");
 		
 		
 		for(int i=0;i<nbr_route;i++)

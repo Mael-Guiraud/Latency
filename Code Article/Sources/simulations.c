@@ -22,7 +22,7 @@ All rights reserved.
 #include "random.h"
 #include "graphes.h"
 
-#define PARALLEL 1
+#define PARALLEL 0
 
 double time_diff(struct timeval tv1, struct timeval tv2)
 {
