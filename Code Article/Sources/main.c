@@ -17,7 +17,7 @@ All rights reserved.
 #include "operations.h"
 int main()
 {
-	int seed = time(NULL);
+	int seed ;//= time(NULL);
 	seed = 1656090433;
 	srand(seed);
 	printf("seed : %d \n",seed);
@@ -62,7 +62,7 @@ int main()
 	Taux de reussite des algos PALL avec un aller random sur une periode donnée (on fait varier la marge)
 	*****/
 	//void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int marge_max, int nb_simuls, int periode,int nb_rand)
-	sucess_retour_PALL(50,100,100,200,100,(8*2500)/(0.95),100);
+	sucess_retour_PALL(8,2500,20000,3000,1000,(8*2500)/(0.95),1000);
 
 
 	//tps_FPT_PALL(32, 2500,80000,0,1000,1000,0.95);

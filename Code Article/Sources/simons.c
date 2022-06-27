@@ -19,7 +19,7 @@ typedef struct element{
 	int deadline;
 	struct element * next;
 } Element;
-#define ALGO_JOEL 0
+extern int ALGO_JOEL;
 typedef struct ensemble{
 	int numero_element; // vaut -1 si c'est un ensemble
 	int temps_depart;
@@ -980,14 +980,14 @@ void transforme_waiting(Ensemble * ens, int * wi)
 int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * offsets)
 {
 	
-
+	Taskgroup tg;
 	///////////////////////////////////////////////////////taille_paquet = 6;
 	 if (!(g.N % 2))
     {
       printf ("G n'est peut être pas une étoile\n");
       exit (5);
     }
-
+    int time_algo ;
 	  int nbr_route = g.N / 2;
 	  int Dl[nbr_route];
 	  int m_i[nbr_route];
@@ -1233,8 +1233,10 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 			
 		
 		}
-		//affichejobs(elems);
-		//affiche_ensemble(ens);
+		/*printf("SOLUTION \n");
+		affichejobs(elems);
+		affiche_ensemble(ens);
+		printf("--- \n");*/
 		//ecriture des temps trouvés
 		Ensemble * a_free = ens;
 
@@ -1261,7 +1263,7 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 			task[j].deadline=deadline[j];
 
 		}
-		Taskgroup tg;
+		
 		tg.n = nbr_route;
 		tg.tasks=task;
 		//printf(" Les taches sont :");
@@ -1274,9 +1276,10 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 		}
 		//show_schedule(tabtmp, tg.n);
 		for(int j=0;j<nbr_route;j++)
-		{
+		{ 
 			w_i[j]=tabtmp[j];
 		}
+		time_algo = effective_time(tabtmp, tg.n);
 		free(tabtmp);
 		free(tg.tasks);
 		
@@ -1289,7 +1292,17 @@ int simons(Graphe g, int taille_paquet, int TMAX,int periode,int mode, int * off
 	}
 	int maximum ;
 	if(ALGO_JOEL)
-		return 1;
+	{
+		if(time_algo <= periode)
+		{
+			
+			return 1;
+		}
+		else
+		{
+			return -1;
+		}
+	}
 
 	//CALCUL TMAX
 	if(!SYNCH)
