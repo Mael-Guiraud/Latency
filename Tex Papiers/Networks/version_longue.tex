@@ -129,7 +129,7 @@ When building an assignment, we must take into account the periodicity, which ma
 
 
 We introduce the problem \pall: given a routed network, a period, the size of a message, and a deadline for each datagram, compute an assignment
-satisfying the deadlines. The aim of this article is to minimize the worst latency of the datagrams, meaning that we try to solve \pall with the tightest possible deadlines.
+satisfying the deadlines. This article aims to minimize the worst latency of the datagrams, meaning that we try to solve \pall with the tightest possible deadlines.
 We also consider the \pazl problem; it is the same as \pall, except that we ask for zero waiting time in the BBUs. A solution to \pazl 
 adds no logical latency to the datagrams and does not even require buffers in the BBUs. However, when the load of the network is high, there is often no solution
 to \pazl. Other than the load, the other important parameter when solving \pall and \pazl is the number of RRHs, on which the complexity of the proposed algorithms depends. 
@@ -147,11 +147,11 @@ The current solution to avoid statistical multiplexing in C-RAN consists in usin
 An alternative approach consists in using optical rings for both fronthaul and best-effort flows~\cite{DBLP:conf/ondm/BarthGS19,rommel2020towards,luu2021dynamic}. This relies on overdimensioning the network and using optical multiplexing technologies to avoid contention, and it requires building new expensive optical networks.
 
 Although 3GPP standards for 5G are not completely frozen yet, the core network is designed to use switched packet networks on Ethernet technology~\cite{ieee1914,gomes2015fronthaul}
-contrarily to solutions working over dedicated optical networks. The latency induced by contention buffers is one of the major manageable sources of delay in switched packet networks. In this article, to deal with contention, we propose to deterministically manage datagrams. This is similar to the concept of Deterministic Networking: the DetNet working group from IETF~\cite{finn-detnet-architecture-08} collaborates with TSN (Time-Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking~\cite{bhattacharjee2020time,8613095,durr2016no}. However, these works deal with stochastic flows of traffic, while we manage \emph{deterministic and periodic} flows. Hence, the guarantee given by these works is an upper bound on the random latency, while we aim to guarantee the minimal latency, by taking advantage of the deterministic nature of our flows. 
+contrarily to solutions working over dedicated optical networks. The latency induced by contention buffers is one of the major manageable sources of delay in switched packet networks. In this article, we propose to deterministically manage datagrams to deal with contention. This is similar to the concept of Deterministic Networking: the DetNet working group from IETF~\cite{finn-detnet-architecture-08} collaborates with TSN (Time-Sensitive Networking)~\cite{ieee802}, a task group of IEEE, to develop technical solutions for deterministic networking~\cite{bhattacharjee2020time,8613095,durr2016no}. However, these works deal with stochastic flows of traffic, while we manage \emph{deterministic and periodic} flows. Hence, the guarantee given by these works is an upper bound on the random latency, while we aim to guarantee the minimal latency, by taking advantage of the deterministic nature of our flows. 
 
 In this article, we try to solve the problems \pall and \pazl. They may look like wormhole problems~\cite{ni1993survey,cole1996benefit}, but they require minimizing the time lost in buffers and not only avoiding deadlocks. On a technical aspect, wormhole switches~\cite{cole1996benefit} are designed to read only the header of the messages before forwarding it instead of buffering the entire messages as in store-and-forward~\cite{tindell1992store}. This method has a huge impact on the latency, particularly on long messages, and we go further by trying to remove all buffering in the switches.
 
- Several graph colorings have been introduced to model problems similar to \pazl and \pall such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity} or routes~\cite{cole1996benefit} in a network. Unfortunately, they do not take into account the periodicity of the scheduling we want to build, even though the associated problems are already $\NP$-complete. The only coloring taking periodicity into account is the circular coloring~\cite{ZHU2001371,zhou2013multiple} but it is not expressive enough to capture our problems. 
+ Several graph colorings have been introduced to model problems similar to \pazl and \pall such as the allocation of frequencies~\cite{borndorfer1998frequency}, bandwidths~\cite{erlebach2001complexity}, or routes~\cite{cole1996benefit} in a network. Unfortunately, they do not take into account the periodicity of the scheduling we want to build, even though the associated problems are already $\NP$-complete. The only coloring taking periodicity into account is the circular coloring~\cite{ZHU2001371,zhou2013multiple} but it is not expressive enough to capture our problems. 
 
 The problem \pall on a star routed network is very close to a two flow-shop scheduling problem~\cite{yu2004minimizing} with the additional constraint of periodicity. To our knowledge, all studied periodic scheduling problems are different from \pall. Either the aim is to minimize the number of processors on which the periodic tasks are scheduled~\cite{korst1991periodic,hanen1993cyclic} while our problem corresponds to a single processor and a constraint similar to makespan minimization. Or, in cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a scheduling to maximize the throughput, while our period is fixed. 
 
@@ -176,7 +176,7 @@ guarantee a good latency, while our solution adds no logical latency to the C-RA
 
 \subsection*{Outline}
  In Section~\ref{sec:def}, we propose a model of the fronthaul network and the periodic sending of datagrams along its routes. Then, we introduce the problem \pall to formalize the problem of finding a periodic sending of the messages in a network without collision at the contention points. We also present the problem \pazl, a restriction of \pall where no waiting time in the BBU is allowed. We present a simple but very common topology, the star routed network, with a single shared duplex link, that is studied in the rest of the article.  In Section~\ref{sec:complexity}, we prove that both \pazl and \pall are $\NP$-hard for very restricted classes of graphs and that their optimization counterparts are hard to approximate. 
- In Section~\ref{sec:PAZL}, we study the problem \pazl and several algorithms are proposed: they are polynomial-time for small loads or small routes, or exponential time in the number of routes, based on a compact representation of optimal solutions. We use these algorithms to provide experimental evidence that \pazl can be solved positively when the network is mildly loaded. In Section~\ref{sec:PALL}, we propose polynomial-time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work well, even in extremely loaded networks. 
+ In Section~\ref{sec:PAZL}, we study the problem \pazl, and several algorithms are proposed: they are polynomial-time for small loads or small routes, or exponential time in the number of routes, based on a compact representation of optimal solutions. We use these algorithms to provide experimental evidence that \pazl can be solved positively when the network is mildly loaded. In Section~\ref{sec:PALL}, we propose polynomial-time heuristics and an exact FPT algorithm for the general \pall problem and experimentally show that they work well, even in extremely loaded networks. 
 Finally, in Section~\ref{sec:comparison}, we compare our deterministic approach to stochastic multiplexing, with several buffering policies, and with additional random traffic in the network.
 
 \section{Modeling of the Problem}\label{sec:def}
@@ -272,7 +272,7 @@ Let $[n]$ denote the interval of $n$ integers $\{0,\dots,n-1\}$.
         These choices are represented by an \textbf{assignment}, defined as follows.
 
          \begin{definition}
-         An assignment $A$ of a routed network $(\cal{R},\,\cal{B},\,\omega)$ is a function which associates to each route $r \in \cal{R}$, the pair of integers $A(r) = (o_r,w_r)$.
+         An assignment $A$ of a routed network $(\cal{R},\,\cal{B},\,\omega)$ is a function that associates to each route $r \in \cal{R}$, the pair of integers $A(r) = (o_r,w_r)$.
          \end{definition}
         The value $o_r$ is the \textbf{offset} of the route $r$ in the assignment $A$, the time at which the datagram is sent from the first vertex of $r$.
          The value $w_r$ is the \textbf{waiting time} of the route $r$ in the assignment $A$: the datagram is buffered for $w_r$ tics in $u_j \in {\cal B} \cap r$, the vertex representing the BBU.
@@ -439,7 +439,7 @@ Consider $P=6$, $\tau = 3$, and two routes $r_1$ and $r_2$ with a common content
 
 	\subsection{Valid Assignment with Low Latency}
 
-      The period $P$, as well as the size of a datagram $\tau$, are fixed in our C-RAN settings, but not the buffering policy. Hence, the aim of this article is to find a valid assignment that minimizes the worst latency of the transmissions over the network, that is $TR(A)$. We formally introduce the problem we want to solve in this article. 
+      The period $P$, as well as the size of a datagram $\tau$, are fixed in our C-RAN settings, but not the buffering policy. Hence, this article aims to find a valid assignment that minimizes the worst latency of the transmissions over the network, that is $TR(A)$. We formally introduce the problem we want to solve in this article. 
 
       \bigskip
 
@@ -478,7 +478,7 @@ The assignment can then be seen as a function from the routes to the integers (t
       \bigskip
 
 
-     Studying \pazl is simpler: in the instance representing a routed network, $\cal{B}$ and the deadline function may be omitted and a solution is a function which associates an offset to each route.  Moreover, a solution to \pazl is more efficient when implemented in real telecommunication networks, since we do not need a contention buffer at all. A switch taking full advantage of the absence of a buffer is presented in~\cite{Marc2201:Experimental}. 
+     Studying \pazl is simpler: in the instance representing a routed network, $\cal{B}$ and the deadline function may be omitted and a solution is a function that associates an offset to each route.  Moreover, a solution to \pazl is more efficient when implemented in real telecommunication networks, since we do not need a contention buffer at all. A switch taking full advantage of the absence of a buffer is presented in~\cite{Marc2201:Experimental}. 
       An unusual property of assignments is that given a routed network and a deadline, we may have a $(P,\tau)$ assignment but no $(P',\tau)$ assignment with $P' > P$: the existence of an assignment is not monotone with regard to $P$.
 
 	\begin{proposition} \label{prop:monotonic}
@@ -535,8 +535,8 @@ The assignment can then be seen as a function from the routes to the integers (t
     \end{figure}
   	
   Let us introduce a few parameters quantifying the complexity of a routed network.
-The \textbf{contention depth} of a routed network is the size of the longest route (number of arcs) of the network, minus one. It is the number of contention points on the route since the first and the last vertex are private to the route. The \textbf{width} of a vertex is the number of routes which contain it --- equivalently its indegree or its outdegree. By definition,
-the first and last vertex of a route are of width one, while all other vertices are of width at least two (otherwise they are removed).
+The \textbf{contention depth} of a routed network is the size of the longest route (number of arcs) of the network, minus one. It is the number of contention points on the route since the first and the last vertex are private to the route. The \textbf{width} of a vertex is the number of routes that contain it --- equivalently its indegree or its outdegree. By definition,
+the first and last vertices of a route are of width one, while all other vertices are of width at least two (otherwise they are removed).
 The \textbf{contention width} of a routed network is the maximal width of its vertices.
 A valid $(P,\tau)$ assignment of a routed network must satisfy that $P/\tau$ is larger or equal to the contention width. Now, let us fix $P$ and $\tau$. For a given vertex of contention width $c$, we define its \textbf{load} as $c\tau/P$. It represents the proportion of the period used by datagrams at this contention point. The load of the routed network is the maximum load of its vertices. A routed network must have a load less or equal to one to admit a valid assignment.
 
@@ -806,7 +806,7 @@ $\downarrow$
   $(c_1,c_2)$. We let $\omega'(r_i,c_1) = \omega'(r_i,c_1) - \omega'(r_0,c_1)$, which implies that $\omega'(r_0,c_1) = 0$.  All weights of arcs $(c_1,c_2)$ are changed by the same value, hence collisions are not modified. We change $d'(r_i)$ to  $d'(r_i) - \omega'(r_0,c_1)$ for all $i$ so that the constraints on the deadlines stay the same.
   \end{proof}
 
-   From now on, we may assume that a star routed network is canonical, using Proposition~\ref{prop:canonical}. To give an instance of \pall where the routed network is a canonical star routed network, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the datagram size, and $d$ the deadline function. For an instance of \pazl we can also omit $d$.
+   From now on, we may assume that a star routed network is canonical, using Proposition~\ref{prop:canonical}. To give an instance of \pall where the routed network is a canonical star routed network, it is enough to give the weights of the arcs $(c_1,c_2)$ for all routes, the period, the datagram size, and $d$ the deadline function. For an instance of \pazl, we can also omit $d$.
 
 
 \section{Hardness of \texttt{PALL} and \texttt{PAZL}}
@@ -989,7 +989,7 @@ If the period is slightly smaller than the bound of Proposition~\ref{prop:SL}, t
 \subsection{Greedy Algorithm}
 
 
-We propose a greedy algorithm which tries to build a valid assignment and always succeeds when the load is less than $1/3$. Therefore, in the rest of the article, we are only concerned with loads larger than $1/3$. In fact, in a follow-up work~\cite{guiraud2020scheduling}, we prove that there is always an assignment for loads smaller than $0.4$ and with a high probability for loads less than $0.5$. In this article, we present only the simplest greedy method to solve \pazl and focus on its comparison to the previous method and to an exact algorithm we present in the next section.
+We propose a greedy algorithm that tries to build a valid assignment and always succeeds when the load is less than $1/3$. Therefore, in the rest of the article, we are only concerned with loads larger than $1/3$. In fact, in a follow-up work~\cite{guiraud2020scheduling}, we prove that there is always an assignment for loads smaller than $0.4$ and with a high probability for loads less than $0.5$. In this article, we present only the simplest greedy method to solve \pazl and focus on its comparison to the previous method and to an exact algorithm we present in the next section.
 
 The idea is to restrict the possible offsets which can be chosen for the routes. It seems counter-intuitive since it decreases artificially the number of available offsets to schedule new datagrams. However, it does reduce the number of forbidden offsets for unscheduled datagrams. A \textbf{meta-offset} is an offset of value $i\tau$, with $i$ an integer from $0$ to $P / \tau$. We call \metaoffset the greedy algorithm which works as follows: for each datagram, in the order they are given, it tries all meta-offsets from $0$ to $P/\tau$ as an offset for the assignment until one does not create a collision with the current partial assignment.
 
@@ -1679,9 +1679,6 @@ We could also allow for links of different speeds in the fronthaul network, but 
 the interface between links more precisely, which is tedious but could be solved using scheduling over several parallel machines using~\cite{simons1989fast}.
 Instead of minimizing the worst transmission time, we may want to minimize the average transmission time. This objective is linear, and it makes the size of the route irrelevant to the objective. Hence, it should be \emph{easier} to solve, for instance, using linear programming. We could allow preemption, that is the datagrams may be cut into pieces, which would certainly change the complexity of the problem and help with the latency.
 Instead of computing periodic sending schemes, we could try to organize communications with pseudo-periodic schemes (periodic over several periods). Finally, the routes may not be fixed but computed from the network to minimize $TR(A)$, which makes the problem even more difficult to solve.
-
-
-
 
 
  	\paragraph*{Acknowledgments} 
