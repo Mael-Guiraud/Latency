@@ -5,3 +5,4 @@ typedef struct graphe{
 }Graphe ;
 
 #define SYNCH 0
+
