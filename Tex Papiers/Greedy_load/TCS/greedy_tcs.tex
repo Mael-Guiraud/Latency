@@ -557,24 +557,26 @@ of the $n+1^{th}$ message randomly, extending the trace by a random possible off
 Since \greedyuniform can be seen as a simple random process on traces by Th.~\ref{theorem:uniform}, it is easy to analyze its probability of success.
 
 \begin{theorem}
-The probability over all instances with $n$ messages and period $P$ that \greedyuniform solves $\pma$ positively is $\displaystyle{\prod_{i > P/2}^{n-1}1 - \frac{\binom{n}{2i-P}}{\binom{P}{i}}}$.
+The probability over all instances with $n$ messages and period $P$ that \greedyuniform solves $\pma$ positively is $\displaystyle{\prod_{i \geq P/2}^{n-1}\left(1 - \frac{\binom{i}{2i-P}}{\binom{P}{i}}\right)}$.
 \end{theorem}
 \begin{proof}
-We evaluate $\Pr(P,i)$ the probability that \greedyuniform fails at the $i^{th}$ step assuming it has not failed before. It is independent of the delay of the $i^{th}$ message. Indeed, the operation which adds one to all times used in the second period is a bijection on the set of traces of size $i-1$. It is equivalent to removing one to the delay of the $i^{th}$ message. We can thus assume that the delay is zero.
+We evaluate $\Pr(P,i)$ the probability that \greedyuniform fails after succeeding to assign the first $i$ messages, that is when it is not possible
+to assign the $(i+1)^{th}$ message. This probability is independent of the delay of the $(i+1)^{th}$ message. Indeed, the operation which adds one to all times used in the second period is a bijection on the set of traces of size $i$. It is equivalent to removing one to the delay of the $(i+1)^{th}$ message. We can thus assume that the delay is zero.
 
-Let $S_1$ be the set of times used in the first period by the $i-1$ first messages and $S_2$ the set of times used in the second period. We can assume that $S_1$ is fixed, since all subsets of the first period are equiprobable and because $S_2$ is independent of $S_1$ by Th.~\ref{theorem:uniform}. There is no possible offset for the $i^{th}$ message, if and only if $S_1 \cup S_2 = [P]$. It means that $S_2$ has been drawn such that it contains $[P] \setminus S_1$. By Th.\ref{theorem:uniform}, $S_2$ is uniformly distributed over all sets of size $i-1$. Hence, the probability that  $[P]  \setminus S_1 \subseteq S_2$  is the probability to draw a set of size $i-1$ which contains $P- i + 1$ fixed elements. This proves $\Pr(P,i) = \frac{\binom{i}{2(i-1)-P}}{\binom{P}{i-1}}$.
+Let $S_1$ be the set of times used in the first period by the $i$ first messages and $S_2$ the set of times used in the second period. We can assume that $S_1$ is fixed, since all subsets of the first period are equiprobable and because $S_2$ is independent of $S_1$ by Th.~\ref{theorem:uniform}. There is no possible offset for the $(i+1)^{th}$ message, if and only if $S_1 \cup S_2 = [P]$. It means that $S_2$ has been drawn such that it contains $[P] \setminus S_1$. By Th.\ref{theorem:uniform}, $S_2$ is uniformly distributed over all sets of size $i$. Hence, the probability that  $[P]  \setminus S_1 \subseteq S_2$  is the probability to draw a set of size $i$ which contains $P- i$ fixed elements. This proves $\Pr(P,i) = \frac{\binom{i}{2i - P}}{\binom{P}{i}}$.
 
-From the previous expression, we can derive the probability of success of \greedyuniform by a simple product of the probabilities of success $(1 - \Pr(P,i))$ at step $i$, for $i \leq n$. The product is over $ P/2 < i \leq n$, because for $i \leq P/2$, the probability of success of \greedyuniform is one. 
+From the previous expression, we can derive the probability of success of \greedyuniform by a simple product of the probabilities of success $(1 - \Pr(P,i))$ at step $i$, for $i \leq n$. The product is over $ P/2 \leq i < n$, because for $i < P/2$, the probability of success of \greedyuniform is one.  
 \end{proof}
 
 
-If we fix the load $\lambda = n/P$, we can bound $\Pr(P,n)$ using Stirling formula. The computation yields a constant $C_{\lambda}$
-such that $\Pr(P,n) \leq C_{\lambda} \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^P$.
+Let us fix the load $\lambda = n/P$. We can bound $\Pr(P,n)$ using Stirling approximation by an expression of $\lambda$ and $P$.
+ The computation yields a constant $C_{\lambda}$ such that $\Pr(P,n) \leq C_{\lambda} \left(\frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}\right)^P$.
 As an illustration, with $\lambda = 2/3$, $\Pr(P,n) < 1,16 \times (0,84)^P$.
 
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
-The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence 
-$f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by $C_{\lambda} \lambda P f(\lambda)^P$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
+The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence $f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by the sum of probabilities
+that it fails at step $i$ for $P/2 \leq i < n$. We have $\Pr(P,i) < \Pr(P,j)$
+if $i > j$, hence we bound the probability that \greedyuniform fails by $C_{\lambda} \lambda P/2 f(\lambda)^P$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
 For instance, with $n = 8$ and $P=12$ (thus $\lambda = 2/3$), the probability of success of \greedyuniform is larger than $0.92$ (see Sec.~\ref{sec:perf_small} for more values).
 
 
