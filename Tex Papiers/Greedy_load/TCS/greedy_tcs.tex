@@ -617,7 +617,7 @@ We obtain an instance with a period $P'= m\tau'$, which is slightly smaller than
 \subsection{From Large to Small Messages}\label{sec:reduction}
 
 
-In this section, we explain how we can trade load or buffering in the network to reduce the size of messages up to $\tau = 1$. This further justifies the interest of Sec.~\ref{sec:small}, where specific algorithms for $\tau = 1$ are given.
+In this section, we give methods to reduce the size of messages up to $\tau = 1$, at the cost of increasing the or allowing buffering in the network. This further justifies the interest of Sec.~\ref{sec:small}, where specific algorithms for $\tau = 1$ are given.
 
 \paragraph*{Doubling the Load}
 
@@ -675,11 +675,11 @@ We schedule compact pairs of messages with even $d_i$, then we schedule single m
 
 %We may want to add less latency to the message using the longest route. A simple solution is the following: choose the message with the longest route as the reference remainder by subtracting its remainder from every delay. As a consequence, this message needs zero buffering. However, the message with the second-longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. 
 
-An alternative would be to minimize the average buffering time rather than the worst latency. We prove that we can do the previous transformation yielding $\tau=1$ while optimizing the average latency.
-In the reduction we have chosen $b_i$ so that $b_i + d_i = 0 \mod \tau$.
+Alternatively, we may minimize the average latency rather than the worst latency. We show how to do the previous transformation yielding $\tau=1$ while optimizing the average latency.
+In the transformation, we have chosen $b_i$ so that $b_i + d_i = 0 \mod \tau$.
 However, we can also fix $t$ such that $b_i + d_i = t \mod \tau$.
 By subtracting $t$ to all delays, we obtain an equivalent instance where 
-all delays are multiple of $\tau$.
+all delays are multiple of $\tau$ and we can conlude as before.
 
  For each $i$ and $t$, we let $b_{i,t}$ be the minimal integer satisfying $d_i + b_{i,t} = t \mod \tau$. We let $L(t)$ be the sum of buffering times used for the messages when $t$ is chosen as remainder, that is $L(t) = \sum_{i=0}^{n-1} b_{i,t}$. To minimize the average latency, we must minimize $L(t)$.
 
@@ -689,7 +689,8 @@ all delays are multiple of $\tau$.
 
 In this section, we explain how algorithms solving \pma may be used on more complex networks with more than two contention points.
 We consider networks with \textbf{coherent routing}, a common property of telecommunication networks (see e.g.~\cite{Schwiebert1996ANA}).
-Each message follows a fixed route from an antenna to the data center, and the coherent routing property implies that two routes share either nothing or a single path (i.e. a sequence of contiguous links) in the network. See Fig.~\ref{fig:coherent} for a network with and without coherent routing.
+Each message follows a directed path from an antenna to the data center.
+The coherent routing property implies that two routes share either nothing or a single path (i.e. a sequence of contiguous links) in the network. See Fig.~\ref{fig:coherent} for a network with and without coherent routing.
 
 \begin{figure}
 \begin{center}
@@ -793,15 +794,24 @@ Each message follows a fixed route from an antenna to the data center, and the c
 \end{figure}
 
 
-The problem $\pma$ can be defined over any network: the problem is to find an assignment (an offset for each message) such that there is no collision in the network.
-The problem $\pma$ (under the name \textsc{PAZL}) is proven to be $\NP$-hard in~\cite{bartharxiv2018deterministic} and the instances used for the reduction have a coherent routing. 
+The problem $\pma$ can be generalized to any network: the problem is to find an assignment (an offset for each message) such that there is no collision in the network. The problem $\pma$ for general networks (under the name \textsc{PAZL}) is proven to be $\NP$-hard in~\cite{bartharxiv2018deterministic} and the instances used for the reduction have a coherent routing. 
 
-When the routing is coherent, for each pair of messages, there is either no common contention point or a single contention point which is the beginning of their common path. If there is no collision at this contention point, there is no collision between these two messages further in the network.
-In our model, the routing is coherent from the antennas to the data centers, and then it is coherent from the data centers to the antenna. Hence, the collision between two messages can be characterized by their two contentions points (on the way forward and on the way back) and the delay between these two points. 
+When the routing is coherent, for each pair of messages, there is either no common contention point or a single contention point which is the beginning of their common path. Indeed, if there is no collision at this contention point, there is no collision between these two messages further in the network.
+In our model, the routing is coherent from the antennas to the data centers, and then it is coherent from the data centers to the antenna. Hence, the collision between two messages can be characterized by their two contention points (on the way forward and on the way back) and the delay between these two points. 
 
-We now prove that we can transform a network with coherent routing into a network with a single shared link such that an assignment of the latter is also an assignment of the former. Therefore, the algorithms proposed in this article for the single shared link case can be transferred to the coherent routing case. 
+We now prove that we can transform a network with coherent routing into a network with a single contention point such that an assignment of the latter is also an assignment of the former. Therefore, the algorithms proposed in this article for the single shared link case can be transferred to the coherent routing case. 
 
-The transformation is the following: let us consider two contention points $c_1$ and $c_2$ in the network, such that there is no contention point before $c_1$ nor between $c_1$ and $c_2$. All messages going through $c_2$ but not $c_1$ are routed through $c_1$ and then $c_2$. The contention point $c_2$ is then removed from the network, see Fig.~\ref{fig:transformation}. Let $l$ be the length of the link between $c_1$ and $c_2$. Let $S$ be the set of messages which have been rerouted from $c_2$ to $c_1$, and let $A$ be a valid assignment for the transformed network. Let $A'$ be the assignment defined by, for $i\notin S$, $A'(i) = A(i)$ and for $i \in S$, $A'(i) = A(i) + l \mod P$, then $A'$ is a valid assignment of the original network.
+We now describe a transformation removing a contention point. Let us consider two contention points $c_1$ and $c_2$ in the network $N$, such that there is no contention point before $c_1$ nor between $c_1$ and $c_2$ and there is an arc from $c_1$ to $c_2$ in the path of one message. Since $N$ is with coherent routing, there is a single arc between $c_1$ and $c_2$, and we denote its length by $l$. 
+Let $S$ be the set of messages going through going through $c_2$ but not $c_1$. We crete a new network $N'$ by modifying the paths followed by each message $m \in S$. If $m$ follows the arc $(c,c_2)$ of length $l_m$, then we replace it by an arc $(c,c_1)$ of length $l_m - l \mod P$ followed by the arc $(c_1,c_2)$ of length $l$.
+
+Consider a valid assignment $A$ for $N'$. By construction, the constraints to satisfy because of collisions are the same as in $N$, except on vertex $c_1$, where they are strictly stronger. Hence, the assignment $A$ is also valid for $N$. Moreover, if the network is with coherent routing, then the modified network is also with coherent routing.    
+
+Since $N'$ is with coherent routing, there is a single arc between $c_1$ and $c_2$ of length $l$. By construction, no path arrives in $c_2$. For each message $m \in S$, with in its path the arcs $(c_1,c_2)$ and $(c_2,c_3)$ of length $l_m$, we replace the two arcs by $(c_1,c_3)$ of length $ l + l_m \mod \tau$. 
+ The contention point $c_2$ is then removed from the network, as in Fig.~\ref{fig:transformation} and we obtain a network with coherent routing and the same satisfying assignments as the original one.
+
+If the network is not with coherent routing, then the transformation would fail at the previous step. Indeed, we could have $c_1$ and $c_2$ with several
+arcs of different length inbetween, whith no way to replace paths of size two
+through $c_1$ by an arc and obtain an equivalent network. 
 
 \begin{figure}
 \begin{center}
@@ -904,13 +914,9 @@ The transformation is the following: let us consider two contention points $c_1$
 \end{figure}
 
 
-The coherent routing property ensures that applying the previous transformation to some network $N$ while possible, yields a network $N'$ with a single shared link. Hence, we can apply the algorithms presented in this article to find an assignment for $N'$, which can then be turned back into an assignment of $N$. Let us define the load of a general network as $n\tau /P$, then the load of $N'$ is the same as the load of $N$. It proves that there is always an assignment when the load of a network with coherent routing is less than $2/5$ or less than $1/2 + (\sqrt{5}/2 -1)$ and $\tau = 1$. 
+ We can apply the algorithms presented in this article to find an assignment for $N'$, which can then be turned back into an assignment of $N$. Let us define the load of a general network as $n\tau /P$, then the load of $N'$ is the same as the load of $N$. We have proved that \pma for general networks with coherent routing can be solved positively when the load is less than $2/5$ or less than $1/2 + (\sqrt{5}/2 -1)$ and $\tau = 1$. 
 
-Remark that there is a more precise way to define the load for general networks since the load is not a global notion. 
-Let $n_c$ be the number of messages going through the contention point $c$, then the load at $c$ is $n_c\tau/P$. The \textbf{local load} of the network is then defined as the maximum
-of the load of the contention points. It is always less than the load defined as $n\tau /P$ and it can be significantly so.
-It is easy to see that in a network with coherent routing, any greedy algorithm finds a solution when the local load is less than $1/4$ since we can associate 
-exactly two contention points to each message. However, the algorithms of this article do not seem to work for a local load larger than $1/4$, since the bounds on $\Fo$ or $\Fmo$ do not hold anymore. 
+However, there is a more relevant way to define the load for general networks. Let $n_c$ be the number of messages going through the contention point $c$, then the load at $c$ is $n_c\tau/P$. The \textbf{local load} of the network is then defined as the maximum of the load of the contention points. It is always less than the load defined as $n\tau /P$ and it can be significantly so. For the same reason as for a single contention point, in a network with coherent routing, any greedy algorithm finds a solution when the local load is less than $1/4$. However, the algorithms of this article do not seem to work for a local load larger than $1/4$, since the bounds on $\Fo$ or $\Fmo$ do not hold anymore. 
 
 
 
