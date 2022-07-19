@@ -164,8 +164,7 @@ It shows that the algorithms of this article work for random instances with a mu
 \end{figure}
 \end{center}
 
-In this article, we model a simple network in which periodic messages flow through a single bidirectional link. Each RRH sends messages through the link to its
-BBU and two messages cannot go at once in the link: this is the first contention point, represented in Fig.~\ref{fig:model}. Upon receiving a message, a BBU sends an answer back to its RRH, which goes through the link in the other direction: this is the second contention point represented in Fig.~\ref{fig:model}. Since the answer must be sent back as soon as a message arrives, we see this process as a single message going from an RRH to its BBU and back to the RRH, while traversing two contention points. 
+In this article, we model a simple network in which periodic messages flow through a single bidirectional link. Each RRH sends messages through the link to its BBU and two messages cannot go at once in the link: this is the first contention point, represented in Fig.~\ref{fig:model}. Upon receiving a message, a BBU sends an answer back to its RRH, which goes through the link in the other direction: this is the second contention point represented in Fig.~\ref{fig:model}. Since the answer must be sent back as soon as a message arrives, we see this process as a single message going from an RRH to its BBU and back to the RRH, while traversing two contention points. 
 
 Messages using the link in two different directions do not interact, since the link we model is full-duplex. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. This \textbf{size} represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas.
 
@@ -295,8 +294,7 @@ Then, because of collisions in the second period, $C_1$ forbids at most four met
 \end{theorem}
 \begin{proof}
 Let $n$ be the number of messages to schedule.
-In the first phase of \compactpair, $n_2$ compact pairs are scheduled to build a partial assignment $A$. Let us first assume that there are more compact pairs built 
-using the method of Lemma~\ref{lemma:pair_find} than compact pairs which are scheduled.
+In the first phase of \compactpair, $n_2$ compact pairs are scheduled to build a partial assignment $A$. Let us first assume that there are more compact pairs built using the method of Lemma~\ref{lemma:pair_find} than compact pairs which are scheduled.
 When scheduling a new compact pair, the position of the first $n_2$ compact pairs on the first period forbid $4n_2$ offsets for a compact pair. In the second period, we use Lemma~\ref{lemma:pair_forbid} to bound the number of forbidden offsets by $4n_2$.   
 Hence, $\Fmo_2(A) \leq 8n_2$. By definition of $\Fmo_2(A)$, there are offsets to schedule compact pairs while $\Fmo_2(A) < m$. Thus, $A$ can be extended if $8n_2 < m$.
 Since exactly $n_2$ pairs are scheduled, $n_2 \geq m/8$.  
@@ -324,8 +322,8 @@ Let $i_1 < \dots < i_k$ be a sequence of messages with $r_{i_1},\dots,r_{i_k}$ i
 It is a compact $k$-tuple, if there is a valid partial assignment of these messages, such that messages in the second period are in order $i_1,\dots,i_k$ and for all $l$, $A(i_l) + (d'_{i_l} + 1)\tau \mod P = A(i_{l+1}) + d'_{i_{l+1}}\tau \mod P$.
 \end{definition}
 
- Scheduling a compact $k$-tuple is choosing a meta-offset for the first message of the tuple, the offsets of the other messages are also fixed by this choice.  
-The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples using meta-offsets while possible, then scheduling compact $(k-1)$-tuples and so on until $k=1$.
+ Scheduling a compact $k$-tuple is choosing a meta-offset for the first message of the tuple, the offsets of the other messages are also fixed by this choice. The algorithm \texttt{Compact k-tuples} works by scheduling compact $k$-tuples using meta-offsets while possible, then scheduling compact $(k-1)$-tuples and so on until $k=1$.
+ 
 
 
 \begin{lemma}\label{lemma:uple_find}
@@ -336,18 +334,22 @@ We assume the messages are sorted by increasing $r_i$s. We prove the lemma by in
 Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$ messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay, then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. Each of the $k-1$ elements of $C$ forbids one possible meta-delay for an additional $k$-th message in $C$. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
 \end{proof}
 
+In \compactpair, the compact pairs are created and scheduled in order of their $r_i$. In \texttt{Compact k-tuples}, the compact tuples are produced thanks to~\ref{lemma:uple_find} by going over the set of messages several times, hence inside a compact tuples the $r_{i_1}$'s are increasing but not
+between successive tuples. 
+
 
 \begin{theorem}\label{th:k-tuples}
-\texttt{Compact 8-tuples} always solves \pma positively on instances of load at most $2/5$and with more than $205$ messages.
+\texttt{Compact 8-tuples} always solves \pma positively on instances of load at most $2/5$ and with more than $205$ messages.
 \end{theorem}
 \begin{proof}
-We use the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuples forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. 
-It enables us to compute a lower bound on the number of scheduled $i$-tuples for $i$ equal $k$ down to $1$ by bounding $\Fmo_i(A)$, the number of forbidden meta-offsets when scheduling compact $i$-tuples in the algorithm. 
-If we denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm,
-we have the following equation:  $$ \Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j+1)*(i+1)}.$$
+We use the following fact, which generalizes Lemma~\ref{lemma:pair_forbid}: A $k$-tuple forbids $k+j+1$ offsets in the second period when scheduling a $j$-tuple. Remark that one more offset is forbidden compared to Lemma~\ref{lemma:pair_forbid} when $k = j = 2$, because it is not true anymore that all
+$r_i$ in the $j$-tuple are larger than those of the already scheduled $k$-tuple.
+
+Let us denote by $n_i$ the number of compact $i$-tuples scheduled by the algorithm. We now compute a lower bound on the $n_i$ for $i$ equal $k$ down to $1$ by bounding $\Fmo_i(A)$, the number of forbidden meta-offsets when scheduling compact $i$-tuples in the algorithm. 
+We have the following equation:  $$ \Fmo_i(A) \leq \displaystyle{\sum_{j=i}^k n_j(j+1)*(i+1)}.$$
 The equation for $n_1$ is slightly better: 
 $$ \Fmo(A) \leq \displaystyle{\sum_{j=1}^k n_j(2j + 1)}.$$
-A bound on $n_i$ can be computed, using the fact that $A$ can be extended while $\Fmo_i(A) < m$ and assuming we know the value of the $n_j$'s with $j > i$. 
+A lower bound on $n_i$ can be computed, using the fact that $A$ can be extended while $\Fmo_i(A) < m$ and assuming we know the value of the $n_j$'s with $j > i$. 
 Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built, when $n + n_i - \sum_{i \leq j \leq 8} j*n_j$ is larger than $i + i(i-1)(2i-1)/6$. 
 A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is at most $2/5$ and for $n \geq 205$.
 \end{proof}
@@ -358,24 +360,23 @@ The bound of Lemma~\ref{lemma:uple_find} can be refined, by using better algorit
 
 \section{Messages of Size One} \label{sec:small}
 
-We consider the special case $\tau = 1$. While $\tau > 1$ for a C-RAN application, other
-applications such as sensors communicating with a base station through a low bandwidth channel may be modeled with $\tau = 1$. Moreover, in Sec.~\ref{sec:reduction}, we prove that any instance with $\tau >1$ can be transformed into an instance with $\tau = 1$,
-by increasing the load or the delays.
+We consider the special case $\tau = 1$. While $\tau > 1$ for a C-RAN application, other applications such as sensors communicating with a base station through a low bandwidth channel may be modeled with $\tau = 1$. Moreover, in Sec.~\ref{sec:reduction}, we prove that any instance with $\tau >1$ can be transformed into an instance with $\tau = 1$, by increasing the load or the latency of the system.
 
-When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $\Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the set of scheduled messages. In this section, we give a polynomial time algorithm that always finds a valid assignment when the load is less than $1/2 + (\sqrt{5}/2 -1)$.
+When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $\Fo(A) \leq (4\tau -2)|S| = 2|S|$ where $S$ is the set of scheduled messages. In this section, we give a polynomial time algorithm that always finds a valid assignment when the load is less than $1/2 + (\sqrt{5}/2 -1)$. We also show that a simple randomized greedy algorithm
+works for loads arbitrarily close to one on random instances.
 
 \subsection{Deterministic Algorithm}
 
-We define the notion of \emph{potential} of a partial assignment, which indirectly measures how many offsets are left available by this assignment for all messages of the instance. To go above $1/2$ of load, messages are scheduled greedily, and when the unscheduled messages have no available offset, the potential is optimized by local operations on the partial assignment, to get more available offsets. 
- 
+We define the notion of \emph{potential} of a partial assignment, which indirectly measures how many offsets are left available by this assignment for all messages of the instance. To go above $1/2$ of load, we introduce the
+the \swapandmove algorithm: it schedules message greedily, and when it fails, the potential is optimized by local operations on the partial assignment, to get more available offsets. 
+
 \begin{definition}
 Let $i$ be a message of delay $d$ and let $A$ be a partial assignment.
 The potential of $i$ for $A$, denoted by $pot_{msg}(i)$, is the number of integers $p \in [P]$ such that $p$ is used in the first period and $p+d \mod P$ is used in the second period. 
 \end{definition}
 
 The computation of the potential of a message of delay $3$, is illustrated in Fig.~\ref{fig:messagepotential}. The potential of a message counts how many forbidden offsets are avoided by the message given a partial assignment $A$.
-Indeed, when $p$ is used in the first period and $p+d \mod P$ is used in the second period,
-then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
+Indeed, when $p$ is used in the first period and $p+d \mod P$ is used in the second period, then the same offset is forbidden \emph{twice} for a message of delay $d$. Hence, the potential of a message is related to the number of possible offsets as stated in the following lemma. 
 \begin{figure}
 \begin{center}
 \includegraphics[scale=1]{messagepotential}
@@ -407,9 +408,7 @@ Let $p \in [P]$ be a position in the first period, and let $A$ be a valid partia
 \label{fig:positionpotential}
 \end{figure}
 
-The potential of a position is illustrated in Fig.~\ref{fig:positionpotential}.
-Instead of decomposing the global potential as a sum over messages, it can be interpreted
-as a sum over positions, as stated in the next lemma.
+The potential of a position is illustrated in Fig.~\ref{fig:positionpotential}. Instead of decomposing the global potential as a sum over messages, it can be interpreted as a sum over positions, as stated in the next lemma.
 
 \begin{lemma}\label{lemma:pot_pos}
 The sum of potentials of all positions used in the first period by messages scheduled by $A$ is equal to $Pot(A)$.  
@@ -445,10 +444,7 @@ Hence, each used position of the second period contributes $1$ for each message 
 Since $A$ is of size $k$, there are $k$ used positions and the sum is equal to $kn$.
 \end{proof}
 
- As a consequence of this lemma, $Pot(A) \leq nk$. Let us define a \textbf{Swap operation},
- which guarantees to obtain at least half the maximal value of the potential.
-Let $A$ be some partial assignment of size $s$ and let $i$ be an unscheduled message. 
-Assume that $i$ cannot be used to extend $A$. The Swap operation is the following: 
+ As a consequence of this lemma, $Pot(A) \leq nk$. Let us define a \textbf{Swap operation}, which guarantees to obtain at least half the maximal value of the potential. Let $A$ be some partial assignment of size $s$ and let $i$ be an unscheduled message. Assume that $i$ cannot be used to extend $A$. The Swap operation is the following: 
 select a free position $p$ in the first period, remove the message which uses the position $p+d_i$ in the second period from $A$, and extend $A$ by $i$ with offset $p$. We denote by $Swap(i,p,A)$ the partial assignment obtained by this operation.
 
 \begin{lemma}\label{lemma:swap}
@@ -464,14 +460,10 @@ By hypothesis, $i$ cannot be scheduled, then, for all $p \in P_{f}$, $p+d_i$ is 
 Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$. It implies that for all $p$, the potential of $p$ is smaller than the potential of $F(p)$. Since $F$ is an injection from $P_f$ to $P_u$, we have that $V_f \leq V_u = Pot(A)$. Since $V_f + Pot(A) = kn$, we have that $Pot(A) \geq kn/2$.
 \end{proof}
 
+Let us now define algorithm \swapandmove. 
+It schedules messages using \firstfit while possible. Then, it applies the Swap operation while it increases the potential. When the potential cannot be improved by a Swap anymore, \swapandmove try to schedule a new message at each position. When scheduling the message at some position, it is in conflict with one or two already scheduled messages, which are moved to another offset if possible. If \swapandmove fails to schedule the message it stops, otherwise the whole procedure is repeated. 
 
-Let us now describe the algorithm \swapandmove, which is based on the idea of optimizing the potential of a partial assignment by local modifications, to be able to extend it.
-
-Algorithm \swapandmove schedules messages using \firstfit while possible. Then, it applies the Swap operation while it increases the potential. When the potential cannot be improved by a Swap anymore, \swapandmove try to schedule a new message at each position. When scheduling the message at some position, it is in conflict with one or two already 
-scheduled messages, which are moved to another offset if possible. If \swapandmove fails to schedule the message it stops, otherwise the whole procedure is repeated. 
-
-Algorithm \swapandmove is not greedy, since we allow to change the offset of a message,
-either to improve the potential or to free an offset for scheduling a new message. While computing the potential requires knowing all delays in advance, \swapandmove can be adapted to work online by considering the potential of a partial assignment to be the sum of the scheduled messages.
+Algorithm \swapandmove is not greedy, since we allow to change the offset of a message, either to improve the potential or to free an offset for scheduling a new message. While computing the potential requires knowing all delays in advance, \swapandmove can be adapted to work online by considering the potential of a partial assignment to be the sum of potentials of the scheduled messages.
 
 
 \begin{theorem}
