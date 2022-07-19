@@ -1,16 +1,18 @@
-#include "nb_bbu.h"
+
 #define MAX_LENGTH 20000
 
 #define MESSAGE_SIZE 2500
-
+#define NB_BBU 2
 #define NB_COLLISIONS 4
 
 #define NB_ROUTES_PER_FLOW 1
+
+//Chance de tirer la route
 #define PROBA 1
 #define DISTRIBUTED 1
 
 //Mod synch or not
-#define SYNCH 0
+#define SYNCH 1
 
 // CONFIG OF THE SIMULATION FOR ALGORITHMS WITHOUT WAITING TIME
 #define LOAD_MIN 0.3

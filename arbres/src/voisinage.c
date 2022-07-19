@@ -12,6 +12,7 @@
 #include "test.h"
 #include <math.h>
 #include "simons.h"
+#define TABOO_KIND 0
 typedef struct{
 	int route;
 	int* pos;
