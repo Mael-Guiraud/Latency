@@ -617,28 +617,26 @@ We obtain an instance with a period $P'= m\tau'$, which is slightly smaller than
 \subsection{From Large to Small Messages}\label{sec:reduction}
 
 
-In this section, we explain how we can trade load or buffering in the network to reduce the size of messages up to $\tau = 1$. This further justifies the interest of Sec.~\ref{sec:small}, where specific algorithms for $\tau = 1$ are given.
+In this section, we give methods to reduce the size of messages up to $\tau = 1$, at the cost of increasing the or allowing buffering in the network. This further justifies the interest of Sec.~\ref{sec:small}, where specific algorithms for $\tau = 1$ are given.
 
 \paragraph*{Doubling the Load}
 
-We describe here a reduction from an instance of \pma to another one with the same period and the same number of messages but the size of a message is doubled. This instance is equivalent to an instance with $\tau = 1$, by dividing everything by the message size. Thus, we can always assume that $\tau = 1$, if we are willing to double the load.
+We describe here a reduction from an instance of \pma to another one with the same period and the same number of messages but the size of a message is doubled. This instance is equivalent to an instance with $\tau = 1$, by dividing everything by the message size. Thus, we can always assume that $\tau = 1$, if we are willing to double the load. In the following Theorem, for simplicity, we make the hypothesis that $P$ is a multiple of $2\tau$, but it can be removed using Lemma~\ref{lemma:multiple}. 
 
 
 \begin{theorem}\label{th:double_load}
-Let $I$ be an instance of \pma with $n$ messages and load $\lambda$. There is an instance $J$ with $n$ messages of size $1$
-and load $2\lambda$ such that an assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
+Let $I$ be an instance of \pma with $n$ messages, load $\lambda$ and $P=m2\tau$ with $m$ an integer. There is an instance $J$ with $n$ messages of size $1$ and load $2\lambda$ such that an assignment of $J$ can be transformed into an assignment of $I$ in polynomial time.
 \end{theorem}
 \begin{proof}
 From $I = (P,\tau,(d_{0},\dots,d_{n-1}))$, we build $I' = (P, 2\tau, (d_{0}',\dots,d_{n-1}'))$, where $d_i' = d_{i} - (d_{i} \mod 2\tau)$. The instance $I'$ has a load twice as large as $I$.
-On the other hand, all its delays are multiples of $2\tau$ hence solving \pma on $I'$ is equivalent to solving it on $I'' = (P/2\tau, 1,(d_{0}/ 2\tau,\dots,d_{n-1} /2\tau))$, as already explained in the proof of Lemma~\ref{lemma:multiple}. 
+By construction, all delays of $I'$ are multiples of $2\tau$ and $P = m2\tau$.
+Hence, solving \pma on $I'$ is equivalent to solving it on $J = (P/2\tau, 1,(d_{0}/ 2\tau,\dots,d_{n-1} /2\tau))$, as already explained in the proof of Lemma~\ref{lemma:multiple}. 
 
 Let us prove that an assignment $A'$ of $I'$ can be transformed into an assignment $A$ of $I$. 
 Consider the message $i$ with offset $A'(i)$, it uses all times between $A'(i)$ and $A'(i) + 2\tau -1$ in the first period and all times between $A'(i) + d_{i} - (d_{i} \mod 2\tau)$ to $A'(i) + 2\tau -1+ d_{i} - (d_{i} \mod 2\tau)$ in the second period. 
 If $d_{i} \mod 2\tau < \tau $, we set $A(i) = A'(i)$, and the message $i$ of $I$ is scheduled ``inside'' the 
 message $i$ of $I'$, see Fig.~\ref{fig:transf_2tau}. If $\tau \leq d_{i} \mod 2\tau < 2\tau$, then we set 
-$A(i) = A'(i) - \tau$. There is no collision in the assignment $A$, since all messages in the second period use
-times which are used by the same message in $A'$. In the first period, the messages scheduled by $A$ use either the first
-half of the same message in $A'$ or the position $\tau$ before, which is either free in $A'$ or the second half of the times used by another message in $A'$ and thus not used in $A$. 
+$A(i) = A'(i) - \tau$. There is no collision in the assignment $A$, since all messages in the second period use times which are used by the same message in $A'$. In the first period, the messages scheduled by $A$ use either the first half of the same message in $A'$ or the position $\tau$ before, which is either free in $A'$ or the second half of the times used by another message in $A'$ and thus not used in $A$. 
 \end{proof}
 \begin{figure}[h]
 \begin{center}
@@ -648,19 +646,22 @@ half of the same message in $A'$ or the position $\tau$ before, which is either 
 \caption{Building assignment $A$ of $I$ from assignment $A'$ of $I'$ with messages twice larger}
 \label{fig:transf_2tau}
 \end{figure}
+ 
 
-Remark that combining \greedyuniform and Th.~\ref{th:double_load} allows solving $\pma$ on random instances, with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. This is why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on minimizing $\Fo(A)$, cannot guarantee anything for load larger than $1/2$. However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm that exhibits good performance on random instances.
+By combining \greedyuniform and the transformation of Th.~\ref{th:double_load} we obtain a randomized algorithm to solve $\pma$. On random instances, it solves \pma positively with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. This is why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on minimizing $\Fo(A)$, cannot guarantee anything for load larger than $1/2$. However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm that exhibits good performance on random instances.
 
 \paragraph*{Trade-off between Latency and Message Size}
 
-The problem \pma is a simplified version of the practical problem we address, allowing a single degree of freedom for each message: its offset. We may relax it slightly to be more similar to what is studied in~\cite{barth2018deterministic}: we allow buffering a message $i$ during a time $b$ between the two contention points, which corresponds here to changing $d_i$ into $d_i + b$. The quality of the solutions obtained for such a modified instance of \pma is worse since the buffering adds latency to the messages. We now describe how we can make a trade-off between the added latency and the size of the messages, knowing that smaller messages helps to schedule instances with higher load.
+The problem \pma is a simplified version of the practical problem we address, with only a single degree of freedom for each message: its offset. We may relax it slightly to be closer to what is studied in~\cite{barth2018deterministic}: we allow buffering a message $i$ during a time $b_i$ between the two contention points, which corresponds here to changing $d_i$ into $d_i + b_i$. The quality of a solution obtained for a modified instance of \pma modified is worse since the buffering adds \emph{latency} to the messages. The aim of this section is to transform a given instance of 
+\pma into a new instance with smaller messages, while minimizing the latency.
 
-The idea is to buffer all messages so that their $d_i$ have the same
-remainder modulo $\tau$. It costs at most $\tau - 1$ of buffering, which is not
-so good, since algorithms optimizing the latency do better on random instances, see~\cite{barth2018deterministic}. However, it is much better than buffering for a time $P$, the only value for which we are guaranteed to find an assignment, whatever the instance. When all delays are changed so that $d_i$ is a multiple of $\tau$, we have an easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$, as explained in the proof of Lemma.~\ref{lemma:multiple}.
+The transformation is the following: let $b_i$ be such that 
+ $b_i + d_i = 0 \mod \tau$, hence the delays are multiples of $\tau$. Assuming $P = m\tau$, we have an easy reduction to the case of $\tau = 1$, by dividing all values by $\tau$, as explained in the proof of Lemma.~\ref{lemma:multiple}. 
+
+If the $b_i$ are taken as small as possible, the largest $b_i$ may be equal to $\tau -1$, which is not so good in practice, since algorithms optimizing the latency do better on random instances, see~\cite{barth2018deterministic}. However, it is much better than buffering for a time $P$, the only value for which we are guaranteed to find an assignment, whatever the instance. 
 
 
-We can do the same kind of transformation by buffering all messages, so that $d_i$ is a multiple of $\tau / k$. The cost in terms of latency is then at most $\tau / k - 1$ but the reduction yields messages of size $k$. For small size of messages, it is easy to get better algorithm for \pma, in particular for $\tau = 1$ as we have shown in Sec.~\ref{sec:small}. Here, we show how to adapt \compactpair to the case of $\tau = 2$, to get an algorithm working with higher load.
+We can do the same transformation by buffering all messages, so that $d_i$ is a multiple of $\tau / k$. The cost in terms of latency is then at most $\tau / k - 1$ but the reduction yields messages of size $k$. For small size of messages, it is easy to get better algorithm for \pma, in particular for $\tau = 1$ as we have shown in Sec.~\ref{sec:small}. Here, we show how to adapt \compactpair to the case of $\tau = 2$, to get an algorithm working with higher load.
 
 
 \begin{theorem}
@@ -672,18 +673,24 @@ We schedule compact pairs of messages with even $d_i$, then we schedule single m
 \end{proof}
 
 
-We may want to add less latency to the message using the longest route. A simple solution is the following: choose the message with the longest route as the reference remainder by subtracting its remainder from every delay. As a consequence, this message needs zero buffering. However, the message with the second-longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. 
+%We may want to add less latency to the message using the longest route. A simple solution is the following: choose the message with the longest route as the reference remainder by subtracting its remainder from every delay. As a consequence, this message needs zero buffering. However, the message with the second-longest route may have a remainder of $\tau -1$, thus the worst case increase of total latency is $\tau -1$. 
 
-An alternative would be to minimize the average latency rather than the worst latency.
-We prove that we can do the transformation yielding $\tau=1$ while optimizing the average latency. 
- The only degree of freedom in the presented reduction is the choice of the reference remainder since all other delays are then modified to have the same remainder. Let us define the total latency for a choice $t$ of reference time, denoted by $L(t)$, as the sum of buffering times used for the messages when $t$ has been removed from their delay.
-If we sum $L(t)$, from $t=0$ to $\tau-1$, the contribution of each message is $\sum_{i=0}^{\tau-1} i$. Since there are $n$ messages, the sum of $L(t)$ for all $t$ is $n \tau (\tau-1)/2$. There is at least one term of the sum less than its average, hence there is a $t_0$ such that $L(t_0) \leq n (\tau-1)/2$. Hence, the average delay for a message, with $t_0$ as reference is less than $(\tau -1)/2$.
+Alternatively, we may minimize the average latency rather than the worst latency. We show how to do the previous transformation yielding $\tau=1$ while optimizing the average latency.
+In the transformation, we have chosen $b_i$ so that $b_i + d_i = 0 \mod \tau$.
+However, we can also fix $t$ such that $b_i + d_i = t \mod \tau$.
+By subtracting $t$ to all delays, we obtain an equivalent instance where 
+all delays are multiple of $\tau$ and we can conlude as before.
+
+ For each $i$ and $t$, we let $b_{i,t}$ be the minimal integer satisfying $d_i + b_{i,t} = t \mod \tau$. We let $L(t)$ be the sum of buffering times used for the messages when $t$ is chosen as remainder, that is $L(t) = \sum_{i=0}^{n-1} b_{i,t}$. To minimize the average latency, we must minimize $L(t)$.
+
+ Let us consider $\sum{i=0}{\tau-1} b_{i,t}$. Since $b_{i,t}$ takes all possible values, for all $i$ this sum is equal to $\sum_{j=0}^{\tau-1} j$, that is $\tau (\tau-1)/2$. Since there are $n$ messages, $\sum_{i=0}^{\tau -1} L(t) = n \tau (\tau-1)/2$. There is at least one term of the sum less than its average, hence there is a $t_0$ such that $L(t_0) \leq n (\tau-1)/2$. Hence, if we choose $t= t_0$ in the transformation, the average buffering of a message is less than $(\tau -1)/2$.
 
 \subsection{Coherent Routing}\label{sec:coherent}
 
 In this section, we explain how algorithms solving \pma may be used on more complex networks with more than two contention points.
 We consider networks with \textbf{coherent routing}, a common property of telecommunication networks (see e.g.~\cite{Schwiebert1996ANA}).
-Each message follows a fixed route from an antenna to the data center, and the coherent routing property implies that two routes share either nothing or a single path (i.e. a sequence of contiguous links) in the network. See Fig.~\ref{fig:coherent} for a network with and without coherent routing.
+Each message follows a directed path from an antenna to the data center.
+The coherent routing property implies that two routes share either nothing or a single path (i.e. a sequence of contiguous links) in the network. See Fig.~\ref{fig:coherent} for a network with and without coherent routing.
 
 \begin{figure}
 \begin{center}
@@ -787,15 +794,24 @@ Each message follows a fixed route from an antenna to the data center, and the c
 \end{figure}
 
 
-The problem $\pma$ can be defined over any network: the problem is to find an assignment (an offset for each message) such that there is no collision in the network.
-The problem $\pma$ (under the name \textsc{PAZL}) is proven to be $\NP$-hard in~\cite{bartharxiv2018deterministic} and the instances used for the reduction have a coherent routing. 
+The problem $\pma$ can be generalized to any network: the problem is to find an assignment (an offset for each message) such that there is no collision in the network. The problem $\pma$ for general networks (under the name \textsc{PAZL}) is proven to be $\NP$-hard in~\cite{bartharxiv2018deterministic} and the instances used for the reduction have a coherent routing. 
 
-When the routing is coherent, for each pair of messages, there is either no common contention point or a single contention point which is the beginning of their common path. If there is no collision at this contention point, there is no collision between these two messages further in the network.
-In our model, the routing is coherent from the antennas to the data centers, and then it is coherent from the data centers to the antenna. Hence, the collision between two messages can be characterized by their two contentions points (on the way forward and on the way back) and the delay between these two points. 
+When the routing is coherent, for each pair of messages, there is either no common contention point or a single contention point which is the beginning of their common path. Indeed, if there is no collision at this contention point, there is no collision between these two messages further in the network.
+In our model, the routing is coherent from the antennas to the data centers, and then it is coherent from the data centers to the antenna. Hence, the collision between two messages can be characterized by their two contention points (on the way forward and on the way back) and the delay between these two points. 
 
-We now prove that we can transform a network with coherent routing into a network with a single shared link such that an assignment of the latter is also an assignment of the former. Therefore, the algorithms proposed in this article for the single shared link case can be transferred to the coherent routing case. 
+We now prove that we can transform a network with coherent routing into a network with a single contention point such that an assignment of the latter is also an assignment of the former. Therefore, the algorithms proposed in this article for the single shared link case can be transferred to the coherent routing case. 
 
-The transformation is the following: let us consider two contention points $c_1$ and $c_2$ in the network, such that there is no contention point before $c_1$ nor between $c_1$ and $c_2$. All messages going through $c_2$ but not $c_1$ are routed through $c_1$ and then $c_2$. The contention point $c_2$ is then removed from the network, see Fig.~\ref{fig:transformation}. Let $l$ be the length of the link between $c_1$ and $c_2$. Let $S$ be the set of messages which have been rerouted from $c_2$ to $c_1$, and let $A$ be a valid assignment for the transformed network. Let $A'$ be the assignment defined by, for $i\notin S$, $A'(i) = A(i)$ and for $i \in S$, $A'(i) = A(i) + l \mod P$, then $A'$ is a valid assignment of the original network.
+We now describe a transformation removing a contention point. Let us consider two contention points $c_1$ and $c_2$ in the network $N$, such that there is no contention point before $c_1$ nor between $c_1$ and $c_2$ and there is an arc from $c_1$ to $c_2$ in the path of one message. Since $N$ is with coherent routing, there is a single arc between $c_1$ and $c_2$, and we denote its length by $l$. 
+Let $S$ be the set of messages going through going through $c_2$ but not $c_1$. We crete a new network $N'$ by modifying the paths followed by each message $m \in S$. If $m$ follows the arc $(c,c_2)$ of length $l_m$, then we replace it by an arc $(c,c_1)$ of length $l_m - l \mod P$ followed by the arc $(c_1,c_2)$ of length $l$.
+
+Consider a valid assignment $A$ for $N'$. By construction, the constraints to satisfy because of collisions are the same as in $N$, except on vertex $c_1$, where they are strictly stronger. Hence, the assignment $A$ is also valid for $N$. Moreover, if the network is with coherent routing, then the modified network is also with coherent routing.    
+
+Since $N'$ is with coherent routing, there is a single arc between $c_1$ and $c_2$ of length $l$. By construction, no path arrives in $c_2$. For each message $m \in S$, with in its path the arcs $(c_1,c_2)$ and $(c_2,c_3)$ of length $l_m$, we replace the two arcs by $(c_1,c_3)$ of length $ l + l_m \mod \tau$. 
+ The contention point $c_2$ is then removed from the network, as in Fig.~\ref{fig:transformation} and we obtain a network with coherent routing and the same satisfying assignments as the original one.
+
+If the network is not with coherent routing, then the transformation would fail at the previous step. Indeed, we could have $c_1$ and $c_2$ with several
+arcs of different length inbetween, whith no way to replace paths of size two
+through $c_1$ by an arc and obtain an equivalent network. 
 
 \begin{figure}
 \begin{center}
@@ -898,20 +914,16 @@ The transformation is the following: let us consider two contention points $c_1$
 \end{figure}
 
 
-The coherent routing property ensures that applying the previous transformation to some network $N$ while possible, yields a network $N'$ with a single shared link. Hence, we can apply the algorithms presented in this article to find an assignment for $N'$, which can then be turned back into an assignment of $N$. Let us define the load of a general network as $n\tau /P$, then the load of $N'$ is the same as the load of $N$. It proves that there is always an assignment when the load of a network with coherent routing is less than $2/5$ or less than $1/2 + (\sqrt{5}/2 -1)$ and $\tau = 1$. 
+ We can apply the algorithms presented in this article to find an assignment for $N'$, which can then be turned back into an assignment of $N$. Let us define the load of a general network as $n\tau /P$, then the load of $N'$ is the same as the load of $N$. We have proved that \pma for general networks with coherent routing can be solved positively when the load is less than $2/5$ or less than $1/2 + (\sqrt{5}/2 -1)$ and $\tau = 1$. 
 
-Remark that there is a more precise way to define the load for general networks since the load is not a global notion. 
-Let $n_c$ be the number of messages going through the contention point $c$, then the load at $c$ is $n_c\tau/P$. The \textbf{local load} of the network is then defined as the maximum
-of the load of the contention points. It is always less than the load defined as $n\tau /P$ and it can be significantly so.
-It is easy to see that in a network with coherent routing, any greedy algorithm finds a solution when the local load is less than $1/4$ since we can associate 
-exactly two contention points to each message. However, the algorithms of this article do not seem to work for a local load larger than $1/4$, since the bounds on $\Fo$ or $\Fmo$ do not hold anymore. 
+However, there is a more relevant way to define the load for general networks. Let $n_c$ be the number of messages going through the contention point $c$, then the load at $c$ is $n_c\tau/P$. The \textbf{local load} of the network is then defined as the maximum of the load of the contention points. It is always less than the load defined as $n\tau /P$ and it can be significantly so. For the same reason as for a single contention point, in a network with coherent routing, any greedy algorithm finds a solution when the local load is less than $1/4$. However, the algorithms of this article do not seem to work for a local load larger than $1/4$, since the bounds on $\Fo$ or $\Fmo$ do not hold anymore. 
 
 
 
 
 \section{Experimental Results}
 
-In this section, we evaluate all presented algorithms and some others on random instances.
+In this section, we evaluate all presented algorithms on random instances. We also introduce several other algorithms, for which we have no formal bounds, to understand them empirically. 
 For most algorithms, it would be extremely difficult to theoretically analyze the fraction of positive instances for a given load as we did for \greedyuniform in Sec.~\ref{sec:small}. By doing these experiments, we get an idea of the difference between the bounds on the load we have proved for worst-case instances and random instances.
 
 
@@ -1046,7 +1058,7 @@ As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much be
  
 \section{Conclusion}
 
-In this article, we have proved that there is always a solution to \pma and that it can be found by a polynomial time greedy algorithm for arbitrary message size and load at most $0.4$. For message of size $1$ and load at most $\phi - 1$, a solution is found by a polynomial time local search algorithm. Moreover, the presented algorithms find valid assignments for random instances for much higher loads as we have shown empirically but also theoretically for a randomized greedy algorithm. As a consequence, we obtain communication schemes for C-RAN with \emph{no buffering nor logical latency}, even for quite loaded fronthaul networks.
+In this article, we have proved that there is always a solution to \pma and that it can be found by a polynomial time greedy algorithm for arbitrary message size and load at most $2/5$. For messages of size $1$ and load at most $\phi - 1$, a solution is found by a polynomial time local search algorithm. Moreover, the presented algorithms find valid assignments for random instances for much higher loads as we have shown empirically but also theoretically for a randomized greedy algorithm. As a consequence, we obtain communication schemes for C-RAN with \emph{no buffering nor logical latency}, even for quite loaded fronthaul networks.
 
 The first limitations of our model is the topology of the network. We have shown that an arbitrary topology can be transformed into a topology with two contention points. This transformation, while preserving the load, may map positive instances into negative instances. Hence, it would be interesting to design algorithms working directly on complex topologies, as we have done for the periodic assignment problem with buffering in~\cite{guiraud2021deterministic}. 
 
@@ -1054,8 +1066,7 @@ The first limitations of our model is the topology of the network. We have shown
 The second limitation is that all messages are of the same size. 
 To model networks with different kinds of traffic, or a production line with different tasks, we should relax this hypothesis. An interesting direction of research, would be to adapt algorithm \swapandmove to this setting. As a first step, we could already adapt \swapandmove to a single arbitrary $\tau$ and try to improve on the bound on latency obtained using \texttt{Compact 8-tuples}.
 
-Finally, it remains to prove that \pma is \NP-complete. If it is indeed the case,
-it would be interesting to understand whether exponential time algorithms may solve \pma positively for larger loads. 
+Finally, it remains to prove that \pma is \NP-complete. If it is indeed the case, it would be interesting to understand for which load \pma can always be positively solved by exact algorithms. 
 
 \bibliography{Sources}
 
