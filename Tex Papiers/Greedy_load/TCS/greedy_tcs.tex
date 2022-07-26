@@ -1,7 +1,7 @@
 %\documentclass[a4paper,UKenglish,cleveref, autoref, thm-restate]{lipics-v2019}
 
 
-\documentclass[pdflatex,sn-mathphys]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+\documentclass[pdflatex,sn-default,iicol]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
 %\usepackage[bb=dsserif]{mathalpha}
 %\usepackage[utf8]{inputenc}
 \usepackage{xspace}
@@ -74,7 +74,7 @@
 
 \begin{document}
 
-\title[Scheduling Periodic Messages on a Shared Link without Buffering]{Scheduling Periodic Messages on a Shared Link without Buffering}
+\title[ ]{Scheduling Periodic Messages on a Shared Link without Buffering}
 
 %%=============================================================%%
 %% Prefix	-> \pfx{Dr}
@@ -183,19 +183,18 @@ The aim of this article is to understand up to which load, it is always possible
 
 \paragraph*{Related Works}
 
-
 The model we study was recently introduced in~\cite{barth2018deterministic,guiraud2021deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these articles, the main results are heuristics, using classical scheduling algorithms as subroutines, and fixed-parameter tractable algorithms which find a sending scheme with \emph{minimal latency}. The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is also briefly introduced and studied in~\cite{bartharxiv2018deterministic,guiraud2021deterministic}.
 In this article, we propose several new polynomial time algorithms which dramatically improve on the greedy algorithm used to solve \pma in~\cite{bartharxiv2018deterministic,guiraud2021deterministic}, in the worst case or for random instances, both for large and small messages. 
 While a sending scheme without buffering is simpler and less expensive to implement in C-RAN networks than one with buffering, it may not exist. However, we prove in this article that \emph{when the load is not too high, there is always a solution without buffering}. Moreover, we explain in Sec.~\ref{sec:reduction} that to solve the problem of finding sending schedules with \emph{small latency}, we can solve \pma on normalized instances, which are easier to solve by the algorithms we present.
 
 If we forget the periodicity in the Periodic Message Assignment,
 it can be compared to several classical problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} but with two processors. 
-Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identitical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data with a fixed interval. 
+Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data within a fixed interval. 
 
 Our problem can also be interpreted as a two-machine flow shop scheduling problem~\cite{johnson1954optimal,yu2004minimizing} with an exact delay between tasks. The problem with an exact delay has been investigated and 
 found to be $\NP$-hard except when all delays are equals~\cite{leung2007scheduling}. 
 The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points.
-When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length or the total of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
+When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the total of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
 
  Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
 
@@ -214,22 +213,50 @@ In Sec.~\ref{sec:small} we present deterministic and probabilistic algorithms fo
 In Sec.~\ref{sec:gen}, we prove that hypotheses on the period and the message size can be relaxed. We also show that \pma captures periodic message scheduling in networks with many contention points, as long as the routing is coherent.
 Finally, we present the performance of all algorithms on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}.
 It shows that the algorithms of this article work for random instances with a much higher load than what has been proved in the worst case.
+Tabular~\ref{tab1} summarizes the performances of the algorithms presented in this paper.
 
+\begin{table*}[h]
+
+\begin{minipage}{400px}
+\begin{center}
+\caption{Summary of the major results of this paper}\label{tab1}%
+\begin{tabular}{@{}llll@{}}
+\toprule
+ Large messages  \\
+\midrule
+Algorithm & Theoretical Bound\footnotemark[1]   & Experimental performance\footnotemark[2] & Complexity\\
+\midrule
+\firstfit    & 1/3  & $\simeq 0.7$ & $O(nP)$ \\
+\metaoffset    & 1/3   & 1/2 & $O(n^2)$\\
+\compactpair    & 3/8   & 0.6 & -  \\
+\compactfit    & -   & $\simeq 0.6$ &-  \\
+\midrule
+ Messages of size $1$  \\
+\midrule
+\firstfit    & 1/3  & 0.64 & $O(nP)$ \\
+\swapandmove    & $(\sqrt{5}-1)/2 \approx 0,618$   & 0.95 & $O(n^3)$\\
+\greedyuniform    & High\footnotemark[3]   &0.64& -  \\
+\greedypotential    & 3/8   & $\simeq 0.75$& -  \\
+\end{tabular}
+\footnotetext[1]{Maximal load to solve \pma.}
+\footnotetext[2]{Average maximal load to \pma on our instances.}
+\footnotetext[3]{Probability of solving \pma.}
+\end{center}
+\end{minipage}
+
+\end{table*}
 
 \section{Modeling a C-RAN Network}\label{sec:model}
 \begin{center}
 \begin{figure}
-\begin{minipage}[c]{.45\linewidth}
+
 \centering
 \includegraphics[scale=0.3]{network2.pdf} 
-\end{minipage}
-\hfill
-\begin{minipage}[c]{.45\linewidth}
-\centering
+
 \scalebox{0.45}{
 \includegraphics[]{graphdelays.pdf}
 }
-\end{minipage}
+
 \caption{C-RAN network with a single shared link modeled by two contention points and delays}
 \label{fig:model}
 \end{figure}
@@ -239,9 +266,9 @@ In this article, we model a simple network in which periodic messages flow throu
  Each RRH sends messages through the link to its BBU and two messages cannot go at once in the link: this is the first contention point, represented in Fig.~\ref{fig:model}. Upon receiving a message, a BBU sends an answer back to its RRH, which goes through the link in the other direction: this is the second contention point represented in Fig.~\ref{fig:model}. Since the answer must be sent back as soon as a message arrives, we see this process as a single message going from an RRH to its BBU and back to the RRH, while traversing two contention points. 
 
 
-The \textbf{size} is a integer which represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. Indeed, the message sent by the RRH to the BBU is the raw electromagnetic signal it has captured during a millisecond. The message sent by the BBU to the RRH is the electromagnetic signal it must emit during a millisecond.
+The \textbf{size} is an integer that represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. Indeed, the message sent by the RRH to the BBU is the raw electromagnetic signal it has captured during a millisecond. The message sent by the BBU to the RRH is the electromagnetic signal it must emit during a millisecond.
 
- We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its integer \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The delay represent the transmission time from the RRH to the BBU plus the processing time in the BBU. 
+ We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its integer \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The delay represents the transmission time from the RRH to the BBU plus the processing time in the BBU. 
 
   The model and problem can easily be generalized to any topology, that is any directed acyclic multigraph with any number of contention points, see~\cite{bartharxiv2018deterministic}. We choose here to focus on a realistic network with a single shared link, which is simple enough to obtain theoretical results. It turns out that algorithms solving the problem for a single shared link can be used on networks with many contention points, as long as the routing is coherent, see Sec.~\ref{sec:coherent}. 
 
@@ -254,13 +281,13 @@ To do that, we can choose the offset of each message. An \textbf{assignment} $A$
 
 Let \textbf{Periodic Message Assignment} or \pma be the following problem: given $n$ messages of delays $d_0,\dots,d_{n-1}$, a period $P$ and a size $\tau$, find a valid assignment or decide there is none. When a valid assignment is found, we say the problem is solved \textbf{positively}.
 
-\begin{figure}
+\begin{figure*}
 \begin{center}
 \includegraphics[scale=0.7]{instance}
 \end{center}
 \caption{An instance of \pma with $3$ messages, $P= 10$, $\tau = 2$, and one assignment}
 \label{fig:assignment}
-\end{figure}
+\end{figure*}
 
 It is yet unknown whether \pma is $\NP$-hard. However, it has been proven that, when parameterized by $n$ the number of messages, the problem is \FPT~\cite{barth2018deterministic}. A slight generalization of \pma presented in Sec.~\ref{sec:coherent}, with more contention points, but each message only going through two of them as in \pma, is \NP-hard~\cite{barth2018deterministic}. If the shared link is not full-duplex, that is, there is a single contention point and each message goes through it twice, it is also \NP-hard, since we can encode a similar non-periodic problem~\cite{orman1997complexity}. Hence, we conjecture that \pma is \NP-hard.
 	
@@ -364,6 +391,7 @@ Then, because of collisions in the second period, $C_1$ forbids at most four met
 \caption{Positions forbidden by a scheduled compact pair (in blue) when scheduling another compact pair (in red) with larger $r_i$'s} 
 \label{fig:forbidenmeta}
 \end{figure}
+
 \begin{theorem}
 \compactpair solves \pma positively on instances of load at most $3/8$.
 \end{theorem}
@@ -574,11 +602,17 @@ $$Pot(A) = \sum_{\substack{i \in [n] \\ A(i) + d_i \in P_f} } pot_{msg}(i) + \su
 By summing both equalities, using $\lvert P^1_u\rvert = \lvert P_f\rvert = (1/2 - \varepsilon)P$ and 
 $pot_{msg}(i) = 2\varepsilon P$ for $A(i) \in P^1_u$ and  $A(i) + d(i) \in P_f$, we obtain  
 
+\begin{equation}
+  \begin{aligned}
+    2Pot(A) & = 2(1/2 - \varepsilon)P \times 2\varepsilon P + \sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i) \\
+		  & + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i).
+  \end{aligned}
+\end{equation}
 
-$$2Pot(A) = 2(1/2 - \varepsilon)P \times 2\varepsilon P + \sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i).$$
 
 
-We have proved that $pot_{msg}(i) + pot_{msg}(j) < 2\varepsilon P + n$ when $A(i) \in P^2_u$ and $A(i) = (A(j) + d_j \mod P)$. Since  $\lvert P^2_u\rvert = 2\varepsilon P$, we have $$\sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i) < 2\varepsilon P(2\varepsilon P + n).$$
+
+We have proved that $$pot_{msg}(i) + pot_{msg}(j) < 2\varepsilon P + n$$ when $A(i) \in P^2_u$ and $A(i) = (A(j) + d_j \mod P)$. Since  $\lvert P^2_u\rvert = 2\varepsilon P$, we have $$\sum_{\substack{i \in [n] \\ A(i) \in P^2_u} } pot_{msg}(i) + \sum_{\substack{i \in [n] \\ A(i) + d_i \in P^2_u} } pot_{msg}(i) < 2\varepsilon P(2\varepsilon P + n).$$
 Using this inequality and simplifying the expression, we obtain 
 
 
@@ -687,13 +721,13 @@ By construction, $A_n'$ is a valid assignment of $I''$, and all positions of mes
 Notice that, the transformation of Lemma~\ref{lemma:multiple} does not give a bijection between assignments of both instances but only an injection, which is enough for our purpose. 
 We obtain an instance with a period $P'= m\tau'$, which is slightly smaller than the original period $P$. The load increases from $\lambda = n \tau / P$ to at most $\lambda (1 + 1/m)$: the difference is less than $1/m < 1/n$, thus very small for most instances. If we drop the hypothesis that $P=m\tau$, the theorems of Sec.~\ref{sec:large} can be restated as proving the existence of a valid assignment for a load at most $\lambda - o(1)$, where $o(1)$ goes to $0$ when $n$ grows. 
 
-\begin{figure}
+\begin{figure*}
  \begin{center}
 \includegraphics[scale=0.75]{multipleperiod}
 \end{center}
 \caption{Transformation of $A'$ assignment of $I'$ into $A$ assignment of $I$}
 \label{fig:multipleperiod}
-\end{figure}
+\end{figure*}
 
 \subsection{From Large to Small Messages}\label{sec:reduction}
 
@@ -719,14 +753,14 @@ If $d_{i} \mod 2\tau < \tau $, we set $A(i) = A'(i)$, and the message $i$ of $I$
 message $i$ of $I'$, see Fig.~\ref{fig:transf_2tau}. If $\tau \leq d_{i} \mod 2\tau < 2\tau$, then we set 
 $A(i) = A'(i) - \tau$. There is no collision in the assignment $A$, since all messages in the second period use times which are used by the same message in $A'$. In the first period, the messages scheduled by $A$ use either the first half of the same message in $A'$ or the position $\tau$ before, which is either free in $A'$ or the second half of the times used by another message in $A'$ and thus not used in $A$. 
 \end{proof}
-\begin{figure}[h]
+\begin{figure*}[h]
 \begin{center}
 
 \includegraphics[scale=0.7]{transfo2tau}
 \end{center}
 \caption{Building assignment $A$ of $I$ from assignment $A'$ of $I'$ with messages twice larger}
 \label{fig:transf_2tau}
-\end{figure}
+\end{figure*}
  
 
 By combining \greedyuniform and the transformation of Th.~\ref{th:double_load} we obtain a randomized algorithm to solve $\pma$. On random instances, it solves \pma positively with probability one when the number of messages goes to infinity and the load is strictly less than $1/2$. This is why we have not presented nor analyzed an algorithm designed for arbitrary $\tau$ on random instances, since any greedy algorithm, relying on minimizing $\Fo(A)$, cannot guarantee anything for load larger than $1/2$. However, in Sec.~\ref{sec:perf_large}, we present \compactfit, a simple greedy algorithm that exhibits good performance on random instances.
@@ -776,24 +810,20 @@ The coherent routing property implies that two routes share either nothing or a 
 
 \begin{figure}
 \begin{center}
-\begin{minipage}[c]{.45\linewidth}
+
 \scalebox{0.5}{
 \includegraphics[]{realnetworks.pdf}
 }
 
 
 
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth}
 \scalebox{0.5}{
 \includegraphics[]{realcoherent.pdf}
 }
 
 
 
-\end{minipage}
-
- \caption{Left, a C-RAN network with a routing not coherent, and right a C-RAN network with coherent routing. The edges with multiple colors represent a single physical link used by several messages.}
+ \caption{Top, a C-RAN network with a routing not coherent, and bottom a C-RAN network with coherent routing. The edges with multiple colors represent a single physical link used by several messages.}
 
 \label{fig:coherent}
 \end{center}
@@ -822,15 +852,12 @@ through $c_1$ by an arc and obtain an equivalent network.
 \begin{figure}
 \begin{center}
 
-\begin{minipage}[c]{.45\linewidth}
 \scalebox{0.6}{
 \includegraphics[]{transfo1.pdf}
 }
 
 
 
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth}
 \scalebox{0.6}{
 \hspace{2cm}
 \includegraphics[]{transfo2.pdf}
@@ -838,7 +865,6 @@ through $c_1$ by an arc and obtain an equivalent network.
 
 
 
-\end{minipage}
  \caption{Transformation of a network $N$ with coherent routing into $N'$ with one less contention point.}
 
 \label{fig:transformation}
@@ -878,9 +904,9 @@ We consider the following algorithms:
 
 \begin{figure}[h]
  \begin{center}
-\includegraphics[scale=1]{compactfit}
+\includegraphics[scale=0.8]{compactfit}
 \end{center}
-\caption{An run of \compactfit with $\tau = 2$ and $P=10$, which creates two compact pairs}
+\caption{A run of \compactfit with $\tau = 2$ and $P=10$, which creates two compact pairs}
 \label{fig:compactfit}
 \end{figure}
 
@@ -893,7 +919,6 @@ On a regular $2017$ laptop, all algorithms terminate in less than a second when 
 
 
 \hspace{-1.5cm}
-\begin{minipage}[c]{.49\linewidth}
 
 \begin{center}
 \includegraphics[scale=0.275]{100messBig}
@@ -901,32 +926,28 @@ On a regular $2017$ laptop, all algorithms terminate in less than a second when 
 \captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1000$, $P=100,000$}
 \label{fig:100messBig}
 \end{center} 
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth}
+
 \begin{center}  
 \includegraphics[scale=0.275]{100messSmall}
 \captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 10$, $P=1000$}
 \label{fig:100messSmall}
 \end{center}
-\end{minipage}
+
 
 
 \hspace{-1.5cm}
-\begin{minipage}[c]{.49\linewidth}
 
 \begin{center}
 \includegraphics[scale=0.275]{10mess}
 \end{center}
 \captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1000$, $P=10,000$}
 \label{fig:10mess}
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth}
+
 \begin{center}
 \includegraphics[scale=0.275]{routestau}
 \end{center}
 \captionof{figure}{Same parameters as in Fig.~\ref{fig:100messBig}, delays uniformly drawn in $[\tau]$}
 \label{fig:shortroutes}
-\end{minipage}
 
 \medskip
 
@@ -959,21 +980,19 @@ In this section, the performance on random instances of the algorithms presented
 As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much better than the bound given by the worst-case analysis of the article. In the experiment presented in Fig.~\ref{fig:tau1}, all algorithms succeed on all instances when the load is less than $0.64$. \greedyuniform behaves exactly as proved in Th.~\ref{theorem:uniform}, with a very small variance. The performance of \swapandmove and its simpler variant \greedypotential, which optimizes the potential in a greedy way, is much better than \firstfit or \greedyuniform. Amazingly, \swapandmove always finds an assignment when the load is less than $0.95$. \swapandmove is extremely close to Exact Resolution, but for $P=10$ and load $0.9$ or $1$, it fails to find some valid assignments, as shown in Fig.~\ref{fig:tau1-10mess}.
 
 \hspace{-1.5cm}
-\begin{minipage}[c]{.49\linewidth} 
+
 \begin{center} 
 \includegraphics[scale=0.275]{success_tau1} 
 \end{center}
 \captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1$ and $P=100$}
 \label{fig:tau1}
-\end{minipage}
-\begin{minipage}[c]{.45\linewidth} 
 
 \begin{center}
 \includegraphics[scale=0.275]{tau110}
 \end{center}
 \captionof{figure}{Success rates of all algorithms for increasing loads, $\tau = 1$ and $P=10$}
 \label{fig:tau1-10mess}
-\end{minipage}
+
 
  
  \medskip
@@ -982,7 +1001,7 @@ As in Sec.~\ref{sec:perf_large}, the success rate on random instances is much be
 
 \begin{figure}
  \begin{center}
-\includegraphics[scale=0.4]{log}
+\includegraphics[scale=0.275]{log}
 \end{center}
 \caption{Computation time (logarithmic scale) function of the number of messages of all algorithms on $10,000$ instances of load $1$}
 \label{fig:timelog}
