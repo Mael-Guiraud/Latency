@@ -313,9 +313,9 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 
 	char nom[64];
 	ALGO_JOEL = 1;
-	sprintf(nom,"../datas/DurJoel.data");
+	sprintf(nom,"../datas/FacileJoel.data");
 	FILE * F = fopen(nom,"w");
-	FILE * F2 = fopen("../datas/DurJoelTime.data","w");
+	FILE * F2 = fopen("../datas/FacileJoelTime.data","w");
 	//Graphe g ;
 	int resgp,ress,ressp,resfpt;
 	float gp,s,sp,fpt;
@@ -336,8 +336,8 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 		for(int j=0;j<nb_simuls;j++)
 		{
 			Graphs[i][j]= init_graphe(2*nb_routes+1);
-			//graphe_etoile(Graphs[i][j],taille_route);
-			graphe_etoile_Psur2( Graphs[i][j], taille_route,800 );
+			graphe_etoile(Graphs[i][j],taille_route);
+			//graphe_etoile_Psur2( Graphs[i][j], taille_route,800 );
 		}
 	}
 	int k = -1;
@@ -374,7 +374,7 @@ void sucess_retour_PALL(int nb_routes, int taille_paquets,int taille_route,int m
 				s_found = 0;
 				sp_found = 0;
 				if(!SYNCH)
-					fpt_found = 0;
+					fpt_found = 1;
 				else
 					fpt_found = 1;
 				
