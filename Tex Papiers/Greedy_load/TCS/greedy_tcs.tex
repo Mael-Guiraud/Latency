@@ -93,7 +93,7 @@
 
 \author*[1,2]{\fnm{Ma\"el} \sur{Guiraud}}\email{mguiraud@cesi.fr}
 \equalcont{These authors contributed equally to this work.}
-\author*[2,3]{\fnm{Yann} \sur{Strozecki}}\email{yann.strozecki@uvsq.fr}
+\author*[2]{\fnm{Yann} \sur{Strozecki}}\email{yann.strozecki@uvsq.fr}
 \equalcont{These authors contributed equally to this work.}
 
 
@@ -189,20 +189,21 @@ The model we study was recently introduced in~\cite{barth2018deterministic,guira
 In this article, we propose several new polynomial time algorithms which dramatically improve on the greedy algorithm used to solve \pma in~\cite{bartharxiv2018deterministic,guiraud2021deterministic}, in the worst case or for random instances, both for large and small messages. 
 While a sending scheme without buffering is simpler and less expensive to implement in C-RAN networks than one with buffering, it may not exist. However, we prove in this article that \emph{when the load is not too high, there is always a solution without buffering}. Moreover, we explain in Sec.~\ref{sec:reduction} that to solve the problem of finding sending schedules with \emph{small latency}, we can solve \pma on normalized instances, which are easier to solve by the algorithms we present.
 
-If we forget the periodicity in the Periodic Message Assignment,
-it can be compared to several classical problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} but with two processors. 
-Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data within a fixed interval. 
+If we ignore periodicity in the Periodic Message Assignment problem,
+it can be compared to several classical scheduling problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} but with two processors. Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data with a fixed interval of time betwen sending and receiving. 
 
 Our problem can also be interpreted as a two-machine flow shop scheduling problem~\cite{johnson1954optimal,yu2004minimizing} with an exact delay between tasks. The problem with an exact delay has been investigated and 
 found to be $\NP$-hard except when all delays are equals~\cite{leung2007scheduling}. 
 The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points.
 When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the total of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
 
- Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
-
  To our knowledge, periodic scheduling problems studied in the literature are quite different from the problem studied in this article. The problem of scheduling periodic tasks dates back to the 70s~\cite{liu1973scheduling}, with an emphasis on the maximal load as in this article. In~\cite{liu1973scheduling} only a single contention point is modeled and the scheduling is preemptive, which makes the proposed algorithms irrelevant to our problem.
 
- In another line of work~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to two fixed and different processors. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a schedule to maximize the throughput, while our period is fixed. The train timetabling problem~\cite{lusby2011railway} and in particular, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size and speed, the network can be more complex than consecutive single tracks and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve. Therefore, some delay is allowed in different parts of the network to make these problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed-integer programming, genetic algorithms, etc. 
+ Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
+
+ In another line of work~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to two fixed and different processors. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a schedule to maximize the throughput, while our period is fixed. 
+
+ The train timetabling problem~\cite{lusby2011railway} and in particular, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size and speed, the network can be more complex than consecutive single tracks and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve. Therefore, some delay is allowed in different parts of the network to make these problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed-integer programming, genetic algorithms, etc. 
  
 
 \paragraph*{Organization of the Paper}
@@ -215,34 +216,28 @@ In Sec.~\ref{sec:small} we present deterministic and probabilistic algorithms fo
 In Sec.~\ref{sec:gen}, we prove that hypotheses on the period and the message size can be relaxed. We also show that \pma captures periodic message scheduling in networks with many contention points, as long as the routing is coherent.
 Finally, we present the performance of all algorithms on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}.
 It shows that the algorithms of this article work for random instances with a much higher load than what has been proved in the worst case.
-Tabular~\ref{tab1} summarizes the performances of the algorithms presented in this paper.
+Table~\ref{tab1} summarizes the performance of the algorithms presented in this paper.
+
 
 \begin{table*}[h]
-
 \begin{minipage}{400px}
 \begin{center}
-\caption{Summary of the major results of this paper}\label{tab1}%
-\begin{tabular}{@{}llll@{}}
-\toprule
- $Large messages$  \\
-\midrule
-Algorithm & Maximum Load \footnotemark[1]   & Experimental performance\footnotemark[2] & Complexity\\
-\midrule
-\firstfit    & 1/3  & $\simeq 0.7$ & $O(nP)$ \\
-\metaoffset    & 1/3   & 1/2 & $O(n^2)$\\
-\compactpair    & 3/8   & 0.6 & -  \\
-\compactfit    & -   & $\simeq 0.6$ &-  \\
-\midrule
- Messages of size $1$  \\
-\midrule
-\firstfit    & 1/2  & 0.64 & $O(nP)$ \\
-\swapandmove    & $(\sqrt{5}-1)/2 \approx 0,618$   & 0.95 & $O(n^3)$\\
-\greedyuniform    & High\footnotemark[3]   &0.64& -  \\
-\greedypotential    & 1/2   & $\simeq 0.75$& -  \\
+\caption{Summary of the main results of this paper. We give the maximum load for which the algorithm always find a solution. Integer $n$ is the number of scheduled messages. For experimental results on random instances, see Sec.\ref{sec:perf}.}\label{tab1}%
+\begin{tabular}{@{}|l|l|l|l|@{}}
+\hline
+Algorithm & Message size & Maximum Load & Complexity\\
+\hline
+\firstfit    & 1 & 1/2  & $O(n^2)$ \\
+\swapandmove & 1 & $(\sqrt{5}-1)/2 \approx 0,618$ & $O(n^3)$\\
+\greedyuniform & 1 & $1 - \epsilon$ with high probability \footnotemark[1]  & $O(n^2)$  \\
+\compactpair & 2 & 4/9  & $O(n^2)$ \\
+\firstfit    & $\geq 1$ & 1/3  & $O(n^2)$ \\
+\metaoffset  & $\geq 1$ & 1/3  & $O(n^2)$ \\
+\compactpair & $\geq 1$ & 3/8  & $O(n^2)$ \\
+\texttt{compact 8-tuples} & $\geq 1$ & $\geq 4/10$ & $O(n^2)$\\
+\hline
 \end{tabular}
-\footnotetext[1]{Maximal load to solve \pma.}
-\footnotetext[2]{Average maximal load to \pma on our instances.}
-\footnotetext[3]{Probability of solving \pma.}
+\footnotetext[1]{For any $\epsilon >0$ and random instances.}
 \end{center}
 \end{minipage}
 
@@ -268,7 +263,7 @@ In this article, we model a simple network in which periodic messages flow throu
  Each RRH sends messages through the link to its BBU and two messages cannot go at once in the link: this is the first contention point, represented in Fig.~\ref{fig:model}. Upon receiving a message, a BBU sends an answer back to its RRH, which goes through the link in the other direction: this is the second contention point represented in Fig.~\ref{fig:model}. Since the answer must be sent back as soon as a message arrives, we see this process as a single message going from an RRH to its BBU and back to the RRH, while traversing two contention points. 
 
 
-The \textbf{size} is an integer that represents the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. Indeed, the message sent by the RRH to the BBU is the raw electromagnetic signal it has captured during a millisecond. The message sent by the BBU to the RRH is the electromagnetic signal it must emit during a millisecond.
+The \textbf{size} is an integer representing the time needed to send a message through a contention point of the network, here the beginning of the link shared by all antennas. In the C-RAN context we consider, \emph{all messages are of the same kind}, hence they are all of the same size denoted by $\tau$. Indeed, the message sent by the RRH to the BBU is the raw electromagnetic signal it has captured during a millisecond. The message sent by the BBU to the RRH is the electromagnetic signal it must emit during a millisecond.
 
  We denote by $n$ the number of messages, which are numbered from $0$ to $n-1$. A message $i$ is characterized by its integer \textbf{delay} $d_i$: when message number $i$ arrives at the beginning of the shared link (first contention point) at time $t$, it returns to the other end of the link on its way back (second contention point) at time $t + d_i$. The delay represents the transmission time from the RRH to the BBU plus the processing time in the BBU. 
 
@@ -883,7 +878,7 @@ However, there is a more relevant way to define the load for general networks. L
 
 
 
-\section{Experimental Results}
+\section{Experimental Results}\label{sec:perf}
 
 In this section, we evaluate all presented algorithms on random instances. We also introduce several other algorithms, for which we have no formal bounds, to understand them empirically. 
 For most algorithms, it would be extremely difficult to theoretically analyze the fraction of positive instances for a given load as we did for \greedyuniform in Sec.~\ref{sec:small}. By doing these experiments, we get an idea of the difference between the bounds on the load we have proved for worst-case instances and random instances.
