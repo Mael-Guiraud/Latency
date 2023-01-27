@@ -14,3 +14,4 @@ void simuldescente(int seed);
 void simultaboo(int seed);
 void simulrecuit(int seed);
 void simulfptvssto(int seed);
+void test_ml();
