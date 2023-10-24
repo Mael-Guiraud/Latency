@@ -1,5 +1,5 @@
 
-CC=gcc-7
+CC=gcc
 CFLAGS=-W -Wall -g -Og -fopenmp -fprofile-arcs  -std=c99 
 #-ftest-coverage
 LFLAGS = -fopenmp -lm
@@ -34,6 +34,9 @@ star: dirs runstar
 
 runstar: compil
 	./compil star
+	
+ml: compil
+	./compil ml
 
 runtest: compil
 	./compil test

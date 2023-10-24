@@ -3,6 +3,7 @@
 #include "init.h"
 #include "treatment.h"
 #include "data_treatment.h"
+#include "config.h"
 
 
 void affiche_tab(int * tab, int taille, FILE * f)
@@ -83,6 +84,145 @@ void affiche_graph(Graph * g,int p, FILE * f)
 	return;
 }
 
+
+void affiche_gcl(Graph * g,FILE * f)
+{
+
+	for(int i=0;i<PERIOD;i++)
+	{
+		for(int j=0;j<g->routes[0][1]->nb_routes;j++)
+		{
+			if(g->routes[0][1]->routes_id[j] == 0)
+			{
+				if(g->routes[0][1]->period_f[i] == -1)
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+			else
+			{
+				if(g->routes[0][1]->period_f[i] == g->routes[0][1]->routes_id[j])
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+		}
+		for(int j=0;j<g->routes[0][3]->nb_routes;j++)
+		{
+			if(g->routes[0][3]->routes_id[j] == 0)
+			{
+				if(g->routes[0][3]->period_f[i] == -1)
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+			else
+			{
+				if(g->routes[0][3]->period_f[i] == g->routes[0][3]->routes_id[j])
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+		}
+		for(int j=0;j<g->routes[3][1]->nb_routes;j++)
+		{
+			if(g->routes[3][1]->routes_id[j] == 0)
+			{
+				if(g->routes[3][1]->period_f[i] == -1)
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+			else
+			{
+				if(g->routes[3][1]->period_f[i] == g->routes[3][1]->routes_id[j])
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+		}
+		for(int j=0;j<g->routes[3][3]->nb_routes;j++)
+		{
+			if(g->routes[3][3]->routes_id[j] == 0)
+			{
+				if(g->routes[3][3]->period_f[i] == -1)
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+			else
+			{
+				if(g->routes[3][3]->period_f[i] == g->routes[3][3]->routes_id[j])
+				{
+					fprintf(f,"1");
+				}
+				else
+				{
+					fprintf(f,"0");
+				}
+			}
+		}
+		fprintf(f," ");
+	}
+
+}
+void print_instance_ml(Graph * g, FILE * f)
+{
+	fprintf(f,"{\"x\" : \"");
+	for(int j =0;j<PERIOD;j++)
+	{
+		for(int i=0;i<g->nb_routes; i++)
+		{
+			if((j >= route_length( g,i)) && (j<route_length( g,i)+MESSAGE_SIZE)){
+				fprintf(f,"1");
+			}
+			else{
+				if( ((route_length( g,i)+MESSAGE_SIZE) >= PERIOD ) && (j<(route_length( g,i)+MESSAGE_SIZE)%PERIOD ) )
+				{
+					
+					fprintf(f,"1");	
+				}
+				else{
+					fprintf(f,"0");
+				}
+			}
+			
+		}
+		fprintf(f," ");
+	}
+	fprintf(f,"\",\n\"y\": \"");
+	affiche_gcl(g,f);
+	fprintf(f,"\"\n}");
+	return;
+}
 void affiche_graph_routes(Graph * g, FILE * f)
 {
 	for(int i=0;i<g->nb_routes; i++)

@@ -80,6 +80,13 @@ int main (int argc, char *argv[])
 	{
 		simulfptvssto(seed);
 	}
+	if(!strcmp(argv[1],"ml") )
+	{
+		test_ml();
+	}
+		
+
+
 		
 
 

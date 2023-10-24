@@ -1,9 +1,9 @@
 
-#define MAX_LENGTH 20000
+#define MAX_LENGTH 1
 
-#define MESSAGE_SIZE 2500
+#define MESSAGE_SIZE 2
 #define NB_BBU 2
-#define NB_COLLISIONS 4
+#define NB_COLLISIONS 2
 
 #define NB_ROUTES_PER_FLOW 1
 
@@ -32,7 +32,7 @@
 #define TMAX 7812
 #define FIXED_PERIOD_MOD 1
 
-#define PERIOD 33333	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
+#define PERIOD 10	//BY SETTING A PERIOD, it is possible that an instance have a link with a load > 100%
 
 
 //For star simulation

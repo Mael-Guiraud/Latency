@@ -26,7 +26,29 @@
 #include "starSPALL.h"
 #include "enum.h"
 
+void test_ml()
+{
+	FILE * f = fopen("../view/instances.json","w");
 
+	fprintf(f,"{");
+	for(int i=0;i<10000;i++)
+	{	
+		fprintf(stdout,"\r%d",i);
+		fflush(stdout);
+		fprintf(f,"\n\"%d\":",i);
+		Graph  g = init_graph_random_tree2((double)i);
+		float nb_pas = 0;	
+		int recuits = recuit(&g, PERIOD, MESSAGE_SIZE,100,&nb_pas);
+		print_instance_ml(&g,f);
+		free_graph(&g);
+		if(i<9999)
+			fprintf(f,",\n");
+
+	}
+	fprintf(f,"\n}");
+	fclose(f);
+
+}
 void test(unsigned int seed)
 {
 	//unsigned int seed = 1591624286;
@@ -52,9 +74,8 @@ void test(unsigned int seed)
 	
 
 	
-	Graph g = init_graph_etoile(NB_ROUTES, PERIOD);
-	P = PERIOD;
-	/*Graph  g = init_graph_random_tree(STANDARD_LOAD);
+
+	Graph  g = init_graph_random_tree2(83.0);
 	if(FIXED_PERIOD_MOD)
 	{
 		P = PERIOD;
@@ -66,8 +87,8 @@ void test(unsigned int seed)
 		tmax = TMAX;
 	}
 	else
-		tmax = longest_route(&g)*2 + margin;*/
-	/*
+		tmax = longest_route(&g)*2 + margin;
+	
 			
 	printf("Parameters : \n");
 	printf("	Fixed period   : ");if(FIXED_PERIOD_MOD){printf("ON ");}else{printf("OFF ");}printf("| P = %d .\n",P);
@@ -90,7 +111,7 @@ void test(unsigned int seed)
 			fprintf(f,YEL "WARNING! TMAX is higher than the longest route. \n" RESET);
 	fprintf(f,"	Message size   : %d .\n",message_size);
 	fprintf(f,"	Routes Synch   : ");if(SYNCH){fprintf(f,"ON ");}else{fprintf(f,"OFF ");}fprintf(f,"\n");
-	*/
+	
 
 	printf(" ---- \n Graph * generated ...\n");
 	fprintf(f,"\n ---- \n Graph * generated ...\n");
@@ -111,11 +132,13 @@ void test(unsigned int seed)
 
 
 	char nom[32];
+	/*
 	printf("Borneinf %d \n",borneInf(&g,P,message_size));
 	
 	sprintf(nom,"borneinf");
 	
-	reset_periods(&g,P);reinit_delays(&g);
+	reset_periods(&g,P);reinit_delays(&g);*/
+
 
 	printf("debut fpt\n");
 	int fpt = branchbound( &g, P,  message_size,NULL,NULL,0);
@@ -145,6 +168,7 @@ void test(unsigned int seed)
 	//free_assignment(a);
 	
 	fprintf(f,"Graph after : \n");affiche_graph(&g,P,f);
+	print_instance_ml(&g,stdout);
 	fprintf(f,"Reseting periods ...\n");
 	reset_periods(&g,P);reinit_delays(&g);
 	if(recuits<fpt)
