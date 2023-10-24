@@ -155,7 +155,7 @@
 Cloud-RAN is a recent architecture for mobile networks where the processing units are located in distant data centers while, until now, they were attached to antennas. The main challenge, to fulfill protocol constraints, is to guarantee low latency for the periodic messages sent from each antenna to its processing unit and back. The problem we address is to find a periodic sending scheme of these messages \emph{without contention nor buffering}, when all messages are of the same size and the period is fixed.
 
 We study the periodic message assignment problem modeling this situation on a common topology, where contention arises from a single link shared by all antennas. The problem is reminiscent of coupled-task scheduling, but the periodicity introduces a new twist. We study how the problem behaves with regard to the \emph{load} of the shared link. 
-The main contributions are polynomial-time algorithms which \emph{always} find a solution for an arbitrary size of messages and load at most $2/5$ or for messages of size one and load at most $\phi - 1$, the golden ratio conjugate. We also prove that a randomized greedy algorithm finds a solution on almost all instances with high probability, explaining why most greedy algorithms work so well in practice.
+The main contributions are polynomial-time algorithms which \emph{always} find a solution for an arbitrary size of messages and load at most $2/5$ or for messages of size one and load at most $\phi - 1$, the golden ratio conjugate. We also prove that a randomized greedy algorithm finds a solution on almost all instances with high probability, explaining why most greedy algorithms work so well in experiments.
 }
 
 \keywords{Periodic Scheduling, Greedy Algorithm, Randomized Algorithm, Experimental Algorithms, C-RAN} %TODO mandatory; please add comma-separated list of keywords
@@ -166,38 +166,30 @@ The main contributions are polynomial-time algorithms which \emph{always} find a
 
 \section{Introduction}
 
-The Radio Access Networks (RAN) architecture is the part of the mobile phone network which communicates with mobile handsets. It is composed of base stations managing radio emissions and multiple computations, connected to the core network~\cite{bouguen2012lte}.
-%(called eNodeB) managing radio emissions and multiple computations to provide services and communicate with core networks (backhaul)~\cite{bouguen2012lte}. 
-An objective of 5G+ is to split a base station into two parts: The Remote Radio Head (RRH), in charge of the radio emissions, and the Baseband Unit (BBU\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}) in charge of the computations. In the Cloud RAN architecture
-(C-RAN), to reduce maintenance and energy consumption costs~\cite{gavrilovska2020cloud,mobile2011c,checko2014cloud}, the BBUs are gathered in one or several data centers and are connected to the RRHs via the \emph{fronthaul} network.
-%A next-generation architecture called C-RAN, for Cloud RAN, has been proposed to reduce energy consumption costs~\cite{gavrilovska2020cloud,mobile2011c,checko2014cloud} and more generally the total cost of ownership. In C-RAN, the BBUs are gathered in one or several data centers and are connected to the RRHs via the \emph{fronthaul} network.
- The main challenge of C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}, to support functions like  HARQ (Hybrid Automatic Repeat reQuest) in only $3$ms~\cite{bouguen2012lte}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by a BBU in the cloud.
- % For example, LTE standards require processing functions like HARQ (Hybrid Automatic Repeat reQuest) in $3$ms~\cite{bouguen2012lte}. In 5G, some services need end-to-end latency as low as $1$ms~\cite{dogra2020survey,boccardi2014five}.
-  In addition to the latency constraint, the specificity of C-RAN is the periodicity of the data transfer in the fronthaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{dogra2020survey,3gpp5g,romano2019imt}.
+The Radio Access Networks (RAN) architecture is the part of the mobile phone network which communicates with mobile handsets. It is composed of base stations managing radio emissions and multiple computations, connected to the core network~\cite{bouguen2012lte}. 
+An objective of 5G+ is to split a base station into two parts: The Remote Radio Head (RRH), in charge of the radio emissions, and the Baseband Unit (BBU\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}) in charge of the computations. In the Cloud RAN architecture (C-RAN), to reduce maintenance and energy consumption costs~\cite{gavrilovska2020cloud,mobile2011c,checko2014cloud}, the BBUs are gathered in one or several data centers and are connected to the RRHs via the \emph{fronthaul} network.
+ The main challenge of C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}, to support functions like  HARQ (Hybrid Automatic Repeat reQuest) in only $3$ms~\cite{bouguen2012lte}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by a BBU in the cloud. In addition to the latency constraint, the specificity of C-RAN is the periodicity of the data transfer in the fronthaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{dogra2020survey,3gpp5g,romano2019imt}.
 
 Our aim is to operate a C-RAN on a low-cost shared switched network: several (tens of) antennas share a high-speed link to send their periodic messages to one (or several) data center. This shared link is the only contention point for a message going to the data center and it is also the contention point for the answer sent back by the data center to the antenna. This model with two contention points (one for the message and one for its answer) also captures other periodic systems such as processors communicating over a bus or sensors doing periodic radio transmissions on the same frequency.
 
-We address the following question: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention.  
+We address the following question: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention.  While a sending scheme without buffering is simpler and less expensive to implement in C-RAN networks than one with buffering, it may not exist. 
 
 The algorithmic problem studied, called \emph{Periodic Message Assignment} or \pma, is as follows: Given a period, a message size, and, for each message a delay between the two contention points, set a departure time in the period for each message so that they go through both contention points without collision. All values are integers, a unit of time corresponds to the time to transmit a minimal quantity of data over a link. 
 
 The load of a network with a link shared by all messages is the load of this link, defined as the ratio of the bandwidth used to the bandwidth available. In our context, it is the time used by messages on the link in a period, divided by the period. When the load is small, it is easier to design sending scheme without collision, as already noted in~\cite{barth2018deterministic,guiraud2021deterministic}.
-The aim of this article is to understand up to which load, it is always possible to find a sending scheme and to give fast algorithms to produce it. Increasing this load, we can have more antennas sharing the same link, which reduces the cost of deployment of the fronthaul network. Moreover, a method to mix the traffic of the antennas with random sources of traffic requires finding sending schemes for a load as high as possible~\cite{bartharxiv2018deterministic,guiraud2021deterministic}. 
+The aim of this article is to \textbf{determine the largest load} under which it is \textbf{always possible to find a sending scheme} and to give fast algorithms to produce it. 
+Knowing this load enables the link to be correctly sized. Increasing this load, we can have more antennas sharing the same link, which reduces the cost of deployment of the fronthaul network. Moreover, a method to mix the traffic of the antennas with random sources of traffic requires finding sending schemes for a load as high as possible~\cite{guiraud2021deterministic}. 
 
 A pre-print version of this paper is available at \cite{DBLP:journals/corr/abs-2002-07606}.
+
+
 \paragraph*{Related Works}
 
-The model we study was recently introduced in~\cite{barth2018deterministic,guiraud2021deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these articles, the main results are heuristics, using classical scheduling algorithms as subroutines, and fixed-parameter tractable algorithms which find a sending scheme with \emph{minimal latency}. The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is also briefly introduced and studied in~\cite{bartharxiv2018deterministic,guiraud2021deterministic}.
-In this article, we propose several new polynomial time algorithms which dramatically improve on the greedy algorithm used to solve \pma in~\cite{bartharxiv2018deterministic,guiraud2021deterministic}, in the worst case or for random instances, both for large and small messages. 
-While a sending scheme without buffering is simpler and less expensive to implement in C-RAN networks than one with buffering, it may not exist. However, we prove in this article that \emph{when the load is not too high, there is always a solution without buffering}. Moreover, we explain in Sec.~\ref{sec:reduction} that to solve the problem of finding sending schedules with \emph{small latency}, we can solve \pma on normalized instances, which are easier to solve by the algorithms we present.
+The model we study was recently introduced in~\cite{barth2018deterministic,guiraud2021deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these articles, the main results are heuristics, using classical scheduling algorithms as subroutines, and fixed-parameter tractable algorithms which find a sending scheme with \emph{minimal latency}. The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is introduced for the first time and briefly studied in~\cite{bartharxiv2018deterministic}.
 
-If we ignore periodicity in the Periodic Message Assignment problem,
-it can be compared to several classical scheduling problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} but with two processors. Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data with a fixed interval of time betwen sending and receiving. 
+If we ignore periodicity in the Periodic Message Assignment problem, it can be compared to several classical scheduling problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} in a two flow-shop environment. Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data with a fixed interval of time betwen sending and receiving. 
 
-Our problem can also be interpreted as a two-machine flow shop scheduling problem~\cite{johnson1954optimal,yu2004minimizing} with an exact delay between tasks. The problem with an exact delay has been investigated and 
-found to be $\NP$-hard except when all delays are equals~\cite{leung2007scheduling}. 
-The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points.
-When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the total of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
+Alternatively, \pma can be interpreted as a two-machine flow shop scheduling problem~\cite{johnson1954optimal,yu2004minimizing} with an exact delay between tasks. The problem with an exact delay has been investigated and found to be $\NP$-hard except when all delays are equals~\cite{leung2007scheduling}. The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points. When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the total of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
 
  To our knowledge, periodic scheduling problems studied in the literature are quite different from the problem studied in this article. The problem of scheduling periodic tasks dates back to the 70s~\cite{liu1973scheduling}, with an emphasis on the maximal load as in this article. In~\cite{liu1973scheduling} only a single contention point is modeled and the scheduling is preemptive, which makes the proposed algorithms irrelevant to our problem.
 
@@ -207,18 +199,24 @@ When considering a two-machine flow shop problem, the aim is usually to minimize
 
  The train timetabling problem~\cite{lusby2011railway} and in particular, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size and speed, the network can be more complex than consecutive single tracks and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve. Therefore, some delay is allowed in different parts of the network to make these problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed-integer programming, genetic algorithms, etc. 
  
+\paragraph*{Contributions}
 
-\paragraph*{Organization of the Paper}
 
-In Sec.~\ref{sec:model}, we explain how the network is modeled and we introduce the problem \pma. In Sec.~\ref{sec:large}, we present several greedy algorithms and prove they always find a solution to \pma for moderate loads. 
-These algorithms rely on schemes to build compact enough solutions, to bound measures of the time wasted when scheduling messages. 
+Our primary objective is to establish that for relatively small loads, a scheduling solution for the \pma problem always exists and can be determined in polynomial time. 
+This extends previous work of the authors~\cite{bartharxiv2018deterministic}, where it was proven that the greedy algorithm, denoted as \metaoffset, guarantees a scheduling when the load is less than $1/3$.
+Our first contribution is the design and analysis of the \texttt{Compact k-tuples} algorithm. This sophisticated greedy algorithm schedules carefully chosen tuples of messages simultaneously.
+The algorithm operates in polynomial time and ensures a scheduling for loads up to $2/5$.
 
-In Sec.~\ref{sec:small} we present deterministic and probabilistic algorithms for messages of size $1$, which work for much higher loads than the algorithms designed for arbitrary messages. The deterministic algorithm is not greedy, contrarily to algorithms of Sec.~\ref{sec:large}, since it uses a swap mechanism that moves already scheduled messages. 
+Our second contribution is the design and analysis of the \swapandmove algorithm, in the context of messages of size $1$. This algorithm does local improvements to improve the packing of messages. It operates in polynomial time and always finds a scheduling when the load is less than $(\sqrt{5}-1)/2 \approx 0,618$. This is a significant improvement over existing greedy algorithms, which only guarantee a scheduling for loads less than $1/2$.
 
-In Sec.~\ref{sec:gen}, we prove that hypotheses on the period and the message size can be relaxed. We also show that \pma captures periodic message scheduling in networks with many contention points, as long as the routing is coherent.
-Finally, we present the performance of all algorithms on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}.
-It shows that the algorithms of this article work for random instances with a much higher load than what has been proved in the worst case.
-Table~\ref{tab1} summarizes the performance of the algorithms presented in this paper.
+Our third contribution is a set of reductions, which show that solving \pma whith message of size one is sufficient to address similar problems with 
+message of any size, buffering and a general fronthaul network, as opposed to a single link. This expands the applicability of our results, particularly in the context of C-RAN.
+
+Our final contribution is an experimental study, comparing the quality and runtime performance of various algorithms in solving the \pma problem on random instances. Notably, our results show that two algorithms, \compactfit (a simplified version of \texttt{Compact k-tuples}) and \swapandmove, consistently outperform other algorithms. We have made the source code for these algorithms available at \url{https://yann-strozecki.github.io/recherche.html}. Moreover, our experiments reveal that schedules can be found for significantly higher loads than guaranteed by our theoretical proofs. To explain this phenomenon, we prove that \greedyuniform, the simplest randomized greedy algorithm, is capable of scheduling for nearly all inputs with loads strictly less than 1.
+
+For a summary of the performance of the algorithms presented in this paper, please refer to Table~\ref{tab1}. It is worth noting that all algorithms discussed in this article are novel, with the exception of \metaoffset.
+
+
 
 
 \begin{table*}[h]
@@ -243,6 +241,18 @@ for large random instances  & $O(n^2)$  \\
 \end{center}
 \end{minipage}
 \end{table*}
+
+
+\paragraph*{Organization of the Paper}
+
+In Sec.~\ref{sec:model}, we explain how the network is modeled and we introduce the problem \pma. In Sec.~\ref{sec:large}, we present several greedy algorithms and prove they always find a solution to \pma for moderate loads. These algorithms rely on schemes to build compact enough solutions, to bound measures of the time wasted when scheduling messages. 
+
+In Sec.~\ref{sec:small} we present deterministic and probabilistic algorithms for messages of size $1$, which work for much higher loads than the algorithms designed for arbitrary messages. The deterministic algorithm is not greedy, contrarily to algorithms of Sec.~\ref{sec:large}, since it uses a swap mechanism that moves already scheduled messages. 
+
+In Sec.~\ref{sec:gen}, we prove that hypotheses on the period and the message size can be relaxed. We also show that \pma captures periodic message scheduling in networks with many contention points, as long as the routing is coherent.
+Finally, we present the performance of all algorithms on random inputs, both on large messages in Sec.~\ref{sec:perf_large} and small messages in Sec.~\ref{sec:perf_small}.
+It shows that the algorithms of this article work for random instances with a much higher load than what has been proved in the worst case.
+
 
 \section{Modeling a C-RAN Network}\label{sec:model}
 \begin{center}
@@ -455,7 +465,7 @@ Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built,
 A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is at most $2/5$ and for $n \geq 205$.
 \end{proof}
 
-The code computing the $n_i$'s can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
+The code computing the $n_i$'s can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
 The bound of Lemma~\ref{lemma:uple_find} can be improved, by using more complex algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the $k$-tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 
@@ -889,7 +899,7 @@ For most algorithms, it would be extremely difficult to theoretically analyze th
 \subsection{Experimental Results for Large Messages} \label{sec:perf_large}
 
 
-In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/textesmaths.html}}. We experiment with several periods and message sizes. For each set of parameters, we compute the success rate of each algorithm for all possible loads by changing the number of messages. The success rate is measured on $10,000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. We experiment with several periods and message sizes. For each set of parameters, we compute the success rate of each algorithm for all possible loads by changing the number of messages. The success rate is measured on $10,000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
 
 We consider the following algorithms:
 \begin{itemize}
@@ -898,7 +908,7 @@ We consider the following algorithms:
   \item \compactpair
   \item \compactfit
   \item \greedyuniform, the algorithm introduced and analyzed in Sec.~\ref{sec:small}, used for arbitrary $\tau$
-  \item \texttt{Exact Resolution} which always find a valid assignment if there is one, using an algorithm from~\cite{bartharxiv2018deterministic}  
+  \item \texttt{Exact Resolution} which always finds a valid assignment if there is one, using an algorithm from~\cite{bartharxiv2018deterministic}  
 \end{itemize}
 
 \begin{figure}[h]
