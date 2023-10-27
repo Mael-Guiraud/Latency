@@ -18,6 +18,9 @@ All rights reserved.
 #define NB_SIMULS 10000
 #define PARALLEL 1
 #define EXHAUSTIVE_SEARCH 0
+
+
+
 double time_diff(struct timeval tv1, struct timeval tv2)
 {
     return (((double)tv2.tv_sec*(double)1000 +(double)tv2.tv_usec/(double)1000) - ((double)tv1.tv_sec*(double)1000 + (double)tv1.tv_usec/(double)1000));

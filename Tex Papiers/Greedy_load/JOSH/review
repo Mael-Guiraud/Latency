@@ -40,30 +40,16 @@ Reviewer #3: This paper addresses the problem of finding a periodic sending sche
 
 *********************************************************************************************************************************************************
 
-We thank the reviewers for their remarks on the article. We took into account all remarks on the organization and presentation of the paper, 
-hopefully improving its readability. In particular, we have reorganized the introduction, added a contribution section and updated the references therein. We have included a few figures and algorithm environments along the text to help the reader. We have added several discussions into the article to address the remarks of the reviewers. 
+We thank the reviewers for their remarks on the article. We took into account all remarks on the organization and presentation of the paper, hopefully improving its readability. In particular, we have reorganized the introduction, added a contribution section and updated the references therein. We have included a few figures, emphasized a few points and algorithms, added additional explanations on the experiments. We have added several discussions into the article to address the remarks of the reviewers. 
 
 
 
-Specific answers to questions and suggestions:
+Specific answers to questions and remarks of the reviewers.
 
+Reviewer 1: 
 
+-Comparison with the state-of-the-art (SOTA) methods or heuristics for similar problems.
 
-TODO: Maël, un dessin pour expliquer les collisions: un dessin avec deux messages avec des offsets qui sont en collision (on peut montrer collision dans la premiere et seconde période + périodique)
-
-Définition Periodic message assignment avec un environnement problème
-
-Dire qu'on va scheduler les compacts pairs comme un seul objet 
-
-Faire un petit paragraphe au début des expériences pour dire à quoi elles servent, ce qu'elles montrent
-
-Trouver ou parler des méthodes classiques pour résoudre des problèmes similaires de scheduling et de pourquoi on ne les explore pas.
-(dans related work ?)
-
-
-Answer to the reviewers:
-
-# Comparison with methods for similar problems. 
 
 Typiquement, mixed integer linear programming -> dire pourquoi pas pertinent et qu'on discute de ça dans le papier. 
 Pareil pour beanch and bound. 
@@ -75,26 +61,91 @@ The classical methods for similar would give heuristic or exponential time algor
 Not an optimization problem + Mixed integer linear programming does not seem a good fit: because of the periodicity, the constraints rather than being expressed as a few inequalities as in classical scheduling problems, would be here modeled as a large number of inequalities ...
 Could be solved by a SAT solver, but quite large because each slot corresponds to a variable and   
 
-# References. 
-
-The application domain of CRAN is quite new and active, and we have put a few references to the most recent works in this domain. 
-To our knowledge, there is no theoretical work on the same kind of periodic model, recent or old. Most relevant works for similar scheduling problems are from the 1990's and 2000's. However, we updated the references with very recent surveys of the domain. 
 
 
-# (Reviewer 1 and 3) The algorithms of the article and how they are implemented. 
 
-All algorithms are given formally in the article with enough details to be implementable. Moreover, they have been coded in C for our experiments and the  code is available on the following webpage. 
+-The practical challenges of implementing the proposed algorithms
 
-Dire qu'on a mis des environnements algo et modifié le texte pour que ça soit le plus clair possible.
+The algorithm themselves are easy to code and our implementation is openly available. 
+The timing found by our algorithm can be computed offline and used to parametrized a fronthaul network.
 
-
-Reviewer #3
-
-1. We solve the problem in regim where the load is small, which restricts the set of possible instances. In that case, the problem is not in NP anymore, in fact all instances are positive and the contribution of this article is to show how to find solutions in this case for the largest possible value of the load.
-
-5. There are no real word datasets for our CRAN application. We are working with Bell-Labs on this subject, and our problem and algorithms have been invented to support new products. There are only prototypes of these products, hence there is no real data of how they are used in the field. 
-
-Dire qu'on a essayé des tailles de paquet différentes (typiquement 1 ou grand) et des nombres de paquet qui correspondent à notre cas d'usage de quelques dizaines d'antennes connectées. Par contre, si les délais ont une structure particulière, on pourrait obtenir des résultats différents. Notre cas d'usage du CRAN sans buffer c'est plus les paquets grands, mais pour d'autres usages, typiquement avec des petits buffers de synchro, on peut se ramener facilement au cas de taille 1.
+The real difficulty is to use these timings in a bufferless network, where they may be errors, time drift, or other problems not accounted for in our model. A prototype has been realized, which illustrates that there are technologies allowing to realize our determinstic sending cheme and that maintaining a precise offset along many periods is working well. But for a real deployment, we should have mechanisms inside the network to cope with failures and be able to recompute a scheduling when something goes wrong or change. It should be possible as our algorithms are extremely fast, but no work has been done yet on the subject.  We did not elaborate on this in this article, since it was more oriented toward proving theoritical results on the load to be able to size correctly our network.
 
 
-Dire aussi qu'on a donné des explications (dans la section 5) de pourquoi notre modèle simple pouvait capturer des usages plus complexes (avec d'autre tailles de paquet et d'autres topologies et la possibilité d'avoir de la latence).
+
+-Absence of graphical representation for a clearer understanding
+
+We do not understand this remark. We have put quite a lot of figures to help the reader. 
+If some specific illustration is needed, please specify it and we will be happy to add it.
+
+
+Reviewer 2: 
+
+1.      In introduction, the authors should list the contributions and features of the proposed algorithm and mathematic model.
+
+We have added a contribution section.
+
+2.      In Fig. 1, the sub-figure of "Datacenter with several BBUs" has low resolution. Please provide clearer figures.
+
+Done.
+
+3.      The background of CRAN should be described.
+
+Details have been added in the introduction. For more details on the problem, you may refer to our previous work, which is more focused on this particular application and its modelling. 
+Citer
+
+4.      In the experiment, the authors give the experimental results for small messages and for large messages. However, are these experiments really related to the real-world application scenarios? I think the authors should discuss the performance of the proposed algorithm in more real-world application scenarios.
+
+
+ The CRAN application we propose is still at the prototype phase and we are working with Bell-Labs on this subject. Citer brevets et proto ~\cite{DBLP:conf/ccnc/GuiraudLM22}.
+ This kind of technologies has yet not been deployed in the field, hence we do not know the typical delays that we should consider. They mostly depend on the kind of computation done on each message and the different type of BBUs doing these computations.
+ From actual telecommunication protocols and technologies used in fronthaul networks for 5G, we know that the value of $P$ is around 100.000 and the number of messages is from a few tens to a few hundreds at most~\cite{bartharxiv2018deterministic}. All experiments are done within this range.
+
+
+
+
+5.      In experiments, what are the experimental results of the proposed compact k-tuples algorithm?
+
+We only implemented it for $k=2$, under the name compact pairs and included it in experiments. We prefered to do experiment with Compact Fit, which is similar to compact tuples with arbitrary large $k$, but is simpler to implement (and harder to analyze theoriticaly).
+
+
+6.      Most of the references are too old! Only two references are after 2021, while most of them are in 1990s? The authors should update the related work and should also modify the Introduction by using more recent work to enhance the motivation and contribution of their work. In fact, there are related works in leading journals like IEEE TEVC and IEEE TCYB that can help to enhance/update the quality of this paper.
+
+The application domain of CRAN is quite new and active, and we have added a few references to the most recent works in this domain. To our knowledge, there is no theoretical work on this kind of periodic scheduling, recent or old. Most relevant works for similar scheduling problems without periodicity are from the 1990's and 2000's. However, we updated the references with very recent surveys and results in related scheduling domains and with references to recent heuristics to optimize latency in the same kind of networks (but with different constraints). 
+
+
+
+Reveiwer #3
+
+1. While the proposed problem is not verified to be P or NP, how can it be solved by any greedy, deterministic, and probabilistic algorithms with polynomial time?
+
+We solve the problem in regime where the load is small, which restricts the set of possible instances. In that case, the problem is not in NP anymore, in fact all instances are positive. The contribution of this article is to show how to find solutions in this case for the largest possible value of the load.
+
+
+2. As an optimization problem, the self-contrained mathematical definition of the proposed problem should be given in detail.
+
+We try to find a scheduling satisfying certain constraints, but there is no crititeria to optimize. 
+In this kind of problem, the lateness is typically minimize, but in our periodic settings it does not make sense.
+Hence, it is not an optimization problem, even though it can be interpreted as one (trying to maximise the number of messages shceduled) as explained in Section 2. 
+
+
+3. The detailed procedures of the employed algorithms should be given, so that they can be reimplemented by readers.
+
+The procedures are all given in the text, usually before the theorem where there property are proved. 
+We have tried to emphasize them better. An implementation in C is available for people wanting to test or reimplement the algorithms. 
+
+4. The value of the proposed problem compared with existing ones should be analyzed or verified by experiments.
+
+This problem was not known in the litterature before its introduction a few years ago, hence it is hard to compare to other methods solving it. In particular, this variant where we forbid all buffering is quite new. What this article shows and validates is that for small loads (and in practice for loads up to 80%) we can always find good scheduling of messages to send periodic messages without buffering. This is much better to solutions using buffers, or changing the offset at every period or using randomized offsets which are more complicated to implement in real networks and add more latency.
+
+5. Real-world datasets (instances) should be involved in the experiments.
+
+ The CRAN application we propose is still at the prototype phase and we are working with Bell-Labs on this subject. Citer brevets et proto ~\cite{DBLP:conf/ccnc/GuiraudLM22}.
+ This kind of technologies has yet not been deployed in the field, hence we do not know the typical delays that we should consider. They mostly depend on the kind of computation done on each message and the different type of BBUs doing these computations.
+ From actual telecommunication protocols and technologies, we know that the value of $P$ is around $1000$ and the number of messages is from a few tens to a few hundreds at most ~\cite{bartharxiv2018deterministic}. All experiments are done within this range.
+
+
+
+
+
+

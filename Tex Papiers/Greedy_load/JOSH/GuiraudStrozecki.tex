@@ -217,8 +217,6 @@ Our final contribution is an experimental study, comparing the quality and runti
 For a summary of the performance of the algorithms presented in this paper, please refer to Table~\ref{tab1}. It is worth noting that all algorithms discussed in this article are novel, with the exception of \metaoffset.
 
 
-
-
 \begin{table*}[h]
 \begin{minipage}{400px}
 \begin{center}
@@ -322,7 +320,9 @@ Consider some partial assignment $A$, in the first period, the message $i$ uses 
 
 To formalize the idea of the previous paragraph, we introduce $\Fo(A)$, which is the number of \emph{offsets forbidden by $A$}. Let $A$ be a partial assignment defined over $S$ and $i\notin S$, $\Fo(A)$ is the maximum over all values of $d_i \in [P]$ of $\lvert\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has a collision}\right\}\rvert$. In the previous paragraph, we have proved that $\Fo(A)$ is at most $(4 \tau -2)\lvert S\rvert$. 
 
-Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), try all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment and use it to extend the assignment. If $\Fo(A) < P$, then whatever the delay of the message we want to extend $A$ with, there is an offset to do so. Since $\Fo(A) \leq (4 \tau -2)\lvert S\rvert$ and $\lvert S\rvert < n$, \firstfit (or any greedy algorithm) always succeeds when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is at most $1/4$.
+Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), try all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment and use it to extend the assignment. 
+
+When $\Fo(A) < P$, whatever the delay of the message we want to extend $A$ with, there is an offset to do so. Since $\Fo(A) \leq (4 \tau -2)\lvert S\rvert$ and $\lvert S\rvert < n$, \firstfit (or any greedy algorithm) always succeeds when $(4 \tau -2)n \leq P$, that is when the load $ n\tau /P$ is at most $1/4$.
 It turns out that \firstfit always creates compact assignments (as defined in~\cite{bartharxiv2018deterministic}), that is a message is always next to another one in one of the two periods. Hence, we can prove a better bound on $\Fo(A)$, when $A$ is built by \firstfit, as stated in the following theorem.
 
 \begin{theorem}
@@ -330,13 +330,12 @@ It turns out that \firstfit always creates compact assignments (as defined in~\c
 \end{theorem}
 \begin{proof}
 We show by induction on the size of $S$, that $\Fo(A) \leq \lvert S\rvert(3\tau -1) + \tau - 1$. For $\lvert S\rvert = 1$, it is clear since a single message forbid at most $(3\tau -1) + \tau -1 = 4\tau-2$ offsets, as explained before. Now, assume $\Fo(A) \leq \lvert S\rvert(3\tau -1) + \tau -1$ and consider a message $i \notin S$ such that \firstfit builds $A[i \rightarrow o]$ from $A$. By definition of \firstfit, choosing $o-1$ as offset creates a collision. W.l.o.g. say it is a collision in the first period. It means that there is a scheduled message between $o - \tau $ and $o-1$, hence all these offsets are forbidden by $A$. The same offsets are also forbidden by the choice of $o$ as offset for $i$, hence at most $3\tau -1$ new offsets are forbidden, that is $\Fo(A[i \rightarrow o]) \leq \Fo(A) + (3\tau -1)$, which proves the induction. 
-The value of $\Fo(A)$ is increasing during \firstfit, hence it is maximal when the last element is scheduled when it is bounded by $(n-1)(3\tau -1) + \tau - 1 < 3n\tau$.
-Therefore \firstfit succeeds when $\Fo(A) < P$, which happens when $3n\tau \leq P$, i.e. when the load is at most $1/3$.
+The value of $\Fo(A)$ is increasing during \firstfit, hence it is maximal when the last element is scheduled. It is then bounded by $(n-1)(3\tau -1) + \tau - 1 < 3n\tau$.
+Therefore, \firstfit succeeds when $\Fo(A) < P$, which happens when $3n\tau \leq P$, i.e. when the load is at most $1/3$.
 \end{proof}
 
 
-A naïve implementation of \firstfit is in time $O(nP)$, since for each of the $n$ messages $P$ offsets could be tried.
-However, it is not useful to consider every possible offset at each step. By maintaining a list of increasing positions of scheduled messages in the first and second period, 
+A naïve implementation of \firstfit is in time $O(nP)$, since for each of the $n$ messages $P$ offsets could be tried. However, it is not useful to consider every possible offset at each step. By maintaining a list of increasing positions of scheduled messages in the first and second period, 
 we can skip all positions corresponding with a collision with the same message, and only $O(n)$ offsets must be considered. Hence, \firstfit can be implemented in time $O(n^2)$.
 
 \subsection{Meta-Offset}
@@ -358,15 +357,14 @@ The complexity of \metaoffset is in $O(n^2)$, since for each of the $n$ messages
 
 \subsection{Compact Pairs}
 
-We present in this section \texttt{Compact k-tuples}, a family of greedy algorithms which solve \pma positively for larger loads. The idea is to schedule several messages at once, using meta-offsets, to maximize the compactness of the obtained solution. We first describe an algorithm that schedules pairs of messages, which is then extended to any tuple of messages. 
+We present in this section \texttt{Compact k-tuples}, a new family of greedy algorithms which solve \pma positively for larger loads. The idea is to schedule several messages at once, using meta-offsets, to maximize the compactness of the obtained solution. We first describe an algorithm that schedules pairs of messages, which is then extended to any tuple of messages. 
 
 For clarity of exposition, we assume from now on that \emph{the period $P$ is a multiple of $\tau$}: we let $P = m\tau$. We show in Sec.~\ref{sec:gen} that this hypothesis can be relaxed to the price of a very small increase of the load. 
-
 
 When all delays are multiple of $\tau$, \metaoffset schedules the messages compactly and solves $\pma$ for a load of $1/2$. Hence, we are interested in the remainder modulo $\tau$ of the delays. Let $d_i = d_{i}'\tau + r_i$ be the Euclidean division of $d_i$ by $\tau$. We now assume that \emph{messages are sorted by increasing $r_i$}.
 
 The \textbf{gap} between message $i$ and message $j$, is defined as $g = d'_{i} + 1 - d'_{j} \mod m$.
-A \textbf{Compact pair} is a pair of messages $(i,j)$, with $i < j$ and their gap is different from $0$. A compact pair $(i,j)$ is scheduled using meta-offsets such that $A(i) + (d'_i+1)\tau = A(j) + d'_j\tau$, i.e. the beginning of $j$ is less than $\tau$ unit of times after the end of $i$ in the second period, see Fig.~\ref{fig:compactpair}. The gap is interpreted as the distance in meta-offsets between $i$ and $j$ in the first period, when they are scheduled as a compact pair.
+A \textbf{Compact pair} is a pair of messages $(i,j)$, with $i < j$ and their gap is different from $0$. A compact pair $(i,j)$ \emph{is scheduled as a single message} using meta-offsets so that $A(i) + (d'_i+1)\tau = A(j) + d'_j\tau$, i.e. the beginning of $j$ is less than $\tau$ unit of times after the end of $i$ in the second period, see Fig.~\ref{fig:compactpair}. The gap is interpreted as the distance in meta-offsets between $i$ and $j$ in the first period, when they are scheduled as a compact pair.
 
 \begin{figure}[h]
 \begin{center}
@@ -384,10 +382,12 @@ Given three messages $(1,2,3)$ in order of increasing delay modulo $\tau$, then 
 If the first two messages or the first and the third message form a compact pair, we are done. If not, then by definition $d_{1}' = 1 + d_{2}' = 1 + d_{3}'$. Hence, messages $2$ and $3$ have the same delay divided by $\tau$ and form a compact pair of gap $1$.
 \end{proof}
 
-Let \compactpair be the following greedy algorithm:  A sequence of at least $n/3$ compact pairs is built by considering triples of messages in order of increasing $r_i$, and applying Lemma~\ref{lemma:pair_find} to each triple. Compact pairs are scheduled in the order they have been built using meta-offsets. If at some point all compact pairs are scheduled or the current one cannot be scheduled, the remaining messages are scheduled as in \metaoffset. The analysis of \compactpair relies on the evaluation of the number of forbidden meta-offsets. In the first phase of \compactpair, we evaluate the number of forbidden offsets when scheduling any compact pair, that we denote by $\Fmo_2(A)$. In the second phase, we need to evaluate $\Fmo(A)$. When scheduling a message in the second phase, a scheduled compact pair only forbids \emph{three} meta-offsets in the second period, while two messages scheduled independently forbid \emph{four} meta-offsets, which explains the improvement from \compactpair. We state the previous facts as Lemma~\ref{lemma:pair_forbid}, see an illustration in Fig.~\ref{fig:forbidenmeta}. 
+Let \compactpair be the following greedy algorithm:  A sequence of at least $n/3$ compact pairs is built by considering triples of messages in order of increasing $r_i$, and applying Lemma~\ref{lemma:pair_find} to each triple. Compact pairs are scheduled in the order they have been built at the first available meta-offset. If at some point all compact pairs are scheduled or the current one cannot be scheduled, the remaining messages are scheduled as in \metaoffset. 
+
+The analysis of \compactpair relies on the evaluation of the number of forbidden meta-offsets. In the first phase of \compactpair, we evaluate the number of forbidden offsets when scheduling any compact pair, that we denote by $\Fmo_2(A)$. In the second phase, we need to evaluate $\Fmo(A)$. When scheduling a message in the second phase, a scheduled compact pair only forbids \emph{three} meta-offsets in the second period, while two messages scheduled independently forbid \emph{four} meta-offsets, which explains the improvement from \compactpair. We state the previous fact as Lemma~\ref{lemma:pair_forbid}, see an illustration in Fig.~\ref{fig:forbidenmeta}. 
 
 \begin{lemma}\label{lemma:pair_forbid}
-Let $C_1$ be compact pair. Let $C_2$  be a compact pair and $i$ a single message which are scheduled by \compactpair after $C_1$.
+Let $C_1$ be compact pair. Let $C_2$ be a compact pair and let $i$ be a single message, both scheduled by \compactpair after $C_1$.
 Then, because of collisions in the second period, $C_1$ forbids at most four meta-offsets to $C_2$ and three meta-offsets to $i$. 
 \end{lemma}
 
@@ -407,14 +407,14 @@ Then, because of collisions in the second period, $C_1$ forbids at most four met
 Let $n$ be the number of messages to schedule.
 In the first phase of \compactpair, $n_2$ compact pairs are scheduled to build a partial assignment $A$. Let us first assume that there are more compact pairs built using the method of Lemma~\ref{lemma:pair_find} than compact pairs which are scheduled.
 When scheduling a new compact pair, the position of the first $n_2$ compact pairs on the first period forbid $4n_2$ offsets for a compact pair. In the second period, we use Lemma~\ref{lemma:pair_forbid} to bound the number of forbidden offsets by $4n_2$.   
-Hence, $\Fmo_2(A) \leq 8n_2$. By definition of $\Fmo_2(A)$, there are offsets to schedule compact pairs while $\Fmo_2(A) < m$. Thus, $A$ can be extended if $8n_2 < m$.
+Hence, $\Fmo_2(A) \leq 8n_2$. By definition of $\Fmo_2(A)$, there are offsets to schedule compact pairs while $\Fmo_2(A) < m$. Thus, $A$ can be extended by compact pairs if $8n_2 < m$.
 Since exactly $n_2$ pairs are scheduled, $n_2 \geq m/8$.  
 
 Let $n_1$ be the number of messages remaining to be scheduled by \compactpair using meta-offsets after the $n_2$ compact pairs have been scheduled. By Lemma~\ref{lemma:pair_forbid}, a compact pair forbids $3$ meta-offsets in the second period. It also forbids $2$ meta-offsets in the first period. The $n_1$ messages scheduled as in \metaoffset forbids $3$ meta-offsets each, as explained in the previous section.
 Therefore, we have $\Fmo(A) \leq 5n_2 + 3n_1$. 
 
 Assume now that \compactpair fails to schedule the $n_1$ messages of the second phase.
-Since \compactpair can schedule new messagess when $\Fmo(A) < m$, 
+Since \compactpair can schedule new messages when $\Fmo(A) < m$, 
 we obtain $5n_2 + 3(n_1-1) \geq m$. We have already proved $n_2 \geq  m/8$, by summing both inequations, we obtain $$6n_2 + 3n_1 > 9m/8 + 2.$$ By definition $n = 2n_2 + n_1$, hence $$3n > 9m/8.$$ Therefore, when \compactpair fails, $n > (3/8)m$, i.e. the load is larger than $3/8$.
 
 Let us now assume that the first phase stops because the algorithm runs out of compact pairs. They are built using Lemma~\ref{lemma:pair_find}, for each triple of messages at least a compact pair is produced. Hence, we obtain at least $n/3$ compact pairs, which are all scheduled. We have $n_2 > n/3$ and $n= 2n_2 + n_1$, which implies that $n_1 + n_2 \leq 2n/3$.
@@ -441,8 +441,8 @@ It is a compact $k$-tuple, if there is a valid partial assignment of these messa
 Given $k + k(k-1)(2k-1)/6$ messages, $k$ of them always form a compact $k$-tuple and we can find them in time $O(k^3)$. 
 \end{lemma}
 \begin{proof}
-We assume the messages are sorted by increasing $r_i$s. We prove the lemma by induction on $k$. Lemma~\ref{lemma:pair_find} already proves the lemma for $k=2$.
-Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$ messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay, then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. Each of the $k-1$ elements of $C$ forbids one possible meta-delay for an additional $k$-th message in $C$. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
+We assume the messages are sorted by increasing $r_i$'s. We prove the lemma by induction on $k$. Lemma~\ref{lemma:pair_find} already proves the lemma for $k=2$.
+Now assume that we have found $C$ a compact $(k-1)$-tuple in the first $k-1 + (k-1)(k-2)(2k-3)/6$ messages. Consider the next $(k-1)^2 + 1$ messages: if $k$ of them have the same meta-delay, then they form a compact $k$-tuple and we are done. Otherwise, there are at least $k$ different meta-delays in those $(k-1)^2 + 1$ messages. When we want to add an additional $k$-th message in $C$, to obtain a compact $k$-tuples, the $k-1$ elements of $C$ forbid each one possible meta-delay. By pigeonhole principle, one of the $k$ messages with distinct meta-delays can be used to extend $C$. We can thus build a compact $k$-tuple from at most $(k-1) + (k-1)(k-2)(2k-3)/6 + (k-1)^2 + 1$ messages, that is $k + k(k-1)(2k-1)/6$ messages which proves the induction.
 \end{proof}
 
 In \compactpair, the compact pairs are created and scheduled in order of their $r_i$. In \texttt{Compact k-tuples}, the compact tuples are produced thanks to~\ref{lemma:uple_find} by going over the set of messages several times, hence inside a compact tuple the $r_{i_1}$'s are increasing but not
@@ -465,21 +465,20 @@ Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built,
 A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is at most $2/5$ and for $n \geq 205$.
 \end{proof}
 
-The code computing the $n_i$'s can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
+The code computing the $n_i$'s and thus the bound on the load can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
 The bound of Lemma~\ref{lemma:uple_find} can be improved, by using more complex algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the $k$-tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 
 \section{Messages of Size One} \label{sec:small}
 
-We consider the special case $\tau = 1$. While $\tau > 1$ for a C-RAN application, other applications such as sensors communicating with a base station through a low bandwidth channel may be modeled with $\tau = 1$. Moreover, in Sec.~\ref{sec:reduction}, we prove that any instance with $\tau >1$ can be transformed into an instance with $\tau = 1$, by increasing the load or the latency of the system.
+We consider in this section the special case $\tau = 1$. While $\tau > 1$ for a C-RAN application, other applications such as sensors communicating with a base station through a low bandwidth channel may be modeled with $\tau = 1$. Moreover, in Sec.~\ref{sec:reduction}, we prove that any instance with $\tau >1$ can be transformed into an instance with $\tau = 1$, by increasing the load or the latency of the system.
 
 When $\tau = 1$ and the load is less than $1/2$, \emph{any greedy algorithm} solves \pma positively since $\Fo(A) \leq (4\tau -2)\lvert S\rvert = 2\lvert S\rvert$ where $S$ is the set of scheduled messages. In this section, we give a polynomial time algorithm that always finds a valid assignment when the load is less than $1/2 + (\sqrt{5}/2 -1)$. We also show that a simple randomized greedy algorithm
 works for loads arbitrarily close to one on random instances.
 
 \subsection{Deterministic Algorithm}
 
-We define the notion of \emph{potential} of a partial assignment, which indirectly measures how many offsets are left available by this assignment for all messages of the instance. To go above $1/2$ of load, we introduce the
-the \swapandmove algorithm: it schedules message greedily, and when it fails, the potential is optimized by local operations on the partial assignment, to get more available offsets. 
+We define the notion of \emph{potential} of a partial assignment, which indirectly measures how many offsets are left available by this assignment for all messages of the instance. To go above $1/2$ of load, we introduce the the \swapandmove algorithm: it schedules message greedily, and when it fails, the potential is optimized by local operations on the partial assignment, to get more available offsets. 
 
 \begin{definition}
 Let $i$ be a message of delay $d$ and let $A$ be a partial assignment.
@@ -571,9 +570,10 @@ Assume now, to prove our lemma, that for all $p$, $Pot(Swap(i,p,A)) \leq Pot(A)$
 \end{proof}
 
 Let us now define algorithm \swapandmove. 
-It schedules messages using \firstfit while possible. Then, it applies the Swap operation while it increases the potential. When the potential cannot be improved by a Swap anymore, \swapandmove try to schedule a new message at each position. When scheduling the message at some position, it conflicts with one or two already scheduled messages, which are moved to another offset if possible. If \swapandmove fails to schedule the message it stops, otherwise the whole procedure is repeated. 
+It schedules messages using \firstfit while possible. Then, it applies the Swap operation while it increases the potential. When the potential cannot be improved by a Swap anymore, \swapandmove try to schedule a new message at each position. When scheduling the message at some position, if it conflicts with one or two already scheduled messages, they are moved to another offset if possible. If \swapandmove fails to schedule the message it stops, otherwise the whole procedure is repeated. 
 
-Algorithm \swapandmove is not greedy, since we allow to change the offset of a message, either to improve the potential or to free an offset for scheduling a new message. While computing the potential requires knowing all delays in advance, \swapandmove can be adapted to work online by considering the potential of a partial assignment to be the sum of potentials of the scheduled messages.
+Algorithm \swapandmove is not greedy, since we allow to change the offset of a message, either to improve the potential or to free an offset for scheduling a new message. However, the number of scheduled messages during the algorithm increases and a message cannot be unscheduled, it only has its offset changed.
+While computing the potential requires knowing all delays in advance, \swapandmove can be adapted to work online by considering the potential of a partial assignment to be the sum of potentials of the scheduled messages.
 
 
 \begin{theorem}
@@ -639,10 +639,9 @@ strictly increase the potential. Moreover, when one or two messages are moved, t
 
 Consider a partial assignment of size $n-1 = (1/2 + \varepsilon)P$, and a last message of delay $d$ to schedule.
 We have seen that if a scheduled message cannot be rescheduled, its potential is equal to $2\varepsilon P$, it is larger otherwise.
-Hence, the best possible upper bound on the potential of the assignment is $2\varepsilon P n$. On the other hand, Lemma~\ref{lemma:swap} guarantees that the potential of an assignment is at least $n(n-1)/2$. Therefore, improving the analysis at best yields $\varepsilon = 1/6$ and 
-load $2/3$.
+Hence, the best possible upper bound on the potential of the assignment is $2\varepsilon P n$. On the other hand, Lemma~\ref{lemma:swap} guarantees that the potential of an assignment is at least $n(n-1)/2$. Therefore, improving the analysis at best yields $\varepsilon = 1/6$ and load $2/3$.
 
-To go further, the analysis in Lemma~\ref{lemma:swap} may be improved: $2\varepsilon P$ positions in $P_{u}$ are not taken into account in the proof. When the delays are distinct we can indeed improve the result. However, there is an instance (found by a bruteforce search) with $8$ messages and $P=10$ for which there is no assignment, hence the largest $\lambda$ for which $\pma$ has always a solution is strictly less than $8/10$. 
+To go further, the analysis in Lemma~\ref{lemma:swap} may be improved: $2\varepsilon P$ positions in $P_{u}$ are not taken into account in the proof. When the delays are distinct we can indeed use this remark to improve the result. However, there is an instance (found by a bruteforce search) with $8$ messages and $P=10$ for which there is no assignment, hence the largest $\lambda$ for which $\pma$ has always a solution is strictly less than $8/10$. 
 
 \subsection{Randomized Algorithm for Random Instances}
 
@@ -694,8 +693,7 @@ Using the previous approximation, a computation yields a constant $C$ independen
 As an illustration, with $\lambda = 2/3$, $\Pr(P,n) < 1,16 \times (0,84)^P$.
 
 We let $f(\lambda) = \frac{\lambda^{2\lambda}}{(2\lambda -1)^{2\lambda -1}}$.
-The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence $f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by the sum of probabilities
-that it fails at step $i$ for $P/2 \leq i < n$. We have $\Pr(P,i) < \Pr(P,j)$
+The derivative of $f$ is strictly positive for $1/2 < \lambda < 1$ and $f(1) = 1$, hence $f(\lambda) < 1$ when $\lambda < 1$. By a union bound, the probability that \greedyuniform fails is bounded by the sum of probabilities that it fails at step $i$ for $P/2 \leq i < n$. We have $\Pr(P,i) < \Pr(P,j)$
 if $i < j$, hence we bound the probability that \greedyuniform fails by $\frac{C \lambda P f(\lambda)^P}{2}$. For any fixed $\lambda$, the previous expression goes to zero, exponentially quickly, when $P$ goes to infinity. It explains why \greedyuniform is good in practice for large $P$, even when the load is large. 
 For instance, with $n = 8$ and $P=12$ (thus $\lambda = 2/3$), the probability of success of \greedyuniform is larger than $0.92$ (see Sec.~\ref{sec:perf_small} for more values).
 
@@ -893,13 +891,21 @@ However, there is a more relevant way to define the load for general networks. L
 \section{Experimental Results}\label{sec:perf}
 
 In this section, we evaluate all presented algorithms on random instances. We also introduce several other algorithms, for which we have no formal bounds, to understand them empirically. 
-For most algorithms, it would be extremely difficult to theoretically analyze the fraction of positive instances for a given load as we did for \greedyuniform in Sec.~\ref{sec:small}. By doing these experiments, we get an idea of the difference between the bounds on the load we have proved for worst-case instances and random instances.
+For most algorithms, it is extremely difficult to theoretically analyze the fraction of positive instances for a given load as we did for \greedyuniform in Sec.~\ref{sec:small}. By doing these experiments, we get an idea of the difference between the bounds on the load we have proved for worst-case instances and random instances. Moreover, it gives us insights on how well our algorithm perform when they are not in a load regime where they are guaranteed to find a solution.
+
+Our instances are randomly generated, and not taken from a real dataset. The CRAN application we propose
+is still at the prototype phase~\cite{DBLP:conf/ccnc/GuiraudLM22} and has not been used in the field, thus no data exists on the typical delays that we should consider. However, from actual telecommunication protocols and technologies, we know that the value of $P$ is around $1000$ and the number of messages is from a few tens to a few hundreds at most~\cite{bartharxiv2018deterministic}. All experiments are done within this range.
+
+
+the value $\tau$ with regards to $P$, or the number of messages 
 
 
 \subsection{Experimental Results for Large Messages} \label{sec:perf_large}
 
 
 In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. We experiment with several periods and message sizes. For each set of parameters, we compute the success rate of each algorithm for all possible loads by changing the number of messages. The success rate is measured on $10,000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+
+
 
 We consider the following algorithms:
 \begin{itemize}
