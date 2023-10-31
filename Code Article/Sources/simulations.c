@@ -918,12 +918,9 @@ char nom[64];
 			printf("%d %d \n",periode95,periode40);
 	for(int marge=0;marge<= marge_max;marge += 500)
 	{
-
 		sto1=0;
 		sto2=0;
 		sp =0;
-		
-
 		#pragma omp parallel for private(ressto,ressp,g,tmax,m_i,offsets,permutation,sp_found) if (PARALLEL) schedule (dynamic)
 		for(int i = 0;i<nb_simuls;i++)
 		{
