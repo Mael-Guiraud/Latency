@@ -204,13 +204,13 @@ Alternatively, \pma can be interpreted as a two-machine flow shop scheduling pro
 
  To our knowledge, periodic scheduling problems studied in the literature are quite different from the problem studied in this article. The problem of scheduling periodic tasks dates back to the 70s~\cite{liu1973scheduling}, with an emphasis on the maximal load as in this article. In~\cite{liu1973scheduling} only a single contention point is modeled and the scheduling is preemptive, which makes the proposed algorithms irrelevant to our problem.
 
- Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Recent work that aims to schedule periodic flows using TSN technologies employs a model very similar to ours in terms of architecture and the objective of eliminating jitter#\cite{9472838}. However, the studied model does not account for round-trip packets, and the authors provide only a greedy algorithm. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
+ Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Recent work that aims to schedule periodic flows using TSN technologies employs a model very similar to ours in terms of architecture and the objective of eliminating jitter~\cite{9472838}. However, the studied model does not account for round-trip packets, and the authors provide only a greedy algorithm. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
 
  In another line of work~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to two fixed and different processors. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a schedule to maximize the throughput, while our period is fixed. 
 
  The train timetabling problem~\cite{lusby2011railway} and in particular, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size and speed, the network can be more complex than consecutive single tracks and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve. Therefore, some delay is allowed in different parts of the network to make these problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed-integer programming, genetic algorithms, etc. 
 
-The approach of employing dynamic deterministic flow calculation is emerging. While~\cite{9234005} presents a genetic algorithm based on a job-shop scheduling model that deviates significantly from our model,#\cite{gartner2023fast} uses incremental approaches with a concept similar to our "swap and move" algorithm: minimizing the impact of scheduling choices on future packets. The authors do not try to optimize overall latency but focus solely on computation time, using topologies and flow modelization different from ours.
+The approach of employing dynamic deterministic flow calculation is emerging. While~\cite{9234005} presents a genetic algorithm based on a job-shop scheduling model that deviates significantly from our model,~\cite{gartner2023fast} uses incremental approaches with a concept similar to our\swapandmove algorithm: minimizing the impact of scheduling choices on future packets. The authors do not try to optimize overall latency but focus solely on computation time, using topologies and flow modelization different from ours.
 
 We do not experiment with classical methods used to solve similar problems such as mixed-integer linear programming, simulated annealing or genetic algorithm. Indeed, our objective is not design the best heuristic to solve \pma, but rather to understand for which load this problem has always a solution. While it is possible to analyze greedy algorithms to prove such a result, it seems hard to do the same for more complex heuristics. Besides, \pma is a constraint satisfaction problem and not an optimization problem, making some classical methods less relevant. The periodicity makes the constraints hard to state in a linear fashion, which makes the problem harder to cast as a linear programming problem (though not impossible, see~\cite{bartharxiv2018deterministic}). 
 
@@ -273,7 +273,7 @@ It shows that the algorithms of this article work for random instances with a mu
 \begin{figure}
 
 \centering
-\includegraphics[scale=0.3]{network2.pdf} 
+\includegraphics[scale=0.22]{network3.pdf} 
 
 \scalebox{0.45}{
 \includegraphics[]{graphdelays.pdf}
@@ -296,8 +296,27 @@ The \textbf{size} is an integer representing the time needed to send a message t
 
 The time is \emph{discretized} and the process we consider is \emph{periodic} of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. A message is emitted an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of an interval of $P$ units of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. Because the system is of period $P$, we may always assume that $d_i$, the delay of message $i$, is in $[P]$. 
 
-An \textbf{offset} of a message is a choice of time at which it arrives at the first contention point (i.e. in the first period). Let us consider a message $i$ of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period).
- 
+An \textbf{offset} of a message is a choice of time at which it arrives at the first contention point (i.e. in the first period). Let us consider a message $i$ of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period, as illustrated in Figure~\ref{fig:offset}. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period). Figure~\ref{fig:collide} shows an example of a collision.
+ \begin{center}
+\begin{figure}
+
+\centering
+\includegraphics[scale=0.25]{offset.pdf} 
+
+\caption{A message with offset $0$ and delay $6$.}
+\label{fig:offset}
+\end{figure}
+\end{center}
+ \begin{center}
+\begin{figure}
+
+\centering
+\includegraphics[scale=0.25]{collide.pdf} 
+
+\caption{The messages $1$ and $2$ with offset $0$ and $3$ collide because $[1]_1 \cap [2]_1 = \{3,4\} \neq \emptyset$.}
+\label{fig:collide}
+\end{figure}
+\end{center}
 Our objective is to send all messages so that there is no collision in the shared link.
 To do that, we can choose the offset of each message. An \textbf{assignment} $A$ is a function from $[n]$ to $[P]$. The value $A(i)$ is the offset of the message $i$. We say that an assignment is \textbf{valid} if \emph{no pair of messages collide}, as shown in Fig.~\ref{fig:assignment}.
 
@@ -305,9 +324,10 @@ Let \textbf{Periodic Message Assignment} or \pma be the following problem: given
 
 \begin{figure*}
 \begin{center}
-\includegraphics[scale=0.7]{instance}
+\includegraphics[scale=0.3]{instance2.pdf}
 \end{center}
-\caption{An instance of \pma with $3$ messages, $P= 10$, $\tau = 2$, and one assignment}
+\caption{An instance of \pma with $3$ messages, $P= 20$, $\tau = 5$, and one assignment}
+%\caption{An instance of \pma with $3$ messages, $P= 10$, $\tau = 2$, and one assignment}
 \label{fig:assignment}
 \end{figure*}
 
