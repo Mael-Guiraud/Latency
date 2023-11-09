@@ -174,7 +174,12 @@ The Radio Access Networks (RAN) architecture is the part of the mobile phone net
 An objective of 5G+ is to split a base station into two parts: The Remote Radio Head (RRH), in charge of the radio emissions, and the Baseband Unit (BBU\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}) in charge of the computations. In the Cloud RAN architecture (C-RAN), to reduce maintenance and energy consumption costs~\cite{gavrilovska2020cloud,mobile2011c,checko2014cloud}, the BBUs are gathered in one or several data centers and are connected to the RRHs via the \emph{fronthaul} network.
  The main challenge of C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}, to support functions like  HARQ (Hybrid Automatic Repeat reQuest) in only $3$ms~\cite{bouguen2012lte}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by a BBU in the cloud. In addition to the latency constraint, the specificity of C-RAN is the periodicity of the data transfer in the fronthaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{dogra2020survey,3gpp5g,romano2019imt}.
 
+Our approach is based on the URLLC (Ultra-Reliable Low-Latency Communication) context~\cite{siddiqui2023urllc}, aiming to ensure minimal packet loss and low latency in networks. In addition to minimum latency and $0\%$ packet loss, we guarantee no jitter on our streams. To achieve this, it is essential to have guarantees that the network can deliver messages on specific dates, using a central controller that activates output ports on given slots. These guarantees are based on the solutions proposed by the TSN (Time Sensitive Networking) group~\cite{ieee802}, in particular the 802.1 Qcc standard for central network control and the 802.1 Qbv standard for individual flow management. This desire to control the network using a software controller is the very essence of Software Defined Networking (SDN)~\cite{waseem2022software}.
+
+The latest generation of RANs, the O-RAN~\cite{polese2023understanding}, combines the desire to deport BBUs from Cloud Ran RRHs with the need to control networks via an additional software layer.  A prototype already exists, validating the feasibility of our approach in practice~\cite{guiraud2022experimental,leclerc2016transmission,marce2018Coordinated}.
+
 Our aim is to operate a C-RAN on a low-cost shared switched network: several (tens of) antennas share a high-speed link to send their periodic messages to one (or several) data center. This shared link is the only contention point for a message going to the data center and it is also the contention point for the answer sent back by the data center to the antenna. This model with two contention points (one for the message and one for its answer) also captures other periodic systems such as processors communicating over a bus or sensors doing periodic radio transmissions on the same frequency.
+
 
 We address the following question: \emph{is it possible to schedule periodic messages on a shared link without using buffers}? Eliminating this source of latency leaves us with more time budget for latency due to the physical length of the routes in the network, and thus allows for wider deployment areas. Our proposed solution is to compute beforehand a \emph{periodic and deterministic} sending scheme, which completely avoids contention.  While a sending scheme without buffering is simpler and less expensive to implement in C-RAN networks than one with buffering, it may not exist and we have previously investigated the case with a buffer~\cite{barth2018deterministic}. 
 
@@ -191,20 +196,23 @@ A pre-print version of this paper is available at \cite{DBLP:journals/corr/abs-2
 
 The model we study was recently introduced in~\cite{barth2018deterministic,guiraud2021deterministic} to find sending schedules for C-RAN messages, with \emph{buffering allowed}. This problem has also been studied for a cycle topology instead of a shared link~\cite{Guir1905:Deterministic}. In these articles, the main results are heuristics, using classical scheduling algorithms as subroutines, and fixed-parameter tractable algorithms which find a sending scheme with \emph{minimal latency}. The problem of finding sending schemes with \emph{no additional latency}, which is the subject of this article under the name \pma, is introduced for the first time and briefly studied in~\cite{bartharxiv2018deterministic}.
 
+
 If we ignore periodicity in the Periodic Message Assignment problem, it can be compared to several classical scheduling problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} in a two flow-shop environment. Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data with a fixed interval of time betwen sending and receiving. 
 
 Alternatively, \pma can be interpreted as a two-machine flow shop scheduling problem~\cite{johnson1954optimal,yu2004minimizing} with an exact delay between tasks. The problem with an exact delay has been investigated and found to be $\NP$-hard except when all delays are equal~\cite{leung2007scheduling}. The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points. When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the sum of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
 
+
  To our knowledge, periodic scheduling problems studied in the literature are quite different from the problem studied in this article. The problem of scheduling periodic tasks dates back to the 70s~\cite{liu1973scheduling}, with an emphasis on the maximal load as in this article. In~\cite{liu1973scheduling} only a single contention point is modeled and the scheduling is preemptive, which makes the proposed algorithms irrelevant to our problem.
 
- Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
+ Variations on the problem of minimizing latency of periodic messages in networks have been considered and practically solved, using mixed-integer programming~\cite{nayak2017incremental,steiner2018traffic} or an SMT solver~\cite{dos2019tsnsched}, but without theoretical guarantees on the quality of the produced solutions nor on the computation time. Recent work that aims to schedule periodic flows using TSN technologies employs a model very similar to ours in terms of architecture and the objective of eliminating jitter~\cite{9472838}. However, the studied model does not account for round-trip packets, and the authors provide only a greedy algorithm. Typical applications cited in these works (out of C-RAN) are sensor networks communicating periodically inside cars or planes, or logistic problems in production lines, which can also be captured in our model.
 
  In another line of work~\cite{korst1991periodic,hanen1993cyclic}, the aim is to minimize the number of processors on which the periodic tasks are scheduled, while our problem corresponds to two fixed and different processors. In cyclic scheduling~\cite{levner2010complexity}, the aim is to minimize the period of a schedule to maximize the throughput, while our period is fixed. 
 
  The train timetabling problem~\cite{lusby2011railway} and in particular, the periodic event scheduling problem~\cite{serafini1989mathematical} are generalizations of our problem since they take the period as input and can express the fact that two trains (like two messages) should not cross. However, they are much more general: the trains can vary in size and speed, the network can be more complex than consecutive single tracks and there are precedence constraints. Hence, the numerous variants of train scheduling problems are very hard to solve. Therefore, some delay is allowed in different parts of the network to make these problems solvable and most of the research done~\cite{lusby2011railway} is devising practical algorithms using branch and bound, mixed-integer programming, genetic algorithms, etc. 
- 
-In this work, we do not compare our algorithms with classical methods used to solve similar problems such as mixed-integer linear programming, simulated annealing or genetic algorithm. Indeed, our objective is not design the best heuristic to solve \pma, but rather to understand for which load this problem has always a solution. While it is possible to analyze greedy algorithms to prove such a result, it seems hard to do the same for more complex heuristics. Besides, \pma is a constraint satisfaction problem and not an optimization problem, making some classical methods less relevant. The periodicity makes the constraints hard to state in a linear fashion, which makes the problem harder to cast as a linear programming problem (though not impossible, see~\cite{bartharxiv2018deterministic}). 
 
+The approach of employing dynamic deterministic flow calculation is emerging. While~\cite{9234005} presents a genetic algorithm based on a job-shop scheduling model that deviates significantly from our model,~\cite{gartner2023fast} uses incremental approaches with a concept similar to our\swapandmove algorithm: minimizing the impact of scheduling choices on future packets. The authors do not try to optimize overall latency but focus solely on computation time, using topologies and flow modelization different from ours.
+
+In this work, we do not compare our algorithms with classical methods used to solve similar problems such as mixed-integer linear programming, simulated annealing or genetic algorithm. Indeed, our objective is not design the best heuristic to solve \pma, but rather to understand for which load this problem has always a solution. While it is possible to analyze greedy algorithms to prove such a result, it seems hard to do the same for more complex heuristics. Besides, \pma is a constraint satisfaction problem and not an optimization problem, making some classical methods less relevant. The periodicity makes the constraints hard to state in a linear fashion, which makes the problem harder to cast as a linear programming problem (though not impossible, see~\cite{bartharxiv2018deterministic}). 
 
 \paragraph*{Contributions}
 
@@ -218,7 +226,7 @@ Our second contribution is the design and analysis of the \swapandmove algorithm
 
 Our third contribution is a set of reductions, which show that solving \pma whith message of size one is sufficient to address similar problems with message of any size, buffering and a general fronthaul network, as opposed to a single link. This expands the applicability of our results, particularly in the context of C-RAN.
 
-Our final contribution is an experimental study, comparing the quality and runtime performance of various algorithms in solving the \pma problem on random instances. Notably, our results show that two algorithms, \compactfit (a simplified version of \texttt{Compact k-tuples}) and \swapandmove, consistently outperform other algorithms. We have made the source code for these algorithms available at \url{https://yann-strozecki.github.io/recherche.html}. Moreover, our experiments reveal that schedules can be found for significantly higher loads than guaranteed by our theoretical proofs. To explain this phenomenon, we prove that \greedyuniform, the simplest randomized greedy algorithm, is capable of scheduling for nearly all inputs with loads strictly less than 1.  In fact, when compared to an ad-hoc exhaustive search algorithm proposed in~\cite{bartharxiv2018deterministic}, our best algorithm finds almost as many solutions.
+Our final contribution is an experimental study, comparing the quality and runtime performance of various algorithms in solving the \pma problem on random instances. Notably, our results show that two algorithms, \compactfit (a simplified version of \texttt{Compact k-tuples}) and \swapandmove, consistently outperform other algorithms. We have made the source code for these algorithms available on github\footnote{\url{https://github.com/Mael-Guiraud/GuiraudStrozecki2023Scheduling}}. Moreover, our experiments reveal that schedules can be found for significantly higher loads than guaranteed by our theoretical proofs. To explain this phenomenon, we prove that \greedyuniform, the simplest randomized greedy algorithm, is capable of scheduling for nearly all inputs with loads strictly less than 1.  In fact, when compared to an ad-hoc exhaustive search algorithm proposed in~\cite{bartharxiv2018deterministic}, our best algorithm finds almost as many solutions.
 
 
 For a summary of the performance of the algorithms presented in this paper, please refer to Table~\ref{tab1}. It is worth noting that all algorithms discussed in this article are novel, with the exception of \metaoffset.
@@ -264,7 +272,7 @@ It shows that the algorithms of this article work for random instances with a mu
 \begin{figure}
 
 \centering
-\includegraphics[scale=0.3]{network2.pdf} 
+\includegraphics[scale=0.22]{network3.pdf} 
 
 \scalebox{0.45}{
 \includegraphics[]{graphdelays.pdf}
@@ -287,8 +295,27 @@ The \textbf{size} is an integer representing the time needed to send a message t
 
 The time is \emph{discretized} and the process we consider is \emph{periodic} of fixed integer \textbf{period $P$}. We use the notation $[P]$ for the set $\{0,\dots,P-1\}$. A message is emitted an infinite number of times periodically, hence it is enough to consider any interval of $P$ units of time to completely represent the state of our system by giving the times, in this interval, at which each message goes through the two contention points. We call the representation of an interval of $P$ units of time in the first contention point the \textbf{first period} and the \textbf{second period} for the second contention point. Because the system is of period $P$, we may always assume that $d_i$, the delay of message $i$, is in $[P]$. 
 
-An \textbf{offset} of a message is a choice of time at which it arrives at the first contention point (i.e. in the first period). Let us consider a message $i$ of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period).
- 
+An \textbf{offset} of a message is a choice of time at which it arrives at the first contention point (i.e. in the first period). Let us consider a message $i$ of offset $o_i$, it uses the interval of time $[i]_1 = \{ (o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the first period and $[i]_2 = \{ (d_i + o_i + t) \mod P \mid 0 \leq t < \tau \}$ in the second period, as illustrated in Figure~\ref{fig:offset}. Two messages $i$ and $j$ \textbf{collide} if either $[i]_1 \cap [j]_1 \neq \emptyset $ or $[i]_2 \cap [j]_2 \neq \emptyset $. If $t \in [i]_1$ (resp. $t \in [i]_2$), we say that message $i$ uses time $t$ in the first period (resp. in the second period). Figure~\ref{fig:collide} shows an example of a collision.
+ \begin{center}
+\begin{figure}
+
+\centering
+\includegraphics[scale=0.25]{offset.pdf} 
+
+\caption{A message with offset $0$ and delay $6$.}
+\label{fig:offset}
+\end{figure}
+\end{center}
+ \begin{center}
+\begin{figure}
+
+\centering
+\includegraphics[scale=0.25]{collide.pdf} 
+
+\caption{The messages $1$ and $2$ with offset $0$ and $3$ collide because $[1]_1 \cap [2]_1 = \{3,4\} \neq \emptyset$.}
+\label{fig:collide}
+\end{figure}
+\end{center}
 Our objective is to send all messages so that there is no collision in the shared link.
 To do that, we can choose the offset of each message. An \textbf{assignment} $A$ is a function from $[n]$ to $[P]$. The value $A(i)$ is the offset of the message $i$. We say that an assignment is \textbf{valid} if \emph{no pair of messages collide}, as shown in Fig.~\ref{fig:assignment}.
 
@@ -296,9 +323,10 @@ Let \textbf{Periodic Message Assignment} or \pma be the following problem: given
 
 \begin{figure*}
 \begin{center}
-\includegraphics[scale=0.7]{instance}
+\includegraphics[scale=0.3]{instance2.pdf}
 \end{center}
-\caption{An instance of \pma with $3$ messages, $P= 10$, $\tau = 2$, and one assignment}
+\caption{An instance of \pma with $3$ messages, $P= 20$, $\tau = 5$, and one assignment}
+%\caption{An instance of \pma with $3$ messages, $P= 10$, $\tau = 2$, and one assignment}
 \label{fig:assignment}
 \end{figure*}
 
@@ -472,7 +500,7 @@ Lemma~\ref{lemma:uple_find} ensures that enough compact $i$-tuples can be built,
 A numerical computation of the $n_i$'s shows that \texttt{Compact 8-tuples} always finds an assignment when the load is at most $2/5$ and for $n \geq 205$.
 \end{proof}
 
-The code computing the $n_i$'s and thus the bound on the load can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
+The code computing the $n_i$'s and thus the bound on the load can be found on github\footnote{\url{https://github.com/Mael-Guiraud/GuiraudStrozecki2023Scheduling}}. Th.~\ref{th:k-tuples} is obtained for $k=8$. Taking arbitrary large $k$ and using refined bounds on $\Fmo_i(A)$ is not enough to get an algorithm working for a load of $41/100$ (and it only works from larger $n$). To produce a compact $8$-tuples by Lemma~\ref{lemma:uple_find}, there must be $148$ messages, hence the restriction of $n \geq 205$ to be able to produce enough compact $8$-tuples.
 The bound of Lemma~\ref{lemma:uple_find} can be improved, by using more complex algorithms to construct $k$-tuples, e.g. a simple case analysis shows that, in the worst case, $7$ messages are necessary to construct a compact $3$-tuple and not $8$. However, the restriction on $n$ is not relevant in practice, since on random instances, the probability that $k$ messages do not form a compact $k$-tuples is low, and thus we can build the $k$-tuples greedily. For instance, with $P=50\tau$ and thus $n \leq 50$, there is a probability larger than $55\%$ that $8$ random messages form a compact $8$-tuples, $86\%$ for $9$ messages and $96\%$ for $10$ messages.
 
 
@@ -910,7 +938,7 @@ the value $\tau$ with regards to $P$, or the number of messages
 \subsection{Experimental Results for Large Messages} \label{sec:perf_large}
 
 
-In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on one author's website\footnote{\url{https://yann-strozecki.github.io/recherche.html}}. We experiment with several periods and message sizes. For each set of parameters, we compute the success rate of each algorithm for all possible loads by changing the number of messages. The success rate is measured on $10,000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
+In this section, the performance on random instances of the algorithms presented in Sec.~\ref{sec:large} is experimentally characterized. The implementation in C of these algorithms can be found on github\footnote{\url{https://github.com/Mael-Guiraud/GuiraudStrozecki2023Scheduling}}. We experiment with several periods and message sizes. For each set of parameters, we compute the success rate of each algorithm for all possible loads by changing the number of messages. The success rate is measured on $10,000$ instances of \pma generated by drawing uniformly and independently the delays of each message in $[P]$. 
 
 
 
