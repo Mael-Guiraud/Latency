@@ -163,7 +163,7 @@ The main contributions of this article are two polynomial-time algorithms,  whic
 
 \section{Introduction}
 
-The Radio Access Networks (RAN) architecture is the part of the mobile phone network which communicates with mobile handsets. It is composed of base stations managing radio emissions and multiple computations, connected to the core network~\cite{bouguen2012lte}. 
+The Radio Access Networks (RAN) architecture is the part of the mobile phone network which communicates with mobile handsets. It is composed of base stations managing radio emissions and multiple computations, connected to the core network~\cite{hossain2019recent}. 
 An objective of 5G+ is to split a base station into two parts: The Remote Radio Head (RRH), in charge of the radio emissions, and the Baseband Unit (BBU\footnote{Others terminologies exist in the literature. The results of this work are fully compatible with any variation of the C-RAN architecture.}) in charge of the computations. In the Cloud RAN architecture (C-RAN), to reduce maintenance and energy consumption costs~\cite{gavrilovska2020cloud,mobile2011c,checko2014cloud}, the BBUs are gathered in one or several data centers and are connected to the RRHs via the \emph{fronthaul} network.
  The main challenge of C-RAN is to reach a latency compatible with transport protocols~\cite{ieeep802}, to support functions like  HARQ (Hybrid Automatic Repeat reQuest) in only $3$ms~\cite{bouguen2012lte}. The latency is measured between the sending of a message by an RRH and the reception of the answer, computed by a BBU in the cloud. In addition to the latency constraint, the specificity of C-RAN is the periodicity of the data transfer in the fronthaul network between RRHs and BBUs: messages need to be emitted and received each millisecond~\cite{dogra2020survey,3gpp5g,romano2019imt}.
 
@@ -192,7 +192,9 @@ The model we study was recently introduced in~\cite{barth2018deterministic,guira
 
 If we ignore periodicity in the Periodic Message Assignment problem, it can be compared to several classical scheduling problems. The Periodic Message Assignment problem is similar to a coupled-task scheduling problem~\cite{shapiro1980scheduling,khatami2020coupled,chen2021scheduling} in a two flow-shop environment. Scheduling coupled-tasks is $\NP$-complete in most settings~\cite{orman1997complexity}, while for identical jobs (all delays are the same) it is in polynomial time~\cite{baptiste2010note}. Applications cited in these works are often related to radar transmission, which is very similar to our problem since it involves sending and receiving a given quantity of data with a fixed interval of time betwen sending and receiving. 
 
-Alternatively, \pma can be interpreted as a two-machine flow shop scheduling problem~\cite{johnson1954optimal,yu2004minimizing,zhao2020two} with an exact delay between tasks. The problem with an exact delay has been investigated and found to be $\NP$-hard except when all delays are equal~\cite{leung2007scheduling}. The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points. When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the sum of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
+
+Alternatively, \pma can be interpreted as a two-machine flow shop scheduling problem~\cite{khatami2023flow,johnson1954optimal,yu2004minimizing} with an exact delay between tasks. The problem with an exact delay has been investigated and found to be $\NP$-hard except when all delays are equal~\cite{leung2007scheduling}. The periodicity adds more constraints since the sending pattern for a single period must be repeated without creating collision at contention points. When considering a two-machine flow shop problem, the aim is usually to minimize the makespan, the schedule length, or the sum of job completion times. In our periodic variant, these quantities are irrelevant and we look for any feasible periodic schedule without buffering, that is respecting the exact delay between the two coupled tasks.
+
 
 
  To our knowledge, periodic scheduling problems studied in the literature are quite different from the problem studied in this article. The problem of scheduling periodic tasks dates back to the 70s~\cite{liu1973scheduling}, with an emphasis on the maximal load as in this article. In~\cite{liu1973scheduling} only a single contention point is modeled and the scheduling is preemptive, which makes the proposed algorithms irrelevant to our problem.
@@ -293,7 +295,7 @@ An \textbf{offset} of a message is a choice of time at which it arrives at the f
 \begin{figure}
 
 \centering
-\includegraphics[scale=0.25]{offset.pdf} 
+\includegraphics[scale=0.28]{offset.pdf} 
 
 \caption{A message with offset $0$ and delay $6$.}
 \label{fig:offset}
@@ -303,7 +305,7 @@ An \textbf{offset} of a message is a choice of time at which it arrives at the f
 \begin{figure}
 
 \centering
-\includegraphics[scale=0.25]{collide.pdf} 
+\includegraphics[scale=0.28]{collide.pdf} 
 
 \caption{The messages $1$ and $2$ with offset $0$ and $3$ collide because $[1]_1 \cap [2]_1 = \{3,4\} \neq \emptyset$.}
 \label{fig:collide}
@@ -346,7 +348,16 @@ In some remarks and computations, we may omit to write \emph{mod P}, in order to
 
 Consider some partial assignment $A$, in the first period, the message $i$ uses times in $[i]_1 = [A(i), A(i) + \tau -1 \mod P]$. If a message $j$ is scheduled by $A$, with $A(j) < A(i)$, then the last time it uses in the first period is $A(j)+\tau-1$ and it should be less than $A(i)$, which implies that $A(j) \leq A(i) - \tau$. Symmetrically, if $A(j) > A(i)$, to avoid collision between messages $j$ and $i$, we have $A(j) \geq A(i) + \tau$. Hence, message $i$ forbids the interval $[A(i) - \tau +1 \mod P, A(i) + \tau -1 \mod P]$ as offsets for messages still not scheduled, because of its use of time in the first period. The same reasoning shows that $2\tau -1$ offsets are also forbidden because of the times used in the second period. Hence, if $\lvert S\rvert $ messages are already scheduled, then at most $\lvert S\rvert(4\tau -2)$ offsets are forbidden for an unscheduled message. The real number of forbidden offsets may be smaller since the same offset can be forbidden both because of a message on the first and on the second period.
 
-To formalize the idea of the previous paragraph, we introduce $\Fo(A)$, which is the number of \emph{offsets forbidden by $A$}. Let $A$ be a partial assignment defined over $S$ and $i\notin S$, $\Fo(A)$ is the maximum over all values of $d_i \in [P]$ of $\lvert\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has a collision}\right\}\rvert$. In the previous paragraph, we have proved that $\Fo(A)$ is at most $(4 \tau -2)\lvert S\rvert$. 
+To formalize the idea of the previous paragraph, we introduce $\Fo(A)$, which is the number of \emph{offsets forbidden by $A$}. Let $A$ be a partial assignment defined over $S$ and $i\notin S$, $\Fo(A)$ is the maximum over all values of $d_i \in [P]$ of $\lvert\left\{ o \in [P] \mid A[i \rightarrow o] \text{ has a collision}\right\}\rvert$. In the previous paragraph, we have proved that $\Fo(A)$ is at most $(4 \tau -2)\lvert S\rvert$, as shown if Figure~\ref{fig:FO}. 
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.39]{FO.pdf}
+\end{center}
+\caption{An example in which FO(A) = $(4 \tau -2)\lvert S\rvert$ in which $\lvert S\rvert = 1$ and there exists a $d_i = 0$. }
+%\caption{An instance of \pma with $3$ messages, $P= 10$, $\tau = 2$, and one assignment}
+\label{fig:FO}
+\end{figure}
 
 Let \firstfit be the following algorithm:  for each unscheduled message (in the order they are given), try all offsets from $0$ to $P-1$ until one does not create a collision with the current assignment and use it to extend the assignment. 
 
